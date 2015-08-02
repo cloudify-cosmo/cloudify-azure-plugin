@@ -1,0 +1,35 @@
+##################################################################################
+# Cloudify Mircosoft Azure types and plugins definitions.
+##################################################################################
+
+plugins:
+  microsoft:
+    executor: central_deployment_agent
+    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/1.2.zip
+
+node_types:
+  cloudify.azure.nodes.Instance:
+    derived_from: cloudify.nodes.Compute
+    properties:
+      use_external_resource:
+        description: >
+          Indicate whether the resource exists or if Cloudify should create the resource.
+        type: boolean
+        default: false
+      TDB...
+	  TDB...
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: microsoft.azure.instance.run_instances
+        start:
+          implementation: microsoft.azure.instance.start
+        stop:
+          implementation: microsoft.azure.instance.stop
+        delete:
+          implementation: microsoft.azure.instance.terminate
+      cloudify.interfaces.validation:
+        creation:
+          implementation: microsoft.azure.instance.creation_validation
+
+  TDB...
