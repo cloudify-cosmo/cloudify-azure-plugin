@@ -1,8 +1,8 @@
 
 import requests
 import json
-import constants
-import utils
+from azure import constants
+from azure import utils
 import sys
 from cloudify.exceptions import NonRecoverableError
 from azure import WindowsAzureConflictError
@@ -178,15 +178,7 @@ def create_vm(**_):
                                         "publicKeys": [
                                             {
                                                 "path": "/home/ruchika/.ssh/authorized_keys",
-                                                "keyData": """---- BEGIN SSH2 PUBLIC KEY ----
-        Comment: "rsa-key-20150804"
-        AAAAB3NzaC1yc2EAAAABJQAAAQEA0Y5tAjA2C9xPLRMMfU37J3kGUYQzRAbPu2gN
-        9HKKB+/bkzEE+W9zysYgL1vu3heqUewQlnMz2G6gfDca+6FmitMpZdz8E0ZYUy4M
-        CG+fWs/6xT92OsVLAi2VRgQlyGqOD+KJEZdMnIbbWyPzaLC0yaUDEUNWe2hRNkr0
-        daRY21UCCZG9+zZNR4ndJWxjJyF4Om1G4R5gruickOs5yECbgEMISpENWmXATc6U
-        UsVhRznp4u6iBusZO3ilH7B3YbDyGhXs4X/TcwBj6zuWaJsHXzorTL621g4Ppp4I
-        g6QVQSrBpNBe2JCjou6tlGSBFm7vApUwAYaMStDzaIcLck/nUQ==
-        ---- END SSH2 PUBLIC KEY ----"""
+                                                "keyData": """<ADD PUBLIC KEY HERE>"""
                                             }
                                         ]
                                     }
