@@ -24,8 +24,6 @@ location = 'West US'
 
 COMMON_REQ_PROPERTIES=['subscription_id','location']
 
-
-
 credentials = <Bearer token>
 headers = {"Content-Type": "application/json", "Authorization": credentials}
 head = {"Authorization": credentials}
