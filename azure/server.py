@@ -133,7 +133,7 @@ def create_nic():
                             "name":constants.ip_config_name,
                             "properties":{
                                 "subnet":{
-                                    "id":"/subscriptions/79c57714-7a07-445e-9dd7-f3a5318bb44e/resourceGroups/maryland/providers/Microsoft.Network/virtualNetworks/mdvnet/subnets/Subnet-1"
+                                    "id":"/subscriptions/subscription_id/resourceGroups/maryland/providers/Microsoft.Network/virtualNetworks/mdvnet/subnets/Subnet-1"
                                 },
                                 "privateIPAllocationMethod":"Dynamic",
                             }
@@ -160,7 +160,7 @@ def create_vm_ubuntu_14_0_1(**_):
 
                 vm_params_1=json.dumps(
                     {
-                        "id":"/subscriptions/79c57714-7a07-445e-9dd7-f3a5318bb44e/resourceGroups/maryland/providers/Microsoft.Compute/virtualMachines/new",
+                        "id":"/subscriptions/subscription_id/resourceGroups/maryland/providers/Microsoft.Compute/virtualMachines/new",
                         "name":"new",
                         "type":constants.vm_type,
                         "location":constants.location,
@@ -202,7 +202,7 @@ def create_vm_ubuntu_14_0_1(**_):
                             "networkProfile": {
                                 "networkInterfaces": [
                                     {
-                                        "id": "/subscriptions/79c57714-7a07-445e-9dd7-f3a5318bb44e/resourceGroups/maryland/providers/Microsoft.Network/networkInterfaces/nic"
+                                        "id": "/subscriptions/subscription_id/resourceGroups/maryland/providers/Microsoft.Network/networkInterfaces/nic"
                                     }
                                 ]
                             }
@@ -234,7 +234,7 @@ def create_vm_ubuntu_12_04_5_LTS(**_):
 
                 vm_params_2=json.dumps(
                     {
-                        "id":"/subscriptions/79c57714-7a07-445e-9dd7-f3a5318bb44e/resourceGroups/{resourceGroupName}/providers/Microsoft.Compute/virtualMachines/ubuntu.vm.12.04.5",
+                        "id":"/subscriptions/subscription_id/resourceGroups/{resourceGroupName}/providers/Microsoft.Compute/virtualMachines/ubuntu.vm.12.04.5",
                         "name":constants.ubuntu_12_04_5_name,
                         "type":constants.vm_type,
                         "location":constants.location,
@@ -276,13 +276,13 @@ def create_vm_ubuntu_12_04_5_LTS(**_):
                             "networkProfile": {
                                 "networkInterfaces": [
                                     {
-                                        "id": "/subscriptions/79c57714-7a07-445e-9dd7-f3a5318bb44e/resourceGroups/maryland/providers/Microsoft.Network/networkInterfaces/nic"
+                                        "id": "/subscriptions/subscription_id/resourceGroups/maryland/providers/Microsoft.Network/networkInterfaces/nic"
                                     }
                                 ]
                             }
                         }
                     })
-                vm_url='https://management.azure.com/subscriptions/79c57714-7a07-445e-9dd7-f3a5318bb44e/resourceGroups/maryland/providers/Microsoft.Compute/virtualMachines/ubuntu.vm.12.04.5?validating=true&api-version=2015-05-01-preview'
+                vm_url='https://management.azure.com/subscriptions/subscription_id/resourceGroups/maryland/providers/Microsoft.Compute/virtualMachines/ubuntu.vm.12.04.5?validating=true&api-version=2015-05-01-preview'
                 response_vm = requests.put(url=vm_url, data=vm_params_2, headers=constants.headers)
                 print(response_vm.text)
 
@@ -309,7 +309,7 @@ def create_vm_centos(**_):
 
             vm_params=json.dumps(
                 {
-                    "id":"/subscriptions/79c57714-7a07-445e-9dd7-f3a5318bb44e/resourceGroups/{resourceGroupName}/providers/Microsoft.Compute/virtualMachines/centos.vm_6.5",
+                    "id":"/subscriptions/subscription_id/resourceGroups/{resourceGroupName}/providers/Microsoft.Compute/virtualMachines/centos.vm_6.5",
                     "name":"centos.vm_6.5",
                     "type":constants.vm_type,
                     "location":constants.location,
@@ -351,13 +351,13 @@ def create_vm_centos(**_):
                         "networkProfile": {
                             "networkInterfaces": [
                                 {
-                                    "id": "/subscriptions/79c57714-7a07-445e-9dd7-f3a5318bb44e/resourceGroups/maryland/providers/Microsoft.Network/networkInterfaces/nic"
+                                    "id": "/subscriptions/subscription_id/resourceGroups/maryland/providers/Microsoft.Network/networkInterfaces/nic"
                                 }
                             ]
                         }
                     }
                 })
-            vm_url='https://management.azure.com/subscriptions/79c57714-7a07-445e-9dd7-f3a5318bb44e/resourceGroups/maryland/providers/Microsoft.Compute/virtualMachines/centos.vm_6.5?validating=true&api-version=2015-05-01-preview'
+            vm_url='https://management.azure.com/subscriptions/subscription_id/resourceGroups/maryland/providers/Microsoft.Compute/virtualMachines/centos.vm_6.5?validating=true&api-version=2015-05-01-preview'
             response_vm = requests.put(url=vm_url, data=vm_params, headers=constants.headers)
             print(response_vm.text)
 
@@ -385,7 +385,7 @@ def create_vm_centos_os_07(**_):
 
             vm_params=json.dumps(
                 {
-                    "id":"/subscriptions/79c57714-7a07-445e-9dd7-f3a5318bb44e/resourceGroups/{resourceGroupName}/providers/Microsoft.Compute/virtualMachines/centos.vm_7.0",
+                    "id":"/subscriptions/subscription_id/resourceGroups/{resourceGroupName}/providers/Microsoft.Compute/virtualMachines/centos.vm_7.0",
                     "name":"centos.vm_7.0",
                     "type":constants.vm_type,
                     "location":constants.location,
@@ -427,13 +427,13 @@ def create_vm_centos_os_07(**_):
                         "networkProfile": {
                             "networkInterfaces": [
                                 {
-                                    "id": "/subscriptions/79c57714-7a07-445e-9dd7-f3a5318bb44e/resourceGroups/maryland/providers/Microsoft.Network/networkInterfaces/nic"
+                                    "id": "/subscriptions/subscription_id/resourceGroups/maryland/providers/Microsoft.Network/networkInterfaces/nic"
                                 }
                             ]
                         }
                     }
                 })
-            vm_url='https://management.azure.com/subscriptions/79c57714-7a07-445e-9dd7-f3a5318bb44e/resourceGroups/maryland/providers/Microsoft.Compute/virtualMachines/centos.vm_7.0?validating=true&api-version=2015-05-01-preview'
+            vm_url='https://management.azure.com/subscriptions/subscription_id/resourceGroups/maryland/providers/Microsoft.Compute/virtualMachines/centos.vm_7.0?validating=true&api-version=2015-05-01-preview'
             response_vm = requests.put(url=vm_url, data=vm_params, headers=constants.headers)
             print(response_vm.text)
 
