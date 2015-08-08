@@ -66,7 +66,7 @@ vm_start_url='https://management.azure.com/subscriptions/79c57714-7a07-445e-9dd7
 vm_stop_url='https://management.azure.com/subscriptions/79c57714-7a07-445e-9dd7-f3a5318bb44e/resourceGroups/maryland/providers/Microsoft.Compute/virtualMachines/virtualmachine/stop?api-version=2015-05-01-preview'
 vm_type="Microsoft.Compute/virtualMachines"
 computer_name='mycomputer'
-admin_username='azuredemo'
+admin_username='azuretest'
 key_path="/home/azuredemo/.ssh/authorized_keys"
 vm_version="latest"
 ubuntu_12_04_5_name="ubuntu.vm.12.04.5"
