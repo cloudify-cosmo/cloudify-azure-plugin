@@ -21,15 +21,29 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
-          implementation: microsoft.azure.instance.run_instances
+          implementation: microsoft.azure.server.create_vm
         start:
           implementation: microsoft.azure.instance.start
         stop:
-          implementation: microsoft.azure.instance.stop
+          implementation: microsoft.azure.server.stop
         delete:
-          implementation: microsoft.azure.instance.terminate
+          implementation: microsoft.azure.delete.delete_virtual_machine
       cloudify.interfaces.validation:
         creation:
-          implementation: microsoft.azure.instance.creation_validation
+          implementation: microsoft.azure.server.vm_creation_validation
 
-  TDB...
+  cloudify.azure.nodes.ElasticIP:
+    derived_from: cloudify.nodes.VirtualIP
+    properties:
+      location:
+        description: >
+          The location where the resource group would be created.
+        type: String
+        default: ''
+      resource_group_name:
+        description: >
+          The name of resource group where the VM has to be created.
+        type: String
+        default: ''
+        
+        TBD
