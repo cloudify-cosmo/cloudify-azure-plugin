@@ -133,7 +133,7 @@ def create_nic():
                             "name":constants.ip_config_name,
                             "properties":{
                                 "subnet":{
-                                    "id":"/subscriptions/subscription_id/resourceGroups/maryland/providers/Microsoft.Network/virtualNetworks/mdvnet/subnets/Subnet-1"
+                                    "id":"/subscriptions/"+constants.subscription_id+"/resourceGroups/maryland/providers/Microsoft.Network/virtualNetworks/mdvnet/subnets/Subnet-1"
                                 },
                                 "privateIPAllocationMethod":"Dynamic",
                             }
@@ -160,7 +160,7 @@ def create_vm_ubuntu_14_0_1(**_):
 
                 vm_params_1=json.dumps(
                     {
-                        "id":"/subscriptions/subscription_id/resourceGroups/maryland/providers/Microsoft.Compute/virtualMachines/new",
+                        "id":"/subscriptions/"+constants.subscription_id+"/resourceGroups/maryland/providers/Microsoft.Compute/virtualMachines/new",
                         "name":"new",
                         "type":constants.vm_type,
                         "location":constants.location,
@@ -202,7 +202,7 @@ def create_vm_ubuntu_14_0_1(**_):
                             "networkProfile": {
                                 "networkInterfaces": [
                                     {
-                                        "id": "/subscriptions/subscription_id/resourceGroups/maryland/providers/Microsoft.Network/networkInterfaces/nic"
+                                        "id": "/subscriptions/"+constants.subscription_id+"/resourceGroups/maryland/providers/Microsoft.Network/networkInterfaces/nic"
                                     }
                                 ]
                             }
