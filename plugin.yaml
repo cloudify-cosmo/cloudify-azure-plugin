@@ -23,7 +23,7 @@ node_types:
         create:
           implementation: microsoft.azure.server.create_vm
         start:
-          implementation: microsoft.azure.instance.start
+          implementation: microsoft.azure.server.start
         stop:
           implementation: microsoft.azure.server.stop
         delete:
