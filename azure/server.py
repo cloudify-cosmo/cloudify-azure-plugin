@@ -148,7 +148,7 @@ def create_nic():
 #virtualmachine:
 
 @operation
-def create_vm_ubuntu_14_0_1(**_):
+def create_vm(**_):
     for property_key in constants.VM_REQUIRED_PROPERTIES:
         utils.validate_node_property(property_key, ctx.node.properties)
 
@@ -177,17 +177,16 @@ def create_vm_ubuntu_14_0_1(**_):
                                         "publicKeys": [
                                             {
                                                 "path": constants.key_path,
-                                                "keyData": """---- BEGIN SSH2 PUBLIC KEY ----Comment: "rsa-key-20150804"AAAAB3NzaC1yc2EAAAABJQAAAQEA0Y5tAjA2C9xPLRMMfU37J3kGUYQzRAbPu2gN9HKKB+/bkzEE+W9zysYgL1vu3heqUewQlnMz2G6gfDca+6FmitMpZdz8E0ZYUy4MCG+fWs/6xT92OsVLAi2VRgQlyGqOD+KJEZdMnIbbWyPzaLC0yaUDEUNWe2hRNkr0daRY21UCCZG9+zZNR4ndJWxjJyF4Om1G4R5gruickOs5yECbgEMISpENWmXATc6UUsVhRznp4u6iBusZO3ilH7B3YbDyGhXs4X/TcwBj6zuWaJsHXzorTL621g4Ppp4Ig6QVQSrBpNBe2JCjou6tlGSBFm7vApUwAYaMStDzaIcLck/nUQ==---- END SSH2 PUBLIC KEY ----"""
-                                            }
+                                                "keyData": <RSA Public key here>}
                                         ]
                                     }
                                 }
                             },
                             "storageProfile": {
                                 "imageReference": {
-                                    "publisher": "Canonical",
-                                    "offer": "UbuntuServer",
-                                    "sku" : "14.04.2-LTS",
+                                    "publisher": constants.image_reference_publisher,
+                                    "offer": constants.image_reference_offer,
+                                    "sku" : constants.image_reference_sku,
                                     "version":constants.vm_version
                                 },
                                 "osDisk" : {
