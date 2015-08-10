@@ -30,7 +30,7 @@ def validate_node_properties(key, ctx_node_properties):
 
 
 @operation
-def list_all_resource_group(**_):
+def list_all_resource_groups(**_):
     list_rg=requests.get(url=constants.list_resource_group_url, headers=constants.headers)
     print list_rg.text
     #rg_list= extract from json file
