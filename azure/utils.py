@@ -15,15 +15,12 @@
 
 # Built-in Imports
 import os
-
-# Cloudify Imports
-
 import requests
 import json
 from cloudify import ctx
 from cloudify.exceptions import NonRecoverableError
 from cloudify.decorators import operation
-from azure import constants
+import constants
 
 
 @operation
@@ -33,21 +30,21 @@ def validate_node_properties(key, ctx_node_properties):
 
 
 @operation
-def list_all_rg(**_):
+def list_all_resource_group(**_):
     list_rg=requests.get(url=constants.list_resource_group_url, headers=constants.headers)
     print list_rg.text
     #rg_list= extract from json file
     #return rg_list
 
 @operation
-def list_all_sg(**_):
+def list_all_storage_accounts(**_):
     list_sg = requests.get(url=constants.list_storage_account_url, headers = constants.headers)
     print list_sg.text
     #sg_account_name_list= #extract sg_name
     #return sg_account_name_list
 
 @operation
-def list_all_vnet(**_):
+def list_all_virtual_networks(**_):
     list_vnet = requests.get(url=constants.list_vnet_url, headers = constants.headers)
     print list_vnet.text
 
@@ -56,13 +53,9 @@ def list_all_vnet(**_):
 
 
 @operation
-def list_all_vms(**_):
+def list_all_virtual_machines(**_):
     list_vms = requests.get(url=constants.list_vms_url, headers = constants.headers)
     print list_vms.text
     #vm_list= #extract vnet_name
     #return vm_list
 
-
-
-
-# Look at https://github.com/cloudify-cosmo/cloudify-aws-plugin/blob/1.2/ec2/utils.py
