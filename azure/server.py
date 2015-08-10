@@ -174,8 +174,8 @@ def create_vm(**_):
                 virtual_machine_params=json.dumps(
                 {
                     "id":"/subscriptions/"+constants.subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Compute/virtualMachines/"+vm_name
-                    "name":"new",
-                    "type":constants.vm_type,
+                    "name":vm_name,
+                    "type":"Microsoft.Compute/virtualMachines",
                     "location":location,
                     "properties": {
                         "hardwareProfile": {
