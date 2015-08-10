@@ -44,7 +44,7 @@ def list_all_storage_accounts(**_):
     #return sg_account_name_list
 
 @operation
-def list_all_virtual_networks(**_):
+def list_all_vnets(**_):
     list_vnet = requests.get(url=constants.list_vnet_url, headers = constants.headers)
     print list_vnet.text
 
