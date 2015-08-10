@@ -31,21 +31,26 @@ def validate_node_properties(key, ctx_node_properties):
 
 @operation
 def list_all_resource_groups(**_):
-    list_rg=requests.get(url=constants.list_resource_group_url, headers=constants.headers)
+    list_resource_groups_url='https://management.azure.com/subscriptions/'+constants.subscription_id+'/resourcegroups?api-version='+constants.api_version
+    list_rg=requests.get(url=list_resource_groups_url, headers=constants.headers)
     print list_rg.text
     #rg_list= extract from json file
     #return rg_list
 
 @operation
 def list_all_storage_accounts(**_):
-    list_sg = requests.get(url=constants.list_storage_account_url, headers = constants.headers)
+    resource_group_name = ctx.node.properties['resource_group_name']
+    list_storage_accounts_url='https://management.azure.com/subscriptions/'+constants.subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts?api-version='+constants.api_version
+    list_sg = requests.get(url=list_storage_accounts_url, headers = constants.headers)
     print list_sg.text
     #sg_account_name_list= #extract sg_name
     #return sg_account_name_list
 
 @operation
 def list_all_vnets(**_):
-    list_vnet = requests.get(url=constants.list_vnet_url, headers = constants.headers)
+    resource_group_name = ctx.node.properties['resource_group_name']
+    list_vnets_url='https://management.azure.com/subscriptions/'+constants.subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualnetworks?api-version='+constants.api_version
+    list_vnet = requests.get(url=list_vnets_url, headers = constants.headers)
     print list_vnet.text
 
     #vnet_list= #extract vnet_name
@@ -54,7 +59,9 @@ def list_all_vnets(**_):
 
 @operation
 def list_all_virtual_machines(**_):
-    list_vms = requests.get(url=constants.list_vms_url, headers = constants.headers)
+    resource_group_name = ctx.node.properties['resource_group_name']
+    list_virtual_machines_url='https://management.azure.com/subscriptions/'+constants.subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualmachines?api-version='+constants.api_version
+    list_vms = requests.get(url=list_virtual_machines_url, headers = constants.headers)
     print list_vms.text
     #vm_list= #extract vnet_name
     #return vm_list
