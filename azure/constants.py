@@ -45,7 +45,6 @@ image_reference_version = 'latest'
 os_disk_name = 'osdisk'
 vm_caching = 'ReadWrite'
 vm_createOption = 'FromImage'
-vm_type="Microsoft.Compute/virtualMachines"
 computer_name='mycomputer'
 admin_username='azuretest'
 key_path="/home/azuredemo/.ssh/authorized_keys"
