@@ -17,7 +17,8 @@ def delete_resource_group(**_):
     if resource_group_name in [resource_group_name for rg in utils.list_all_resource_group()]:
         try:
             ctx.logger.info("Deleting Resource Group: " + resource_group_name)
-            response_rg = requests.delete(url=constants.resource_group_url, headers=constants.headers)
+            resource_group_url = 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version
+            response_rg = requests.delete(url=resource_group_url, headers=constants.headers)
             print(response_rg.text)
         except WindowsAzureMissingResourceError:
             ctx.logger.info("Resource Group" +  resource_group_name + "could not be deleted." )
@@ -34,7 +35,8 @@ def delete_storage_account(**_):
     ctx.logger.info("Deleting Storage Account"+storage_account_name)
     if storage_account_name in [storage_account_name for sa in utils.list_all_storage_account()]:
         try:
-            response_sg = requests.delete(url=constants.storage_account_url,headers=constants.headers)
+            storage_account_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts/'+storage_account_name+'?api-version='+constants.api_version
+            response_sg = requests.delete(url=storage_account_url,headers=constants.headers)
             print response_sg.text
 
         except WindowsAzureMissingResourceError:
@@ -54,7 +56,8 @@ def delete_vnet(**_):
     if vnet_name  in [vnet_name for vnet in utils.list_all_virtual_networks()]:
         try:
             ctx.logger.info("Deleting the virtual network: " + vnet_name)
-            response_vnet = requests.delete(url=constants.vnet_url,headers=constants.headers)
+            vnet_url = 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
+            response_vnet = requests.delete(url=vnet_url,headers=constants.headers)
             print response_vnet.text
 
         except WindowsAzureMissingResourceError:
@@ -69,7 +72,8 @@ def delete_vnet(**_):
 @operation
 def delete_nic(**_):
     ctx.logger.info("Deleting NIC")
-    response_nic = requests.delete(url=constants.nic_url,headers=constants.headers)
+    nic_url="https://management.azure.com/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
+    response_nic = requests.delete(url=nic_url,headers=constants.headers)
     print(response_nic.text)
 
 #virtual_machine
@@ -81,7 +85,8 @@ def delete_virtual_machine(**_):
     if vm_name in [vm_name for vm in utils.list_all_virtual_machines()]:
         try:
             ctx.logger.info("Deleting the virtual machine: " + vm_name)
-            response_vm = requests.delete(url=constants.vm_url,headers=constants.headers)
+            vm_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version
+            response_vm = requests.delete(url=vm_url,headers=constants.headers)
             print(response_vm.text)
 
         except WindowsAzureMissingResourceError:
