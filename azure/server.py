@@ -249,7 +249,13 @@ def start_vm(**_):
     start_vm_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api-version
     response_start_vm=request.post(start_vm_url,headers=constants.headers)
     print (response_start_vm.text)
-
+    
+#stop_vm
+def stop_vm(**_):
+    subscription_id = ctx.node.properties['subscription_id']
+    stop_vm_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api-version
+    response_stop_vm=request.post(stop_vm_url,headers=constants.headers)
+    print (response_stop_vm.text)
 
 
 
