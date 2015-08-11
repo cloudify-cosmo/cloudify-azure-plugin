@@ -187,14 +187,14 @@ def create_vm(**_):
                             "vmSize": ctx.node.properties['vm_size']
                         },
                         "osProfile": {
-                            "computername": constants.computer_name,
+                            "computername": vm_name,
                             "adminUsername": constants.admin_username,
                             "linuxConfiguration": {
                                 "disablePasswordAuthentication": "true",
                                 "ssh": {
                                     "publicKeys": [
                                         {
-                                            "path": constants.key_path,
+                                            "path": "/home/"+constants.admin_username+"/.ssh/authorized_keys",
                                             "keyData": <RSA Public key here>}
                                     ]
                                 }
