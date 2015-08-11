@@ -143,7 +143,7 @@ def create_nic():
                             "name":constants.ip_config_name,
                             "properties":{
                                 "subnet":{
-                                    "id":"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Network/virtualNetworks/"+vnet_name+"/subnets/Subnet-1"
+                                    "id":"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Network/virtualNetworks/"+vnet_name+"/subnets/"+constants.subnet_name
                                 },
                                 "privateIPAllocationMethod":"Dynamic",
                             }
