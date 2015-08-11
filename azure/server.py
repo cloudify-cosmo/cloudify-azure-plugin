@@ -64,7 +64,7 @@ def create_storage_account(**_):
     location = ctx.node.properties['location']
     for property_key in constants.STORAGE_ACCOUNT_REQUIRED_PROPERTIES:
         utils.validate_node_property(property_key, ctx.node.properties)
-    storage_account_name = ctx.node.properties['vm_name']+'_sg'
+    storage_account_name = ctx.node.properties['vm_name']+'_storage_group'
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
     ctx.logger.info("Checking availability of storage account: " + storage_account_name)
@@ -83,7 +83,7 @@ def create_storage_account(**_):
 
 @operation
 def storage_account_creation_validation(**_):
-    storage_account_name = ctx.node.properties['vm_name']+'_sg'
+    storage_account_name = ctx.node.properties['vm_name']+'_storage_group'
     if storage_account_name in [storage_account_name for sg in utils.list_all_storage_accounts()]:
         ctx.logger.info("Storage account: " + storage_account_name + " successfully created.")
     else:
@@ -166,7 +166,7 @@ def create_vm(**_):
         utils.validate_node_property(property_key, ctx.node.properties)
         
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
-    storage_account_name = ctx.node.properties['vm_name']+'_sg'
+    storage_account_name = ctx.node.properties['vm_name']+'_storage_group'
     location = ctx.node.properties['location']
     vnet_name = ctx.node.properties['vm_name']+'_vnet'
     nic_name = ctx.node.properties['vm_name']+'_nic'
