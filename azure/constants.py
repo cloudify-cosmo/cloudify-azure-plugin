@@ -26,7 +26,6 @@ credentials = <Bearer token>
 headers = {"Content-Type": "application/json", "Authorization": credentials}
 head = {"Authorization": credentials}
 api_version='2015-05-01-preview'
-
 storage_account_type = 'Standard_LRS'
 
 vnet_address_prefixes = ["10.1.0.0/16","10.2.0.0/16"]
@@ -35,9 +34,6 @@ subnet_name = 'Subnet-1'
 address_prefix = "10.1.0.0/24"
 ip_config_name = 'myip1'
 vm_size = 'Standard_A0'
-os_profile_computername = 'myComputer'
-os_profile_adminUsername = 'adminUser'
-os_profile_adminPassword = 'Password1'
 image_reference_publisher = 'Canonical'
 image_reference_offer = 'UbuntuServer'
 image_reference_sku = '14.04.2-LTS'
