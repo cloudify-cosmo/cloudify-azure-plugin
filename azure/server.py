@@ -184,7 +184,7 @@ def create_vm(**_):
                     "location":location,
                     "properties": {
                         "hardwareProfile": {
-                            "vmSize": constants.vm_size
+                            "vmSize": ctx.node.properties['vm_size']
                         },
                         "osProfile": {
                             "computername": constants.computer_name,
