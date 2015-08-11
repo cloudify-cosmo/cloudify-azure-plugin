@@ -242,6 +242,12 @@ def vm_creation_validation():
     else:
         ctx.logger.info("Virtual Machine " + vm_name + " creation validation failed.")
         sys.exit(1)
+        
+#start_vm
+def start_vm(**_):
+    subscription_id = ctx.node.properties['subscription_id']
+    response_start_vm=request.post(constants.start_vm_url,headers=constants.headers)
+    print (response_start_vm.text)
 
 
 
