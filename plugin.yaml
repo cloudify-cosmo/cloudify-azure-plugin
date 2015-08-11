@@ -23,9 +23,9 @@ node_types:
         create:
           implementation: microsoft.azure.server.create_vm
         start:
-          implementation: microsoft.azure.server.start
+          implementation: microsoft.azure.server.start_vm
         stop:
-          implementation: microsoft.azure.server.stop
+          implementation: microsoft.azure.server.stop_vm
         delete:
           implementation: microsoft.azure.delete.delete_virtual_machine
       cloudify.interfaces.validation:
