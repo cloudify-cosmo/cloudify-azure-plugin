@@ -14,6 +14,7 @@ from cloudify.decorators import operation
 @operation
 def delete_resource_group(**_):
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
+    subscription_id = ctx.node.properties['subscription_id']
     if resource_group_name in [resource_group_name for rg in utils.list_all_resource_group()]:
         try:
             ctx.logger.info("Deleting Resource Group: " + resource_group_name)
@@ -32,6 +33,7 @@ def delete_resource_group(**_):
 @operation
 def delete_storage_account(**_):
     storage_account_name = ctx.node.properties['vm_name']+'_storage_group'
+    subscription_id = ctx.node.properties['subscription_id']
     ctx.logger.info("Deleting Storage Account"+storage_account_name)
     if storage_account_name in [storage_account_name for sa in utils.list_all_storage_account()]:
         try:
@@ -52,6 +54,7 @@ def delete_storage_account(**_):
 @operation
 def delete_vnet(**_):
     vnet_name = ctx.node.properties['vm_name']+'_vnet'
+    subscription_id = ctx.node.properties['subscription_id']
     ctx.logger.info("Checking availability of virtual network: " + vnet_name)
     if vnet_name  in [vnet_name for vnet in utils.list_all_virtual_networks()]:
         try:
@@ -71,6 +74,7 @@ def delete_vnet(**_):
 #nic:
 @operation
 def delete_nic(**_):
+    subscription_id = ctx.node.properties['subscription_id']
     ctx.logger.info("Deleting NIC")
     nic_url="https://management.azure.com/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
     response_nic = requests.delete(url=nic_url,headers=constants.headers)
@@ -81,6 +85,7 @@ def delete_nic(**_):
 @operation
 def delete_virtual_machine(**_):
     vm_name = ctx.node.properties['vm_name']
+    subscription_id = ctx.node.properties['subscription_id']
     ctx.logger.info("Checking availability of virtual network: " + vm_name)
     if vm_name in [vm_name for vm in utils.list_all_virtual_machines()]:
         try:
