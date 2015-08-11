@@ -39,7 +39,6 @@ image_reference_version = 'latest'
 os_disk_name = 'osdisk'
 vm_caching = 'ReadWrite'
 vm_createOption = 'FromImage'
-computer_name='mycomputer'
 admin_username='azuretest'
 vm_version="latest"
 
