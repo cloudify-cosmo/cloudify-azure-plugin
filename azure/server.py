@@ -31,7 +31,8 @@ def create_resource_group(**_):
 
     resource_group_name = ctx.node.properties['vm_name']+'_rg'
     location = ctx.node.properties['location']
-    resource_group_url = 'https://management.azure.com/subscriptions/'+constants.subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version
+    subscription_id = ctx.node.properties['subscription_id']
+    resource_group_url = 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version
     ctx.logger.info("Checking availability of resource_group: " + resource_group_name)
 
     if resource_group_name not in [resource_group_name for rg in utils.list_all_resource_groups()]:
@@ -65,11 +66,12 @@ def create_storage_account(**_):
         utils.validate_node_property(property_key, ctx.node.properties)
     storage_account_name = ctx.node.properties['vm_name']+'_sg'
     resource_group_name = ctx.node.properties['vm_name']+'_rg'
+    subscription_id = ctx.node.properties['subscription_id']
     ctx.logger.info("Checking availability of storage account: " + storage_account_name)
     if storage_account_name not in [storage_account_name for sg in utils.list_all_storage_accounts()]:
         try:
             ctx.logger.info("Creating new storage account: " + storage_account_name)
-            storage_account_url='https://management.azure.com/subscriptions/'+constants.subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts/'+storage_account_name+'?api-version='+constants.api_version
+            storage_account_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts/'+storage_account_name+'?api-version='+constants.api_version
             storage_group_params=json.dumps({"properties": {"accountType": constants.storage_account_type,}, "location": location})
             response_sg = requests.put(url=storage_account_url, data=storage_group_params, headers=constants.headers)
             print response_sg.text
@@ -99,7 +101,8 @@ def create_vnet(**_):
     resource_group_name = ctx.node.properties['vm_name']+'_rg'
     vnet_name = ctx.node.properties['vm_name']+'_vnet'
     location = ctx.node.properties['location']
-    vnet_url = 'https://management.azure.com/subscriptions/'+constants.subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
+    subscription_id = ctx.node.properties['subscription_id']
+    vnet_url = 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
     ctx.logger.info("Checking availability of virtual network: " + vnet_name)
 
 if vnet_name not in [vnet_name for vnet in utils.list_all_vnets()]:
@@ -130,6 +133,7 @@ def create_nic():
     nic_name = ctx.node.properties['vm_name']+'_nic'
     resource_group_name = ctx.node.properties['vm_name']+'_rg'
     location = ctx.node.properties['location']
+    subscription_id = ctx.node.properties['subscription_id']
     vnet_name = ctx.node.properties['vm_name']+'_vnet'
     nic_params=json.dumps({
                 "location":location,
@@ -139,7 +143,7 @@ def create_nic():
                             "name":constants.ip_config_name,
                             "properties":{
                                 "subnet":{
-                                    "id":"/subscriptions/"+constants.subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Network/virtualNetworks/"+vnet_name+"/subnets/Subnet-1"
+                                    "id":"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Network/virtualNetworks/"+vnet_name+"/subnets/Subnet-1"
                                 },
                                 "privateIPAllocationMethod":"Dynamic",
                             }
@@ -147,7 +151,7 @@ def create_nic():
                     ],
                 }
             })
-    nic_url="https://management.azure.com/subscriptions/"+constants.subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
+    nic_url="https://management.azure.com/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
 
     response_nic = requests.put(url=nic_url, data=nic_params, headers=constants.headers)
     print(response_nic.text)
@@ -167,13 +171,14 @@ def create_vm(**_):
     vnet_name = ctx.node.properties['vm_name']+'_vnet'
     nic_name = ctx.node.properties['vm_name']+'_nic'
     vm_name = ctx.node.properties['vm_name']
+    subscription_id = ctx.node.properties['subscription_id']
     ctx.logger.info("Checking availability of virtual network: " + vm_name)
     if vm_name not in [vm_name for vm in utils.list_all_virtual_machines()]:
         try:
             ctx.logger.info("Creating new virtual machine: " + vm_name)
                 virtual_machine_params=json.dumps(
                 {
-                    "id":"/subscriptions/"+constants.subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Compute/virtualMachines/"+vm_name
+                    "id":"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Compute/virtualMachines/"+vm_name
                     "name":vm_name,
                     "type":"Microsoft.Compute/virtualMachines",
                     "location":location,
@@ -214,13 +219,13 @@ def create_vm(**_):
                         "networkProfile": {
                             "networkInterfaces": [
                                 {
-                                    "id": "/subscriptions/"+constants.subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Network/networkInterfaces/"+nic_name
+                                    "id": "/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Network/networkInterfaces/"+nic_name
                                 }
                             ]
                         }
                     }
                 })
-            vm_url='https://management.azure.com/subscriptions/'+constants.subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version
+            vm_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version
             response_vm = requests.put(url=virtual_machine_url, data=virtual_machine_params, headers=constants.headers)
             print(response_vm.text)
         except WindowsAzureConflictError:
