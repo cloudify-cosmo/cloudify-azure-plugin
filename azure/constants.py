@@ -29,11 +29,9 @@ api_version='2015-05-01-preview'
 storage_account_type = 'Standard_LRS'
 
 vnet_address_prefixes = ["10.1.0.0/16","10.2.0.0/16"]
-
 subnet_name = 'Subnet-1'
 address_prefix = "10.1.0.0/24"
 ip_config_name = 'myip1'
-vm_size = 'Standard_A0'
 image_reference_publisher = 'Canonical'
 image_reference_offer = 'UbuntuServer'
 image_reference_sku = '14.04.2-LTS'
@@ -43,10 +41,7 @@ vm_caching = 'ReadWrite'
 vm_createOption = 'FromImage'
 computer_name='mycomputer'
 admin_username='azuretest'
-key_path="/home/azuredemo/.ssh/authorized_keys"
 vm_version="latest"
-ubuntu_12_04_5_name="ubuntu.vm.12.04.5"
-
 
 RESOURCE_GROUP_REQ_PROPERTIES=['resource_group_name','location']
 STORAGE_ACCOUNT_REQUIRED_PROPERTIES = ['storage_account_name']
