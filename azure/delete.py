@@ -76,6 +76,7 @@ def delete_vnet(**_):
 #nic:
 @operation
 def delete_nic(**_):
+    nic_name = ctx.node.properties['vm_name']+'_nic'
     subscription_id = ctx.node.properties['subscription_id']
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     ctx.logger.info("Deleting NIC")
