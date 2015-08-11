@@ -246,7 +246,8 @@ def vm_creation_validation():
 #start_vm
 def start_vm(**_):
     subscription_id = ctx.node.properties['subscription_id']
-    response_start_vm=request.post(constants.start_vm_url,headers=constants.headers)
+    start_vm_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api-version
+    response_start_vm=request.post(start_vm_url,headers=constants.headers)
     print (response_start_vm.text)
 
 
