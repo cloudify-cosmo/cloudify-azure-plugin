@@ -13,7 +13,7 @@ from cloudify.decorators import operation
 
 @operation
 def delete_resource_group(**_):
-    resource_group_name = ctx.node.properties['resource_group_name']
+    resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     if resource_group_name in [resource_group_name for rg in utils.list_all_resource_group()]:
         try:
             ctx.logger.info("Deleting Resource Group: " + resource_group_name)
@@ -26,14 +26,11 @@ def delete_resource_group(**_):
         ctx.logger.info("Resource Group '%s' does not exist" + resource_group_name)
 
 
-
-
 #storage_group
-
 
 @operation
 def delete_storage_account(**_):
-    storage_account_name = ctx.node.properties['storage_account_name']
+    storage_account_name = ctx.node.properties['vm_name']+'_storage_group'
     ctx.logger.info("Deleting Storage Account"+storage_account_name)
     if storage_account_name in [storage_account_name for sa in utils.list_all_storage_account()]:
         try:
@@ -52,7 +49,7 @@ def delete_storage_account(**_):
 
 @operation
 def delete_vnet(**_):
-    vnet_name = ctx.node.properties['vnet_name']
+    vnet_name = ctx.node.properties['vm_name']+'_vnet'
     ctx.logger.info("Checking availability of virtual network: " + vnet_name)
     if vnet_name  in [vnet_name for vnet in utils.list_all_virtual_networks()]:
         try:
@@ -74,14 +71,6 @@ def delete_nic(**_):
     ctx.logger.info("Deleting NIC")
     response_nic = requests.delete(url=constants.nic_url,headers=constants.headers)
     print(response_nic.text)
-
-"""
-#load_balancer
-lb_url='https://management.azure.com/subscriptions/subscription_id/resourceGroups/maryland/providers/microsoft.network/ loadBalancers/mdloadbalancer/Subnet-1?api-version=2015-05-01-preview'
-response_lb=requests.delete(url=lb_url,headers=headers)
-print(response_lb.text)
-
-"""
 
 #virtual_machine
 
