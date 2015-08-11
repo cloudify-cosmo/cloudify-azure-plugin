@@ -29,7 +29,7 @@ def create_resource_group(**_):
     for property_key in constants.RESOURCE_GROUP_REQ_PROPERTIES:
         utils.validate_node_property(property_key, ctx.node.properties)
 
-    resource_group_name = ctx.node.properties['vm_name']+'_rg'
+    resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     location = ctx.node.properties['location']
     subscription_id = ctx.node.properties['subscription_id']
     resource_group_url = 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version
@@ -49,7 +49,7 @@ def create_resource_group(**_):
 
 @operation
 def resource_group_creation_validation(**_):
-    resource_group_name = ctx.node.properties['vm_name']+'_rg'
+    resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     if resource_group_name in resource_group_name in [resource_group_name for rg in utils.list_all_resource_groups()]:
         ctx.logger.info("Resource group: " + resource_group_name + " successfully created.")
     else:
@@ -65,7 +65,7 @@ def create_storage_account(**_):
     for property_key in constants.STORAGE_ACCOUNT_REQUIRED_PROPERTIES:
         utils.validate_node_property(property_key, ctx.node.properties)
     storage_account_name = ctx.node.properties['vm_name']+'_sg'
-    resource_group_name = ctx.node.properties['vm_name']+'_rg'
+    resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
     ctx.logger.info("Checking availability of storage account: " + storage_account_name)
     if storage_account_name not in [storage_account_name for sg in utils.list_all_storage_accounts()]:
@@ -98,7 +98,7 @@ def storage_account_creation_validation(**_):
 def create_vnet(**_):
     for property_key in constants.VNET_REQUIRED_PROPERTIES:
         utils.validate_node_property(property_key, ctx.node.properties)
-    resource_group_name = ctx.node.properties['vm_name']+'_rg'
+    resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     vnet_name = ctx.node.properties['vm_name']+'_vnet'
     location = ctx.node.properties['location']
     subscription_id = ctx.node.properties['subscription_id']
@@ -131,7 +131,7 @@ def vnet_creation_validation(**_):
 #nic:
 def create_nic():
     nic_name = ctx.node.properties['vm_name']+'_nic'
-    resource_group_name = ctx.node.properties['vm_name']+'_rg'
+    resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     location = ctx.node.properties['location']
     subscription_id = ctx.node.properties['subscription_id']
     vnet_name = ctx.node.properties['vm_name']+'_vnet'
@@ -165,7 +165,7 @@ def create_vm(**_):
     for property_key in constants.VM_REQUIRED_PROPERTIES:
         utils.validate_node_property(property_key, ctx.node.properties)
         
-    resource_group_name = ctx.node.properties['vm_name']+'_rg'
+    resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     storage_account_name = ctx.node.properties['vm_name']+'_sg'
     location = ctx.node.properties['location']
     vnet_name = ctx.node.properties['vm_name']+'_vnet'
