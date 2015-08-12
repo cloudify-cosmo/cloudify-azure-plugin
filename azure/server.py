@@ -120,27 +120,27 @@ def create_vnet(**_):
     vnet_url = 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
     ctx.logger.info("Checking availability of virtual network: " + vnet_name)
 
-if vnet_name not in [vnet_name for vnet in utils.list_all_vnets()]:
-    try:
-        ctx.logger.info("Creating new virtual network: " + vnet_name)
-
-        vnet_params=json.dumps({"name":vnet_name, "location": location,"properties": {"addressSpace": {"addressPrefixes": constants.vnet_address_prefixes},"subnets": [{"name": constants.subnet_name, "properties": {"addressPrefix": constants.address_prefix}}]}})
-        response_vnet = requests.put(url=vnet_url, data=vnet_params, headers=constants.headers)
-        print response_vnet.text
-    except WindowsAzureConflictError:
-        ctx.logger.info("Virtual Network " + vnet_name + "could not be created.")
-        sys.exit(1)
-else:
-    ctx.logger.info("Virtual Network" + vnet_name + "has already been provisioned by another user.")
-
-
-def vnet_creation_validation(**_):
-    ctx.node.properties['vm_name']+'_vnet'
-    if vnet_name in [vnet_name for vnet in utils.list_all_vnets()]:
-        ctx.logger.info("Virtual Network: " + vnet_name + " successfully created.")
+    if vnet_name not in [vnet_name for vnet in utils.list_all_vnets()]:
+        try:
+            ctx.logger.info("Creating new virtual network: " + vnet_name)
+    
+            vnet_params=json.dumps({"name":vnet_name, "location": location,"properties": {"addressSpace": {"addressPrefixes": constants.vnet_address_prefixes},"subnets": [{"name": constants.subnet_name, "properties": {"addressPrefix": constants.address_prefix}}]}})
+            response_vnet = requests.put(url=vnet_url, data=vnet_params, headers=constants.headers)
+            print response_vnet.text
+        except WindowsAzureConflictError:
+            ctx.logger.info("Virtual Network " + vnet_name + "could not be created.")
+            sys.exit(1)
     else:
-        ctx.logger.info("Virtual Network " + vnet_name + " creation validation failed.")
-        sys.exit(1)
+        ctx.logger.info("Virtual Network" + vnet_name + "has already been provisioned by another user.")
+    
+    
+    def vnet_creation_validation(**_):
+        ctx.node.properties['vm_name']+'_vnet'
+        if vnet_name in [vnet_name for vnet in utils.list_all_vnets()]:
+            ctx.logger.info("Virtual Network: " + vnet_name + " successfully created.")
+        else:
+            ctx.logger.info("Virtual Network " + vnet_name + " creation validation failed.")
+            sys.exit(1)
 
 @operation
 #nic:
@@ -191,56 +191,55 @@ def create_vm(**_):
     if vm_name not in [vm_name for vm in utils.list_all_virtual_machines()]:
         try:
             ctx.logger.info("Creating new virtual machine: " + vm_name)
-                virtual_machine_params=json.dumps(
-                {
-                    "id":"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Compute/virtualMachines/"+vm_name
-                    "name":vm_name,
-                    "type":"Microsoft.Compute/virtualMachines",
-                    "location":location,
-                    "properties": {
-                        "hardwareProfile": {
-                            "vmSize": ctx.node.properties['vm_size']
-                        },
-                        "osProfile": {
-                            "computername": vm_name,
-                            "adminUsername": constants.admin_username,
-                            "linuxConfiguration": {
-                                "disablePasswordAuthentication": "true",
-                                "ssh": {
-                                    "publicKeys": [
-                                        {
-                                            "path": "/home/"+constants.admin_username+"/.ssh/authorized_keys",
-                                            "keyData": <RSA Public key here>}
-                                    ]
-                                }
+            virtual_machine_params=json.dumps(
+            {
+                "id":"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Compute/virtualMachines/"+vm_name,
+                "name":vm_name,
+                "type":"Microsoft.Compute/virtualMachines",
+                "location":location,
+                "properties": {
+                    "hardwareProfile": {
+                        "vmSize": ctx.node.properties['vm_size']
+                    },
+                    "osProfile": {
+                        "computername": vm_name,
+                        "adminUsername": constants.admin_username,
+                        "linuxConfiguration": {
+                            "disablePasswordAuthentication": "true",
+                            "ssh": {
+                                "publicKeys": [
+                                    {
+                                        "path": "/home/"+constants.admin_username+"/.ssh/authorized_keys",
+                                        "keyData": "RSA Public key here"}
+                                ]
                             }
-                        },
-                        "storageProfile": {
-                            "imageReference": {
-                                "publisher": constants.image_reference_publisher,
-                                "offer": constants.image_reference_offer,
-                                "sku" : constants.image_reference_sku,
-                                "version":constants.vm_version
-                            },
-                            "osDisk" : {
-                                "name": constants.os_disk_name,
-                                "vhd": {
-                                    "uri": "http://"+storage_account_name+"blob.core.windows.net/vhds/osdisk.vhd"
-                                },
-                                "caching": "ReadWrite",
-                                "createOption": "FromImage"
-                            }
-                        },
-                        "networkProfile": {
-                            "networkInterfaces": [
-                                {
-                                    "id": "/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Network/networkInterfaces/"+nic_name
-                                }
-                            ]
                         }
+                    },
+                    "storageProfile": {
+                        "imageReference": {
+                            "publisher": constants.image_reference_publisher,
+                            "offer": constants.image_reference_offer,
+                            "sku" : constants.image_reference_sku,
+                            "version":constants.vm_version
+                        },
+                        "osDisk" : {
+                            "name": constants.os_disk_name,
+                            "vhd": {
+                                "uri": "http://"+storage_account_name+"blob.core.windows.net/vhds/osdisk.vhd"
+                            },
+                            "caching": "ReadWrite",
+                            "createOption": "FromImage"
+                        }
+                    },
+                    "networkProfile": {
+                        "networkInterfaces": [
+                            {
+                                "id": "/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Network/networkInterfaces/"+nic_name
+                            }
+                        ]                        }
                     }
                 })
-            vm_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version
+            virtual_machine_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version
             response_vm = requests.put(url=virtual_machine_url, data=virtual_machine_params, headers=constants.headers)
             print(response_vm.text)
         except WindowsAzureConflictError:
@@ -261,20 +260,17 @@ def vm_creation_validation():
 #start_vm
 def start_vm(**_):
     subscription_id = ctx.node.properties['subscription_id']
-    start_vm_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api-version
-    response_start_vm=request.post(start_vm_url,headers=constants.headers)
+    vm_name = ctx.node.properties['vm_name']
+    resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
+    start_vm_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
+    response_start_vm=requests.post(start_vm_url,headers=constants.headers)
     print (response_start_vm.text)
     
 #stop_vm
 def stop_vm(**_):
     subscription_id = ctx.node.properties['subscription_id']
-    stop_vm_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api-version
-    response_stop_vm=request.post(stop_vm_url,headers=constants.headers)
+    vm_name = ctx.node.properties['vm_name']
+    resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
+    stop_vm_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
+    response_stop_vm=requests.post(stop_vm_url,headers=constants.headers)
     print (response_stop_vm.text)
-
-
-
-
-
-
-
