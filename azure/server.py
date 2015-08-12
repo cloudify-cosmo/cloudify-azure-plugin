@@ -141,19 +141,38 @@ def create_vnet(**_):
         else:
             ctx.logger.info("Virtual Network " + vnet_name + " creation validation failed.")
             sys.exit(1)
+@operation
+def create_public_ip(**_):
+    vm_name=ctx.node.properties['vm_name']
+    public_ip_name=:vm_name+'_pip'
+    subscription_id = ctx.node.properties['subscription_id']
+    location = ctx.node.properties['location']
+    resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
+    public_ip_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version={api-version}='+constants.api_version
+    if public_ip_name not in [public_ip_name for pip in utils.list_all_public_ips()]:
+        try:
+            ctx.logger.info("Associating VM with new public ip : " + public_ip_name)
 
-#create public ip:
-pip_params=json.dumps({
-    "location": "West US",
-    "name":vm_name+'_pip',
-    "properties": {
-        "publicIPAllocationMethod": "Static",
-    }
-}
-)
-pip_url='https://management.azure.com/subscriptions/79c57714-7a07-445e-9dd7-f3a5318bb44e/resourceGroups/'+vm_name+'_rg/providers/microsoft.network/publicIPAddresses/'+vm_name+'_pip?api-version=2015-05-01-preview'
-response_pip = requests.put(url=pip_url, data=pip_params, headers=headers)
-print(response_pip.text)
+
+            public_ip_params=json.dumps({
+                    "location": location,
+                    "name":public_ip_name,
+                    "properties": {
+                        "publicIPAllocationMethod": "Static",
+                        "idleTimeoutInMinutes": 4,
+
+                    }
+                }
+
+                )
+        except WindowsAzureConflictError:
+            ctx.logger.info("Public IP" + public_ip_name + "could not be created.")
+        sys.exit(1)
+    else:
+        ctx.logger.info("Public IP" + public_ip_name + "has already been assigned to another VM")
+
+
+
 
 @operation
 #nic:
