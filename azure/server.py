@@ -16,8 +16,8 @@
 # Built-in Imports
 import requests
 import json
-from azure import constants
-from azure import utils
+import constants
+import utils
 import sys
 from cloudify.exceptions import NonRecoverableError
 from azure import WindowsAzureConflictError
