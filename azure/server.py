@@ -142,6 +142,19 @@ def create_vnet(**_):
             ctx.logger.info("Virtual Network " + vnet_name + " creation validation failed.")
             sys.exit(1)
 
+#create public ip:
+pip_params=json.dumps({
+    "location": "West US",
+    "name":vm_name+'_pip',
+    "properties": {
+        "publicIPAllocationMethod": "Static",
+    }
+}
+)
+pip_url='https://management.azure.com/subscriptions/79c57714-7a07-445e-9dd7-f3a5318bb44e/resourceGroups/'+vm_name+'_rg/providers/microsoft.network/publicIPAddresses/'+vm_name+'_pip?api-version=2015-05-01-preview'
+response_pip = requests.put(url=pip_url, data=pip_params, headers=headers)
+print(response_pip.text)
+
 @operation
 #nic:
 def create_nic():
@@ -161,6 +174,9 @@ def create_nic():
                                     "id":"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Network/virtualNetworks/"+vnet_name+"/subnets/"+constants.subnet_name
                                 },
                                 "privateIPAllocationMethod":"Dynamic",
+                                "publicIPAddress":{
+                        "id":'/subscriptions/79c57714-7a07-445e-9dd7-f3a5318bb44e/resourceGroups/'+vm_name+'_rg/providers/Microsoft.Network/publicIPAddresses/'+vm_name+'_pip'
+                    }
                             }
                         }
                     ],
