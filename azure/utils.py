@@ -58,6 +58,17 @@ def list_all_vnets(**_):
 
     #vnet_list= #extract vnet_name
     #return vnet_list
+    
+@operation
+def list_all_nics(**_):
+    resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
+    subscription_id = ctx.node.properties['subscription_id']
+    list_nics_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkInterfaces?api-version='+constants.api_version
+    list_nic = requests.get(url=list_nics_url, headers = constants.headers)
+    print list_nic.text
+
+    #nic_list= #extract nic_name
+    #return nic_list
 
 
 @operation
