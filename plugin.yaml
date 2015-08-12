@@ -1,49 +1,64 @@
 ##################################################################################
-# Cloudify Mircosoft Azure types and plugins definitions.
+# Cloudify Azure built in types and plugins definitions.
 ##################################################################################
 
 plugins:
-  microsoft:
+  azure:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/1.2.zip
+    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/1.3m4.zip
 
 node_types:
-  cloudify.azure.nodes.Instance:
+  cloudify.aws.nodes.Instance:
     derived_from: cloudify.nodes.Compute
-    properties:
-      use_external_resource:
-        description: >
-          Indicate whether the resource exists or if Cloudify should create the resource.
-        type: boolean
-        default: false
-      TDB...
-	  TDB...
-    interfaces:
-      cloudify.interfaces.lifecycle:
-        create:
-          implementation: microsoft.azure.server.create_vm
-        start:
-          implementation: microsoft.azure.server.start_vm
-        stop:
-          implementation: microsoft.azure.server.stop_vm
-        delete:
-          implementation: microsoft.azure.delete.delete_virtual_machine
-      cloudify.interfaces.validation:
-        creation:
-          implementation: microsoft.azure.server.vm_creation_validation
-
-  cloudify.azure.nodes.ElasticIP:
-    derived_from: cloudify.nodes.VirtualIP
     properties:
       location:
         description: >
-          The location where the resource group would be created.
-        type: String
-        default: ''
-      resource_group_name:
+          Indicates the location where VM will be provisioned
+        type: string
+        default:'West US'
+      subscription_id:
         description: >
-          The name of resource group where the VM has to be created.
-        type: String
-        default: ''
-        
-        TBD
+          Indicates the subscription id of user account
+        type: string
+        default:''
+      vm_name:
+        description: >
+          Indicates the name of the virtual machine
+        type: string
+        default:'my_vm'
+      vm_size:
+        description: >
+          Indicates the size of VM
+        type: string
+        default: 'Standard A0'
+      vm_os_type:
+        description: >
+          Flavour of virtual machine
+        type: string
+        default:'UbuntuServer'
+     vm_admin_username:
+        description: >
+           Indicates admin username for VM
+        type: string
+        default:'UbuntuServer'
+    
+    
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: azure.server.create_vm
+        start:
+          implementation: azure.server.start_vm
+        stop:
+          implementation: azure.server.stop_vm
+        delete:
+          implementation: azure.delete.delete_virtual_machine
+      cloudify.interfaces.validation:
+        creation:
+          implementation: azure.server.vm_creation_validation
+
+  cloudify.aws.nodes.VIP:
+    derived_from: cloudify.nodes.VirtualIP
+    
+
+ 
