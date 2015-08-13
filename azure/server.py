@@ -151,7 +151,7 @@ def create_public_ip(**_):
     public_ip_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version={api-version}='+constants.api_version
     if public_ip_name not in [public_ip_name for pip in utils.list_all_public_ips()]:
         try:
-            ctx.logger.info("Associating VM with new public ip : " + public_ip_name)
+            ctx.logger.info("Creating new public ip : " + public_ip_name)
 
 
             public_ip_params=json.dumps({
@@ -171,6 +171,16 @@ def create_public_ip(**_):
     else:
         ctx.logger.info("Public IP" + public_ip_name + "has already been assigned to another VM")
 
+
+
+@operation
+def public_ip_creation_validation(**_):
+    public_ip_name = ctx.node.properties['vm_name']+'_pip'
+    if public_ip_name in [public_ip_name for pip in utils.list_all_public_ips()]:
+        ctx.logger.info("Public IP: " + public_ip_name + " successfully created.")
+    else:
+        ctx.logger.info("Public IP" + public_ip_name + " creation validation failed..")
+        sys.exit(1)
 
 
 
