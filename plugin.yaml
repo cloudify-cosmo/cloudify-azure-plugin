@@ -40,7 +40,7 @@ node_types:
         description: >
            Indicates admin username for VM
         type: string
-        default:'UbuntuServer'
+        default:'my_username'
      
      
       parameters:
