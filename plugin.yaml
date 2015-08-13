@@ -44,16 +44,7 @@ node_types:
      
      
       parameters:
-        description: >
-          The key value pair parameters allowed by Amazon API to the
-          ec2.connection.EC2Connection.run_instances command. It should be mentioned that
-          although this field is listed as optional. A non-trivial use case requires
-          that both the key_name parameter and the security_groups parameter be specified.
-        default: {}
-      azure_config:
-        description: >
-          A dictionary of values to pass to authenticate with the AWS API.
-        default: {}
+        
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
