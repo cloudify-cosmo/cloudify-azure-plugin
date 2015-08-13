@@ -8,7 +8,7 @@ plugins:
     source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/1.3m4.zip
 
 node_types:
-  cloudify.aws.nodes.Instance:
+  cloudify.azure.nodes.Instance:
     derived_from: cloudify.nodes.Compute
     properties:
       location:
