@@ -96,4 +96,11 @@ node_types:
 
     
 
+relationships:
+  cloudify.azure.relationships.instance_connected_to_public_ip:
+    derived_from: cloudify.relationships.connected_to
+    source_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        establish: azure.server.craete_public_ip
+        unlink: azure.delete.delete_public_ip
  
