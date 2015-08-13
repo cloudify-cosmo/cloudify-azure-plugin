@@ -194,8 +194,8 @@ def create_nic():
                                 },
                                 "privateIPAllocationMethod":"Dynamic",
                                 "publicIPAddress":{
-                        "id":'/subscriptions/79c57714-7a07-445e-9dd7-f3a5318bb44e/resourceGroups/'+vm_name+'_rg/providers/Microsoft.Network/publicIPAddresses/'+vm_name+'_pip'
-                    }
+                                        "id":"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Network/publicIPAddresses/"+public_ip_name
+                            }
                             }
                         }
                     ],
