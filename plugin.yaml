@@ -8,7 +8,7 @@ plugins:
     source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/1.3m4.zip
 
 node_types:
-  cloudify.azure.nodes.Instance:
+  cloudify.aws.nodes.Instance:
     derived_from: cloudify.nodes.Compute
     properties:
       location:
@@ -41,8 +41,19 @@ node_types:
            Indicates admin username for VM
         type: string
         default:'UbuntuServer'
-    
-    
+     
+     
+      parameters:
+        description: >
+          The key value pair parameters allowed by Amazon API to the
+          ec2.connection.EC2Connection.run_instances command. It should be mentioned that
+          although this field is listed as optional. A non-trivial use case requires
+          that both the key_name parameter and the security_groups parameter be specified.
+        default: {}
+      azure_config:
+        description: >
+          A dictionary of values to pass to authenticate with the AWS API.
+        default: {}
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
@@ -57,8 +68,32 @@ node_types:
         creation:
           implementation: azure.server.vm_creation_validation
 
-  cloudify.aws.nodes.VIP:
+  cloudify.azure.nodes.create_public_ip:
     derived_from: cloudify.nodes.VirtualIP
+    properties:
+      subscription_id:
+        description: >
+          Indicates the subscription id required to create public ip address. 
+      type: string
+        default: ''
+      location:
+        description: >
+         location where VM will be provisioned
+      type: string
+         default:'West US'
+      publicIPAllocationMethod:
+        description: >
+          Indicates how the IP address will be allocated. It can be either dynamically or statically
+      type: string
+         default: 'Dynamic'
+
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create: azure.server.create_public_ip
+        delete: azure.delete.delete_public_ip
+      cloudify.interfaces.validation:
+        creation: azure.server.public_ip_creation_validation
+
     
 
  
