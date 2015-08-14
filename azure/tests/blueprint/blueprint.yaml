@@ -1,3 +1,129 @@
-TBD...
+# DSL version, should appear in the main blueprint.yaml
+# and may appear in other imports. In such case, the versions must match
+tosca_definitions_version: cloudify_dsl_1_1
 
-Look at https://github.com/cloudify-cosmo/cloudify-aws-plugin/blob/1.2/ec2/tests/blueprint/blueprint.yaml for more examples
+imports:
+    - http://www.getcloudify.org/spec/cloudify/3.3m4/types.yaml
+    - plugin.yaml
+
+inputs:
+  
+  subscription_id:
+    type: string
+    default: ''
+
+  location:
+    type: string
+    default: 'West US'  
+
+  vm_name:
+    type: string
+    default: 'my_vm'
+
+  vm_size: 
+    type: string
+    default: 'Standard A0'
+  
+  vm_os_type:
+    type: string
+    default: 'UbuntuServer'
+ 
+
+ vm_admin_username:
+    type: string
+    default: 'my_username'
+
+ key_data:
+    type: string
+    default: ''
+
+ client_id:
+    type: string
+    default: ''
+
+ redirect_uri:
+    type: string
+    default: 'Dynamic'
+
+node_templates:
+
+   agent_server:
+    type: cloudify.azure.nodes.VirtualMachine
+    properties:
+      vm_name: { get_input: vm_name }
+      vm_type: { get_input: vm_os_type}
+      vm_size: { get_input: vm_size}
+      vm_admin_username= { get_input: vm_admin_username}
+      key_data: { get_input: key_data}
+      parameters:
+        subscription_id:{ get_input: subscription_id}
+        location:{ get_input: location }
+        
+    relationships:
+      - target: resource_group
+        type: cloudify.azure.relationships.instance_contained_in_resource_group
+      - target: public_ip
+        type: cloudify.azure.relationships.instance_connected_to_public_ip
+      - target: storage_account
+        type: cloudify.azure.relationships.instance_connected_to_storage_account
+      - target: nic
+        type: cloudify.azure.relationships.instance_connected_to_nic
+      
+
+  agent_resource_group:
+    type: cloudify.azure.nodes.ResourceGroup
+    properties:
+      resource_group_name: { get_input: vm_name }
+      location: { get_input: location}
+      
+      parameters:
+        subscription_id:{ get_input: subscription_id}
+        
+
+
+  agent_storage_account:
+    type: cloudify.azure.nodes.StorageAccount
+    properties:
+      storage_account_name: { get_input: vm_name }
+      location: { get_input: location}
+      
+      parameters:
+        subscription_id:{ get_input: subscription_id}
+        
+   
+
+  agent_ip:
+    type: cloudify.azure.nodes.PublicIP
+     properties:
+      storage_account_name: { get_input: vm_name }
+      location: { get_input: location}
+      ipAllocationMethod: {}
+     parameters:
+        subscription_id:{ get_input: subscription_id}
+    
+
+  agent_nic:
+    type: cloudify.azure.nodes.NIC
+    properties:
+      nic_name: { get_input: vm_name }
+      location: { get_input: location}
+      
+      parameters:
+         subscription_id:{ get_input: subscription_id}
+
+  agent_vnet:
+    type: cloudify.nodes.VirtualNetwork
+    properties:
+      vnet_name: { get_input: vm_name }
+      location: { get_input: location}
+      
+      parameters:
+         subscription_id:{ get_input: subscription_id}
+
+
+  
+plugins:
+    azure:
+        executor: central_deployment_agent
+        install: false
+
