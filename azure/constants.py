@@ -16,13 +16,13 @@
 # Look at https://github.com/cloudify-cosmo/cloudify-aws-plugin/blob/1.2/ec2/constants.py
 
 # instance module constants
-
+import utils
 
 subscription_id = 'REPLACE_WITH_SUBSCRIPTION_ID'
 
 COMMON_REQ_PROPERTIES=['subscription_id','location']
 
-credentials = <Bearer token>
+credentials = utils.generate_credentials()
 headers = {"Content-Type": "application/json", "Authorization": credentials}
 head = {"Authorization": credentials}
 api_version='2015-05-01-preview'
