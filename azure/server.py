@@ -62,6 +62,7 @@ def create_resource_group(**_):
     else:
         ctx.logger.info("Resource Group " + resource_group_name + " has already been provisioned")
 
+
 @operation
 def resource_group_creation_validation(**_):
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
@@ -70,8 +71,6 @@ def resource_group_creation_validation(**_):
     else:
         ctx.logger.info("Resource Group " + resource_group_name + " creation validation failed.")
         sys.exit(1)
-
-
 
 
 @operation
@@ -96,6 +95,7 @@ def create_storage_account(**_):
     else:
         ctx.logger.info("Storage Account " + storage_account_name + "has already been provisioned by another user.")
 
+
 @operation
 def storage_account_creation_validation(**_):
     storage_account_name = ctx.node.properties['vm_name']+'_storage_group'
@@ -104,8 +104,6 @@ def storage_account_creation_validation(**_):
     else:
         ctx.logger.info("Storage Account " + storage_account_name + " creation validation failed..")
         sys.exit(1)
-
-
 
 
 @operation
@@ -132,15 +130,18 @@ def create_vnet(**_):
             sys.exit(1)
     else:
         ctx.logger.info("Virtual Network" + vnet_name + "has already been provisioned by another user.")
+ 
     
-    
-    def vnet_creation_validation(**_):
-        ctx.node.properties['vm_name']+'_vnet'
-        if vnet_name in [vnet_name for vnet in utils.list_all_vnets()]:
-            ctx.logger.info("Virtual Network: " + vnet_name + " successfully created.")
-        else:
-            ctx.logger.info("Virtual Network " + vnet_name + " creation validation failed.")
-            sys.exit(1)
+@operation    
+def vnet_creation_validation(**_):
+    ctx.node.properties['vm_name']+'_vnet'
+    if vnet_name in [vnet_name for vnet in utils.list_all_vnets()]:
+        ctx.logger.info("Virtual Network: " + vnet_name + " successfully created.")
+    else:
+        ctx.logger.info("Virtual Network " + vnet_name + " creation validation failed.")
+        sys.exit(1)
+        
+        
 @operation
 def create_public_ip(**_):
     vm_name=ctx.node.properties['vm_name']
@@ -152,25 +153,20 @@ def create_public_ip(**_):
     if public_ip_name not in [public_ip_name for pip in utils.list_all_public_ips()]:
         try:
             ctx.logger.info("Creating new public ip : " + public_ip_name)
-
-
             public_ip_params=json.dumps({
                     "location": location,
                     "name":public_ip_name,
                     "properties": {
                         "publicIPAllocationMethod": "Static",
                         "idleTimeoutInMinutes": 4,
-
                     }
                 }
-
-                )
+            )
         except WindowsAzureConflictError:
             ctx.logger.info("Public IP" + public_ip_name + "could not be created.")
         sys.exit(1)
     else:
         ctx.logger.info("Public IP" + public_ip_name + "has already been assigned to another VM")
-
 
 
 @operation
@@ -181,7 +177,6 @@ def public_ip_creation_validation(**_):
     else:
         ctx.logger.info("Public IP" + public_ip_name + " creation validation failed..")
         sys.exit(1)
-
 
 
 @operation
@@ -212,9 +207,9 @@ def create_nic():
                 }
             })
     nic_url="https://management.azure.com/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
-
     response_nic = requests.put(url=nic_url, data=nic_params, headers=constants.headers)
     print(response_nic.text)
+   
     
 @operation
 def nic_creation_validation(**_):
@@ -226,9 +221,7 @@ def nic_creation_validation(**_):
         sys.exit(1)
 
 
-
 #virtualmachine:
-
 @operation
 def create_vm(**_):
 
@@ -304,6 +297,7 @@ def create_vm(**_):
      ctx.logger.info("Virtual Machine" + vm_name + "has already been provisioned by another user.")
 
 
+@operation
 def vm_creation_validation():
     vm_name = ctx.node.properties['vm_name']
     if vm_name in [vm_name for vms in utils.list_all_virtual_machines()]:
@@ -311,8 +305,10 @@ def vm_creation_validation():
     else:
         ctx.logger.info("Virtual Machine " + vm_name + " creation validation failed.")
         sys.exit(1)
+
         
 #start_vm
+@operation
 def start_vm(**_):
     subscription_id = ctx.node.properties['subscription_id']
     vm_name = ctx.node.properties['vm_name']
@@ -321,7 +317,9 @@ def start_vm(**_):
     response_start_vm=requests.post(start_vm_url,headers=constants.headers)
     print (response_start_vm.text)
     
+    
 #stop_vm
+@operation
 def stop_vm(**_):
     subscription_id = ctx.node.properties['subscription_id']
     vm_name = ctx.node.properties['vm_name']
