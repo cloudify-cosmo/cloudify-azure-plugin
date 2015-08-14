@@ -8,7 +8,7 @@ plugins:
     source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/1.3m4.zip
 
 node_types:
-  cloudify.azure.nodes.Instance:
+  cloudify.azure.nodes.VirtualMachine:
     derived_from: cloudify.nodes.Compute
     properties:
       location:
@@ -42,9 +42,22 @@ node_types:
         type: string
         default:'my_username'
      
-     
-      parameters:
-        
+     keyData:
+        description: >
+           Indicates the ssh key data of the user
+        type: string
+        default:''
+    client_id:
+        description: >
+           Indicates the client id required to create VM
+        type: string
+        default:''
+    redirect_uri:
+        description: >
+           Indicates the redirect uri required to create VM
+        type: string
+        default:''
+    
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
@@ -59,7 +72,7 @@ node_types:
         creation:
           implementation: azure.server.vm_creation_validation
 
-  cloudify.azure.nodes.create_public_ip:
+  cloudify.azure.nodes.PublicIP:
     derived_from: cloudify.nodes.VirtualIP
     properties:
       subscription_id:
@@ -87,11 +100,103 @@ node_types:
 
     
 
+  cloudify.azure.nodes.StorageAccount:
+     derived_from: cloudify.nodes.Container
+    properties:
+      subscription_id:
+        description: >
+          Indicates the subscription id required to create public ip address. 
+      type: string
+        default: ''
+      location:
+        description: >
+         location where VM will be provisioned
+      type: string
+         default:'West US'
+      vm_name:
+        description: >
+          Indicates the name of the virtual machine
+        type: string
+        default:'my_vm'
+      
+
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create: azure.server.create_storage_account
+        delete: azure.delete.delete_storage_account
+      cloudify.interfaces.validation:
+        creation: azure.server.storage_account_creation_validation
+
+    
+
+
+
+  cloudify.azure.nodes.NIC:
+     derived_from: cloudify.nodes.Root
+    properties:
+      subscription_id:
+        description: >
+          Indicates the subscription id required to create network interface card. 
+      type: string
+        default: ''
+      location:
+        description: >
+         location where VM will be provisioned
+      type: string
+         default:'West US'
+       vm_name:
+        description: >
+          Indicates the name of the virtual machine required to create network interface card
+        type: string
+        default:'my_vm'
+      
+      
+
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create: azure.server.create_nic
+        delete: azure.delete.delete_nic
+      cloudify.interfaces.validation:
+        creation: azure.server.nic_creation_validation
+
+
+
+  cloudify.azure.nodes.VirtualNetwork:
+     derived_from: cloudify.nodes.Network
+     properties:
+      subscription_id:
+        description: >
+          Indicates the subscription id required to create virtual network. 
+      type: string
+        default: ''
+      location:
+        description: >
+         location where VM will be provisioned
+      type: string
+         default:'West US'
+       vm_name:
+        description: >
+          Indicates the name of the virtual machine required to create virtual network
+        type: string
+        default:'my_vm'
+      
+      
+
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create: azure.server.create_vnet
+        delete: azure.delete.delete_vnet
+      cloudify.interfaces.validation:
+        creation: azure.server.vnet_creation_validation
+
+
+
+
 relationships:
   cloudify.azure.relationships.instance_connected_to_public_ip:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
-        establish: azure.server.craete_public_ip
+        establish: azure.server.create_public_ip
         unlink: azure.delete.delete_public_ip
  
