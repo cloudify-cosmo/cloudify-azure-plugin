@@ -24,7 +24,6 @@ COMMON_REQ_PROPERTIES=['subscription_id','location']
 
 credentials = utils.generate_credentials()
 headers = {"Content-Type": "application/json", "Authorization": credentials}
-head = {"Authorization": credentials}
 api_version='2015-05-01-preview'
 storage_account_type = 'Standard_LRS'
 
