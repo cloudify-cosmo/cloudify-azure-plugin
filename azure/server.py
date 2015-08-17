@@ -47,7 +47,7 @@ def create_resource_group(**_):
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     location = ctx.node.properties['location']
     subscription_id = ctx.node.properties['subscription_id']
-    resource_group_url = azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version
+    resource_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version
     ctx.logger.info("Checking availability of resource_group: " + resource_group_name)
 
     if resource_group_name not in [resource_group_name for rg in utils.list_all_resource_groups()]:
@@ -85,7 +85,7 @@ def create_storage_account(**_):
     if storage_account_name not in [storage_account_name for sg in utils.list_all_storage_accounts()]:
         try:
             ctx.logger.info("Creating new storage account: " + storage_account_name)
-            storage_account_url= azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts/'+storage_account_name+'?api-version='+constants.api_version
+            storage_account_url= constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts/'+storage_account_name+'?api-version='+constants.api_version
             storage_group_params=json.dumps({"properties": {"accountType": constants.storage_account_type,}, "location": location})
             response_sg = requests.put(url=storage_account_url, data=storage_group_params, headers=constants.headers)
             print response_sg.text
@@ -115,7 +115,7 @@ def create_vnet(**_):
     vnet_name = ctx.node.properties['vm_name']+'_vnet'
     location = ctx.node.properties['location']
     subscription_id = ctx.node.properties['subscription_id']
-    vnet_url = azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
+    vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
     ctx.logger.info("Checking availability of virtual network: " + vnet_name)
 
     if vnet_name not in [vnet_name for vnet in utils.list_all_vnets()]:
@@ -149,7 +149,7 @@ def create_public_ip(**_):
     subscription_id = ctx.node.properties['subscription_id']
     location = ctx.node.properties['location']
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
-    public_ip_url=azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version={api-version}='+constants.api_version
+    public_ip_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version={api-version}='+constants.api_version
     if public_ip_name not in [public_ip_name for pip in utils.list_all_public_ips()]:
         try:
             ctx.logger.info("Creating new public ip : " + public_ip_name)
@@ -206,7 +206,7 @@ def create_nic():
                     ],
                 }
             })
-    nic_url=azure_url+"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
+    nic_url=constants.azure_url+"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
     response_nic = requests.put(url=nic_url, data=nic_params, headers=constants.headers)
     print(response_nic.text)
    
@@ -287,7 +287,7 @@ def create_vm(**_):
                         ]                        }
                     }
                 })
-            virtual_machine_url=azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version
+            virtual_machine_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version
             response_vm = requests.put(url=virtual_machine_url, data=virtual_machine_params, headers=constants.headers)
             print(response_vm.text)
         except WindowsAzureConflictError:
@@ -313,7 +313,7 @@ def start_vm(**_):
     subscription_id = ctx.node.properties['subscription_id']
     vm_name = ctx.node.properties['vm_name']
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
-    start_vm_url=azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
+    start_vm_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
     response_start_vm=requests.post(start_vm_url,headers=constants.headers)
     print (response_start_vm.text)
     
@@ -324,6 +324,6 @@ def stop_vm(**_):
     subscription_id = ctx.node.properties['subscription_id']
     vm_name = ctx.node.properties['vm_name']
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
-    stop_vm_url=azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
+    stop_vm_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
     response_stop_vm=requests.post(stop_vm_url,headers=constants.headers)
     print (response_stop_vm.text)
