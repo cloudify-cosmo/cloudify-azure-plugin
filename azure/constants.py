@@ -40,6 +40,7 @@ vm_caching = 'ReadWrite'
 vm_createOption = 'FromImage'
 admin_username='azuretest'
 vm_version="latest"
+azure_url='https://management.azure.com'
 
 RESOURCE_GROUP_REQ_PROPERTIES=['resource_group_name','location']
 STORAGE_ACCOUNT_REQUIRED_PROPERTIES = ['storage_account_name']
