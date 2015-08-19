@@ -45,9 +45,6 @@ inputs:
     type: string
     default: ''
 
- redirect_uri:
-    type: string
-    default: 'Dynamic'
 
 node_templates:
 
