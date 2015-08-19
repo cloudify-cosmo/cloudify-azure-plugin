@@ -44,6 +44,20 @@ inputs:
  client_id:
     type: string
     default: ''
+    
+ tenant_id:
+    type: string
+    default: ''
+    
+ username:
+    type: string
+    default: ''
+    
+ password:
+    type: string
+    default: ''
+    
+ 
 
 
 node_templates:
