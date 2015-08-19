@@ -5,7 +5,7 @@
 plugins:
   azure:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/1.3m4.zip
+    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin.git
 
 node_types:
   cloudify.azure.nodes.VirtualMachine:
