@@ -2,36 +2,149 @@ tosca_definitions_version: cloudify_dsl_1_1
 
 imports:
   - http://www.getcloudify.org/spec/cloudify/3.2/types.yaml
-  - REPLACE_WITH_PATH_TO_AZURE_plugin.yaml
+  - https://github.com/cloudify-cosmo/cloudify-azure-plugin/blob/master/plugin.yaml
   - http://www.getcloudify.org/spec/fabric-plugin/1.2/plugin.yaml
 
+
+imports:
+    - http://www.getcloudify.org/spec/cloudify/3.3m4/types.yaml
+    - plugin.yaml
+
 inputs:
-
-  username:
+  
+  subscription_id:
     type: string
+    default: ''
 
-  TDB	
-  ...
+  location:
+    type: string
+    default: 'West US'  
+
+  vm_name:
+    type: string
+    default: 'my_vm'
+
+  vm_size: 
+    type: string
+    default: 'Standard A0'
+  
+  vm_os_type:
+    type: string
+    default: 'UbuntuServer'
+ 
+
+ vm_admin_username:
+    type: string
+    default: 'my_username'
+
+ key_data:
+    type: string
+    default: ''
+
+ client_id:
+    type: string
+    default: ''
+
+ redirect_uri:
+    type: string
+    default: 'Dynamic'
 
 node_templates:
-  TBD ...
-  ...
-  
-  manager:
 
-    type: cloudify.nodes.CloudifyManager
-
+   agent_server:
+    type: cloudify.azure.nodes.VirtualMachine
     properties:
-      cloudify_packages:
-        agents:
-          ubuntu_agent_url: http://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.2.0/ga-RELEASE/cloudify-ubuntu-commercial-agent_3.2.0-ga-b200_amd64.deb
-          centos_agent_url: http://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.2.0/ga-RELEASE/cloudify-centos-final-agent_3.2.0-ga-b200_amd64.deb
-          windows_agent_url: http://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.2.0/ga-RELEASE/cloudify-windows-agent_3.2.0-ga-b200_amd64.deb
+      vm_name: { get_input: vm_name }
+      vm_type: { get_input: vm_os_type}
+      vm_size: { get_input: vm_size}
+      vm_admin_username= { get_input: vm_admin_username}
+      key_data: { get_input: key_data}
+      parameters:
+        subscription_id:{ get_input: subscription_id}
+        location:{ get_input: location }
+        
+    relationships:
+      - target: resource_group
+        type: cloudify.azure.relationships.instance_contained_in_resource_group
+      - target: public_ip
+        type: cloudify.azure.relationships.instance_connected_to_public_ip
+      - target: storage_account
+        type: cloudify.azure.relationships.instance_connected_to_storage_account
+      - target: nic
+        type: cloudify.azure.relationships.instance_connected_to_nic
+      
+
+  agent_resource_group:
+    type: cloudify.azure.nodes.ResourceGroup
+    properties:
+      resource_group_name: { get_input: vm_name }
+      location: { get_input: location}
+      
+      parameters:
+        subscription_id:{ get_input: subscription_id}
+        
+
+
+  agent_storage_account:
+    type: cloudify.azure.nodes.StorageAccount
+    properties:
+      storage_account_name: { get_input: vm_name }
+      location: { get_input: location}
+      
+      parameters:
+        subscription_id:{ get_input: subscription_id}
+        
+   
+
+  agent_ip:
+    type: cloudify.azure.nodes.PublicIP
+     properties:
+      storage_account_name: { get_input: vm_name }
+      location: { get_input: location}
+      ipAllocationMethod: {}
+     parameters:
+        subscription_id:{ get_input: subscription_id}
+    
+
+  agent_nic:
+    type: cloudify.azure.nodes.NIC
+    properties:
+      nic_name: { get_input: vm_name }
+      location: { get_input: location}
+      
+      parameters:
+         subscription_id:{ get_input: subscription_id}
+
+  agent_vnet:
+    type: cloudify.nodes.VirtualNetwork
+    properties:
+      vnet_name: { get_input: vm_name }
+      location: { get_input: location}
+      
+      parameters:
+         subscription_id:{ get_input: subscription_id}
+ 
+   manager:
+     type: cloudify.nodes.CloudifyManager
+   
+     properties:
+       cloudify_packages:
+         agents:
+           ubuntu_agent_url: http://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.2.0/ga-RELEASE/cloudify-ubuntu-commercial-agent_3.2.0-ga-b200_amd64.deb
+           centos_agent_url: http://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.2.0/ga-RELEASE/cloudify-centos-final-agent_3.2.0-ga-b200_amd64.deb
+           windows_agent_url: http://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.2.0/ga-RELEASE/cloudify-windows-agent_3.2.0-ga-b200_amd64.deb
         docker:
            docker_url: http://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.2.0/ga-RELEASE/cloudify-docker-commercial_3.2.0-ga-b200.tar
 
-    TBD...
-	...
+
+  
+plugins:
+    azure:
+        executor: central_deployment_agent
+        install: false
+
+
+
 
 
 
