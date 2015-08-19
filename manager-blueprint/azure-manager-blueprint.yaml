@@ -33,10 +33,6 @@ inputs:
     default: 'UbuntuServer'
  
 
- vm_admin_username:
-    type: string
-    default: 'my_username'
-
  key_data:
     type: string
     default: ''
