@@ -28,7 +28,7 @@ from cloudify.decorators import operation
 @operation
 def nic_creation_validation(**_):
     nic_name = ctx.node.properties['vm_name']+'_nic'
-    if nic_name in [nic_name for nic in utils.list_all_nics()]:
+    if nic_name in [nic_name for nic in _list_all_nics()]:
         ctx.logger.info("Network Ierface Card: " + nic_name + " successfully created.")
     else:
         ctx.logger.info("Network Interface Card" + nic_name + " creation validation failed..")
@@ -72,7 +72,7 @@ def delete_nic(**_):
     nic_name = ctx.node.properties['vm_name']+'_nic'
     subscription_id = ctx.node.properties['subscription_id']
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
-    if nic_name in [nic_name for pip in utils.list_all_nics()]:
+    if nic_name in [nic_name for pip in _list_all_nics()]:
         try:
             ctx.logger.info("Deleting NIC")
             nic_url="https://management.azure.com/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
