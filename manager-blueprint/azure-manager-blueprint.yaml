@@ -5,11 +5,6 @@ imports:
   - https://github.com/cloudify-cosmo/cloudify-azure-plugin/blob/master/plugin.yaml
   - http://www.getcloudify.org/spec/fabric-plugin/1.2/plugin.yaml
 
-
-imports:
-    - http://www.getcloudify.org/spec/cloudify/3.3m4/types.yaml
-    - plugin.yaml
-
 inputs:
   
   subscription_id:
@@ -31,7 +26,6 @@ inputs:
   vm_os_type:
     type: string
     default: 'UbuntuServer'
- 
 
   key_data:
     type: string
@@ -53,12 +47,9 @@ inputs:
     type: string
     default: ''
     
- 
-
-
 node_templates:
 
-   agent_server:
+  agent_server:
     type: cloudify.azure.nodes.VirtualMachine
     properties:
       vm_name: { get_input: vm_name }
@@ -80,78 +71,59 @@ node_templates:
       - target: nic
         type: cloudify.azure.relationships.instance_connected_to_nic
       
-
   agent_resource_group:
     type: cloudify.azure.nodes.ResourceGroup
     properties:
       resource_group_name: { get_input: vm_name }
       location: { get_input: location}
-      
       parameters:
         subscription_id:{ get_input: subscription_id}
         
-
-
   agent_storage_account:
     type: cloudify.azure.nodes.StorageAccount
     properties:
       storage_account_name: { get_input: vm_name }
       location: { get_input: location}
-      
       parameters:
         subscription_id:{ get_input: subscription_id}
         
-   
-
   agent_ip:
     type: cloudify.azure.nodes.PublicIP
      properties:
       storage_account_name: { get_input: vm_name }
       location: { get_input: location}
       ipAllocationMethod: {}
-     parameters:
+      parameters:
         subscription_id:{ get_input: subscription_id}
     
-
   agent_nic:
     type: cloudify.azure.nodes.NIC
     properties:
       nic_name: { get_input: vm_name }
       location: { get_input: location}
-      
       parameters:
-         subscription_id:{ get_input: subscription_id}
+        subscription_id:{ get_input: subscription_id}
 
   agent_vnet:
     type: cloudify.nodes.VirtualNetwork
     properties:
       vnet_name: { get_input: vm_name }
       location: { get_input: location}
-      
       parameters:
-         subscription_id:{ get_input: subscription_id}
+        subscription_id:{ get_input: subscription_id}
  
-   manager:
-     type: cloudify.nodes.CloudifyManager
-   
-     properties:
-       cloudify_packages:
-         agents:
-           ubuntu_agent_url: http://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.2.0/ga-RELEASE/cloudify-ubuntu-commercial-agent_3.2.0-ga-b200_amd64.deb
-           centos_agent_url: http://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.2.0/ga-RELEASE/cloudify-centos-final-agent_3.2.0-ga-b200_amd64.deb
-           windows_agent_url: http://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.2.0/ga-RELEASE/cloudify-windows-agent_3.2.0-ga-b200_amd64.deb
+  manager:
+    type: cloudify.nodes.CloudifyManager
+    properties:
+      cloudify_packages:
+        agents:
+          ubuntu_agent_url: http://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.2.0/ga-RELEASE/cloudify-ubuntu-commercial-agent_3.2.0-ga-b200_amd64.deb
+          centos_agent_url: http://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.2.0/ga-RELEASE/cloudify-centos-final-agent_3.2.0-ga-b200_amd64.deb
+          windows_agent_url: http://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.2.0/ga-RELEASE/cloudify-windows-agent_3.2.0-ga-b200_amd64.deb
         docker:
-           docker_url: http://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.2.0/ga-RELEASE/cloudify-docker-commercial_3.2.0-ga-b200.tar
+          docker_url: http://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.2.0/ga-RELEASE/cloudify-docker-commercial_3.2.0-ga-b200.tar
 
-
-  
 plugins:
     azure:
         executor: central_deployment_agent
         install: false
-
-
-
-
-
-
