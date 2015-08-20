@@ -33,23 +33,23 @@ inputs:
     default: 'UbuntuServer'
  
 
- key_data:
+  key_data:
     type: string
     default: ''
 
- client_id:
+  client_id:
     type: string
     default: ''
     
- tenant_id:
+  tenant_id:
     type: string
     default: ''
     
- username:
+  username:
     type: string
     default: ''
     
- password:
+  password:
     type: string
     default: ''
     
