@@ -90,7 +90,7 @@ node_templates:
         
   agent_ip:
     type: cloudify.azure.nodes.PublicIP
-     properties:
+    properties:
       storage_account_name: { get_input: vm_name }
       location: { get_input: location}
       ipAllocationMethod: {}
