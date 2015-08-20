@@ -43,28 +43,37 @@ def create_nic():
     location = ctx.node.properties['location']
     subscription_id = ctx.node.properties['subscription_id']
     vnet_name = ctx.node.properties['vm_name']+'_vnet'
-    nic_params=json.dumps({
-                "location":location,
-                "properties":{
-                    "ipConfigurations":[
-                        {
-                            "name":constants.ip_config_name,
-                            "properties":{
-                                "subnet":{
-                                    "id":"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Network/virtualNetworks/"+vnet_name+"/subnets/"+constants.subnet_name
-                                },
-                                "privateIPAllocationMethod":"Dynamic",
-                                "publicIPAddress":{
-                                        "id":"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Network/publicIPAddresses/"+public_ip_name
-                            }
-                            }
+    ctx.logger.info("Checking availability of network interface card: " + nic_name)
+    if nic_name not in [nic_name for nic in _list_all_virtual_machines()]:
+        try:
+            ctx.logger.info("Creating new network interface card: " + nic_name)
+            nic_params=json.dumps({
+                        "location":location,
+                        "properties":{
+                            "ipConfigurations":[
+                                {
+                                    "name":constants.ip_config_name,
+                                    "properties":{
+                                        "subnet":{
+                                            "id":"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Network/virtualNetworks/"+vnet_name+"/subnets/"+constants.subnet_name
+                                        },
+                                        "privateIPAllocationMethod":"Dynamic",
+                                        "publicIPAddress":{
+                                                "id":"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Network/publicIPAddresses/"+public_ip_name
+                                    }
+                                    }
+                                }
+                            ],
                         }
-                    ],
-                }
-            })
-    nic_url=constants.azure_url+"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
-    response_nic = requests.put(url=nic_url, data=nic_params, headers=constants.headers)
-    print(response_nic.text)
+                    })
+            nic_url=constants.azure_url+"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
+            response_nic = requests.put(url=nic_url, data=nic_params, headers=constants.headers)
+            print(response_nic.text)
+        except WindowsAzureConflictError:
+          ctx.logger.info("network interface card " + nic_name + "could not be created.")
+          sys.exit(1)
+    else:
+     ctx.logger.info("network interface card" + nic_name + "has already been provisioned by another user.")
    
 
 @operation
