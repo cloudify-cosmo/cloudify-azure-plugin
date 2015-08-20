@@ -52,11 +52,24 @@ node_types:
            Indicates the client id required to create VM
         type: string
         default:''
-    redirect_uri:
+    
+    tenant_id:
         description: >
-           Indicates the redirect uri required to create VM
+           Indicates the tenant id required to create VM
         type: string
         default:''
+    username:
+        description: >
+           Indicates the username 
+        type: string
+        default:''
+        
+    password:
+        description: >
+           Indicates the password of the user.  
+        type: string
+        default:''
+    
     
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -127,9 +140,6 @@ node_types:
       cloudify.interfaces.validation:
         creation: azure.server.storage_account_creation_validation
 
-    
-
-
 
   cloudify.azure.nodes.NIC:
      derived_from: cloudify.nodes.Root
@@ -160,7 +170,6 @@ node_types:
         creation: azure.server.nic_creation_validation
 
 
-
   cloudify.azure.nodes.VirtualNetwork:
      derived_from: cloudify.nodes.Network
      properties:
@@ -180,8 +189,6 @@ node_types:
         type: string
         default:'my_vm'
       
-      
-
     interfaces:
       cloudify.interfaces.lifecycle:
         create: azure.server.create_vnet
