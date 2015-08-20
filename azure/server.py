@@ -30,7 +30,7 @@ from cloudify.decorators import operation
 @operation
 def vm_creation_validation():
     vm_name = ctx.node.properties['vm_name']
-    if vm_name in [vm_name for vms in utils.list_all_virtual_machines()]:
+    if vm_name in [vm_name for vms in _list_all_virtual_machines()]:
         ctx.logger.info("Virtual Machine: " + vm_name + " successfully created.")
     else:
         ctx.logger.info("Virtual Machine " + vm_name + " creation validation failed.")
@@ -51,7 +51,7 @@ def create_vm(**_):
     vm_name = ctx.node.properties['vm_name']
     subscription_id = ctx.node.properties['subscription_id']
     ctx.logger.info("Checking availability of virtual network: " + vm_name)
-    if vm_name not in [vm_name for vm in utils.list_all_virtual_machines()]:
+    if vm_name not in [vm_name for vm in _list_all_virtual_machines()]:
         try:
             ctx.logger.info("Creating new virtual machine: " + vm_name)
             virtual_machine_params=json.dumps(
@@ -140,7 +140,7 @@ def delete_virtual_machine(**_):
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
     ctx.logger.info("Checking availability of virtual network: " + vm_name)
-    if vm_name in [vm_name for vm in utils.list_all_virtual_machines()]:
+    if vm_name in [vm_name for vm in _list_all_virtual_machines()]:
         try:
             ctx.logger.info("Deleting the virtual machine: " + vm_name)
             vm_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version
