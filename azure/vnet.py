@@ -29,7 +29,7 @@ from cloudify.decorators import operation
 @operation    
 def vnet_creation_validation(**_):
     ctx.node.properties['vm_name']+'_vnet'
-    if vnet_name in [vnet_name for vnet in utils.list_all_vnets()]:
+    if vnet_name in [vnet_name for vnet in _list_all_vnets()]:
         ctx.logger.info("Virtual Network: " + vnet_name + " successfully created.")
     else:
         ctx.logger.info("Virtual Network " + vnet_name + " creation validation failed.")
@@ -48,7 +48,7 @@ def create_vnet(**_):
     vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
     ctx.logger.info("Checking availability of virtual network: " + vnet_name)
 
-    if vnet_name not in [vnet_name for vnet in utils.list_all_vnets()]:
+    if vnet_name not in [vnet_name for vnet in _list_all_vnets()]:
         try:
             ctx.logger.info("Creating new virtual network: " + vnet_name)
     
@@ -68,7 +68,7 @@ def delete_vnet(**_):
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
     ctx.logger.info("Checking availability of virtual network: " + vnet_name)
-    if vnet_name  in [vnet_name for vnet in utils.list_all_virtual_networks()]:
+    if vnet_name  in [vnet_name for vnet in _list_all_virtual_networks()]:
         try:
             ctx.logger.info("Deleting the virtual network: " + vnet_name)
             vnet_url = 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
