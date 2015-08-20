@@ -36,35 +36,29 @@ node_types:
           Flavour of virtual machine
         type: string
         default:'UbuntuServer'
-     vm_admin_username:
-        description: >
-           Indicates admin username for VM
-        type: string
-        default:'my_username'
-     
-     keyData:
+      keyData:
         description: >
            Indicates the ssh key data of the user
         type: string
         default:''
-    client_id:
+      client_id:
         description: >
            Indicates the client id required to create VM
         type: string
         default:''
     
-    tenant_id:
+      tenant_id:
         description: >
            Indicates the tenant id required to create VM
         type: string
         default:''
-    username:
+      username:
         description: >
            Indicates the username 
         type: string
         default:''
         
-    password:
+      password:
         description: >
            Indicates the password of the user.  
         type: string
