@@ -50,66 +50,6 @@ def validate_node_properties(key, ctx_node_properties):
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
 
 
-@operation
-def list_all_resource_groups(**_):
-    subscription_id = ctx.node.properties['subscription_id']
-    list_resource_groups_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourcegroups?api-version='+constants.api_version
-    list_rg=requests.get(url=list_resource_groups_url, headers=constants.headers)
-    print list_rg.text
-    #rg_list= extract from json file
-    #return rg_list
-
-@operation
-def list_all_storage_accounts(**_):
-    resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
-    subscription_id = ctx.node.properties['subscription_id']
-    list_storage_accounts_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts?api-version='+constants.api_version
-    list_sg = requests.get(url=list_storage_accounts_url, headers = constants.headers)
-    print list_sg.text
-    #sg_account_name_list= #extract sg_name
-    #return sg_account_name_list
-
-@operation
-def list_all_vnets(**_):
-    resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
-    subscription_id = ctx.node.properties['subscription_id']
-    list_vnets_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualnetworks?api-version='+constants.api_version
-    list_vnet = requests.get(url=list_vnets_url, headers = constants.headers)
-    print list_vnet.text
-
-    #vnet_list= #extract vnet_name
-    #return vnet_list
-
-@operation
-def list_all_public_ips(**_):
-    resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
-    subscription_id = ctx.node.properties['subscription_id']
-    list_public_ips_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses?api-version='+constants.api_version
-    list_public_ips = requests.get(url=list_public_ips_url, headers = constants.headers)
-    print list_public_ips.text
-    #public_ips_list= #extract public_ips
-    #return public_ips_list
-
-    
-@operation
-def list_all_nics(**_):
-    resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
-    subscription_id = ctx.node.properties['subscription_id']
-    list_nics_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkInterfaces?api-version='+constants.api_version
-    list_nic = requests.get(url=list_nics_url, headers = constants.headers)
-    print list_nic.text
-
-    #nic_list= #extract nic_name
-    #return nic_list
 
 
-@operation
-def list_all_virtual_machines(**_):
-    resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
-    subscription_id = ctx.node.properties['subscription_id']
-    list_virtual_machines_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualmachines?api-version='+constants.api_version
-    list_vms = requests.get(url=list_virtual_machines_url, headers = constants.headers)
-    print list_vms.text
-    #vm_list= #extract vnet_name
-    #return vm_list
 
