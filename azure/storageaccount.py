@@ -28,7 +28,7 @@ from cloudify.decorators import operation
 @operation
 def storage_account_creation_validation(**_):
     storage_account_name = ctx.node.properties['vm_name']+'_storage_account'
-    if storage_account_name in [storage_account_name for sa in utils.list_all_storage_accounts()]:
+    if storage_account_name in [storage_account_name for sa in _list_all_storage_accounts()]:
         ctx.logger.info("Storage account: " + storage_account_name + " successfully created.")
     else:
         ctx.logger.info("Storage Account " + storage_account_name + " creation validation failed..")
@@ -44,7 +44,7 @@ def create_storage_account(**_):
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
     ctx.logger.info("Checking availability of storage account: " + storage_account_name)
-    if storage_account_name not in [storage_account_name for sa in utils.list_all_storage_accounts()]:
+    if storage_account_name not in [storage_account_name for sa in _list_all_storage_accounts()]:
         try:
             ctx.logger.info("Creating new storage account: " + storage_account_name)
             storage_account_url= constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts/'+storage_account_name+'?api-version='+constants.api_version
@@ -64,7 +64,7 @@ def delete_storage_account(**_):
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
     ctx.logger.info("Deleting Storage Account"+storage_account_name)
-    if storage_account_name in [storage_account_name for sa in utils.list_all_storage_account()]:
+    if storage_account_name in [storage_account_name for sa in _list_all_storage_account()]:
         try:
             storage_account_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts/'+storage_account_name+'?api-version='+constants.api_version
             response_sa = requests.delete(url=storage_account_url,headers=constants.headers)
