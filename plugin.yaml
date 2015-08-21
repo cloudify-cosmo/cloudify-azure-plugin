@@ -161,7 +161,7 @@ node_types:
       subscription_id:
         description: >
           Indicates the subscription id required to create virtual network. 
-      type: string
+        type: string
         default: ''
       location:
         description: >
