@@ -91,7 +91,7 @@ node_types:
         description: >
          location where VM will be provisioned
       type: string
-         default:'West US'
+         default: 'West US'
       publicIPAllocationMethod:
         description: >
           Indicates how the IP address will be allocated. It can be either dynamically or statically
@@ -119,12 +119,12 @@ node_types:
         description: >
          location where VM will be provisioned
       type: string
-         default:'West US'
+         default: 'West US'
       vm_name:
         description: >
           Indicates the name of the virtual machine
         type: string
-        default:'my_vm'
+        default: 'my_vm'
       
 
     interfaces:
@@ -147,12 +147,12 @@ node_types:
         description: >
          location where VM will be provisioned
       type: string
-         default:'West US'
+         default: 'West US'
        vm_name:
         description: >
           Indicates the name of the virtual machine required to create network interface card
         type: string
-        default:'my_vm'
+        default: 'my_vm'
       
       
 
@@ -176,12 +176,12 @@ node_types:
         description: >
          location where VM will be provisioned
       type: string
-         default:'West US'
+         default: 'West US'
        vm_name:
         description: >
           Indicates the name of the virtual machine required to create virtual network
         type: string
-        default:'my_vm'
+        default: 'my_vm'
       
     interfaces:
       cloudify.interfaces.lifecycle:
