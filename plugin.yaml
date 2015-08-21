@@ -8,7 +8,33 @@ plugins:
     source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/master.zip
 
 node_types:
-  cloudify.azure.nodes.VirtualMachine:
+  cloudify.azure.nodes.ResourceGroup:
+    derived_from: cloudify.nodes.Root
+    properties:
+      subscription_id:
+        description: >
+          Indicates the subscription id required to create resource group
+        type: string
+        default: ''
+      location:
+        description: >
+         location where VM will be provisioned
+        type: string
+        default: 'West US'
+      vm_name:
+        description: >
+          Indicates the name of the virtual machine required to create resource group
+        type: string
+        default: 'my_vm'
+      
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create: azure.resourcegroup.create_resource_group
+        delete: azure.resourcegroup.delete_resource_group
+      cloudify.interfaces.validation:
+        creation: azure.resourcegroup.resource_group_creation_validation
+        
+  cloudify.azure.nodes.Server:
     derived_from: cloudify.nodes.Compute
     properties:
       location:
@@ -36,30 +62,9 @@ node_types:
           Flavour of virtual machine
         type: string
         default: 'UbuntuServer'
-      keyData:
+      key_data:
         description: >
-           Indicates the ssh key data of the user
-        type: string
-        default: ''
-      client_id:
-        description: >
-           Indicates the client id required to create VM
-        type: string
-        default: ''
-    
-      tenant_id:
-        description: >
-           Indicates the tenant id required to create VM
-        type: string
-        default: ''
-      username:
-        description: >
-           Indicates the username 
-        type: string
-        default: ''
-      password:
-        description: >
-           Indicates the password of the user.  
+           Indicates the ssh public-key data of the user
         type: string
         default: ''
     
@@ -72,7 +77,7 @@ node_types:
         stop:
           implementation: azure.server.stop_vm
         delete:
-          implementation: azure.delete.delete_virtual_machine
+          implementation: azure.server.delete_virtual_machine
       cloudify.interfaces.validation:
         creation:
           implementation: azure.server.vm_creation_validation
@@ -90,18 +95,18 @@ node_types:
          location where VM will be provisioned
         type: string
         default: 'West US'
-      publicIPAllocationMethod:
+      vm_name:
         description: >
-          Indicates how the IP address will be allocated. It can be either dynamically or statically
+          Indicates the name of the virtual machine
         type: string
-        default: 'Dynamic'
+        default: 'my_vm'     
 
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: azure.server.create_public_ip
-        delete: azure.delete.delete_public_ip
+        create: azure.publicip.create_public_ip
+        delete: azure.publicip.delete_public_ip
       cloudify.interfaces.validation:
-        creation: azure.server.public_ip_creation_validation
+        creation: azure.publicip.public_ip_creation_validation
 
   cloudify.azure.nodes.StorageAccount:
     derived_from: cloudify.nodes.Container
@@ -124,10 +129,10 @@ node_types:
       
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: azure.server.create_storage_account
-        delete: azure.delete.delete_storage_account
+        create: azure.storageaccount.create_storage_account
+        delete: azure.storageaccount.delete_storage_account
       cloudify.interfaces.validation:
-        creation: azure.server.storage_account_creation_validation
+        creation: azure.storageaccount.storage_account_creation_validation
 
   cloudify.azure.nodes.NIC:
     derived_from: cloudify.nodes.Root
@@ -150,12 +155,12 @@ node_types:
       
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: azure.server.create_nic
-        delete: azure.delete.delete_nic
+        create: azure.nic.create_nic
+        delete: azure.nic.delete_nic
       cloudify.interfaces.validation:
-        creation: azure.server.nic_creation_validation
+        creation: azure.nic.nic_creation_validation
 
-  cloudify.azure.nodes.VirtualNetwork:
+  cloudify.azure.nodes.VNET:
     derived_from: cloudify.nodes.Network
     properties:
       subscription_id:
@@ -176,10 +181,10 @@ node_types:
       
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: azure.server.create_vnet
-        delete: azure.delete.delete_vnet
+        create: azure.vnet.create_vnet
+        delete: azure.vnet.delete_vnet
       cloudify.interfaces.validation:
-        creation: azure.server.vnet_creation_validation
+        creation: azure.vnet.vnet_creation_validation
 
 relationships:
   cloudify.azure.relationships.instance_connected_to_public_ip:
