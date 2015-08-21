@@ -85,18 +85,18 @@ node_types:
       subscription_id:
         description: >
           Indicates the subscription id required to create public ip address. 
-      type: string
+        type: string
         default: ''
       location:
         description: >
          location where VM will be provisioned
-      type: string
-         default: 'West US'
+        type: string
+        default: 'West US'
       publicIPAllocationMethod:
         description: >
           Indicates how the IP address will be allocated. It can be either dynamically or statically
-      type: string
-         default: 'Dynamic'
+        type: string
+        default: 'Dynamic'
 
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -113,13 +113,13 @@ node_types:
       subscription_id:
         description: >
           Indicates the subscription id required to create public ip address. 
-      type: string
+        type: string
         default: ''
       location:
         description: >
          location where VM will be provisioned
-      type: string
-         default: 'West US'
+        type: string
+        default: 'West US'
       vm_name:
         description: >
           Indicates the name of the virtual machine
@@ -141,13 +141,13 @@ node_types:
       subscription_id:
         description: >
           Indicates the subscription id required to create network interface card. 
-      type: string
+        type: string
         default: ''
       location:
         description: >
          location where VM will be provisioned
-      type: string
-         default: 'West US'
+        type: string
+        default: 'West US'
        vm_name:
         description: >
           Indicates the name of the virtual machine required to create network interface card
