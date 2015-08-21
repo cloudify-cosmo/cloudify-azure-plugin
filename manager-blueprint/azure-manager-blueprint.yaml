@@ -3,7 +3,8 @@ tosca_definitions_version: cloudify_dsl_1_1
 imports:
   - http://www.getcloudify.org/spec/cloudify/3.2/types.yaml
   - https://raw.githubusercontent.com/cloudify-cosmo/cloudify-azure-plugin/master/plugin.yaml
-
+  - http://www.getcloudify.org/spec/fabric-plugin/1.2/plugin.yaml
+  
 inputs:
   
   subscription_id:
