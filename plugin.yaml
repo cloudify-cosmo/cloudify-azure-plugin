@@ -108,7 +108,7 @@ node_types:
     
 
   cloudify.azure.nodes.StorageAccount:
-     derived_from: cloudify.nodes.Container
+    derived_from: cloudify.nodes.Container
     properties:
       subscription_id:
         description: >
@@ -136,7 +136,7 @@ node_types:
 
 
   cloudify.azure.nodes.NIC:
-     derived_from: cloudify.nodes.Root
+    derived_from: cloudify.nodes.Root
     properties:
       subscription_id:
         description: >
@@ -165,8 +165,8 @@ node_types:
 
 
   cloudify.azure.nodes.VirtualNetwork:
-     derived_from: cloudify.nodes.Network
-     properties:
+    derived_from: cloudify.nodes.Network
+    properties:
       subscription_id:
         description: >
           Indicates the subscription id required to create virtual network. 
