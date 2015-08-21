@@ -57,13 +57,11 @@ node_types:
            Indicates the username 
         type: string
         default: ''
-        
       password:
         description: >
            Indicates the password of the user.  
         type: string
         default: ''
-    
     
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -105,8 +103,6 @@ node_types:
       cloudify.interfaces.validation:
         creation: azure.server.public_ip_creation_validation
 
-    
-
   cloudify.azure.nodes.StorageAccount:
     derived_from: cloudify.nodes.Container
     properties:
@@ -126,14 +122,12 @@ node_types:
         type: string
         default: 'my_vm'
       
-
     interfaces:
       cloudify.interfaces.lifecycle:
         create: azure.server.create_storage_account
         delete: azure.delete.delete_storage_account
       cloudify.interfaces.validation:
         creation: azure.server.storage_account_creation_validation
-
 
   cloudify.azure.nodes.NIC:
     derived_from: cloudify.nodes.Root
@@ -148,21 +142,18 @@ node_types:
          location where VM will be provisioned
         type: string
         default: 'West US'
-       vm_name:
+      vm_name:
         description: >
           Indicates the name of the virtual machine required to create network interface card
         type: string
         default: 'my_vm'
       
-      
-
     interfaces:
       cloudify.interfaces.lifecycle:
         create: azure.server.create_nic
         delete: azure.delete.delete_nic
       cloudify.interfaces.validation:
         creation: azure.server.nic_creation_validation
-
 
   cloudify.azure.nodes.VirtualNetwork:
     derived_from: cloudify.nodes.Network
@@ -190,9 +181,6 @@ node_types:
       cloudify.interfaces.validation:
         creation: azure.server.vnet_creation_validation
 
-
-
-
 relationships:
   cloudify.azure.relationships.instance_connected_to_public_ip:
     derived_from: cloudify.relationships.connected_to
@@ -200,4 +188,3 @@ relationships:
       cloudify.interfaces.relationship_lifecycle:
         establish: azure.server.create_public_ip
         unlink: azure.delete.delete_public_ip
- 
