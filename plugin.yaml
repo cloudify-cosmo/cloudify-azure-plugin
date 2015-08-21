@@ -15,17 +15,17 @@ node_types:
         description: >
           Indicates the location where VM will be provisioned
         type: string
-        default:'West US'
+        default: 'West US'
       subscription_id:
         description: >
           Indicates the subscription id of user account
         type: string
-        default:''
+        default: ''
       vm_name:
         description: >
           Indicates the name of the virtual machine
         type: string
-        default:'my_vm'
+        default: 'my_vm'
       vm_size:
         description: >
           Indicates the size of VM
@@ -35,34 +35,34 @@ node_types:
         description: >
           Flavour of virtual machine
         type: string
-        default:'UbuntuServer'
+        default: 'UbuntuServer'
       keyData:
         description: >
            Indicates the ssh key data of the user
         type: string
-        default:''
+        default: ''
       client_id:
         description: >
            Indicates the client id required to create VM
         type: string
-        default:''
+        default: ''
     
       tenant_id:
         description: >
            Indicates the tenant id required to create VM
         type: string
-        default:''
+        default: ''
       username:
         description: >
            Indicates the username 
         type: string
-        default:''
+        default: ''
         
       password:
         description: >
            Indicates the password of the user.  
         type: string
-        default:''
+        default: ''
     
     
     interfaces:
