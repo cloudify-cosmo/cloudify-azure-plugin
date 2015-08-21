@@ -61,15 +61,15 @@ node_templates:
         
     relationships:
       - target: agent_resource_group
-        type: cloudify.azure.relationships.instance_contained_in_resource_group
+        type: cloudify.azure.relationships.server_connected_to_resource_group
       - target: agent_public_ip
-        type: cloudify.azure.relationships.instance_connected_to_public_ip
+        type: cloudify.azure.relationships.server_connected_to_public_ip
       - target: agent_storage_account
-        type: cloudify.azure.relationships.instance_connected_to_storage_account
+        type: cloudify.azure.relationships.server_connected_to_storage_account
       - target: agent_nic
-        type: cloudify.azure.relationships.instance_connected_to_nic
+        type: cloudify.azure.relationships.server_connected_to_nic
       - target: agent_vnet
-        type: cloudify.azure.relationships.instance_connected_to_vnet
+        type: cloudify.azure.relationships.server_connected_to_vnet
       
   agent_resource_group:
     type: cloudify.azure.nodes.ResourceGroup
