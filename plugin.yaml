@@ -174,12 +174,7 @@ node_types:
         type: string
         default: 'my_vm'
       
-    interfaces:
-      cloudify.interfaces.lifecycle:
-        create: azure.vnet.create_vnet
-        delete: azure.vnet.delete_vnet
-      cloudify.interfaces.validation:
-        creation: azure.vnet.vnet_creation_validation
+
 
 relationships:
   cloudify.azure.relationships.server_connected_to_resource_group:
