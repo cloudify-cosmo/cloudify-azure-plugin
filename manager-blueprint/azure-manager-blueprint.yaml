@@ -56,8 +56,8 @@ node_templates:
       vm_os_type: { get_input: vm_os_type}
       vm_size: { get_input: vm_size}
       key_data: { get_input: key_data}
-      subscription_id:{ get_input: subscription_id}
-      location:{ get_input: location }
+      subscription_id: { get_input: subscription_id}
+      location: { get_input: location }
         
     relationships:
       - target: agent_resource_group
@@ -76,35 +76,35 @@ node_templates:
     properties:
       vm_name: { get_input: vm_name }
       location: { get_input: location}
-      subscription_id:{ get_input: subscription_id}
+      subscription_id: { get_input: subscription_id}
         
   agent_storage_account:
     type: cloudify.azure.nodes.StorageAccount
     properties:
       vm_name: { get_input: vm_name }
       location: { get_input: location}
-      subscription_id:{ get_input: subscription_id}
+      subscription_id: { get_input: subscription_id}
         
   agent_public_ip:
     type: cloudify.azure.nodes.PublicIP
     properties:
       vm_name: { get_input: vm_name }
       location: { get_input: location}
-      subscription_id:{ get_input: subscription_id}
+      subscription_id: { get_input: subscription_id}
     
   agent_nic:
     type: cloudify.azure.nodes.NIC
     properties:
       vm_name: { get_input: vm_name }
       location: { get_input: location}
-      subscription_id:{ get_input: subscription_id}
+      subscription_id: { get_input: subscription_id}
 
   agent_vnet:
     type: cloudify.azure.nodes.VNET
     properties:
       vm_name: { get_input: vm_name }
       location: { get_input: location}
-      subscription_id:{ get_input: subscription_id}
+      subscription_id: { get_input: subscription_id}
  
   manager:
     type: cloudify.nodes.CloudifyManager
