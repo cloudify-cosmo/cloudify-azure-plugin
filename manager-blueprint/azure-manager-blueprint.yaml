@@ -118,6 +118,6 @@ node_templates:
           docker_url: http://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.2.0/ga-RELEASE/cloudify-docker-commercial_3.2.0-ga-b200.tar
 
 plugins:
-    azure:
-        executor: central_deployment_agent
-        install: false
+    cli:
+      executor: central_deployment_agent
+      install: false
