@@ -29,10 +29,7 @@ node_types:
       
     interfaces:
       cloudify.interfaces.lifecycle:
-        create:
-          implementation: azure.resourcegroup.create_resource_group
-        delete:
-          implementation:  azure.resourcegroup.delete_resource_group
+        
       cloudify.interfaces.validation:
         creation:
           implementation:  azure.resourcegroup.resource_group_creation_validation
