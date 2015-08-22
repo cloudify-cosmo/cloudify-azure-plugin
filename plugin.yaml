@@ -27,12 +27,7 @@ node_types:
         type: string
         default: 'my_vm'
       
-    interfaces:
-      cloudify.interfaces.lifecycle:
-        
-      cloudify.interfaces.validation:
-        creation:
-          implementation:  azure.resourcegroup.resource_group_creation_validation
+
         
   cloudify.azure.nodes.Server:
     derived_from: cloudify.nodes.Compute
