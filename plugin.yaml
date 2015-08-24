@@ -3,7 +3,7 @@
 ##################################################################################
 
 plugins:
-  azure:
+  microsoft:
     executor: central_deployment_agent
     source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/master.zip
 
@@ -29,10 +29,10 @@ node_types:
       
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: azure.azure.resourcegroup.create_resource_group
-        delete: azure.azure.resourcegroup.delete_resource_group
+        create: microsoft.azure.resourcegroup.create_resource_group
+        delete: microsoft.azure.resourcegroup.delete_resource_group
       cloudify.interfaces.validation:
-        creation: azure.azure.resourcegroup.resource_group_creation_validation
+        creation: microsoft.azure.resourcegroup.resource_group_creation_validation
         
   cloudify.azure.nodes.Server:
     derived_from: cloudify.nodes.Compute
@@ -71,16 +71,16 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
-          implementation: azure.server.create_vm
+          implementation: microsoft.azure.server.create_vm
         start:
-          implementation: azure.server.start_vm
+          implementation: microsoft.azure.server.start_vm
         stop:
-          implementation: azure.server.stop_vm
+          implementation: microsoft.azure.server.stop_vm
         delete:
-          implementation: azure.server.delete_virtual_machine
+          implementation: microsoft.azure.server.delete_virtual_machine
       cloudify.interfaces.validation:
         creation:
-          implementation: azure.server.vm_creation_validation
+          implementation: microsoft.azure.server.vm_creation_validation
 
   cloudify.azure.nodes.PublicIP:
     derived_from: cloudify.nodes.VirtualIP
@@ -103,10 +103,10 @@ node_types:
 
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: azure.publicip.create_public_ip
-        delete: azure.publicip.delete_public_ip
+        create: microsoft.azure.publicip.create_public_ip
+        delete: microsoft.azure.publicip.delete_public_ip
       cloudify.interfaces.validation:
-        creation: azure.publicip.public_ip_creation_validation
+        creation: microsoft.azure.publicip.public_ip_creation_validation
 
   cloudify.azure.nodes.StorageAccount:
     derived_from: cloudify.nodes.Container
@@ -129,10 +129,10 @@ node_types:
       
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: azure.storageaccount.create_storage_account
-        delete: azure.storageaccount.delete_storage_account
+        create: microsoft.azure.storageaccount.create_storage_account
+        delete: microsoft.azure.storageaccount.delete_storage_account
       cloudify.interfaces.validation:
-        creation: azure.storageaccount.storage_account_creation_validation
+        creation: microsoft.azure.storageaccount.storage_account_creation_validation
 
   cloudify.azure.nodes.NIC:
     derived_from: cloudify.nodes.Root
@@ -155,10 +155,10 @@ node_types:
       
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: azure.nic.create_nic
-        delete: azure.nic.delete_nic
+        create: microsoft.azure.nic.create_nic
+        delete: microsoft.azure.nic.delete_nic
       cloudify.interfaces.validation:
-        creation: azure.nic.nic_creation_validation
+        creation: microsoft.azure.nic.nic_creation_validation
 
   cloudify.azure.nodes.VNET:
     derived_from: cloudify.nodes.Network
@@ -181,10 +181,10 @@ node_types:
         
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: azure.vnet.create_vnet
-        delete: azure.vnet.delete_vnet
+        create: microsoft.azure.vnet.create_vnet
+        delete: microsoft.azure.vnet.delete_vnet
       cloudify.interfaces.validation:
-        creation: azure.vnet.vnet_creation_validation
+        creation: microsoft.azure.vnet.vnet_creation_validation
       
 relationships:
   cloudify.azure.relationships.server_connected_to_resource_group:
