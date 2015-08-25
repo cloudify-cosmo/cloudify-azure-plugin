@@ -22,7 +22,7 @@ subscription_id = 'REPLACE_WITH_SUBSCRIPTION_ID'
 
 COMMON_REQ_PROPERTIES=['subscription_id','location']
 
-credentials = utils.generate_credentials()
+credentials = ''
 headers = {"Content-Type": "application/json", "Authorization": credentials}
 api_version='2015-05-01-preview'
 storage_account_type = 'Standard_LRS'
