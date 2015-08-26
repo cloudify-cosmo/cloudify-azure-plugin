@@ -17,7 +17,6 @@
 import requests
 import json
 import constants
-import utils
 import sys
 import os
 from cloudify.exceptions import NonRecoverableError
@@ -42,7 +41,7 @@ def vm_creation_validation():
 def create_vm(**_):
 
     for property_key in constants.VM_REQUIRED_PROPERTIES:
-        utils.validate_node_property(property_key, ctx.node.properties)
+        _validate_node_property(property_key, ctx.node.properties)
         
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     storage_account_name = ctx.node.properties['vm_name']+'_storage_group'
