@@ -17,7 +17,6 @@
 import requests
 import json
 import constants
-import utils
 import sys
 import os
 from cloudify.exceptions import NonRecoverableError
@@ -41,7 +40,7 @@ def vnet_creation_validation(**_):
 #vnet:
 def create_vnet(**_):
     for property_key in constants.VNET_REQUIRED_PROPERTIES:
-        utils.validate_node_property(property_key, ctx.node.properties)
+        _validate_node_property(property_key, ctx.node.properties)
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     vnet_name = ctx.node.properties['vm_name']+'_vnet'
     location = ctx.node.properties['location']
