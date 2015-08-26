@@ -17,7 +17,6 @@
 import requests
 import json
 import constants
-import utils
 import sys
 import os
 from cloudify.exceptions import NonRecoverableError
@@ -38,6 +37,8 @@ def public_ip_creation_validation(**_):
        
 @operation
 def create_public_ip(**_):
+    for property_key in constants.RESOURCE_GROUP_REQ_PROPERTIES:
+        _validate_node_property(property_key, ctx.node.properties)
     vm_name=ctx.node.properties['vm_name']
     public_ip_name=:vm_name+'_pip'
     subscription_id = ctx.node.properties['subscription_id']
