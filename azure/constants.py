@@ -43,11 +43,11 @@ vm_version="latest"
 azure_url='https://management.azure.com'
 
 RESOURCE_GROUP_REQUIRED_PROPERTIES=['resource_group_name','location']
-STORAGE_ACCOUNT_REQUIRED_PROPERTIES = ['storage_account_name']
-VNET_REQUIRED_PROPERTIES = ['vnet_name', 'subnet_name']
-VM_REQUIRED_PROPERTIES = ['vm_name']
-NIC_REQUIRED_PROPERTIES = []
-PUBLIC_IP_REQUIRED_PROPERTIES = []
+STORAGE_ACCOUNT_REQUIRED_PROPERTIES = ['storage_account_name','location']
+VNET_REQUIRED_PROPERTIES = ['vnet_name', 'location']
+VM_REQUIRED_PROPERTIES = ['vm_name','vm_size','vm_type','vm_admin_username','key_data']
+NIC_REQUIRED_PROPERTIES = ['nic_name','location']
+PUBLIC_IP_REQUIRED_PROPERTIES = ['public_ip_name','location']
 
 
 
