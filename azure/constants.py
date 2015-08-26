@@ -16,7 +16,6 @@
 # Look at https://github.com/cloudify-cosmo/cloudify-aws-plugin/blob/1.2/ec2/constants.py
 
 # instance module constants
-import utils
 
 subscription_id = 'REPLACE_WITH_SUBSCRIPTION_ID'
 
