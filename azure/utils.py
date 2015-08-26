@@ -22,7 +22,7 @@ from cloudify.exceptions import NonRecoverableError
 from cloudify.decorators import operation
 import constants
 
-@operation
+
 def generate_credentials():
     client_id=ctx.node.properties('client_id')
     tenant_id=ctx.node.properties('tenant_id')
@@ -45,7 +45,7 @@ def generate_credentials():
     return credentials
 
 
-@operation
+
 def validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
