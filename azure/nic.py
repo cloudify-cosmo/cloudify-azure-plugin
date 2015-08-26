@@ -126,8 +126,8 @@ def _generate_credentials(**_):
     token=s[end_of_leader:start_of_trailer]
     print(token)
     credentials = "Bearer " + token
-    headers = {"Content-Type": "application/json", "Authorization": credentials}
-    return headers
+    head = {"Content-Type": "application/json", "Authorization": credentials}
+    return head
 
 
 
