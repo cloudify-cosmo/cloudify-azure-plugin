@@ -46,6 +46,8 @@ RESOURCE_GROUP_REQ_PROPERTIES=['resource_group_name','location']
 STORAGE_ACCOUNT_REQUIRED_PROPERTIES = ['storage_account_name']
 VNET_REQUIRED_PROPERTIES = ['vnet_name', 'subnet_name']
 VM_REQUIRED_PROPERTIES = ['vm_name']
+NIC_REQUIRED_PROPERTIES = []
+PUBLIC_IP_REQUIRED_PROPERTIES = []
 
 
 
