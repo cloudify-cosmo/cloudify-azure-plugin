@@ -1,4 +1,4 @@
-tosca_definitions_version: cloudify_dsl_1_1
+tosca_definitions_version: cloudify_dsl_1_0
 
 imports:
   - http://www.getcloudify.org/spec/cloudify/3.2/types.yaml
@@ -58,7 +58,6 @@ node_templates:
       key_data: { get_input: key_data}
       subscription_id: { get_input: subscription_id}
       location: { get_input: location }
-      install_agent: false
     relationships:
       - target: agent_resource_group
         type: cloudify.azure.relationships.server_connected_to_resource_group
