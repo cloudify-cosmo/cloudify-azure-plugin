@@ -39,7 +39,7 @@ def nic_creation_validation(**_):
 #nic:
 def create_nic():
     for property_key in constants.NIC_REQ_PROPERTIES:
-       _validate_node_property(property_key, ctx.node.properties)
+       _validate_node_properties(property_key, ctx.node.properties)
     nic_name = ctx.node.properties['vm_name']+'_nic'
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     location = ctx.node.properties['location']
