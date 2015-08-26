@@ -50,7 +50,7 @@ def create_resource_group(**_):
         try:
             ctx.logger.info("Creating new Resource group: " + resource_group_name)
             resource_group_params=json.dumps({"name":resource_group_name,"location": location})
-            response_rg = requests.put(url=resource_group_url, data=resource_group_params, headers=constants.headers)
+            response_rg = requests.put(url=resource_group_url, data=resource_group_params, headers=_generate_credentials())
             print response_rg.text
         except WindowsAzureConflictError:
             ctx.logger.info("Resource Group " + resource_group_name + " could not be created")
@@ -67,7 +67,7 @@ def delete_resource_group(**_):
         try:
             ctx.logger.info("Deleting Resource Group: " + resource_group_name)
             resource_group_url = 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version
-            response_rg = requests.delete(url=resource_group_url, headers=constants.headers)
+            response_rg = requests.delete(url=resource_group_url, headers=_generate_credentials())
             print(response_rg.text)
         except WindowsAzureMissingResourceError:
             ctx.logger.info("Resource Group" +  resource_group_name + "could not be deleted." )
@@ -79,13 +79,13 @@ def delete_resource_group(**_):
 def _list_all_resource_groups(**_):
     subscription_id = ctx.node.properties['subscription_id']
     list_resource_groups_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourcegroups?api-version='+constants.api_version
-    list_rg=requests.get(url=list_resource_groups_url, headers=constants.headers)
+    list_rg=requests.get(url=list_resource_groups_url, headers=_generate_credentials())
     print list_rg.text
     #rg_list= extract from json file
     #return rg_list
 
 
-def _generate_credentials():
+def _generate_credentials(**_):
     client_id=ctx.node.properties('client_id')
     tenant_id=ctx.node.properties('tenant_id')
     username=ctx.node.properties('username')
@@ -104,7 +104,8 @@ def _generate_credentials():
     token=s[end_of_leader:start_of_trailer]
     print(token)
     credentials = "Bearer " + token
-    return credentials
+    head = {"Content-Type": "application/json", "Authorization": credentials}
+    return head
 
 
 
