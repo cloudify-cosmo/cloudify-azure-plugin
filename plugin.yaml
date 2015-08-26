@@ -109,7 +109,7 @@ node_types:
         creation: microsoft.azurecloudify.publicip.public_ip_creation_validation
 
   cloudify.azure.nodes.StorageAccount:
-    derived_from: cloudify.nodes.Volume
+    derived_from: cloudify.nodes.Root
     properties:
       subscription_id:
         description: >
