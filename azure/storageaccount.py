@@ -17,7 +17,6 @@
 import requests
 import json
 import constants
-import utils
 import sys
 import os
 from cloudify.exceptions import NonRecoverableError
@@ -40,7 +39,7 @@ def storage_account_creation_validation(**_):
 def create_storage_account(**_):
     location = ctx.node.properties['location']
     for property_key in constants.STORAGE_ACCOUNT_REQUIRED_PROPERTIES:
-        utils.validate_node_property(property_key, ctx.node.properties)
+       _validate_node_properties(property_key, ctx.node.properties)
     storage_account_name = ctx.node.properties['vm_name']+'_storage_account'
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
