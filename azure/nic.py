@@ -19,6 +19,7 @@ import json
 import constants
 import utils
 import sys
+import os
 from cloudify.exceptions import NonRecoverableError
 from azure import WindowsAzureConflictError
 from azure import WindowsAzureMissingResourceError
