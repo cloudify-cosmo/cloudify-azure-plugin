@@ -19,6 +19,7 @@ import json
 import constants
 import utils
 import sys
+import os
 from cloudify.exceptions import NonRecoverableError
 from azure import WindowsAzureConflictError
 from azure import WindowsAzureMissingResourceError
@@ -91,3 +92,31 @@ def _list_all_vnets(**_):
 
     #vnet_list= #extract vnet_name
     #return vnet_list
+
+
+def _generate_credentials():
+    client_id=ctx.node.properties('client_id')
+    tenant_id=ctx.node.properties('tenant_id')
+    username=ctx.node.properties('username')
+    password=ctx.node.properties('password')
+    url='https://login.microsoftonline.com/'+tenant_id+'/oauth2/token'
+    headers ={"Content-Type":"application/x-www-form-urlencoded"}
+    body = "grant_type=password&username="+username+"&password="+password+"&client_id="+client_id+"&resource=https://management.core.windows.net/"
+    req = Request(method="POST",url=url,data=body)
+    req_prepped = req.prepare()
+    s = Session()
+    res = Response()
+    res = s.send(req_prepped)
+    s=res.content
+    end_of_leader = s.index('access_token":"') + len('access_token":"')
+    start_of_trailer = s.index('"', end_of_leader)
+    token=s[end_of_leader:start_of_trailer]
+    print(token)
+    credentials = "Bearer " + token
+    return credentials
+
+
+
+def _validate_node_properties(key, ctx_node_properties):
+    if key not in ctx_node_properties:
+        raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
