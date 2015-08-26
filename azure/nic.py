@@ -69,7 +69,7 @@ def create_nic():
                         }
                     })
             nic_url=constants.azure_url+"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
-            response_nic = requests.put(url=nic_url, data=nic_params, headers=constants.headers)
+            response_nic = requests.put(url=nic_url, data=nic_params, headers=_generate_credentials())
             print(response_nic.text)
         except WindowsAzureConflictError:
           ctx.logger.info("network interface card " + nic_name + "could not be created.")
@@ -87,7 +87,7 @@ def delete_nic(**_):
         try:
             ctx.logger.info("Deleting NIC")
             nic_url="https://management.azure.com/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
-            response_nic = requests.delete(url=nic_url,headers=constants.headers)
+            response_nic = requests.delete(url=nic_url,headers=_generate_credentials())
             print(response_nic.text)
         except WindowsAzureMissingResourceError:
             ctx.logger.info("Network Interface Card " + nic_name + " could not be deleted.")
@@ -100,14 +100,14 @@ def _list_all_nics(**_):
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
     list_nics_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkInterfaces?api-version='+constants.api_version
-    list_nic = requests.get(url=list_nics_url, headers = constants.headers)
+    list_nic = requests.get(url=list_nics_url, headers = _generate_credentials())
     print list_nic.text
 
     #nic_list= #extract nic_name
     #return nic_list
     
 
-def _generate_credentials():
+def _generate_credentials(**_):
     client_id=ctx.node.properties('client_id')
     tenant_id=ctx.node.properties('tenant_id')
     username=ctx.node.properties('username')
@@ -126,7 +126,8 @@ def _generate_credentials():
     token=s[end_of_leader:start_of_trailer]
     print(token)
     credentials = "Bearer " + token
-    return credentials
+    headers = {"Content-Type": "application/json", "Authorization": credentials}
+    return headers
 
 
 
