@@ -42,7 +42,7 @@ admin_username='azuretest'
 vm_version="latest"
 azure_url='https://management.azure.com'
 
-RESOURCE_GROUP_REQ_PROPERTIES=['resource_group_name','location']
+RESOURCE_GROUP_REQUIRED_PROPERTIES=['resource_group_name','location']
 STORAGE_ACCOUNT_REQUIRED_PROPERTIES = ['storage_account_name']
 VNET_REQUIRED_PROPERTIES = ['vnet_name', 'subnet_name']
 VM_REQUIRED_PROPERTIES = ['vm_name']
