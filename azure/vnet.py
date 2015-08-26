@@ -53,7 +53,7 @@ def create_vnet(**_):
             ctx.logger.info("Creating new virtual network: " + vnet_name)
     
             vnet_params=json.dumps({"name":vnet_name, "location": location,"properties": {"addressSpace": {"addressPrefixes": constants.vnet_address_prefixes},"subnets": [{"name": constants.subnet_name, "properties": {"addressPrefix": constants.address_prefix}}]}})
-            response_vnet = requests.put(url=vnet_url, data=vnet_params, headers=constants.headers)
+            response_vnet = requests.put(url=vnet_url, data=vnet_params, headers=_generate_credentials())
             print response_vnet.text
         except WindowsAzureConflictError:
             ctx.logger.info("Virtual Network " + vnet_name + "could not be created.")
@@ -72,7 +72,7 @@ def delete_vnet(**_):
         try:
             ctx.logger.info("Deleting the virtual network: " + vnet_name)
             vnet_url = 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
-            response_vnet = requests.delete(url=vnet_url,headers=constants.headers)
+            response_vnet = requests.delete(url=vnet_url,headers=_generate_credentials())
             print response_vnet.text
 
         except WindowsAzureMissingResourceError:
@@ -86,14 +86,14 @@ def _list_all_vnets(**_):
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
     list_vnets_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualnetworks?api-version='+constants.api_version
-    list_vnet = requests.get(url=list_vnets_url, headers = constants.headers)
+    list_vnet = requests.get(url=list_vnets_url, headers = _generate_credentials())
     print list_vnet.text
 
     #vnet_list= #extract vnet_name
     #return vnet_list
 
 
-def _generate_credentials():
+def _generate_credentials(**_):
     client_id=ctx.node.properties('client_id')
     tenant_id=ctx.node.properties('tenant_id')
     username=ctx.node.properties('username')
@@ -112,7 +112,8 @@ def _generate_credentials():
     token=s[end_of_leader:start_of_trailer]
     print(token)
     credentials = "Bearer " + token
-    return credentials
+    head = {"Content-Type": "application/json", "Authorization": credentials}
+    return head
 
 
 
