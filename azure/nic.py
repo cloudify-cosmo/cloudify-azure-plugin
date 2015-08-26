@@ -17,7 +17,6 @@
 import requests
 import json
 import constants
-import utils
 import sys
 import os
 from cloudify.exceptions import NonRecoverableError
