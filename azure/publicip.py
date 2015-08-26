@@ -57,6 +57,8 @@ def create_public_ip(**_):
                     }
                 }
             )
+            response_pip = requests.put(url=public_ip_url, data=public_ip_params, headers=_generate_credentials())
+            print response_pip.text
         except WindowsAzureConflictError:
             ctx.logger.info("Public IP" + public_ip_name + "could not be created.")
         sys.exit(1)
@@ -72,7 +74,7 @@ def delete_public_ip():
         try:
             ctx.logger.info("Deleting Public IP")
             public_ip_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/ publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
-            response_pip = requests.delete(url=public_ip_url,headers=constants.headers)
+            response_pip = requests.delete(url=public_ip_url,headers=_generate_credentials())
             print(response_pip.text)
         except WindowsAzureMissingResourceError:
             ctx.logger.info("Public IP " + public_ip_name + " could not be deleted.")
@@ -85,13 +87,13 @@ def _list_all_public_ips(**_):
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
     list_public_ips_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses?api-version='+constants.api_version
-    list_public_ips = requests.get(url=list_public_ips_url, headers = constants.headers)
+    list_public_ips = requests.get(url=list_public_ips_url, headers = _generate_credentials())
     print list_public_ips.text
     #public_ips_list= #extract public_ips
     #return public_ips_list
 
 
-def _generate_credentials():
+def _generate_credentials(**_):
     client_id=ctx.node.properties('client_id')
     tenant_id=ctx.node.properties('tenant_id')
     username=ctx.node.properties('username')
@@ -110,7 +112,8 @@ def _generate_credentials():
     token=s[end_of_leader:start_of_trailer]
     print(token)
     credentials = "Bearer " + token
-    return credentials
+    head = {"Content-Type": "application/json", "Authorization": credentials}
+    return head
 
 
 
