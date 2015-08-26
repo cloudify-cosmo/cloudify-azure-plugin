@@ -40,7 +40,7 @@ def create_public_ip(**_):
     for property_key in constants.PUBLIC_IP_REQ_PROPERTIES:
         _validate_node_properties(property_key, ctx.node.properties)
     vm_name=ctx.node.properties['vm_name']
-    public_ip_name=:vm_name+'_pip'
+    public_ip_name=vm_name+'_pip'
     subscription_id = ctx.node.properties['subscription_id']
     location = ctx.node.properties['location']
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
