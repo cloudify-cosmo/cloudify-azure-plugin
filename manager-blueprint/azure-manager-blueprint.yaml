@@ -58,7 +58,7 @@ node_templates:
       key_data: { get_input: key_data}
       subscription_id: { get_input: subscription_id}
       location: { get_input: location }
-        
+      install_agent: false
     relationships:
       - target: agent_resource_group
         type: cloudify.azure.relationships.server_connected_to_resource_group
