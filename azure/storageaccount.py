@@ -49,7 +49,7 @@ def create_storage_account(**_):
             ctx.logger.info("Creating new storage account: " + storage_account_name)
             storage_account_url= constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts/'+storage_account_name+'?api-version='+constants.api_version
             storage_account_params=json.dumps({"properties": {"accountType": constants.storage_account_type,}, "location": location})
-            response_sa = requests.put(url=storage_account_url, data=storage_account_params, headers=constants.headers)
+            response_sa = requests.put(url=storage_account_url, data=storage_account_params, headers=_generate_credentials())
             print response_sa.text
         except WindowsAzureConflictError:
             ctx.logger.info("Storage Account " + storage_account_name + "could not be created.")
@@ -67,7 +67,7 @@ def delete_storage_account(**_):
     if storage_account_name in [storage_account_name for sa in _list_all_storage_account()]:
         try:
             storage_account_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts/'+storage_account_name+'?api-version='+constants.api_version
-            response_sa = requests.delete(url=storage_account_url,headers=constants.headers)
+            response_sa = requests.delete(url=storage_account_url,headers=_generate_credentials())
             print response_sa.text
 
         except WindowsAzureMissingResourceError:
@@ -81,11 +81,11 @@ def _list_all_storage_accounts(**_):
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
     list_storage_accounts_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts?api-version='+constants.api_version
-    list_sa = requests.get(url=list_storage_accounts_url, headers = constants.headers)
+    list_sa = requests.get(url=list_storage_accounts_url, headers = _generate_credentials())
     print list_sa.text
 
 
-def _generate_credentials():
+def _generate_credentials(**_):
     client_id=ctx.node.properties('client_id')
     tenant_id=ctx.node.properties('tenant_id')
     username=ctx.node.properties('username')
@@ -104,7 +104,8 @@ def _generate_credentials():
     token=s[end_of_leader:start_of_trailer]
     print(token)
     credentials = "Bearer " + token
-    return credentials
+    head = {"Content-Type": "application/json", "Authorization": credentials}
+    return head
 
 
 
