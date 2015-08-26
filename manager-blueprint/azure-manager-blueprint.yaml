@@ -49,7 +49,7 @@ inputs:
     
 node_templates:
 
-  agent_server:
+  manager_server:
     type: cloudify.azure.nodes.Server
     properties:
       vm_name: { get_input: vm_name }
@@ -116,6 +116,10 @@ node_templates:
           windows_agent_url: http://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.2.0/ga-RELEASE/cloudify-windows-agent_3.2.0-ga-b200_amd64.deb
         docker:
           docker_url: http://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.2.0/ga-RELEASE/cloudify-docker-commercial_3.2.0-ga-b200.tar
+    relationships:
+      - target: manager_server
+        type: cloudify.relationships.contained_in
+
 
 plugins:
     cli:
