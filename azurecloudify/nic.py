@@ -72,7 +72,7 @@ def create_nic(**_):
             nic_url=constants.azure_url+"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
             response_nic = requests.put(url=nic_url, data=nic_params, headers=_generate_credentials())
             print(response_nic.text)
-         except WindowsAzureConflictError:
+        except WindowsAzureConflictError:
           ctx.logger.info("network interface card " + nic_name + "could not be created.")
           sys.exit(1)
     else:
