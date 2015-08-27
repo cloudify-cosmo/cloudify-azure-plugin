@@ -182,7 +182,6 @@ def _generate_credentials(**_):
     end_of_leader = s.index('access_token":"') + len('access_token":"')
     start_of_trailer = s.index('"', end_of_leader)
     token=s[end_of_leader:start_of_trailer]
-    print(token)
     credentials = "Bearer " + token
     head = {"Content-Type": "application/json", "Authorization": credentials}
     return head
