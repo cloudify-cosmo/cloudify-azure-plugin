@@ -44,7 +44,7 @@ def create_public_ip(**_):
                     "location": location,
                     "name": public_ip_name,
                     "properties": {
-                        "publicIPAllocationMethod": "Static",
+                        "publicIPAllocationMethod": "Dynamic",
                         "idleTimeoutInMinutes": 4,
                     }
                 }
