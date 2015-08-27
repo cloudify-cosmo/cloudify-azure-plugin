@@ -26,16 +26,6 @@ from azure import WindowsAzureMissingResourceError
 from cloudify import ctx
 from cloudify.decorators import operation
 
-    
-@operation    
-def vnet_creation_validation(**_):
-    vnet_name=ctx.node.properties['vm_name']+'_vnet'
-    if vnet_name in [vnet_name for vnet in _list_all_vnets()]:
-        ctx.logger.info("Virtual Network: " + vnet_name + " successfully created.")
-    else:
-        ctx.logger.info("Virtual Network " + vnet_name + " creation validation failed.")
-        sys.exit(1)
- 
 
 @operation
 #vnet:
@@ -49,7 +39,7 @@ def create_vnet(**_):
     vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
     ctx.logger.info("Checking availability of virtual network: " + vnet_name)
 
-    if vnet_name not in [vnet_name for vnet in _list_all_vnets()]:
+    if 1:
         try:
             ctx.logger.info("Creating new virtual network: " + vnet_name)
     
@@ -69,7 +59,7 @@ def delete_vnet(**_):
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
     ctx.logger.info("Checking availability of virtual network: " + vnet_name)
-    if vnet_name  in [vnet_name for vnet in _list_all_virtual_networks()]:
+    if 1:
         try:
             ctx.logger.info("Deleting the virtual network: " + vnet_name)
             vnet_url = 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
@@ -81,17 +71,6 @@ def delete_vnet(**_):
         sys.exit(1)
     else:
         ctx.logger.info("Virtual Network " + vnet_name + " does not exist.")
-
-
-def _list_all_vnets(**_):
-    resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
-    subscription_id = ctx.node.properties['subscription_id']
-    list_vnets_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualnetworks?api-version='+constants.api_version
-    list_vnet = requests.get(url=list_vnets_url, headers = _generate_credentials())
-    print list_vnet.text
-
-    #vnet_list= #extract vnet_name
-    #return vnet_list
 
 
 def _generate_credentials(**_):
