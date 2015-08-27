@@ -157,7 +157,6 @@ node_types:
       cloudify.interfaces.lifecycle:
         create: microsoft.azurecloudify.nic.create_nic
         delete: microsoft.azurecloudify.nic.delete_nic
-        generate_credentials: microsoft.azurecloudify.nic.generate_credentials
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.nic.nic_creation_validation
 
