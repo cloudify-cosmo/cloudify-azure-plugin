@@ -15,6 +15,7 @@
 
 # Built-in Imports
 import requests
+from requests import Request,Session,Response
 import json
 import constants
 import sys
