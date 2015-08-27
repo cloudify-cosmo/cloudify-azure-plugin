@@ -35,7 +35,7 @@ def create_resource_group(**_):
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     location = ctx.node.properties['location']
     subscription_id = ctx.node.properties['subscription_id']
-    resource_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version
+    resource_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version_resource_group
     ctx.logger.info("Checking availability of resource_group: " + resource_group_name)
 
     if 1:
@@ -58,7 +58,7 @@ def delete_resource_group(**_):
     if 1:
         try:
             ctx.logger.info("Deleting Resource Group: " + resource_group_name)
-            resource_group_url = 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version
+            resource_group_url = 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version_resource_group
             response_rg = requests.delete(url=resource_group_url, headers=_generate_credentials())
             print(response_rg.text)
         except WindowsAzureMissingResourceError:
