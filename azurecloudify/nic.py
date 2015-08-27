@@ -108,7 +108,7 @@ def _list_all_nics(**_):
     #return nic_list
    
 def _generate_credentials(**_):
-    #client_id=ctx.node.properties['client_id']
+    client_id=ctx.node.properties['client_id']
     tenant_id=ctx.node.properties['tenant_id']
     username=ctx.node.properties['username']
     password=ctx.node.properties['password']
