@@ -28,7 +28,7 @@ from cloudify.decorators import operation
     
 @operation    
 def vnet_creation_validation(**_):
-    ctx.node.properties['vm_name']+'_vnet'
+    vnet_name=ctx.node.properties['vm_name']+'_vnet'
     if vnet_name in [vnet_name for vnet in _list_all_vnets()]:
         ctx.logger.info("Virtual Network: " + vnet_name + " successfully created.")
     else:
