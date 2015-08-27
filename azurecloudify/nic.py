@@ -24,7 +24,8 @@ from azure import WindowsAzureConflictError
 from azure import WindowsAzureMissingResourceError
 from cloudify import ctx
 from cloudify.decorators import operation
-    
+ 
+"""   
 @operation
 def nic_creation_validation(**_):
     nic_name = ctx.node.properties['vm_name']+'_nic'
@@ -33,7 +34,7 @@ def nic_creation_validation(**_):
     else:
         ctx.logger.info("Network Interface Card" + nic_name + " creation validation failed..")
         sys.exit(1)
-
+"""
 
 @operation
 #nic:
