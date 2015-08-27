@@ -25,7 +25,7 @@ from azure import WindowsAzureMissingResourceError
 from cloudify import ctx
 from cloudify.decorators import operation
  
-"""   
+   
 @operation
 def nic_creation_validation(**_):
     nic_name = ctx.node.properties['vm_name']+'_nic'
@@ -34,7 +34,7 @@ def nic_creation_validation(**_):
     else:
         ctx.logger.info("Network Interface Card" + nic_name + " creation validation failed..")
         sys.exit(1)
-"""
+
 
 @operation
 #nic:
@@ -72,11 +72,11 @@ def create_nic(**_):
             nic_url=constants.azure_url+"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
             response_nic = requests.put(url=nic_url, data=nic_params, headers=_generate_credentials())
             print(response_nic.text)
-        except WindowsAzureConflictError:
+         except WindowsAzureConflictError:
           ctx.logger.info("network interface card " + nic_name + "could not be created.")
           sys.exit(1)
-    """else:
-     ctx.logger.info("network interface card" + nic_name + "has already been provisioned by another user.")"""
+      else:
+     ctx.logger.info("network interface card" + nic_name + "has already been provisioned by another user.")
    
 
 @operation
@@ -93,10 +93,10 @@ def delete_nic(**_):
         except WindowsAzureMissingResourceError:
             ctx.logger.info("Network Interface Card " + nic_name + " could not be deleted.")
         sys.exit(1)
-    """else:
-        ctx.logger.info("Network Interface Card " + nic_name + " does not exist.")"""
+       else:
+        ctx.logger.info("Network Interface Card " + nic_name + " does not exist.")
 
-"""    
+    
 def _list_all_nics(**_):
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
@@ -106,7 +106,7 @@ def _list_all_nics(**_):
 
     #nic_list= #extract nic_name
     #return nic_list
-"""    
+   
 
 def _generate_credentials(**_):
     client_id=ctx.node.properties['client_id']
