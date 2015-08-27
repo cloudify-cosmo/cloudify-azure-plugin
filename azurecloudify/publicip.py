@@ -29,7 +29,7 @@ from cloudify.decorators import operation
       
 @operation
 def create_public_ip(**_):
-    for property_key in constants.PUBLIC_IP_REQ_PROPERTIES:
+    for property_key in constants.PUBLIC_IP_REQUIRED_PROPERTIES:
         _validate_node_properties(property_key, ctx.node.properties)
     vm_name=ctx.node.properties['vm_name']
     public_ip_name=vm_name+'_pip'
@@ -42,7 +42,7 @@ def create_public_ip(**_):
             ctx.logger.info("Creating new public ip : " + public_ip_name)
             public_ip_params=json.dumps({
                     "location": location,
-                    "name":public_ip_name,
+                    "name": public_ip_name,
                     "properties": {
                         "publicIPAllocationMethod": "Static",
                         "idleTimeoutInMinutes": 4,
