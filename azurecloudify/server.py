@@ -28,15 +28,6 @@ from cloudify.decorators import operation
 
 #virtualmachine:
 
-@operation
-def vm_creation_validation(**_):
-    vm_name = ctx.node.properties['vm_name']
-    if vm_name in [vm_name for vms in _list_all_virtual_machines()]:
-        ctx.logger.info("Virtual Machine: " + vm_name + " successfully created.")
-    else:
-        ctx.logger.info("Virtual Machine " + vm_name + " creation validation failed.")
-        sys.exit(1)
-
 
 @operation
 def create_vm(**_):
@@ -52,7 +43,7 @@ def create_vm(**_):
     vm_name = ctx.node.properties['vm_name']
     subscription_id = ctx.node.properties['subscription_id']
     ctx.logger.info("Checking availability of virtual network: " + vm_name)
-    if vm_name not in [vm_name for vm in _list_all_virtual_machines()]:
+    if 1:
         try:
             ctx.logger.info("Creating new virtual machine: " + vm_name)
             virtual_machine_params=json.dumps(
@@ -141,7 +132,7 @@ def delete_virtual_machine(**_):
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
     ctx.logger.info("Checking availability of virtual network: " + vm_name)
-    if vm_name in [vm_name for vm in _list_all_virtual_machines()]:
+    if 1:
         try:
             ctx.logger.info("Deleting the virtual machine: " + vm_name)
             vm_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version
@@ -153,16 +144,6 @@ def delete_virtual_machine(**_):
         sys.exit(1)
     else:
         ctx.logger.info("Virtual Machine " + vm_name + " does not exist.")
-
-
-def _list_all_virtual_machines(**_):
-    resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
-    subscription_id = ctx.node.properties['subscription_id']
-    list_virtual_machines_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualmachines?api-version='+constants.api_version
-    list_vms = requests.get(url=list_virtual_machines_url, headers = _generate_credentials())
-    print list_vms.text
-    #vm_list= #extract vnet_name
-    #return vm_list
 
 
 def _generate_credentials(**_):
