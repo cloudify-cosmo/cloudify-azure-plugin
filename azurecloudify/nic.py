@@ -33,6 +33,7 @@ def create_nic(**_):
     for property_key in constants.NIC_REQUIRED_PROPERTIES:
        _validate_node_properties(property_key, ctx.node.properties)
     nic_name = ctx.node.properties['vm_name']+'_nic'
+    public_ip_name=ctx.node.properties['vm_name']+'_pip'
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     location = ctx.node.properties['location']
     subscription_id = ctx.node.properties['subscription_id']
