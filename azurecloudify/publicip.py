@@ -25,7 +25,7 @@ from azure import WindowsAzureMissingResourceError
 from cloudify import ctx
 from cloudify.decorators import operation 
 
-
+"""
 @operation
 def public_ip_creation_validation(**_):
     public_ip_name = ctx.node.properties['vm_name']+'_pip'
@@ -34,7 +34,7 @@ def public_ip_creation_validation(**_):
     else:
         ctx.logger.info("Public IP" + public_ip_name + " creation validation failed..")
         sys.exit(1)
-       
+ """      
 @operation
 def create_public_ip(**_):
     for property_key in constants.PUBLIC_IP_REQ_PROPERTIES:
@@ -45,7 +45,7 @@ def create_public_ip(**_):
     location = ctx.node.properties['location']
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     public_ip_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version={api-version}='+constants.api_version
-    if public_ip_name not in [public_ip_name for pip in _list_all_public_ips()]:
+    #if public_ip_name not in [public_ip_name for pip in _list_all_public_ips()]:
         try:
             ctx.logger.info("Creating new public ip : " + public_ip_name)
             public_ip_params=json.dumps({
@@ -62,15 +62,16 @@ def create_public_ip(**_):
         except WindowsAzureConflictError:
             ctx.logger.info("Public IP" + public_ip_name + "could not be created.")
         sys.exit(1)
+    """
     else:
         ctx.logger.info("Public IP" + public_ip_name + "has already been assigned to another VM")
-
+    """
 
 def delete_public_ip(**_):
     public_ip_name = ctx.node.properties['vm_name']+'_pip'
     subscription_id = ctx.node.properties['subscription_id']
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
-    if public_ip_name  in [public_ip_name for pip in _list_all_public_ips()]:
+    #if public_ip_name  in [public_ip_name for pip in _list_all_public_ips()]:
         try:
             ctx.logger.info("Deleting Public IP")
             public_ip_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/ publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
@@ -79,10 +80,11 @@ def delete_public_ip(**_):
         except WindowsAzureMissingResourceError:
             ctx.logger.info("Public IP " + public_ip_name + " could not be deleted.")
         sys.exit(1)
+    """    
     else:
         ctx.logger.info("Public IP " + public_ip_name + " does not exist.")
-
-
+    """
+"""
 def _list_all_public_ips(**_):
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
@@ -91,7 +93,7 @@ def _list_all_public_ips(**_):
     print list_public_ips.text
     #public_ips_list= #extract public_ips
     #return public_ips_list
-
+"""
 
 def _generate_credentials(**_):
     client_id=ctx.node.properties['client_id']
