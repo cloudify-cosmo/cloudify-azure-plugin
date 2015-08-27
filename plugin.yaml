@@ -152,7 +152,7 @@ node_types:
           Indicates the name of the virtual machine required to create network interface card
         type: string
         default: 'my_vm'
-            client_id:
+      client_id:
         description: >
           Indicates the user's client id
         type: string
