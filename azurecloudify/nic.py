@@ -26,17 +26,6 @@ from azure import WindowsAzureMissingResourceError
 from cloudify import ctx
 from cloudify.decorators import operation
  
-   
-@operation
-def nic_creation_validation(**_):
-    nic_name = ctx.node.properties['vm_name']+'_nic'
-   
-    if nic_name in [nic_name for nic in _list_all_nics()]:
-        ctx.logger.info("Network Ierface Card: " + nic_name + " successfully created.")
-    else:
-        ctx.logger.info("Network Interface Card" + nic_name + " creation validation failed..")
-        sys.exit(1)
-    
 
 @operation
 #nic:
@@ -49,7 +38,7 @@ def create_nic(**_):
     subscription_id = ctx.node.properties['subscription_id']
     vnet_name = ctx.node.properties['vm_name']+'_vnet'
     ctx.logger.info("Checking availability of network interface card: " + nic_name)
-    if nic_name not in [nic_name for nic in _list_all_virtual_machines()]:
+    if 1:
         try:
           ctx.logger.info("Creating new network interface card: " + nic_name)
           nic_params=json.dumps({
@@ -86,7 +75,7 @@ def delete_nic(**_):
     nic_name = ctx.node.properties['vm_name']+'_nic'
     subscription_id = ctx.node.properties['subscription_id']
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
-    if nic_name in [nic_name for pip in _list_all_nics()]:
+    if 1:
        
         try:
            ctx.logger.info("Deleting NIC")
@@ -99,16 +88,6 @@ def delete_nic(**_):
     else:
         ctx.logger.info("Network Interface Card " + nic_name + " does not exist.")
    
- 
-def _list_all_nics(**_):
-    resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
-    subscription_id = ctx.node.properties['subscription_id']
-    list_nics_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkInterfaces?api-version='+constants.api_version
-    list_nic = requests.get(url=list_nics_url, headers = _generate_credentials())
-    print list_nic.text
-
-    #nic_list= #extract nic_name
-    #return nic_list
   
 def _generate_credentials(**_):
     client_id=ctx.node.properties['client_id']
