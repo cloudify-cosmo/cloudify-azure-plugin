@@ -39,12 +39,12 @@ admin_username='azuretest'
 vm_version="latest"
 azure_url='https://management.azure.com'
 
-RESOURCE_GROUP_REQUIRED_PROPERTIES=['resource_group_name','location']
-STORAGE_ACCOUNT_REQUIRED_PROPERTIES = ['storage_account_name','location']
-VNET_REQUIRED_PROPERTIES = ['vnet_name', 'location']
-VM_REQUIRED_PROPERTIES = ['vm_name','vm_size','vm_type','vm_admin_username','key_data']
-NIC_REQUIRED_PROPERTIES = ['nic_name','location']
-PUBLIC_IP_REQUIRED_PROPERTIES = ['public_ip_name','location']
+RESOURCE_GROUP_REQUIRED_PROPERTIES=['vm_name','location','subscription_id']
+STORAGE_ACCOUNT_REQUIRED_PROPERTIES = ['vm_name','location','subscription_id']
+VNET_REQUIRED_PROPERTIES = ['vm_name','location','subscription_id']
+VM_REQUIRED_PROPERTIES = ['vm_name','vm_os_type','vm_size','subscription_id','key_data','location']
+NIC_REQUIRED_PROPERTIES = ['vm_name','location','subscription_id']
+PUBLIC_IP_REQUIRED_PROPERTIES = ['vm_name','location','subscription_id']
 
 
 
