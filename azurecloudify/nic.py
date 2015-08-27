@@ -48,8 +48,8 @@ def create_nic(**_):
     subscription_id = ctx.node.properties['subscription_id']
     vnet_name = ctx.node.properties['vm_name']+'_vnet'
     ctx.logger.info("Checking availability of network interface card: " + nic_name)
-    if nic_name not in [nic_name for nic in _list_all_virtual_machines()]:
-        try:
+    #if nic_name not in [nic_name for nic in _list_all_virtual_machines()]:
+    try:
             ctx.logger.info("Creating new network interface card: " + nic_name)
             nic_params=json.dumps({
                         "location":location,
@@ -73,12 +73,13 @@ def create_nic(**_):
             nic_url=constants.azure_url+"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
             response_nic = requests.put(url=nic_url, data=nic_params, headers=_generate_credentials())
             print(response_nic.text)
-        except WindowsAzureConflictError:
+    except WindowsAzureConflictError:
           ctx.logger.info("network interface card " + nic_name + "could not be created.")
           sys.exit(1)
+    """
     else:
      ctx.logger.info("network interface card" + nic_name + "has already been provisioned by another user.")
-   
+    """
 
 @operation
 def delete_nic(**_):
@@ -97,7 +98,7 @@ def delete_nic(**_):
     else:
         ctx.logger.info("Network Interface Card " + nic_name + " does not exist.")
 
-    
+"""  
 def _list_all_nics(**_):
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
@@ -107,7 +108,7 @@ def _list_all_nics(**_):
 
     #nic_list= #extract nic_name
     #return nic_list
-   
+"""   
 def _generate_credentials(**_):
     client_id=ctx.node.properties['client_id']
     tenant_id=ctx.node.properties['tenant_id']
