@@ -51,8 +51,6 @@ node_types:
       cloudify.interfaces.lifecycle:
         create: microsoft.azurecloudify.resourcegroup.create_resource_group
         delete: microsoft.azurecloudify.resourcegroup.delete_resource_group
-      cloudify.interfaces.validation:
-        creation: microsoft.azurecloudify.resourcegroup.resource_group_creation_validation
         
   cloudify.azure.nodes.Server:
     derived_from: cloudify.nodes.Compute
@@ -118,9 +116,6 @@ node_types:
           implementation: microsoft.azurecloudify.server.stop_vm
         delete:
           implementation: microsoft.azurecloudify.server.delete_virtual_machine
-      cloudify.interfaces.validation:
-        creation:
-          implementation: microsoft.azurecloudify.server.vm_creation_validation
 
   cloudify.azure.nodes.PublicIP:
     derived_from: cloudify.nodes.VirtualIP
@@ -165,8 +160,6 @@ node_types:
       cloudify.interfaces.lifecycle:
         create: microsoft.azurecloudify.publicip.create_public_ip
         delete: microsoft.azurecloudify.publicip.delete_public_ip
-      cloudify.interfaces.validation:
-        creation: microsoft.azurecloudify.publicip.public_ip_creation_validation
 
   cloudify.azure.nodes.StorageAccount:
     derived_from: cloudify.nodes.Root
@@ -211,8 +204,6 @@ node_types:
       cloudify.interfaces.lifecycle:
         create: microsoft.azurecloudify.storageaccount.create_storage_account
         delete: microsoft.azurecloudify.storageaccount.delete_storage_account
-      cloudify.interfaces.validation:
-        creation: microsoft.azurecloudify.storageaccount.storage_account_creation_validation
 
   cloudify.azure.nodes.NIC:
     derived_from: cloudify.nodes.Root
@@ -257,8 +248,6 @@ node_types:
       cloudify.interfaces.lifecycle:
         create: microsoft.azurecloudify.nic.create_nic
         delete: microsoft.azurecloudify.nic.delete_nic
-      cloudify.interfaces.validation:
-        creation: microsoft.azurecloudify.nic.nic_creation_validation
 
   cloudify.azure.nodes.VNET:
     derived_from: cloudify.nodes.Network
@@ -303,8 +292,6 @@ node_types:
       cloudify.interfaces.lifecycle:
         create: microsoft.azurecloudify.vnet.create_vnet
         delete: microsoft.azurecloudify.vnet.delete_vnet
-      cloudify.interfaces.validation:
-        creation: microsoft.azurecloudify.vnet.vnet_creation_validation
       
 relationships:
   cloudify.azure.relationships.server_connected_to_resource_group:
