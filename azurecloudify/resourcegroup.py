@@ -26,15 +26,6 @@ from azure import WindowsAzureMissingResourceError
 from cloudify import ctx
 from cloudify.decorators import operation
 
-@operation
-def resource_group_creation_validation(**_):
-    resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
-    if resource_group_name in resource_group_name in [resource_group_name for rg in _list_all_resource_groups()]:
-        ctx.logger.info("Resource group: " + resource_group_name + " successfully created.")
-    else:
-        ctx.logger.info("Resource Group " + resource_group_name + " creation validation failed.")
-        sys.exit(1)
- 
 
 @operation
 def create_resource_group(**_):
@@ -47,7 +38,7 @@ def create_resource_group(**_):
     resource_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version
     ctx.logger.info("Checking availability of resource_group: " + resource_group_name)
 
-    if resource_group_name not in [resource_group_name for rg in _list_all_resource_groups()]:
+    if 1:
         try:
             ctx.logger.info("Creating new Resource group: " + resource_group_name)
             resource_group_params=json.dumps({"name":resource_group_name,"location": location})
@@ -64,7 +55,7 @@ def create_resource_group(**_):
 def delete_resource_group(**_):
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
-    if resource_group_name in [resource_group_name for rg in _list_all_resource_group()]:
+    if 1:
         try:
             ctx.logger.info("Deleting Resource Group: " + resource_group_name)
             resource_group_url = 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version
@@ -75,15 +66,6 @@ def delete_resource_group(**_):
             sys.exit(1)
     else:
         ctx.logger.info("Resource Group '%s' does not exist" + resource_group_name)
-
-
-def _list_all_resource_groups(**_):
-    subscription_id = ctx.node.properties['subscription_id']
-    list_resource_groups_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourcegroups?api-version='+constants.api_version
-    list_rg=requests.get(url=list_resource_groups_url, headers=_generate_credentials())
-    print list_rg.text
-    #rg_list= extract from json file
-    #return rg_list
 
 
 def _generate_credentials(**_):
