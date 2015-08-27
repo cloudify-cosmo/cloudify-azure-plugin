@@ -30,12 +30,13 @@ from cloudify.decorators import operation
 @operation
 def nic_creation_validation(**_):
     nic_name = ctx.node.properties['vm_name']+'_nic'
+    """
     if nic_name in [nic_name for nic in _list_all_nics()]:
         ctx.logger.info("Network Ierface Card: " + nic_name + " successfully created.")
     else:
         ctx.logger.info("Network Interface Card" + nic_name + " creation validation failed..")
         sys.exit(1)
-
+    """
 
 @operation
 #nic:
