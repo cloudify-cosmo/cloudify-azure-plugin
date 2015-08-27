@@ -30,13 +30,13 @@ from cloudify.decorators import operation
 @operation
 def nic_creation_validation(**_):
     nic_name = ctx.node.properties['vm_name']+'_nic'
-    """
+   
     if nic_name in [nic_name for nic in _list_all_nics()]:
         ctx.logger.info("Network Ierface Card: " + nic_name + " successfully created.")
     else:
         ctx.logger.info("Network Interface Card" + nic_name + " creation validation failed..")
         sys.exit(1)
-    """
+    
 
 @operation
 #nic:
@@ -49,59 +49,57 @@ def create_nic(**_):
     subscription_id = ctx.node.properties['subscription_id']
     vnet_name = ctx.node.properties['vm_name']+'_vnet'
     ctx.logger.info("Checking availability of network interface card: " + nic_name)
-    #if nic_name not in [nic_name for nic in _list_all_virtual_machines()]:
-    try:
-      a
-      ctx.logger.info("Creating new network interface card: " + nic_name)
-      nic_params=json.dumps({
-                        "location":location,
-                        "properties":{
-                            "ipConfigurations":[
-                                {
-                                    "name":constants.ip_config_name,
-                                    "properties":{
-                                        "subnet":{
-                                            "id":"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Network/virtualNetworks/"+vnet_name+"/subnets/"+constants.subnet_name
-                                        },
-                                        "privateIPAllocationMethod":"Dynamic",
-                                        "publicIPAddress":{
-                                                "id":"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Network/publicIPAddresses/"+public_ip_name
+    if nic_name not in [nic_name for nic in _list_all_virtual_machines()]:
+        try:
+          ctx.logger.info("Creating new network interface card: " + nic_name)
+          nic_params=json.dumps({
+                            "location":location,
+                            "properties":{
+                                "ipConfigurations":[
+                                    {
+                                        "name":constants.ip_config_name,
+                                        "properties":{
+                                            "subnet":{
+                                                "id":"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Network/virtualNetworks/"+vnet_name+"/subnets/"+constants.subnet_name
+                                            },
+                                            "privateIPAllocationMethod":"Dynamic",
+                                            "publicIPAddress":{
+                                                    "id":"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Network/publicIPAddresses/"+public_ip_name
+                                        }
+                                        }
                                     }
-                                    }
-                                }
-                            ],
-                        }
-                    })
-       nic_url=constants.azure_url+"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
-       response_nic = requests.put(url=nic_url, data=nic_params, headers=_generate_credentials())
-       print(response_nic.text)
-    except WindowsAzureConflictError:
-       ctx.logger.info("network interface card " + nic_name + "could not be created.")
-       sys.exit(1)
-    """
+                                ],
+                            }
+                        })
+           nic_url=constants.azure_url+"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
+           response_nic = requests.put(url=nic_url, data=nic_params, headers=_generate_credentials())
+           print(response_nic.text)
+        except WindowsAzureConflictError:
+           ctx.logger.info("network interface card " + nic_name + "could not be created.")
+           sys.exit(1)
     else:
      ctx.logger.info("network interface card" + nic_name + "has already been provisioned by another user.")
-    """
+    
 
 @operation
 def delete_nic(**_):
     nic_name = ctx.node.properties['vm_name']+'_nic'
     subscription_id = ctx.node.properties['subscription_id']
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
-    #if nic_name in [nic_name for pip in _list_all_nics()]:
-    try:
-       ctx.logger.info("Deleting NIC")
-       nic_url="https://management.azure.com/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
-       response_nic = requests.delete(url=nic_url,headers=_generate_credentials())
-       print(response_nic.text)
-    except WindowsAzureMissingResourceError:
-       ctx.logger.info("Network Interface Card " + nic_name + " could not be deleted.")
-       sys.exit(1)
-    """
+    if nic_name in [nic_name for pip in _list_all_nics()]:
+       
+        try:
+           ctx.logger.info("Deleting NIC")
+           nic_url="https://management.azure.com/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
+           response_nic = requests.delete(url=nic_url,headers=_generate_credentials())
+           print(response_nic.text)
+        except WindowsAzureMissingResourceError:
+           ctx.logger.info("Network Interface Card " + nic_name + " could not be deleted.")
+           sys.exit(1)
     else:
         ctx.logger.info("Network Interface Card " + nic_name + " does not exist.")
-    """
-"""  
+   
+ 
 def _list_all_nics(**_):
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
@@ -111,7 +109,7 @@ def _list_all_nics(**_):
 
     #nic_list= #extract nic_name
     #return nic_list
-"""   
+  
 def _generate_credentials(**_):
     client_id=ctx.node.properties['client_id']
     tenant_id=ctx.node.properties['tenant_id']
