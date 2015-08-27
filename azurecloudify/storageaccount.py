@@ -86,10 +86,10 @@ def _list_all_storage_accounts(**_):
 
 
 def _generate_credentials(**_):
-    client_id=ctx.node.properties('client_id')
-    tenant_id=ctx.node.properties('tenant_id')
-    username=ctx.node.properties('username')
-    password=ctx.node.properties('password')
+    client_id=ctx.node.properties['client_id']
+    tenant_id=ctx.node.properties['tenant_id']
+    username=ctx.node.properties['username']
+    password=ctx.node.properties['password']
     url='https://login.microsoftonline.com/'+tenant_id+'/oauth2/token'
     headers ={"Content-Type":"application/x-www-form-urlencoded"}
     body = "grant_type=password&username="+username+"&password="+password+"&client_id="+client_id+"&resource=https://management.core.windows.net/"
