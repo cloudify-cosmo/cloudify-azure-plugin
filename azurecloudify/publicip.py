@@ -66,7 +66,7 @@ def create_public_ip(**_):
         ctx.logger.info("Public IP" + public_ip_name + "has already been assigned to another VM")
 
 
-def delete_public_ip():
+def delete_public_ip(**_):
     public_ip_name = ctx.node.properties['vm_name']+'_pip'
     subscription_id = ctx.node.properties['subscription_id']
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
