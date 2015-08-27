@@ -26,6 +26,26 @@ node_types:
           Indicates the name of the virtual machine required to create resource group
         type: string
         default: 'my_vm'
+      client_id:
+        description: >
+          Indicates the user's client id
+        type: string
+        default: ''
+      tenant_id:
+        description: >
+          Indicates the user's tenant id
+        type: string
+        default: ''
+      username:
+        description: >
+          Indicates the name of the virtual machine required to create network interface card
+        type: string
+        default: ''
+      password:
+        description: >
+          Indicates the name of the virtual machine required to create network interface card
+        type: string
+        default: ''
       
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -67,6 +87,26 @@ node_types:
            Indicates the ssh public-key data of the user
         type: string
         default: ''
+      client_id:
+        description: >
+          Indicates the user's client id
+        type: string
+        default: ''
+      tenant_id:
+        description: >
+          Indicates the user's tenant id
+        type: string
+        default: ''
+      username:
+        description: >
+          Indicates the name of the virtual machine required to create network interface card
+        type: string
+        default: ''
+      password:
+        description: >
+          Indicates the name of the virtual machine required to create network interface card
+        type: string
+        default: ''
     
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -99,7 +139,27 @@ node_types:
         description: >
           Indicates the name of the virtual machine
         type: string
-        default: 'my_vm'     
+        default: 'my_vm'   
+      client_id:
+        description: >
+          Indicates the user's client id
+        type: string
+        default: ''
+      tenant_id:
+        description: >
+          Indicates the user's tenant id
+        type: string
+        default: ''
+      username:
+        description: >
+          Indicates the name of the virtual machine required to create network interface card
+        type: string
+        default: ''
+      password:
+        description: >
+          Indicates the name of the virtual machine required to create network interface card
+        type: string
+        default: ''
 
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -126,6 +186,26 @@ node_types:
           Indicates the name of the virtual machine
         type: string
         default: 'my_vm'
+      client_id:
+        description: >
+          Indicates the user's client id
+        type: string
+        default: ''
+      tenant_id:
+        description: >
+          Indicates the user's tenant id
+        type: string
+        default: ''
+      username:
+        description: >
+          Indicates the name of the virtual machine required to create network interface card
+        type: string
+        default: ''
+      password:
+        description: >
+          Indicates the name of the virtual machine required to create network interface card
+        type: string
+        default: ''
       
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -198,6 +278,26 @@ node_types:
           Indicates the name of the virtual machine required to create virtual network
         type: string
         default: 'my_vm'
+      client_id:
+        description: >
+          Indicates the user's client id
+        type: string
+        default: ''
+      tenant_id:
+        description: >
+          Indicates the user's tenant id
+        type: string
+        default: ''
+      username:
+        description: >
+          Indicates the name of the virtual machine required to create network interface card
+        type: string
+        default: ''
+      password:
+        description: >
+          Indicates the name of the virtual machine required to create network interface card
+        type: string
+        default: ''
         
     interfaces:
       cloudify.interfaces.lifecycle:
