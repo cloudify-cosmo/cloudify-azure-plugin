@@ -94,7 +94,7 @@ def delete_nic(**_):
        nic_url="https://management.azure.com/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
        response_nic = requests.delete(url=nic_url,headers=_generate_credentials())
        print(response_nic.text)
-     except WindowsAzureMissingResourceError:
+    except WindowsAzureMissingResourceError:
        ctx.logger.info("Network Interface Card " + nic_name + " could not be deleted.")
        sys.exit(1)
     """
