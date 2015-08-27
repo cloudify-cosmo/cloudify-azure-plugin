@@ -28,7 +28,7 @@ from cloudify.decorators import operation
 #virtualmachine:
 
 @operation
-def vm_creation_validation():
+def vm_creation_validation(**_):
     vm_name = ctx.node.properties['vm_name']
     if vm_name in [vm_name for vms in _list_all_virtual_machines()]:
         ctx.logger.info("Virtual Machine: " + vm_name + " successfully created.")
