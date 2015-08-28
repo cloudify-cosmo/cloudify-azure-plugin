@@ -33,7 +33,7 @@ def create_storage_account(**_):
     for property_key in constants.STORAGE_ACCOUNT_REQUIRED_PROPERTIES:
        _validate_node_properties(property_key, ctx.node.properties)
     vm_name=ctx.node.properties['vm_name']
-    storage_account_name = vm_name+'_storage_account'
+    storage_account_name = vm_name+'storageaccount'
     resource_group_name = vm_name+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
     ctx.logger.info("Checking availability of storage account: " + storage_account_name)
@@ -54,7 +54,7 @@ def create_storage_account(**_):
 @operation
 def delete_storage_account(**_):
     vm_name=ctx.node.properties['vm_name']
-    storage_account_name = vm_name+'_storage_account'
+    storage_account_name = vm_name+'storageaccount'
     resource_group_name = vm_name+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
     ctx.logger.info("Deleting Storage Account"+storage_account_name)
