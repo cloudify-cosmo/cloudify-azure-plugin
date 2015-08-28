@@ -32,12 +32,13 @@ from cloudify.decorators import operation
 def create_nic(**_):
     for property_key in constants.NIC_REQUIRED_PROPERTIES:
        _validate_node_properties(property_key, ctx.node.properties)
-    nic_name = ctx.node.properties['vm_name']+'_nic'
-    public_ip_name=ctx.node.properties['vm_name']+'_pip'
-    resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
+    vm_name=ctx.node.properties['vm_name']
+    nic_name = vm_name+'_nic'
+    public_ip_name=vm_name+'_pip'
+    resource_group_name = vm_name+'_resource_group'
     location = ctx.node.properties['location']
     subscription_id = ctx.node.properties['subscription_id']
-    vnet_name = ctx.node.properties['vm_name']+'_vnet'
+    vnet_name = vm_name+'_vnet'
     ctx.logger.info("Checking availability of network interface card: " + nic_name)
     if 1:
         try:
@@ -73,9 +74,10 @@ def create_nic(**_):
 
 @operation
 def delete_nic(**_):
-    nic_name = ctx.node.properties['vm_name']+'_nic'
+    vm_name=ctx.node.properties['vm_name']
+    nic_name = vm_name+'_nic'
     subscription_id = ctx.node.properties['subscription_id']
-    resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
+    resource_group_name = vm_name+'_resource_group'
     if 1:
        
         try:
