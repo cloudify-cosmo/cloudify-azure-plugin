@@ -96,7 +96,7 @@ def create_vm(**_):
                     }
                 })
             virtual_machine_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version
-            response_vm = requests.put(url=virtual_machine_url, data=virtual_machine_params, headers=_generate_credentials())
+            response_vm = requests.put(url=virtual_machine_url, data=virtual_machine_params, headers=constants.headers)
             print(response_vm.text)
         except WindowsAzureConflictError:
           ctx.logger.info("Virtual Machine " + vm_name + "could not be created.")
@@ -112,7 +112,7 @@ def start_vm(**_):
     vm_name = ctx.node.properties['vm_name']
     resource_group_name = vm_name+'_resource_group'
     start_vm_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
-    response_start_vm=requests.post(start_vm_url,headers=_generate_credentials())
+    response_start_vm=requests.post(start_vm_url,headers=constants.headers)
     print (response_start_vm.text)
     
     
@@ -123,7 +123,7 @@ def stop_vm(**_):
     vm_name = ctx.node.properties['vm_name']
     resource_group_name = vm_name+'_resource_group'
     stop_vm_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
-    response_stop_vm=requests.post(stop_vm_url,headers=_generate_credentials())
+    response_stop_vm=requests.post(stop_vm_url,headers=constants.headers)
     print (response_stop_vm.text)
 
 
@@ -137,7 +137,7 @@ def delete_virtual_machine(**_):
         try:
             ctx.logger.info("Deleting the virtual machine: " + vm_name)
             vm_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version
-            response_vm = requests.delete(url=vm_url,headers=_generate_credentials())
+            response_vm = requests.delete(url=vm_url,headers=constants.headers)
             print(response_vm.text)
 
         except WindowsAzureMissingResourceError:
