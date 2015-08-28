@@ -42,7 +42,7 @@ def create_storage_account(**_):
             ctx.logger.info("Creating new storage account: " + storage_account_name)
             storage_account_url= constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts/'+storage_account_name+'?api-version='+constants.api_version
             storage_account_params=json.dumps({"properties": {"accountType": constants.storage_account_type,}, "location": location})
-            response_sa = requests.put(url=storage_account_url, data=storage_account_params, headers=_generate_credentials())
+            response_sa = requests.put(url=storage_account_url, data=storage_account_params, headers=constants.headers)
             print response_sa.text
         except WindowsAzureConflictError:
             ctx.logger.info("Storage Account " + storage_account_name + "could not be created.")
@@ -61,7 +61,7 @@ def delete_storage_account(**_):
     if 1:
         try:
             storage_account_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts/'+storage_account_name+'?api-version='+constants.api_version
-            response_sa = requests.delete(url=storage_account_url,headers=_generate_credentials())
+            response_sa = requests.delete(url=storage_account_url,headers=constants.headers)
             print response_sa.text
 
         except WindowsAzureMissingResourceError:
