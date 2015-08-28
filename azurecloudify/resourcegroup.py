@@ -42,7 +42,7 @@ def create_resource_group(**_):
         try:
             ctx.logger.info("Creating new Resource group: " + resource_group_name)
             resource_group_params=json.dumps({"name":resource_group_name,"location": location})
-            response_rg = requests.put(url=resource_group_url, data=resource_group_params, headers=_generate_credentials())
+            response_rg = requests.put(url=resource_group_url, data=resource_group_params, headers=constants.headers)
             print response_rg.text
         except WindowsAzureConflictError:
             ctx.logger.info("Resource Group " + resource_group_name + " could not be created")
@@ -60,7 +60,7 @@ def delete_resource_group(**_):
         try:
             ctx.logger.info("Deleting Resource Group: " + resource_group_name)
             resource_group_url = 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version_resource_group
-            response_rg = requests.delete(url=resource_group_url, headers=_generate_credentials())
+            response_rg = requests.delete(url=resource_group_url, headers=constants.headers)
             print(response_rg.text)
         except WindowsAzureMissingResourceError:
             ctx.logger.info("Resource Group" +  resource_group_name + "could not be deleted." )
