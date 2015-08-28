@@ -32,8 +32,9 @@ from cloudify.decorators import operation
 def create_vnet(**_):
     for property_key in constants.VNET_REQUIRED_PROPERTIES:
         _validate_node_properties(property_key, ctx.node.properties)
-    resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
-    vnet_name = ctx.node.properties['vm_name']+'_vnet'
+    vm_name=ctx.node.properties['vm_name']
+    resource_group_name = vm_name+'_resource_group'
+    vnet_name = vm_name+'_vnet'
     location = ctx.node.properties['location']
     subscription_id = ctx.node.properties['subscription_id']
     vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
@@ -55,8 +56,9 @@ def create_vnet(**_):
 
 @operation
 def delete_vnet(**_):
-    vnet_name = ctx.node.properties['vm_name']+'_vnet'
-    resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
+    vm_name=ctx.node.properties['vm_name']
+    vnet_name = vm_name+'_vnet'
+    resource_group_name = vm_name+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
     ctx.logger.info("Checking availability of virtual network: " + vnet_name)
     if 1:
