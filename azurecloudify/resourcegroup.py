@@ -31,8 +31,8 @@ from cloudify.decorators import operation
 def create_resource_group(**_):
     for property_key in constants.RESOURCE_GROUP_REQUIRED_PROPERTIES:
         _validate_node_properties(property_key, ctx.node.properties)
-
-    resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
+    vm_name=ctx.node.properties['vm_name']
+    resource_group_name = vm_name+'_resource_group'
     location = ctx.node.properties['location']
     subscription_id = ctx.node.properties['subscription_id']
     resource_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version_resource_group
@@ -53,7 +53,8 @@ def create_resource_group(**_):
 
 @operation
 def delete_resource_group(**_):
-    resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
+    vm_name=ctx.node.properties['vm_name']
+    resource_group_name = vm_name+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
     if 1:
         try:
