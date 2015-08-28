@@ -35,12 +35,13 @@ def create_vm(**_):
     for property_key in constants.VM_REQUIRED_PROPERTIES:
         _validate_node_properties(property_key, ctx.node.properties)
         
-    resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
-    storage_account_name = ctx.node.properties['vm_name']+'_storage_group'
+    vm_name = ctx.node.properties['vm_name'] 
+    resource_group_name = vm_name+'_resource_group'
+    storage_account_name = vm_name+'_storage_group'
     location = ctx.node.properties['location']
-    vnet_name = ctx.node.properties['vm_name']+'_vnet'
-    nic_name = ctx.node.properties['vm_name']+'_nic'
-    vm_name = ctx.node.properties['vm_name']
+    vnet_name = vm_name+'_vnet'
+    nic_name = vm_name+'_nic'
+    
     subscription_id = ctx.node.properties['subscription_id']
     ctx.logger.info("Checking availability of virtual network: " + vm_name)
     if 1:
@@ -109,7 +110,7 @@ def create_vm(**_):
 def start_vm(**_):
     subscription_id = ctx.node.properties['subscription_id']
     vm_name = ctx.node.properties['vm_name']
-    resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
+    resource_group_name = vm_name+'_resource_group'
     start_vm_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
     response_start_vm=requests.post(start_vm_url,headers=_generate_credentials())
     print (response_start_vm.text)
@@ -120,7 +121,7 @@ def start_vm(**_):
 def stop_vm(**_):
     subscription_id = ctx.node.properties['subscription_id']
     vm_name = ctx.node.properties['vm_name']
-    resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
+    resource_group_name = vm_name+'_resource_group'
     stop_vm_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
     response_stop_vm=requests.post(stop_vm_url,headers=_generate_credentials())
     print (response_stop_vm.text)
@@ -129,7 +130,7 @@ def stop_vm(**_):
 @operation
 def delete_virtual_machine(**_):
     vm_name = ctx.node.properties['vm_name']
-    resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
+    resource_group_name = vm_name+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
     ctx.logger.info("Checking availability of virtual network: " + vm_name)
     if 1:
