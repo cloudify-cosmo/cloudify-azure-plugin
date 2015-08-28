@@ -60,9 +60,10 @@ def create_public_ip(**_):
     
 
 def delete_public_ip(**_):
-    public_ip_name = ctx.node.properties['vm_name']+'_pip'
+    vm_name=ctx.node.properties['vm_name']
+    public_ip_name = vm_name+'_pip'
     subscription_id = ctx.node.properties['subscription_id']
-    resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
+    resource_group_name = vm_name+'_resource_group'
     if 1:
         try:
             ctx.logger.info("Deleting Public IP")
