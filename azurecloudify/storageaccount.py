@@ -71,7 +71,7 @@ def delete_storage_account(**_):
         ctx.logger.info("Storage Account " + storage_account_name + " does not exist.")
 
 
-
+"""
 def _generate_credentials(**_):
     client_id=ctx.node.properties['client_id']
     tenant_id=ctx.node.properties['tenant_id']
@@ -92,7 +92,7 @@ def _generate_credentials(**_):
     credentials = "Bearer " + token
     head = {"Content-Type": "application/json", "Authorization": credentials}
     return head
-
+"""
 
 
 def _validate_node_properties(key, ctx_node_properties):
