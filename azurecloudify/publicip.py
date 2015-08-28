@@ -36,7 +36,7 @@ def create_public_ip(**_):
     subscription_id = ctx.node.properties['subscription_id']
     location = ctx.node.properties['location']
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
-    public_ip_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version={api-version}='+constants.api_version
+    public_ip_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
     if 1:
         try:
             ctx.logger.info("Creating new public ip : " + public_ip_name)
