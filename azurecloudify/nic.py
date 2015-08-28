@@ -63,7 +63,7 @@ def create_nic(**_):
                             }
                         })
           nic_url=constants.azure_url+"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
-          response_nic = requests.put(url=nic_url, data=nic_params, headers=_generate_credentials())
+          response_nic = requests.put(url=nic_url, data=nic_params, headers=constants.headers)
           print(response_nic.text)
         except WindowsAzureConflictError:
           ctx.logger.info("network interface card " + nic_name + "could not be created.")
@@ -83,7 +83,7 @@ def delete_nic(**_):
         try:
            ctx.logger.info("Deleting NIC")
            nic_url="https://management.azure.com/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
-           response_nic = requests.delete(url=nic_url,headers=_generate_credentials())
+           response_nic = requests.delete(url=nic_url,headers=constant.headers)
            print(response_nic.text)
         except WindowsAzureMissingResourceError:
            ctx.logger.info("Network Interface Card " + nic_name + " could not be deleted.")
