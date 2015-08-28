@@ -37,7 +37,7 @@ def create_vm(**_):
         
     vm_name = ctx.node.properties['vm_name'] 
     resource_group_name = vm_name+'_resource_group'
-    storage_account_name = vm_name+'_storage_group'
+    storage_account_name = vm_name+'storageaccount'
     location = ctx.node.properties['location']
     vnet_name = vm_name+'_vnet'
     nic_name = vm_name+'_nic'
