@@ -45,7 +45,7 @@ def create_vnet(**_):
             ctx.logger.info("Creating new virtual network: " + vnet_name)
     
             vnet_params=json.dumps({"name":vnet_name, "location": location,"properties": {"addressSpace": {"addressPrefixes": constants.vnet_address_prefixes},"subnets": [{"name": constants.subnet_name, "properties": {"addressPrefix": constants.address_prefix}}]}})
-            response_vnet = requests.put(url=vnet_url, data=vnet_params, headers=_generate_credentials())
+            response_vnet = requests.put(url=vnet_url, data=vnet_params, headers=constants.headers)
             print response_vnet.text
         except WindowsAzureConflictError:
             ctx.logger.info("Virtual Network " + vnet_name + "could not be created.")
@@ -65,7 +65,7 @@ def delete_vnet(**_):
         try:
             ctx.logger.info("Deleting the virtual network: " + vnet_name)
             vnet_url = 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
-            response_vnet = requests.delete(url=vnet_url,headers=_generate_credentials())
+            response_vnet = requests.delete(url=vnet_url,headers=constants.headers)
             print response_vnet.text
 
         except WindowsAzureMissingResourceError:
