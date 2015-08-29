@@ -53,7 +53,7 @@ def create_public_ip(**_):
             print response_pip.text
         except WindowsAzureConflictError:
             ctx.logger.info("Public IP" + public_ip_name + "could not be created.")
-        sys.exit(1)
+            sys.exit(1)
     
     else:
         ctx.logger.info("Public IP" + public_ip_name + "has already been assigned to another VM")
