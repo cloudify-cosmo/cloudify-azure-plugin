@@ -294,17 +294,19 @@ node_types:
         delete: microsoft.azurecloudify.vnet.delete_vnet
       
 relationships:
-  cloudify.azure.relationships.server_connected_to_resource_group:
+  
+  cloudify.azure.relationships.storage_account_connected_to_resource_group:
+    derived_from: cloudify.relationships.connected_to
+    
+  cloudify.azure.relationships.vnet_connected_to_storage_account:
     derived_from: cloudify.relationships.connected_to
 
-  cloudify.azure.relationships.server_connected_to_public_ip:
+  cloudify.azure.relationships.public_ip_connected_to_vnet:
     derived_from: cloudify.relationships.connected_to
 
-  cloudify.azure.relationships.server_connected_to_storage_account:
+  cloudify.azure.relationships.nic_connected_to_public_ip:
     derived_from: cloudify.relationships.connected_to
     
   cloudify.azure.relationships.server_connected_to_nic:
     derived_from: cloudify.relationships.connected_to
     
-  cloudify.azure.relationships.server_connected_to_vnet:
-    derived_from: cloudify.relationships.connected_to
