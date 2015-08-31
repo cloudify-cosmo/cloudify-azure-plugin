@@ -42,6 +42,7 @@ vm_createOption = 'FromImage'
 admin_username='azuretest'
 vm_version="latest"
 azure_url='https://management.azure.com'
+key_data= ""
 
 RESOURCE_GROUP_REQUIRED_PROPERTIES=['vm_name','location','subscription_id']
 STORAGE_ACCOUNT_REQUIRED_PROPERTIES = ['vm_name','location','subscription_id']
