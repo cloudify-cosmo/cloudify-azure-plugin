@@ -24,6 +24,11 @@ from cloudify.exceptions import NonRecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation 
 
+@operation
+def resource_group_creation_validation(**_):
+    for property_key in constants.PUBLIC_IP_REQUIRED_PROPERTIES:
+        _validate_node_property(property_key, ctx.node.properties)
+
       
 @operation
 def create_public_ip(**_):
