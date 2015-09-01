@@ -21,8 +21,6 @@ import constants
 import sys
 import os
 from cloudify.exceptions import NonRecoverableError
-from azure import WindowsAzureConflictError
-from azure import WindowsAzureMissingResourceError
 from cloudify import ctx
 from cloudify.decorators import operation
  
@@ -65,7 +63,7 @@ def create_nic(**_):
           nic_url=constants.azure_url+"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
           response_nic = requests.put(url=nic_url, data=nic_params, headers=constants.headers)
           print(response_nic.text)
-        except WindowsAzureConflictError:
+        except:
           ctx.logger.info("network interface card " + nic_name + "could not be created.")
           sys.exit(1)
     else:
@@ -85,7 +83,7 @@ def delete_nic(**_):
            nic_url="https://management.azure.com/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
            response_nic = requests.delete(url=nic_url,headers=constants.headers)
            print(response_nic.text)
-        except WindowsAzureMissingResourceError:
+        except:
            ctx.logger.info("Network Interface Card " + nic_name + " could not be deleted.")
            sys.exit(1)
     else:
