@@ -21,8 +21,6 @@ import constants
 import sys
 import os
 from cloudify.exceptions import NonRecoverableError
-from azure import WindowsAzureConflictError
-from azure import WindowsAzureMissingResourceError
 from cloudify import ctx
 from cloudify.decorators import operation
 
@@ -47,7 +45,7 @@ def create_vnet(**_):
             vnet_params=json.dumps({"name":vnet_name, "location": location,"properties": {"addressSpace": {"addressPrefixes": constants.vnet_address_prefixes},"subnets": [{"name": constants.subnet_name, "properties": {"addressPrefix": constants.address_prefix}}]}})
             response_vnet = requests.put(url=vnet_url, data=vnet_params, headers=constants.headers)
             print response_vnet.text
-        except WindowsAzureConflictError:
+        except:
             ctx.logger.info("Virtual Network " + vnet_name + "could not be created.")
             sys.exit(1)
     else:
@@ -68,7 +66,7 @@ def delete_vnet(**_):
             response_vnet = requests.delete(url=vnet_url,headers=constants.headers)
             print response_vnet.text
 
-        except WindowsAzureMissingResourceError:
+        except:
             ctx.logger.info("Virtual Network " + vnet_name + " could not be deleted.")
         sys.exit(1)
     else:
