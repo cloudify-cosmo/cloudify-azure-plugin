@@ -25,7 +25,7 @@ from cloudify import ctx
 from cloudify.decorators import operation
 
 @operation
-def resource_group_creation_validation(**_):
+def creation_validation(**_):
     for property_key in constants.VNET_REQUIRED_PROPERTIES:
         _validate_node_property(property_key, ctx.node.properties)
 
