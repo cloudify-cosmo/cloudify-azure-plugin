@@ -124,7 +124,7 @@ def stop_vm(**_):
     response_stop_vm=requests.post(stop_vm_url,headers=constants.headers)
     print (response_stop_vm.text)
 
-"""
+
 @operation
 def delete_virtual_machine(**_):
     vm_name = ctx.node.properties['vm_name']
@@ -143,7 +143,7 @@ def delete_virtual_machine(**_):
         sys.exit(1)
     else:
         ctx.logger.info("Virtual Machine " + vm_name + " does not exist.")
-"""
+
 """
 def _generate_credentials(**_):
     client_id=ctx.node.properties['client_id']
