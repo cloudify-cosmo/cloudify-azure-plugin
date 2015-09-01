@@ -69,7 +69,7 @@ def create_vm(**_):
                                 "publicKeys": [
                                     {
                                         "path": "/home/"+constants.admin_username+"/.ssh/authorized_keys",
-                                        "keyData": ctx.node.properties['key_data']}
+                                        "keyData": constants.key_data}
                                 ]
                             }
                         }
