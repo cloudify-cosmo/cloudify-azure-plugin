@@ -114,6 +114,8 @@ node_types:
           implementation: microsoft.azurecloudify.server.start_vm
         stop:
           implementation: microsoft.azurecloudify.server.stop_vm
+        delete:
+          implementation: microsoft.azurecloudify.server.delete_vm
       
 
   cloudify.azure.nodes.PublicIP:
