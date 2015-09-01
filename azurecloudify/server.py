@@ -26,6 +26,11 @@ from cloudify.decorators import operation
 
 #virtualmachine:
 
+@operation
+def resource_group_creation_validation(**_):
+    for property_key in constants.VM_REQUIRED_PROPERTIES:
+        _validate_node_property(property_key, ctx.node.properties)
+
 
 @operation
 def create_vm(**_):
