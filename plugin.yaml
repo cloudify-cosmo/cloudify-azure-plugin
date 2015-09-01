@@ -117,7 +117,7 @@ node_types:
         stop:
           implementation: microsoft.azurecloudify.server.stop_vm
         delete:
-          implementation: microsoft.azurecloudify.server.delete_vm
+          implementation: microsoft.azurecloudify.server.delete_virtual_machine
       cloudify.interfaces.validation:
         creation:
           implementation: microsoft.azurecloudify.server.creation_validation
