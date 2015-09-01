@@ -21,8 +21,6 @@ import constants
 import sys
 import os
 from cloudify.exceptions import NonRecoverableError
-from azure import WindowsAzureConflictError
-from azure import WindowsAzureMissingResourceError
 from cloudify import ctx
 from cloudify.decorators import operation
 
@@ -44,7 +42,7 @@ def create_storage_account(**_):
             storage_account_params=json.dumps({"properties": {"accountType": constants.storage_account_type,}, "location": location})
             response_sa = requests.put(url=storage_account_url, data=storage_account_params, headers=constants.headers)
             print response_sa.text
-        except WindowsAzureConflictError:
+        except:
             ctx.logger.info("Storage Account " + storage_account_name + "could not be created.")
             sys.exit(1)
     else:
@@ -64,7 +62,7 @@ def delete_storage_account(**_):
             response_sa = requests.delete(url=storage_account_url,headers=constants.headers)
             print response_sa.text
 
-        except WindowsAzureMissingResourceError:
+        except:
             ctx.logger.info("Storage Account " + storage_account_name + " could not be deleted.")
             sys.exit(1)
     else:
