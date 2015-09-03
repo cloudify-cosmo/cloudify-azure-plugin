@@ -38,7 +38,7 @@ def create_storage_account(**_):
     storage_account_name = vm_name+'storageaccount'
     resource_group_name = vm_name+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
-    credentials=get_token_from_client_credentials()
+    credentials='Bearer '+get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     ctx.logger.info("Checking availability of storage account: " + storage_account_name)
     if 1:
@@ -61,7 +61,7 @@ def delete_storage_account(**_):
     storage_account_name = vm_name+'storageaccount'
     resource_group_name = vm_name+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
-    credentials=get_token_from_client_credentials()
+    credentials='Bearer '+get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     ctx.logger.info("Deleting Storage Account"+storage_account_name)
     if 1:
