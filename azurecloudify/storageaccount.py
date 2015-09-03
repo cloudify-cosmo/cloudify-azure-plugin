@@ -38,13 +38,15 @@ def create_storage_account(**_):
     storage_account_name = vm_name+'storageaccount'
     resource_group_name = vm_name+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
+    credentials=get_token_from_client_credentials()
+    headers = {"Content-Type": "application/json", "Authorization": credentials}
     ctx.logger.info("Checking availability of storage account: " + storage_account_name)
     if 1:
         try:
             ctx.logger.info("Creating new storage account: " + storage_account_name)
             storage_account_url= constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts/'+storage_account_name+'?api-version='+constants.api_version
             storage_account_params=json.dumps({"properties": {"accountType": constants.storage_account_type,}, "location": location})
-            response_sa = requests.put(url=storage_account_url, data=storage_account_params, headers=constants.headers)
+            response_sa = requests.put(url=storage_account_url, data=storage_account_params, headers=headers)
             print response_sa.text
         except:
             ctx.logger.info("Storage Account " + storage_account_name + "could not be created.")
@@ -59,11 +61,13 @@ def delete_storage_account(**_):
     storage_account_name = vm_name+'storageaccount'
     resource_group_name = vm_name+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
+    credentials=get_token_from_client_credentials()
+    headers = {"Content-Type": "application/json", "Authorization": credentials}
     ctx.logger.info("Deleting Storage Account"+storage_account_name)
     if 1:
         try:
             storage_account_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts/'+storage_account_name+'?api-version='+constants.api_version
-            response_sa = requests.delete(url=storage_account_url,headers=constants.headers)
+            response_sa = requests.delete(url=storage_account_url,headers=headers)
             print response_sa.text
 
         except:
