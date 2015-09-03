@@ -40,6 +40,8 @@ def create_vnet(**_):
     vnet_name = vm_name+'_vnet'
     location = ctx.node.properties['location']
     subscription_id = ctx.node.properties['subscription_id']
+    credentials=get_token_from_client_credentials()
+    headers = {"Content-Type": "application/json", "Authorization": credentials}
     vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
     ctx.logger.info("Checking availability of virtual network: " + vnet_name)
 
@@ -48,7 +50,7 @@ def create_vnet(**_):
             ctx.logger.info("Creating new virtual network: " + vnet_name)
     
             vnet_params=json.dumps({"name":vnet_name, "location": location,"properties": {"addressSpace": {"addressPrefixes": constants.vnet_address_prefixes},"subnets": [{"name": constants.subnet_name, "properties": {"addressPrefix": constants.address_prefix}}]}})
-            response_vnet = requests.put(url=vnet_url, data=vnet_params, headers=constants.headers)
+            response_vnet = requests.put(url=vnet_url, data=vnet_params, headers=headers)
             print response_vnet.text
         except:
             ctx.logger.info("Virtual Network " + vnet_name + "could not be created.")
@@ -63,12 +65,14 @@ def delete_vnet(**_):
     vnet_name = vm_name+'_vnet'
     resource_group_name = vm_name+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
+    credentials=get_token_from_client_credentials()
+    headers = {"Content-Type": "application/json", "Authorization": credentials}
     ctx.logger.info("Checking availability of virtual network: " + vnet_name)
     if 1:
         try:
             ctx.logger.info("Deleting the virtual network: " + vnet_name)
             vnet_url = 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
-            response_vnet = requests.delete(url=vnet_url,headers=constants.headers)
+            response_vnet = requests.delete(url=vnet_url,headers=headers)
             print response_vnet.text
 
         except:
@@ -100,6 +104,20 @@ def _generate_credentials(**_):
     return head
 """
 
+def get_token_from_client_credentials():
+ 
+    client_id = ctx.node.properties['client_id']
+    client_secret = ctx.node.properties['password']
+    tenant_id = ctx.node.properties['tenant_id']
+    endpoints = 'https://login.microsoftonline.com/'+tenant_id+'/oauth2/token'
+    payload = {
+        'grant_type': 'client_credentials',
+        'client_id': client_id,
+        'client_secret': client_secret,
+        'resource': constants.resource,
+    }
+    response = requests.post(endpoints, data=payload).json()
+    return response['access_token']
 
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
