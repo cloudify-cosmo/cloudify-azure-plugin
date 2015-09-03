@@ -60,11 +60,13 @@ def delete_resource_group(**_):
     vm_name=ctx.node.properties['vm_name']
     resource_group_name = vm_name+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
+    credentials=get_token_from_client_credentials()
+    headers = {"Content-Type": "application/json", "Authorization": credentials}
     if 1:
         try:
             ctx.logger.info("Deleting Resource Group: " + resource_group_name)
             resource_group_url = 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version_resource_group
-            response_rg = requests.delete(url=resource_group_url, headers=constants.headers)
+            response_rg = requests.delete(url=resource_group_url, headers=headers)
             print(response_rg.text)
         except:
             ctx.logger.info("Resource Group" +  resource_group_name + "could not be deleted." )
