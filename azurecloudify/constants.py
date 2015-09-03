@@ -18,7 +18,7 @@
 # instance module constants
 
 
-
+credentials = 'Bearer '
 
 subscription_id = 'REPLACE_WITH_SUBSCRIPTION_ID'
 
