@@ -18,7 +18,7 @@
 # instance module constants
 
 
-credentials = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6Ik1uQ19WWmNBVGZNNXBPWWlKSE1iYTlnb0VLWSIsImtpZCI6Ik1uQ19WWmNBVGZNNXBPWWlKSE1iYTlnb0VLWSJ9.eyJhdWQiOiJodHRwczovL21hbmFnZW1lbnQuY29yZS53aW5kb3dzLm5ldC8iLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC9lOGY4M2RkZi00ZGVlLTRlMWQtYjc3YS1mZjNkZGFhZjUyZDgvIiwiaWF0IjoxNDQxMjUyOTM0LCJuYmYiOjE0NDEyNTI5MzQsImV4cCI6MTQ0MTI1NjgzNCwidmVyIjoiMS4wIiwidGlkIjoiZThmODNkZGYtNGRlZS00ZTFkLWI3N2EtZmYzZGRhYWY1MmQ4Iiwib2lkIjoiNDg0ODI0YzktZWY5ZC00NmFjLThjMjktNWQxZTg0ZjI5YmFhIiwic3ViIjoiNDg0ODI0YzktZWY5ZC00NmFjLThjMjktNWQxZTg0ZjI5YmFhIiwiaWRwIjoiaHR0cHM6Ly9zdHMud2luZG93cy5uZXQvZThmODNkZGYtNGRlZS00ZTFkLWI3N2EtZmYzZGRhYWY1MmQ4LyIsImFwcGlkIjoiNGRlNDQ3NTAtMmM1OC00MDdlLTg1MDQtMDhkOWMyZTkxMjU0IiwiYXBwaWRhY3IiOiIxIn0.b7aTuJJFOkakE9ZPW7uqI_-MRJZ6Nc0-9AHvPWHb3HMR9pFhwQHMpgIGH_Q1Thru-ggrdbKqNtw252TdofmS4UH5Wo3YYRQo0Q-nP8Knwsa59PxZAwWp4S_0E8gSFcKth_QaiXtDDfn9Pv544d-voa69SXn5dN4PRsxLPvjOoYFYTMO0l04LfUhPO0flQ-3YdhJgKevw2C_flx8pCRFz7cwAqRzV_3pTG3Po0_CxYsoK3_jGgW_6uyPKxepSRzQMQB-jGjP-gDxXcULahaBbt81vr8iqR3fovPHhqR6KL8fbXHfjnztMl5d_-AIvX5u9UAXUuhiUQg0NPKHZwm7j9w'
+credentials = ''
 headers = {"Content-Type": "application/json", "Authorization": credentials}
 subscription_id = 'REPLACE_WITH_SUBSCRIPTION_ID'
 
@@ -42,15 +42,7 @@ vm_createOption = 'FromImage'
 admin_username='azuretest'
 vm_version="latest"
 azure_url='https://management.azure.com'
-key_data= """---- BEGIN SSH2 PUBLIC KEY ----
-Comment: "rsa-key-20150804"
-AAAAB3NzaC1yc2EAAAABJQAAAQEA0Y5tAjA2C9xPLRMMfU37J3kGUYQzRAbPu2gN
-9HKKB+/bkzEE+W9zysYgL1vu3heqUewQlnMz2G6gfDca+6FmitMpZdz8E0ZYUy4M
-CG+fWs/6xT92OsVLAi2VRgQlyGqOD+KJEZdMnIbbWyPzaLC0yaUDEUNWe2hRNkr0
-daRY21UCCZG9+zZNR4ndJWxjJyF4Om1G4R5gruickOs5yECbgEMISpENWmXATc6U
-UsVhRznp4u6iBusZO3ilH7B3YbDyGhXs4X/TcwBj6zuWaJsHXzorTL621g4Ppp4I
-g6QVQSrBpNBe2JCjou6tlGSBFm7vApUwAYaMStDzaIcLck/nUQ==
----- END SSH2 PUBLIC KEY ----"""
+key_data= ''
 
 resource = 'https://management.core.windows.net/'
 
