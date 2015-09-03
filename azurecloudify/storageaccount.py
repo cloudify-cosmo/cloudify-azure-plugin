@@ -38,15 +38,17 @@ def create_storage_account(**_):
     storage_account_name = vm_name+'storageaccount'
     resource_group_name = vm_name+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
+    """
     credentials='Bearer '+get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
+    """
     ctx.logger.info("Checking availability of storage account: " + storage_account_name)
     if 1:
         try:
             ctx.logger.info("Creating new storage account: " + storage_account_name)
             storage_account_url= constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts/'+storage_account_name+'?api-version='+constants.api_version
             storage_account_params=json.dumps({"properties": {"accountType": constants.storage_account_type,}, "location": location})
-            response_sa = requests.put(url=storage_account_url, data=storage_account_params, headers=headers)
+            response_sa = requests.put(url=storage_account_url, data=storage_account_params, headers=constants.headers)
             print response_sa.text
         except:
             ctx.logger.info("Storage Account " + storage_account_name + "could not be created.")
@@ -61,13 +63,15 @@ def delete_storage_account(**_):
     storage_account_name = vm_name+'storageaccount'
     resource_group_name = vm_name+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
+    """
     credentials='Bearer '+get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
+    """
     ctx.logger.info("Deleting Storage Account"+storage_account_name)
     if 1:
         try:
             storage_account_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts/'+storage_account_name+'?api-version='+constants.api_version
-            response_sa = requests.delete(url=storage_account_url,headers=headers)
+            response_sa = requests.delete(url=storage_account_url,headers=constants.headers)
             print response_sa.text
 
         except:
@@ -99,6 +103,8 @@ def _generate_credentials(**_):
     head = {"Content-Type": "application/json", "Authorization": credentials}
     return head
 """
+
+"""
 def get_token_from_client_credentials():
  
     client_id = ctx.node.properties['client_id']
@@ -115,7 +121,7 @@ def get_token_from_client_credentials():
     token=response['access_token']
     print(token)
     return token
-    
+"""    
 
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
