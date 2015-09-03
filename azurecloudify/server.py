@@ -44,8 +44,10 @@ def create_vm(**_):
     location = ctx.node.properties['location']
     vnet_name = vm_name+'_vnet'
     nic_name = vm_name+'_nic'
+    """
     credentials='Bearer '+get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
+    """
     
     subscription_id = ctx.node.properties['subscription_id']
     ctx.logger.info("Checking availability of virtual network: " + vm_name)
@@ -101,7 +103,7 @@ def create_vm(**_):
                     }
                 })
             virtual_machine_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version
-            response_vm = requests.put(url=virtual_machine_url, data=virtual_machine_params, headers=headers)
+            response_vm = requests.put(url=virtual_machine_url, data=virtual_machine_params, headers=constants.headers)
             print(response_vm.text)
         except:
           ctx.logger.info("Virtual Machine " + vm_name + "could not be created.")
@@ -115,11 +117,13 @@ def create_vm(**_):
 def start_vm(**_):
     subscription_id = ctx.node.properties['subscription_id']
     vm_name = ctx.node.properties['vm_name']
+    """
     credentials='Bearer '+get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
+    """
     resource_group_name = vm_name+'_resource_group'
     start_vm_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
-    response_start_vm=requests.post(start_vm_url,headers=headers)
+    response_start_vm=requests.post(start_vm_url,headers=constants.headers)
     print (response_start_vm.text)
     
     
@@ -128,11 +132,13 @@ def start_vm(**_):
 def stop_vm(**_):
     subscription_id = ctx.node.properties['subscription_id']
     vm_name = ctx.node.properties['vm_name']
+    """
     credentials='Bearer '+get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
+    """
     resource_group_name = vm_name+'_resource_group'
     stop_vm_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
-    response_stop_vm=requests.post(stop_vm_url,headers=headers)
+    response_stop_vm=requests.post(stop_vm_url,headers=constants.headers)
     print (response_stop_vm.text)
 
 
@@ -141,14 +147,16 @@ def delete_virtual_machine(**_):
     vm_name = ctx.node.properties['vm_name']
     resource_group_name = vm_name+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
+    """
     credentials='Bearer '+get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
+    """
     ctx.logger.info("Checking availability of virtual network: " + vm_name)
     if 1:
         try:
             ctx.logger.info("Deleting the virtual machine: " + vm_name)
             vm_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version
-            response_vm = requests.delete(url=vm_url,headers=headers)
+            response_vm = requests.delete(url=vm_url,headers=constants.headers)
             print(response_vm.text)
 
         except:
@@ -179,6 +187,7 @@ def _generate_credentials(**_):
     head = {"Content-Type": "application/json", "Authorization": credentials}
     return head
 """
+"""
 def get_token_from_client_credentials(**_):
  
     client_id = ctx.node.properties['client_id']
@@ -195,7 +204,7 @@ def get_token_from_client_credentials(**_):
     token=response['access_token']
     print(token)
     return token
-    
+ """   
 
 
 def _validate_node_properties(key, ctx_node_properties):
