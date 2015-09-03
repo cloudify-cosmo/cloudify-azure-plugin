@@ -84,8 +84,10 @@ def delete_nic(**_):
     vm_name=ctx.node.properties['vm_name']
     nic_name = vm_name+'_nic'
     subscription_id = ctx.node.properties['subscription_id']
+    """
     credentials='Bearer '+get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
+    """
     resource_group_name = vm_name+'_resource_group'
     if 1:
        
@@ -122,7 +124,7 @@ def _generate_credentials(**_):
     head = {"Content-Type": "application/json", "Authorization": credentials}
     return head
 """
-
+"""
 def get_token_from_client_credentials():
  
     client_id = ctx.node.properties['client_id']
@@ -139,7 +141,7 @@ def get_token_from_client_credentials():
     token=response['access_token']
     print(token)
     return token
-
+"""
 
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
