@@ -107,7 +107,7 @@ def _generate_credentials(**_):
     return head
 """
 
-def get_token_from_client_credentials():
+def get_token_from_client_credentials(**_):
  
     client_id = ctx.node.properties['client_id']
     client_secret = ctx.node.properties['password']
@@ -120,7 +120,10 @@ def get_token_from_client_credentials():
         'resource': constants.resource,
     }
     response = requests.post(endpoints, data=payload).json()
-    return response['access_token']
+    token=response['access_token']
+    print(token)
+    return token
+    
 
 
 def _validate_node_properties(key, ctx_node_properties):
