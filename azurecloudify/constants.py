@@ -18,7 +18,7 @@
 # instance module constants
 
 
-headers = {"Content-Type": "application/json", "Authorization": credentials}
+
 
 subscription_id = 'REPLACE_WITH_SUBSCRIPTION_ID'
 
