@@ -40,7 +40,7 @@ def create_public_ip(**_):
     location = ctx.node.properties['location']
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     public_ip_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
-    credentials=get_token_from_client_credentials()
+    credentials='Bearer '+get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     if 1:
         try:
@@ -69,7 +69,7 @@ def delete_public_ip(**_):
     public_ip_name = vm_name+'_pip'
     subscription_id = ctx.node.properties['subscription_id']
     resource_group_name = vm_name+'_resource_group'
-    credentials=get_token_from_client_credentials()
+    credentials='Bearer '+get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     if 1:
         try:
