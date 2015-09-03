@@ -84,13 +84,15 @@ def delete_nic(**_):
     vm_name=ctx.node.properties['vm_name']
     nic_name = vm_name+'_nic'
     subscription_id = ctx.node.properties['subscription_id']
+    credentials=get_token_from_client_credentials()
+    headers = {"Content-Type": "application/json", "Authorization": credentials}
     resource_group_name = vm_name+'_resource_group'
     if 1:
        
         try:
            ctx.logger.info("Deleting NIC")
            nic_url="https://management.azure.com/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
-           response_nic = requests.delete(url=nic_url,headers=constants.headers)
+           response_nic = requests.delete(url=nic_url,headers=headers)
            print(response_nic.text)
         except:
            ctx.logger.info("Network Interface Card " + nic_name + " could not be deleted.")
