@@ -19,7 +19,7 @@
 
 
 credentials = 'Bearer '
-
+headers = {"Content-Type": "application/json", "Authorization": credentials}
 subscription_id = 'REPLACE_WITH_SUBSCRIPTION_ID'
 
 COMMON_REQ_PROPERTIES=['subscription_id','location']
