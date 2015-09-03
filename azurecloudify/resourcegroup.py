@@ -37,7 +37,7 @@ def create_resource_group(**_):
     resource_group_name = vm_name+'_resource_group'
     location = ctx.node.properties['location']
     subscription_id = ctx.node.properties['subscription_id']
-    credentials=get_token_from_client_credentials()
+    credentials='Bearer '+get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     resource_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version_resource_group
     ctx.logger.info("Checking availability of resource_group: " + resource_group_name)
@@ -60,7 +60,7 @@ def delete_resource_group(**_):
     vm_name=ctx.node.properties['vm_name']
     resource_group_name = vm_name+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
-    credentials=get_token_from_client_credentials()
+    credentials='Bearer '+get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     if 1:
         try:
