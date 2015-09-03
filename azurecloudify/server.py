@@ -44,7 +44,7 @@ def create_vm(**_):
     location = ctx.node.properties['location']
     vnet_name = vm_name+'_vnet'
     nic_name = vm_name+'_nic'
-    credentials=get_token_from_client_credentials()
+    credentials='Bearer '+get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     
     subscription_id = ctx.node.properties['subscription_id']
@@ -115,7 +115,7 @@ def create_vm(**_):
 def start_vm(**_):
     subscription_id = ctx.node.properties['subscription_id']
     vm_name = ctx.node.properties['vm_name']
-    credentials=get_token_from_client_credentials()
+    credentials='Bearer '+get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     resource_group_name = vm_name+'_resource_group'
     start_vm_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
@@ -128,7 +128,7 @@ def start_vm(**_):
 def stop_vm(**_):
     subscription_id = ctx.node.properties['subscription_id']
     vm_name = ctx.node.properties['vm_name']
-    credentials=get_token_from_client_credentials()
+    credentials='Bearer '+get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     resource_group_name = vm_name+'_resource_group'
     stop_vm_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
@@ -141,7 +141,7 @@ def delete_virtual_machine(**_):
     vm_name = ctx.node.properties['vm_name']
     resource_group_name = vm_name+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
-    credentials=get_token_from_client_credentials()
+    credentials='Bearer '+get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     ctx.logger.info("Checking availability of virtual network: " + vm_name)
     if 1:
@@ -179,7 +179,7 @@ def _generate_credentials(**_):
     head = {"Content-Type": "application/json", "Authorization": credentials}
     return head
 """
-def get_token_from_client_credentials():
+def get_token_from_client_credentials(**_):
  
     client_id = ctx.node.properties['client_id']
     client_secret = ctx.node.properties['password']
