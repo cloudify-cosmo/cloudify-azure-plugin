@@ -43,7 +43,10 @@ def create_nic(**_):
     location = ctx.node.properties['location']
     subscription_id = ctx.node.properties['subscription_id']
     vnet_name = vm_name+'_vnet'
+    credentials=get_token_from_client_credentials()
+    headers = {"Content-Type": "application/json", "Authorization": credentials}
     ctx.logger.info("Checking availability of network interface card: " + nic_name)
+ 
     if 1:
         try:
           ctx.logger.info("Creating new network interface card: " + nic_name)
@@ -67,7 +70,7 @@ def create_nic(**_):
                             }
                         })
           nic_url=constants.azure_url+"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
-          response_nic = requests.put(url=nic_url, data=nic_params, headers=constants.headers)
+          response_nic = requests.put(url=nic_url, data=nic_params, headers=headers)
           print(response_nic.text)
         except:
           ctx.logger.info("network interface card " + nic_name + "could not be created.")
