@@ -52,6 +52,8 @@ UsVhRznp4u6iBusZO3ilH7B3YbDyGhXs4X/TcwBj6zuWaJsHXzorTL621g4Ppp4I
 g6QVQSrBpNBe2JCjou6tlGSBFm7vApUwAYaMStDzaIcLck/nUQ==
 ---- END SSH2 PUBLIC KEY ----"""
 
+resource = 'https://management.core.windows.net/'
+
 RESOURCE_GROUP_REQUIRED_PROPERTIES=['vm_name','location','subscription_id']
 STORAGE_ACCOUNT_REQUIRED_PROPERTIES = ['vm_name','location','subscription_id']
 VNET_REQUIRED_PROPERTIES = ['vm_name','location','subscription_id']
