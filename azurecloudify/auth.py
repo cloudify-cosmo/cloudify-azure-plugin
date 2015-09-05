@@ -18,7 +18,7 @@ def get_token_from_client_credentials():
         'resource': constants.resource,
     }
     response =requests.post(endpoints, data=json.dumps(payload))
-    return response['access_token']
+    return response[u'access_token']
 
 
 """  
