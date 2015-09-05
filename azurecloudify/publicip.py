@@ -56,7 +56,7 @@ def create_public_ip(**_):
                     }
                 }
             )
-            response_pip = requests.put(url=public_ip_url, data=public_ip_params, headers=constants.headers)
+            response_pip = requests.put(url=public_ip_url, data=public_ip_params, headers=headers)
             print response_pip.text
         except:
             ctx.logger.info("Public IP" + public_ip_name + "could not be created.")
@@ -77,7 +77,7 @@ def delete_public_ip(**_):
         try:
             ctx.logger.info("Deleting Public IP")
             public_ip_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/ publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
-            response_pip = requests.delete(url=public_ip_url,headers=constants.headers)
+            response_pip = requests.delete(url=public_ip_url,headers=headers)
             print(response_pip.text)
         except:
             ctx.logger.info("Public IP " + public_ip_name + " could not be deleted.")
