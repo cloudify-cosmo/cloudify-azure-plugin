@@ -1,8 +1,6 @@
 
 import requests
-
-
-
+from cloudify import ctx
 
 def get_token_from_client_credentials():
  
