@@ -40,10 +40,10 @@ def create_public_ip(**_):
     location = ctx.node.properties['location']
     resource_group_name = ctx.node.properties['vm_name']+'_resource_group'
     public_ip_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
-    """
+    
     credentials='Bearer '+get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
-    """
+    
     if 1:
         try:
             ctx.logger.info("Creating new public ip : " + public_ip_name)
@@ -109,7 +109,7 @@ def _generate_credentials(**_):
     return head
 """
 
-"""
+
 def get_token_from_client_credentials(**_):
  
     client_id = ctx.node.properties['client_id']
@@ -123,10 +123,10 @@ def get_token_from_client_credentials(**_):
         'resource': constants.resource,
     }
     response = requests.post(endpoints, data=payload).json()
-    token=response['access_token']
+    token=response.get("access_token")
     print(token)
     return token
- """   
+   
 
 
 def _validate_node_properties(key, ctx_node_properties):
