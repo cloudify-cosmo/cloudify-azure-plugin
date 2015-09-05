@@ -19,6 +19,7 @@ from requests import Request,Session,Response
 import json
 import constants
 import sys
+import auth
 import os
 from cloudify.exceptions import NonRecoverableError
 from cloudify import ctx
