@@ -20,6 +20,7 @@ import json
 import constants
 import sys
 import os
+import auth
 from cloudify.exceptions import NonRecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation
@@ -40,10 +41,10 @@ def create_vnet(**_):
     vnet_name = vm_name+'_vnet'
     location = ctx.node.properties['location']
     subscription_id = ctx.node.properties['subscription_id']
-    """
-    credentials='Bearer '+get_token_from_client_credentials()
+    
+    credentials='Bearer '+ auth.get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
-    """
+    
     vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
     ctx.logger.info("Checking availability of virtual network: " + vnet_name)
 
@@ -52,7 +53,7 @@ def create_vnet(**_):
             ctx.logger.info("Creating new virtual network: " + vnet_name)
     
             vnet_params=json.dumps({"name":vnet_name, "location": location,"properties": {"addressSpace": {"addressPrefixes": constants.vnet_address_prefixes},"subnets": [{"name": constants.subnet_name, "properties": {"addressPrefix": constants.address_prefix}}]}})
-            response_vnet = requests.put(url=vnet_url, data=vnet_params, headers=constants.headers)
+            response_vnet = requests.put(url=vnet_url, data=vnet_params, headers=headers)
             print response_vnet.text
         except:
             ctx.logger.info("Virtual Network " + vnet_name + "could not be created.")
@@ -68,7 +69,7 @@ def delete_vnet(**_):
     resource_group_name = vm_name+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
     
-    credentials='Bearer '+get_token_from_client_credentials()
+    credentials='Bearer '+ auth.get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     
     ctx.logger.info("Checking availability of virtual network: " + vnet_name)
@@ -76,7 +77,7 @@ def delete_vnet(**_):
         try:
             ctx.logger.info("Deleting the virtual network: " + vnet_name)
             vnet_url = 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
-            response_vnet = requests.delete(url=vnet_url,headers=constants.headers)
+            response_vnet = requests.delete(url=vnet_url,headers=headers)
             print response_vnet.text
 
         except:
@@ -85,46 +86,6 @@ def delete_vnet(**_):
     else:
         ctx.logger.info("Virtual Network " + vnet_name + " does not exist.")
 
-"""
-def _generate_credentials(**_):
-    client_id=ctx.node.properties['client_id']
-    tenant_id=ctx.node.properties['tenant_id']
-    username=ctx.node.properties['username']
-    password=ctx.node.properties['password']
-    url='https://login.microsoftonline.com/'+tenant_id+'/oauth2/token'
-    headers ={"Content-Type":"application/x-www-form-urlencoded"}
-    body = "grant_type=password&username="+username+"&password="+password+"&client_id="+client_id+"&resource=https://management.core.windows.net/"
-    req = Request(method="POST",url=url,data=body)
-    req_prepped = req.prepare()
-    s = Session()
-    res = Response()
-    res = s.send(req_prepped)
-    s=res.content
-    end_of_leader = s.index('access_token":"') + len('access_token":"')
-    start_of_trailer = s.index('"', end_of_leader)
-    token=s[end_of_leader:start_of_trailer]
-    credentials = "Bearer " + token
-    head = {"Content-Type": "application/json", "Authorization": credentials}
-    return head
-"""
-"""
-def get_token_from_client_credentials(**_):
- 
-    client_id = ctx.node.properties['client_id']
-    client_secret = ctx.node.properties['password']
-    tenant_id = ctx.node.properties['tenant_id']
-    endpoints = 'https://login.microsoftonline.com/'+tenant_id+'/oauth2/token'
-    payload = {
-        'grant_type': 'client_credentials',
-        'client_id': client_id,
-        'client_secret': client_secret,
-        'resource': constants.resource,
-    }
-    response = requests.post(endpoints, data=payload).json()
-    token=response['access_token']
-    print(token)
-    return token
-"""   
 
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
