@@ -123,7 +123,7 @@ def get_token_from_client_credentials(**_):
         'resource': constants.resource,
     }
     response = requests.post(endpoints, data=payload).json()
-    token=response.get("access_token")
+    token=response.get('access_token')
     print(token)
     return token
    
