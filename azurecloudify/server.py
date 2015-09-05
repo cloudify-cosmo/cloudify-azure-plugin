@@ -119,9 +119,10 @@ def create_vm(**_):
 def start_vm(**_):
     subscription_id = ctx.node.properties['subscription_id']
     vm_name = ctx.node.properties['vm_name']
-    
+    """
     credentials='Bearer '+auth.get_token_from_client_credentials()
-    headers = {"Content-Type": "application/json", "Authorization": credentials}
+    """
+    headers = {"Content-Type": "application/json", "Authorization": constants.credentials}
     
     resource_group_name = vm_name+'_resource_group'
     start_vm_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
