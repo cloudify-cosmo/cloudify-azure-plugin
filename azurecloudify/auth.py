@@ -19,7 +19,6 @@ def get_token_from_client_credentials():
     }
     response =requests.post(endpoints, data=payload).json()
     token=json.loads(response)
-    print(token)
     return token['access_token']
 
 
