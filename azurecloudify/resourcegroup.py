@@ -37,10 +37,10 @@ def create_resource_group(**_):
     resource_group_name = vm_name+'_resource_group'
     location = ctx.node.properties['location']
     subscription_id = ctx.node.properties['subscription_id']
-    
+    """
     credentials='Bearer '+ get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
-    
+    """
     resource_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version_resource_group
     ctx.logger.info("Checking availability of resource_group: " + resource_group_name)
 
@@ -48,7 +48,7 @@ def create_resource_group(**_):
         try:
             ctx.logger.info("Creating new Resource group: " + resource_group_name)
             resource_group_params=json.dumps({"name":resource_group_name,"location": location})
-            response_rg = requests.put(url=resource_group_url, data=resource_group_params, headers=headers)
+            response_rg = requests.put(url=resource_group_url, data=resource_group_params, headers=constants.headers)
             print response_rg.text
         except:
             ctx.logger.info("Resource Group " + resource_group_name + " could not be created")
@@ -70,7 +70,7 @@ def delete_resource_group(**_):
         try:
             ctx.logger.info("Deleting Resource Group: " + resource_group_name)
             resource_group_url = 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version_resource_group
-            response_rg = requests.delete(url=resource_group_url, headers=headers)
+            response_rg = requests.delete(url=resource_group_url, headers=constants.headers)
             print(response_rg.text)
         except:
             ctx.logger.info("Resource Group" +  resource_group_name + "could not be deleted." )
@@ -101,7 +101,7 @@ def _generate_credentials(**_):
     return head
 """
 
-
+"""
 def get_token_from_client_credentials(**_):
  
     client_id = ctx.node.properties['client_id']
@@ -117,7 +117,7 @@ def get_token_from_client_credentials(**_):
     response = requests.post(endpoints, data=payload).json()
     token=response['access_token']
     return token
-
+"""
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
