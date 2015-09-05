@@ -64,7 +64,7 @@ def delete_resource_group(**_):
     resource_group_name = vm_name+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
     
-    credentials='Bearer '+get_token_from_client_credentials()
+    credentials='Bearer '+auth.get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     
     if 1:
