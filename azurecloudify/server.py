@@ -45,10 +45,10 @@ def create_vm(**_):
     location = ctx.node.properties['location']
     vnet_name = vm_name+'_vnet'
     nic_name = vm_name+'_nic'
-    """
+    
     credentials='Bearer '+get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
-    """
+    
     
     subscription_id = ctx.node.properties['subscription_id']
     ctx.logger.info("Checking availability of virtual network: " + vm_name)
@@ -104,7 +104,7 @@ def create_vm(**_):
                     }
                 })
             virtual_machine_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version
-            response_vm = requests.put(url=virtual_machine_url, data=virtual_machine_params, headers=constants.headers)
+            response_vm = requests.put(url=virtual_machine_url, data=virtual_machine_params, headers=headers)
             print(response_vm.text)
         except:
           ctx.logger.info("Virtual Machine " + vm_name + "could not be created.")
@@ -118,13 +118,13 @@ def create_vm(**_):
 def start_vm(**_):
     subscription_id = ctx.node.properties['subscription_id']
     vm_name = ctx.node.properties['vm_name']
-    """
-    credentials='Bearer '+get_token_from_client_credentials()
+    
+    credentials='Bearer '+auth.get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
-    """
+    
     resource_group_name = vm_name+'_resource_group'
     start_vm_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
-    response_start_vm=requests.post(start_vm_url,headers=constants.headers)
+    response_start_vm=requests.post(start_vm_url,headers=headers)
     print (response_start_vm.text)
     
     
@@ -133,13 +133,13 @@ def start_vm(**_):
 def stop_vm(**_):
     subscription_id = ctx.node.properties['subscription_id']
     vm_name = ctx.node.properties['vm_name']
-    """
-    credentials='Bearer '+get_token_from_client_credentials()
+    
+    credentials='Bearer '+auth.get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
-    """
+    
     resource_group_name = vm_name+'_resource_group'
     stop_vm_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
-    response_stop_vm=requests.post(stop_vm_url,headers=constants.headers)
+    response_stop_vm=requests.post(stop_vm_url,headers=headers)
     print (response_stop_vm.text)
 
 
@@ -148,16 +148,16 @@ def delete_virtual_machine(**_):
     vm_name = ctx.node.properties['vm_name']
     resource_group_name = vm_name+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
-    """
-    credentials='Bearer '+get_token_from_client_credentials()
+    
+    credentials='Bearer '+auth.get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
-    """
+    
     ctx.logger.info("Checking availability of virtual network: " + vm_name)
     if 1:
         try:
             ctx.logger.info("Deleting the virtual machine: " + vm_name)
             vm_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version
-            response_vm = requests.delete(url=vm_url,headers=constants.headers)
+            response_vm = requests.delete(url=vm_url,headers=headers)
             print(response_vm.text)
 
         except:
@@ -165,47 +165,6 @@ def delete_virtual_machine(**_):
         sys.exit(1)
     else:
         ctx.logger.info("Virtual Machine " + vm_name + " does not exist.")
-
-"""
-def _generate_credentials(**_):
-    client_id=ctx.node.properties['client_id']
-    tenant_id=ctx.node.properties['tenant_id']
-    username=ctx.node.properties['username']
-    password=ctx.node.properties['password']
-    url='https://login.microsoftonline.com/'+tenant_id+'/oauth2/token'
-    headers ={"Content-Type":"application/x-www-form-urlencoded"}
-    body = "grant_type=password&username="+username+"&password="+password+"&client_id="+client_id+"&resource=https://management.core.windows.net/"
-    req = Request(method="POST",url=url,data=body)
-    req_prepped = req.prepare()
-    s = Session()
-    res = Response()
-    res = s.send(req_prepped)
-    s=res.content
-    end_of_leader = s.index('access_token":"') + len('access_token":"')
-    start_of_trailer = s.index('"', end_of_leader)
-    token=s[end_of_leader:start_of_trailer]
-    credentials = "Bearer " + token
-    head = {"Content-Type": "application/json", "Authorization": credentials}
-    return head
-"""
-"""
-def get_token_from_client_credentials(**_):
- 
-    client_id = ctx.node.properties['client_id']
-    client_secret = ctx.node.properties['password']
-    tenant_id = ctx.node.properties['tenant_id']
-    endpoints = 'https://login.microsoftonline.com/'+tenant_id+'/oauth2/token'
-    payload = {
-        'grant_type': 'client_credentials',
-        'client_id': client_id,
-        'client_secret': client_secret,
-        'resource': constants.resource,
-    }
-    response = requests.post(endpoints, data=payload).json()
-    token=response['access_token']
-    print(token)
-    return token
-"""    
 
 
 def _validate_node_properties(key, ctx_node_properties):
