@@ -20,6 +20,7 @@ import json
 import constants
 import sys
 import os
+import auth
 from cloudify.exceptions import NonRecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation
@@ -43,10 +44,10 @@ def create_nic(**_):
     location = ctx.node.properties['location']
     subscription_id = ctx.node.properties['subscription_id']
     vnet_name = vm_name+'_vnet'
-    """
-    credentials= 'Bearer ' + get_token_from_client_credentials()
+    
+    credentials= 'Bearer ' + auth.get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
-    """
+    
     ctx.logger.info("Checking availability of network interface card: " + nic_name)
  
     if 1:
@@ -72,7 +73,7 @@ def create_nic(**_):
                             }
                         })
           nic_url=constants.azure_url+"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
-          response_nic = requests.put(url=nic_url, data=nic_params, headers=constants.headers)
+          response_nic = requests.put(url=nic_url, data=nic_params, headers=headers)
           print(response_nic.text)
         except:
           ctx.logger.info("network interface card " + nic_name + "could not be created.")
@@ -86,17 +87,17 @@ def delete_nic(**_):
     vm_name=ctx.node.properties['vm_name']
     nic_name = vm_name+'_nic'
     subscription_id = ctx.node.properties['subscription_id']
-    """
-    credentials='Bearer '+get_token_from_client_credentials()
+    
+    credentials='Bearer '+ auth.get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
-    """
+   
     resource_group_name = vm_name+'_resource_group'
     if 1:
        
         try:
            ctx.logger.info("Deleting NIC")
            nic_url="https://management.azure.com/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
-           response_nic = requests.delete(url=nic_url,headers=constants.headers)
+           response_nic = requests.delete(url=nic_url,headers=headers)
            print(response_nic.text)
         except:
            ctx.logger.info("Network Interface Card " + nic_name + " could not be deleted.")
