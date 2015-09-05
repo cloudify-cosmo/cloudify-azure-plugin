@@ -38,7 +38,7 @@ def create_resource_group(**_):
     location = ctx.node.properties['location']
     subscription_id = ctx.node.properties['subscription_id']
     
-    credentials='Bearer '+get_token_from_client_credentials()
+    credentials='Bearer '+ get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     
     resource_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version_resource_group
@@ -115,11 +115,10 @@ def get_token_from_client_credentials(**_):
         'resource': constants.resource,
     }
     response = requests.post(endpoints, data=payload).json()
-    token=response['access_token']
-    print(token)
+    end_of_leader = s.index('access_token":"') + len('access_token":"')
+    start_of_trailer = s.index('"', end_of_leader)
+    token=s[end_of_leader:start_of_trailer]
     return token
-    
-
 
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
