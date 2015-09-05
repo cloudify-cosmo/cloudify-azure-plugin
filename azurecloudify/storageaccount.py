@@ -38,10 +38,10 @@ def create_storage_account(**_):
     storage_account_name = vm_name+'storageaccount'
     resource_group_name = vm_name+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
-    """
+    
     credentials='Bearer '+get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
-    """
+    
     ctx.logger.info("Checking availability of storage account: " + storage_account_name)
     if 1:
         try:
@@ -71,7 +71,7 @@ def delete_storage_account(**_):
     if 1:
         try:
             storage_account_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts/'+storage_account_name+'?api-version='+constants.api_version
-            response_sa = requests.delete(url=storage_account_url,headers=constants.headers)
+            response_sa = requests.delete(url=storage_account_url,headers=headers)
             print response_sa.text
 
         except:
@@ -104,7 +104,7 @@ def _generate_credentials(**_):
     return head
 """
 
-"""
+
 def get_token_from_client_credentials():
  
     client_id = ctx.node.properties['client_id']
@@ -118,10 +118,10 @@ def get_token_from_client_credentials():
         'resource': constants.resource,
     }
     response = requests.post(endpoints, data=payload).json()
-    token=response['access_token']
+    token=response.get("access_token")
     print(token)
     return token
-"""    
+  
 
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
