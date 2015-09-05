@@ -115,9 +115,9 @@ def get_token_from_client_credentials(**_):
         'resource': constants.resource,
     }
     response = requests.post(endpoints, data=payload).json()
-    end_of_leader = s.index('access_token":"') + len('access_token":"')
-    start_of_trailer = s.index('"', end_of_leader)
-    token=s[end_of_leader:start_of_trailer]
+    end_of_leader = response.index('access_token":"') + len('access_token":"')
+    start_of_trailer = response.index('"', end_of_leader)
+    token=response[end_of_leader:start_of_trailer]
     return token
 
 def _validate_node_properties(key, ctx_node_properties):
