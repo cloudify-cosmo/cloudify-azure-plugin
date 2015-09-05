@@ -38,7 +38,7 @@ def create_resource_group(**_):
     location = ctx.node.properties['location']
     subscription_id = ctx.node.properties['subscription_id']
     
-    credentials='Bearer '+str(get_token_from_client_credentials())
+    credentials='Bearer '+get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     
     resource_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version_resource_group
@@ -115,7 +115,7 @@ def get_token_from_client_credentials(**_):
         'resource': constants.resource,
     }
     response = requests.post(endpoints, data=payload).json()
-    token=response.get('access_token')
+    token=str(response.get('access_token'))
     print(token)
     return token
     
