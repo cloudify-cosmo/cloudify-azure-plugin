@@ -1,5 +1,6 @@
 
 import requests
+import json
 from cloudify import ctx
 import constants
 
@@ -15,7 +16,7 @@ def get_token_from_client_credentials():
         'client_secret': client_secret,
         'resource': constants.resource,
     }
-    response = requests.post(endpoints, data=payload).json()
+    response =json.loads(requests.post(endpoints, data=payload).json())
     token=response['access_token']
     print(token)
     return token
