@@ -46,7 +46,7 @@ def create_vm(**_):
     vnet_name = vm_name+'_vnet'
     nic_name = vm_name+'_nic'
     
-    credentials='Bearer '+get_token_from_client_credentials()
+    credentials='Bearer '+auth.get_token_from_client_credentials()
     
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     
