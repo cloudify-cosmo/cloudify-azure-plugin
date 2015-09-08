@@ -44,10 +44,10 @@ def create_nic(**_):
     location = ctx.node.properties['location']
     subscription_id = ctx.node.properties['subscription_id']
     vnet_name = vm_name+'_vnet'
-    """
+    
     credentials= 'Bearer ' + auth.get_token_from_client_credentials()
-    """
-    headers = {"Content-Type": "application/json", "Authorization": constants.credentials}
+    
+    headers = {"Content-Type": "application/json", "Authorization": credentials}
     
     ctx.logger.info("Checking availability of network interface card: " + nic_name)
  
@@ -88,10 +88,10 @@ def delete_nic(**_):
     vm_name=ctx.node.properties['vm_name']
     nic_name = vm_name+'_nic'
     subscription_id = ctx.node.properties['subscription_id']
-    """
+    
     credentials='Bearer '+ auth.get_token_from_client_credentials()
-    """
-    headers = {"Content-Type": "application/json", "Authorization": constants.credentials}
+    
+    headers = {"Content-Type": "application/json", "Authorization": credentials}
    
     resource_group_name = vm_name+'_resource_group'
     if 1:
