@@ -41,10 +41,10 @@ def create_vnet(**_):
     vnet_name = vm_name+'_vnet'
     location = ctx.node.properties['location']
     subscription_id = ctx.node.properties['subscription_id']
-    """
+    
     credentials='Bearer '+ auth.get_token_from_client_credentials()
-    """
-    headers = {"Content-Type": "application/json", "Authorization": constants.credentials}
+    
+    headers = {"Content-Type": "application/json", "Authorization": credentials}
     
     vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
     ctx.logger.info("Checking availability of virtual network: " + vnet_name)
@@ -70,8 +70,8 @@ def delete_vnet(**_):
     resource_group_name = vm_name+'_resource_group'
     subscription_id = ctx.node.properties['subscription_id']
     
-    #credentials='Bearer '+ auth.get_token_from_client_credentials()
-    headers = {"Content-Type": "application/json", "Authorization": constants.credentials}
+    credentials='Bearer '+ auth.get_token_from_client_credentials()
+    headers = {"Content-Type": "application/json", "Authorization": credentials}
     
     ctx.logger.info("Checking availability of virtual network: " + vnet_name)
     if 1:
