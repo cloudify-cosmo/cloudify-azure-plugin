@@ -44,7 +44,7 @@ def create_public_ip(**_):
     public_ip_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
     
     credentials='Bearer '+ auth.get_token_from_client_credentials()
-    
+    print(credentials)
     headers = {"Content-Type": "application/json", "Authorization": credentials}
    
     if 1:
