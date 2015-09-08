@@ -47,7 +47,7 @@ def create_vm(**_):
     nic_name = vm_name+'_nic'
     
     credentials='Bearer '+auth.get_token_from_client_credentials()
-    
+    print(credentials)
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     
     
@@ -121,7 +121,7 @@ def start_vm(**_):
     vm_name = ctx.node.properties['vm_name']
     
     credentials='Bearer '+auth.get_token_from_client_credentials()
-    
+    print(credentials)
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     
     resource_group_name = vm_name+'_resource_group'
