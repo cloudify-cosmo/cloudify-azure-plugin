@@ -58,18 +58,15 @@ node_templates:
       key_data: { get_input: key_data}
       subscription_id: { get_input: subscription_id}
       location: { get_input: location }
+      client_id: { get_input: client_id}
+      tenant_id: { get_input: tenant_id}
+      username: { get_input: username}
+      password: { get_input: password}
       install_agent: false
     relationships:
-      - target: manager_resource_group
-        type: cloudify.azure.relationships.server_connected_to_resource_group
-      - target: manager_public_ip
-        type: cloudify.azure.relationships.server_connected_to_public_ip
-      - target: manager_storage_account
-        type: cloudify.azure.relationships.server_connected_to_storage_account
       - target: manager_nic
         type: cloudify.azure.relationships.server_connected_to_nic
-      - target: manager_vnet
-        type: cloudify.azure.relationships.server_connected_to_vnet
+      
       
   manager_resource_group:
     type: cloudify.azure.nodes.ResourceGroup
@@ -77,6 +74,11 @@ node_templates:
       vm_name: { get_input: vm_name }
       location: { get_input: location}
       subscription_id: { get_input: subscription_id}
+      client_id: { get_input: client_id}
+      tenant_id: { get_input: tenant_id}
+      username: { get_input: username}
+      password: { get_input: password}
+
         
   manager_storage_account:
     type: cloudify.azure.nodes.StorageAccount
@@ -84,6 +86,13 @@ node_templates:
       vm_name: { get_input: vm_name }
       location: { get_input: location}
       subscription_id: { get_input: subscription_id}
+      client_id: { get_input: client_id}
+      tenant_id: { get_input: tenant_id}
+      username: { get_input: username}
+      password: { get_input: password}
+    relationships:
+      - target: manager_resource_group
+        type: cloudify.azure.relationships.storage_account_connected_to_resource_group
         
   manager_public_ip:
     type: cloudify.azure.nodes.PublicIP
@@ -91,6 +100,14 @@ node_templates:
       vm_name: { get_input: vm_name }
       location: { get_input: location}
       subscription_id: { get_input: subscription_id}
+      client_id: { get_input: client_id}
+      tenant_id: { get_input: tenant_id}
+      username: { get_input: username}
+      password: { get_input: password}
+    relationships:
+      - target: manager_vnet
+        type: cloudify.azure.relationships.public_ip_connected_to_vnet
+    
     
   manager_nic:
     type: cloudify.azure.nodes.NIC
@@ -98,6 +115,13 @@ node_templates:
       vm_name: { get_input: vm_name }
       location: { get_input: location}
       subscription_id: { get_input: subscription_id}
+      client_id: { get_input: client_id}
+      tenant_id: { get_input: tenant_id}
+      username: { get_input: username}
+      password: { get_input: password}
+    relationships:
+      - target: manager_public_ip
+        type: cloudify.azure.relationships.nic_connected_to_public_ip
 
   manager_vnet:
     type: cloudify.azure.nodes.VNET
@@ -105,6 +129,13 @@ node_templates:
       vm_name: { get_input: vm_name }
       location: { get_input: location}
       subscription_id: { get_input: subscription_id}
+      client_id: { get_input: client_id}
+      tenant_id: { get_input: tenant_id}
+      username: { get_input: username}
+      password: { get_input: password}
+    relationships:
+      - target: manager_storage_account
+        type: cloudify.azure.relationships.vnet_connected_to_storage_account
  
   manager:
     type: cloudify.nodes.CloudifyManager
