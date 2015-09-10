@@ -114,7 +114,6 @@ node_templates:
       - target: manager_vnet
         type: cloudify.azure.relationships.public_ip_connected_to_vnet
 
-
   manager_nic:
     type: cloudify.azure.nodes.NIC
     properties:
@@ -153,7 +152,7 @@ node_templates:
           windows_agent_url: http://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.2.1/ga-RELEASE/cloudify-windows-agent_3.2.1-ga-b212_amd64.deb
         docker:
            docker_url: http://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.2.1/ga-RELEASE/cloudify-docker_3.2.1-ga-b212.tar
-  
+
       cloudify:
         cloudify_agent:
           min_workers: 0
