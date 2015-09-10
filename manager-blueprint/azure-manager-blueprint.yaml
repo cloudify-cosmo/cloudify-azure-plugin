@@ -38,23 +38,23 @@ inputs:
   client_id:
     type: string
     default: ''
-    
+
   tenant_id:
     type: string
     default: ''
-    
+
   username:
     type: string
     default: ''
-    
+  
   password:
     type: string
     default: ''
-    
+
   agents_user:
     type: string
     default: azuretest
-    
+
 node_templates:
 
   manager_server:
@@ -74,8 +74,7 @@ node_templates:
     relationships:
       - target: manager_nic
         type: cloudify.azure.relationships.server_connected_to_nic
-      
-      
+
   manager_resource_group:
     type: cloudify.azure.nodes.ResourceGroup
     properties:
@@ -87,7 +86,6 @@ node_templates:
       username: { get_input: username}
       password: { get_input: password}
 
-        
   manager_storage_account:
     type: cloudify.azure.nodes.StorageAccount
     properties:
@@ -101,7 +99,7 @@ node_templates:
     relationships:
       - target: manager_resource_group
         type: cloudify.azure.relationships.storage_account_connected_to_resource_group
-        
+
   manager_public_ip:
     type: cloudify.azure.nodes.PublicIP
     properties:
@@ -115,8 +113,8 @@ node_templates:
     relationships:
       - target: manager_vnet
         type: cloudify.azure.relationships.public_ip_connected_to_vnet
-    
-    
+
+
   manager_nic:
     type: cloudify.azure.nodes.NIC
     properties:
