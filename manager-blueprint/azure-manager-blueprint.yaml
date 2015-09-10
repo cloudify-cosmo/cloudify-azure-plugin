@@ -31,6 +31,10 @@ inputs:
     type: string
     default: ''
 
+  ssh_key_filename:
+    type: string
+    default: ~/.ssh/id_rsa
+
   client_id:
     type: string
     default: ''
