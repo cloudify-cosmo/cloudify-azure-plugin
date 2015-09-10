@@ -25,7 +25,7 @@ setup(
     author='Gigaspaces',
     author_email='cosmo-admin@gigaspaces.com',
 
-    version='1.2',
+    version='1.2.1',
     description='Cloudify plugin for Azure infrastructure.',
 
     # This must correspond to the actual packages in the plugin.
