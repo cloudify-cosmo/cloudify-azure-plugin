@@ -156,20 +156,20 @@ node_templates:
         docker:
            docker_url: http://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.2.1/ga-RELEASE/cloudify-docker_3.2.1-ga-b212.tar
   
-     cloudify:
-       cloudify_agent:
-         min_workers: 0
-         max_workers: 5
-         remote_execution_port: 22
-         user: { get_input: agents_user }
-  
-       workflows:
-         task_retries: -1  # this means forever
-         task_retry_interval: 30
-  
-       policy_engine:
-         start_timeout: 30
-  
+      cloudify:
+        cloudify_agent:
+          min_workers: 0
+          max_workers: 5
+          remote_execution_port: 22
+          user: { get_input: agents_user }
+
+        workflows:
+          task_retries: -1  # this means forever
+          task_retry_interval: 30
+
+        policy_engine:
+          start_timeout: 30
+
    interfaces:
       cloudify.interfaces.lifecycle:
         configure:
