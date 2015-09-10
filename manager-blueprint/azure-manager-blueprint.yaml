@@ -173,7 +173,7 @@ node_templates:
           implementation: fabric.fabric_plugin.tasks.run_task
           inputs:
             tasks_file: scripts/configure.py
-            task_name: configure_manager
+            task_name: configure
             task_properties:
               azure_config: { get_property: [ azure_configuration, azure_config ] }
             fabric_env:

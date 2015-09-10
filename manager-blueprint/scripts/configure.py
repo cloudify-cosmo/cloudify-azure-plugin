@@ -21,7 +21,7 @@ import fabric
 import fabric.api
 
 from cloudify import ctx
-from azure_plugin import constants
+from azurecloudify import constants
 
 
 PROVIDER_CONTEXT_RUNTIME_PROPERTY = 'provider_context'
