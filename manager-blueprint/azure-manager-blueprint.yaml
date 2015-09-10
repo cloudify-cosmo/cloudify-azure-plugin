@@ -170,6 +170,54 @@ node_templates:
        policy_engine:
          start_timeout: 30
   
+   interfaces:
+      cloudify.interfaces.lifecycle:
+        configure:
+          implementation: fabric.fabric_plugin.tasks.run_task
+          inputs:
+            tasks_file: scripts/configure.py
+            task_name: configure_manager
+            task_properties:
+              azure_config: { get_property: [ azure_configuration, azure_config ] }
+            fabric_env:
+              user: { get_input: agents_user }
+              key_filename: { get_input: ssh_key_path }              
+              host_string: { get_attribute: [manager_public_ip, { concat: [{ get_input: vm_name }, '_pip'] }] }
+        start:
+          implementation: fabric.fabric_plugin.tasks.run_module_task
+          inputs:
+            task_mapping: cloudify_cli.bootstrap.tasks.bootstrap_docker
+            task_properties:
+              cloudify_packages: { get_property: [manager, cloudify_packages] }
+              agent_local_key_path: { get_input: ssh_key_path }
+              provider_context: { get_attribute: [manager, provider_context] }
+            fabric_env:
+              user: { get_input: agents_user }
+              key_filename: { get_input: ssh_key_path }
+              host_string: { get_attribute: [manager_public_ip, { concat: [{ get_input: vm_name }, '_pip'] }] }
+        stop:
+          implementation: fabric.fabric_plugin.tasks.run_module_task
+          inputs:
+            task_mapping: cloudify_cli.bootstrap.tasks.stop_manager_container
+            fabric_env:
+              user: { get_input: agents_user }
+              key_filename: { get_input: ssh_key_path }
+              host_string: { get_attribute: [manager_public_ip, { concat: [{ get_input: vm_name }, '_pip'] }] }
+        delete:
+          implementation: fabric.fabric_plugin.tasks.run_module_task
+          inputs:
+            task_mapping: cloudify_cli.bootstrap.tasks.stop_docker_service
+            fabric_env:
+              user: { get_input: agents_user }
+              key_filename: { get_input: ssh_key_path }
+              host_string: { get_attribute: [manager_public_ip, { concat: [{ get_input: vm_name }, '_pip'] }] } 
+
+      cloudify.interfaces.validation:
+        creation:
+          implementation: cli.cloudify_cli.bootstrap.tasks.creation_validation
+          inputs:
+            cloudify_packages: { get_property: [ manager, cloudify_packages ] }
+  
     relationships:
       - target: manager_server
         type: cloudify.relationships.contained_in
