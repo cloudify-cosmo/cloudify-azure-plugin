@@ -31,7 +31,7 @@ inputs:
     type: string
     default: ''
 
-  ssh_key_filename:
+  ssh_key_path:
     type: string
     default: ~/.ssh/id_rsa
 
