@@ -33,7 +33,7 @@ inputs:
 
   ssh_key_path:
     type: string
-    default: ~/.ssh/id_rsa
+    default: '~/.ssh/id_rsa'
 
   client_id:
     type: string
@@ -53,7 +53,7 @@ inputs:
 
   agents_user:
     type: string
-    default: azuretest
+    default: 'azuretest'
 
 node_templates:
 
