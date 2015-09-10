@@ -29,13 +29,13 @@ PROVIDER_CONTEXT_RUNTIME_PROPERTY = 'provider_context'
 
 def configure(azure_config):
 
-    _set_provider_context(ssh_keys)
+    _set_provider_context()
 
 	# Use this only if required
     # _copy_azure_configuration_to_manager(azure_config)
 
 
-def _set_provider_context(ssh_keys):
+def _set_provider_context():
     provider = {}
     ctx.instance.runtime_properties[
         PROVIDER_CONTEXT_RUNTIME_PROPERTY] = provider
