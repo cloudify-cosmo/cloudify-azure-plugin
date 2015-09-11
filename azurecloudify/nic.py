@@ -46,7 +46,6 @@ def create_nic(**_):
     vnet_name = vm_name+'_vnet'
     
     credentials= 'Bearer ' + auth.get_token_from_client_credentials()
-    print(credentials)
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     
     ctx.logger.info("Checking availability of network interface card: " + nic_name)
