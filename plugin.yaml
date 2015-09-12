@@ -99,14 +99,14 @@ node_types:
           Indicates the user's tenant id
         type: string
         default: ''
-      """
+      
       username:
         description: >
           Indicates the name of the virtual machine required to create network interface card
         type: string
         default: ''
-      """
-      password:
+      
+      aad_password:
         description: >
           Indicates the name of the virtual machine required to create network interface card
         type: string
@@ -201,14 +201,12 @@ node_types:
           Indicates the user's tenant id
         type: string
         default: ''
-     """   
       username:
         description: >
           Indicates the name of the virtual machine required to create network interface card
         type: string
         default: ''
-    """
-      password:
+      aad_password:
         description: >
           Indicates the name of the virtual machine required to create network interface card
         type: string
@@ -254,7 +252,7 @@ node_types:
           Indicates the name of the virtual machine required to create network interface card
         type: string
         default: ''
-      password:
+      aad_password:
         description: >
           Indicates the name of the virtual machine required to create network interface card
         type: string
@@ -300,7 +298,7 @@ node_types:
           Indicates the name of the virtual machine required to create network interface card
         type: string
         default: ''
-      password:
+      aad_password:
         description: >
           Indicates the name of the virtual machine required to create network interface card
         type: string
