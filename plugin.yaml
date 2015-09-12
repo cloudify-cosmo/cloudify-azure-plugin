@@ -326,3 +326,6 @@ relationships:
   cloudify.azure.relationships.server_connected_to_nic:
     derived_from: cloudify.relationships.connected_to
     
+   cloudify.azure.relationships.server_connected_to_public_ip:
+    derived_from: cloudify.relationships.connected_to
+    
