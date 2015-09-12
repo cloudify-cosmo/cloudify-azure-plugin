@@ -197,6 +197,7 @@ node_types:
           Indicates the user's tenant id
         type: string
         default: ''
+        
       username:
         description: >
           Indicates the name of the virtual machine required to create network interface card
