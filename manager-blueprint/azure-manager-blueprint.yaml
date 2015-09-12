@@ -47,7 +47,7 @@ inputs:
     type: string
     default: ''
   
-  password:
+  aad_password:
     type: string
     default: ''
 
@@ -69,7 +69,7 @@ node_templates:
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
       username: { get_input: username}
-      password: { get_input: password}
+      aad_password: { get_input: password}
       install_agent: false
     relationships:
       - target: manager_nic
@@ -81,7 +81,10 @@ node_templates:
       vm_name: { get_input: vm_name }
       location: { get_input: location}
       subscription_id: { get_input: subscription_id}
-      
+      client_id: { get_input: client_id}
+      tenant_id: { get_input: tenant_id}
+      username: { get_input: username}
+      aad_password: { get_input: password}
      
 
   manager_storage_account:
@@ -90,6 +93,10 @@ node_templates:
       vm_name: { get_input: vm_name }
       location: { get_input: location}
       subscription_id: { get_input: subscription_id}
+      client_id: { get_input: client_id}
+      tenant_id: { get_input: tenant_id}
+      username: { get_input: username}
+      aad_password: { get_input: password}
       
     relationships:
       - target: manager_resource_group
@@ -104,7 +111,7 @@ node_templates:
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
       username: { get_input: username}
-      password: { get_input: password}
+      aad_password: { get_input: aad_password}
     relationships:
       - target: manager_vnet
         type: cloudify.azure.relationships.public_ip_connected_to_vnet
@@ -118,7 +125,7 @@ node_templates:
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
       username: { get_input: username}
-      password: { get_input: password}
+      aad_password: { get_input: aad_password}
     relationships:
       - target: manager_public_ip
         type: cloudify.azure.relationships.nic_connected_to_public_ip
@@ -132,7 +139,7 @@ node_templates:
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
       username: { get_input: username}
-      password: { get_input: password}
+      aad_password: { get_input: aad_password}
     relationships:
       - target: manager_storage_account
         type: cloudify.azure.relationships.vnet_connected_to_storage_account
@@ -226,7 +233,7 @@ node_templates:
        client_id: { get_input: client_id }
        tenant_id: { get_input: tenant_id }
        username: { get_input: username }
-       password: { get_input: password }
+       aad_password: { get_input: aad_password }
 
 node_types:
   azure_configuration_node:
