@@ -69,7 +69,7 @@ node_templates:
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
       username: { get_input: username}
-      aad_password: { get_input: password}
+      aad_password: { get_input: aad_password}
       install_agent: false
     relationships:
       - target: manager_nic
