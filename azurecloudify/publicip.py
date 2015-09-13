@@ -60,6 +60,10 @@ def create_public_ip(**_):
             )
             response_pip = requests.put(url=public_ip_url, data=public_ip_params, headers=headers)
             print response_pip.text
+            
+            get_pip_info_url= 'https://management.azure.com/subscriptions/{subscription-id}/resourceGroups/{resource-group-name}/providers/microsoft.network/publicIPAddresses/{public-IP-address-name}?api-version={api-version}'
+            response_get_info= requests.get(url=get_pip_info_url, headers=headers)
+            print (response_get_info)
         except:
             ctx.logger.info("Public IP" + public_ip_name + "could not be created.")
             sys.exit(1)
