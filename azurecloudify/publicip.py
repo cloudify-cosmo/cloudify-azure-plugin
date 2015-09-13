@@ -61,7 +61,7 @@ def create_public_ip(**_):
             response_pip = requests.put(url=public_ip_url, data=public_ip_params, headers=headers)
             print response_pip.text
             
-            get_pip_info_url= 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
+            get_pip_info_url= constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
             response_get_info= requests.get(url=get_pip_info_url, headers=headers)
             print (response_get_info)
         except:
