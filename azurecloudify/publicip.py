@@ -62,12 +62,18 @@ def create_public_ip(**_):
             print response_pip.text
             
             
+            
         except:
             ctx.logger.info("Public IP" + public_ip_name + "could not be created.")
             sys.exit(1)
     
     else:
         ctx.logger.info("Public IP" + public_ip_name + "has already been assigned to another VM")
+    
+    get_pip_info_url= 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
+    response_get_info= requests.get(url=get_pip_info_url, headers=headers).json()
+    #ctx.instance.runtime_properties['vm_public_ip']= response_get_info['properties']['ipAddress']
+    print response_get_info['properties']['ipAddress']
     
 
 def delete_public_ip(**_):
