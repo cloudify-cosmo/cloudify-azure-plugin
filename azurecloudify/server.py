@@ -45,7 +45,7 @@ def create_vm(**_):
     location = ctx.node.properties['location']
     vnet_name = vm_name+'_vnet'
     nic_name = vm_name+'_nic'
-    
+    public_ip_name= vm_name+'_pip'
     credentials='Bearer '+auth.get_token_from_client_credentials()
     
     headers = {"Content-Type": "application/json", "Authorization": credentials}
