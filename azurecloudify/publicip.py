@@ -46,29 +46,27 @@ def create_public_ip(**_):
     credentials='Bearer '+ auth.get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
    
-    if 1:
-        try:
-            ctx.logger.info("Creating new public ip : " + public_ip_name)
-            public_ip_params=json.dumps({
-                    "location": location,
-                    "name": public_ip_name,
-                    "properties": {
-                        "publicIPAllocationMethod": "Dynamic",
-                        "idleTimeoutInMinutes": 4,
-                    }
-                }
-            )
-            response_pip = requests.put(url=public_ip_url, data=public_ip_params, headers=headers)
-            print response_pip.text
-            
-            
-            
-        except:
-            ctx.logger.info("Public IP" + public_ip_name + "could not be created.")
-            sys.exit(1)
     
-    else:
-        ctx.logger.info("Public IP" + public_ip_name + "has already been assigned to another VM")
+    try:
+        ctx.logger.info("Creating new public ip : " + public_ip_name)
+        public_ip_params=json.dumps({
+                "location": location,
+                "name": public_ip_name,
+                "properties": {
+                    "publicIPAllocationMethod": "Dynamic",
+                    "idleTimeoutInMinutes": 4,
+                }
+            }
+        )
+        response_pip = requests.put(url=public_ip_url, data=public_ip_params, headers=headers)
+        print response_pip.text
+            
+            
+            
+    except:
+        ctx.logger.info("Public IP" + public_ip_name + "could not be created.")
+        sys.exit(1)
+    
     
     get_pip_info_url= 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
     response_get_info= requests.get(url=get_pip_info_url, headers=headers).json()
@@ -86,19 +84,17 @@ def delete_public_ip(**_):
     credentials='Bearer '+ auth.get_token_from_client_credentials()
     
     headers = {"Content-Type": "application/json", "Authorization": credentials}
-    if 1:
-        try:
-            ctx.logger.info("Deleting Public IP")
-            public_ip_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/ publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
-            response_pip = requests.delete(url=public_ip_url,headers=headers)
-            print(response_pip.text)
-        except:
-            ctx.logger.info("Public IP " + public_ip_name + " could not be deleted.")
+    
+    try:
+        ctx.logger.info("Deleting Public IP")
+        public_ip_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/ publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
+        response_pip = requests.delete(url=public_ip_url,headers=headers)
+        print(response_pip.text)
+    except:
+        ctx.logger.info("Public IP " + public_ip_name + " could not be deleted.")
         sys.exit(1)
         
-    else:
-        ctx.logger.info("Public IP " + public_ip_name + " does not exist.")
-
+    
 
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
