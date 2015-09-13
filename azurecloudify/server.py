@@ -55,7 +55,7 @@ def create_vm(**_):
     response_get_info= requests.get(url=get_pip_info_url, headers=headers).json()
     print (response_get_info)
     #ctx.instance.runtime_properties['vm_public_ip']= response_get_info['properties']['ipAddress']
-    #print response_get_info['properties']['ipAddress']
+    print response_get_info['properties']['ipAddress']
     
     
     ctx.logger.info("Checking availability of virtual network: " + vm_name)
