@@ -47,7 +47,7 @@ def create_vm(**_):
     nic_name = vm_name+'_nic'
     public_ip_name= vm_name+'_pip'
     credentials='Bearer '+auth.get_token_from_client_credentials()
-    
+    subscription_id = ctx.node.properties['subscription_id']
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     
         
@@ -57,7 +57,7 @@ def create_vm(**_):
     #ctx.instance.runtime_properties['vm_public_ip']= response_get_info['properties']['ipAddress']
     #print response_get_info['properties']['ipAddress']
     
-    subscription_id = ctx.node.properties['subscription_id']
+    
     ctx.logger.info("Checking availability of virtual network: " + vm_name)
     if 1:
         try:
