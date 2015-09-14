@@ -74,6 +74,8 @@ node_templates:
     relationships:
       - target: manager_nic
         type: cloudify.azure.relationships.server_connected_to_nic
+      - target: manager_public_ip
+        type: cloudify.azure.relationships.server_connected_to_public_ip
       
       
 
