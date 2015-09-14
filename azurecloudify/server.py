@@ -124,9 +124,17 @@ def create_vm(**_):
 #start_vm
 @operation
 def start_vm(**_):
+    
     subscription_id = ctx.node.properties['subscription_id']
     vm_name = ctx.node.properties['vm_name']
-    
+    resource_group_name = vm_name+'_resource_group'
+    public_ip_name= vm_name+'_pip'
+    get_pip_info_url= 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
+    response_get_info= requests.get(url=get_pip_info_url, headers=headers).json()
+    print (response_get_info)
+    print response_get_info['properties']['ipAddress']
+    #ctx.instance.runtime_properties['vm_public_ip']= response_get_info['properties']['ipAddress']
+    #ctx.source.instance.runtime_properties['vm_public_ip']=response_get_info['properties']['ipAddress']
     credentials='Bearer '+auth.get_token_from_client_credentials()
    
     headers = {"Content-Type": "application/json", "Authorization": credentials}
