@@ -29,7 +29,7 @@ setup(
     description='Cloudify plugin for Azure infrastructure.',
 
     # This must correspond to the actual packages in the plugin.
-    packages=['azurecloudify'],['manager-blueprint'],
+    packages=['azurecloudify']
 
     license='LICENSE',
     install_requires=[
