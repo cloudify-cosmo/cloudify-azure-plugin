@@ -130,11 +130,11 @@ def start_vm(**_):
     get_pip_info_url= 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
     raw_response = requests.get(url=get_pip_info_url, headers=headers)
     print (raw_response)
-    ctx.logger.info("xxx raw_response : " + raw_response)
+    ctx.logger.info("xxx raw_response : " + str(raw_response))
     response_get_info= raw_response.json()
-    print (response_get_info)
-    ctx.logger.info("xxx response_get_info : " +response_get_info)
-    print response_get_info['properties']['ipAddress']
+    print (str(response_get_info))
+    ctx.logger.info("xxx response_get_info : " +str(response_get_info))
+    print (str(response_get_info['properties']['ipAddress']))
     ctx.instance.runtime_properties['vm_public_ip']= response_get_info['properties']['ipAddress']
     #ctx.source.instance.runtime_properties['vm_public_ip']=response_get_info['properties']['ipAddress']
     
