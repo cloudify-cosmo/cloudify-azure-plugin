@@ -182,7 +182,7 @@ node_templates:
             fabric_env:
               user: { get_input: agents_user }
               key_filename: { get_input: ssh_key_path }              
-              host_string: { get_attribute: [manager_public_ip, vm_public_ip] }
+              host_string: { get_attribute: [manager_server, vm_public_ip] }
         start:
           implementation: fabric.fabric_plugin.tasks.run_module_task
           inputs:
@@ -194,7 +194,7 @@ node_templates:
             fabric_env:
               user: { get_input: agents_user }
               key_filename: { get_input: ssh_key_path }
-              host_string: { get_attribute: [manager_public_ip, vm_public_ip] }
+              host_string: { get_attribute: [manager_server, vm_public_ip] }
         stop:
           implementation: fabric.fabric_plugin.tasks.run_module_task
           inputs:
@@ -202,7 +202,7 @@ node_templates:
             fabric_env:
               user: { get_input: agents_user }
               key_filename: { get_input: ssh_key_path }
-              host_string: { get_attribute: [manager_public_ip, vm_public_ip] }
+              host_string: { get_attribute: [manager_server, vm_public_ip] }
         delete:
           implementation: fabric.fabric_plugin.tasks.run_module_task
           inputs:
@@ -210,7 +210,7 @@ node_templates:
             fabric_env:
               user: { get_input: agents_user }
               key_filename: { get_input: ssh_key_path }
-              host_string: { get_attribute: [manager_public_ip, vm_public_ip] } 
+              host_string: { get_attribute: [manager_server, vm_public_ip] } 
 
       cloudify.interfaces.validation:
         creation:
