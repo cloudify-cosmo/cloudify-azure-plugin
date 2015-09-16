@@ -74,7 +74,19 @@ def create_nic(**_):
                         })
           nic_url=constants.azure_url+"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
           response_nic = requests.put(url=nic_url, data=nic_params, headers=headers)
+
           print(response_nic.text)
+          ctx.logger.info("response_nic : " + response_nic.text)
+          response_nic_json = response_nic.json()
+          nic_root_properties = response_nic_json[u'properties']
+          ctx.logger.info("nic_root_properties : " + str(nic_root_properties))
+          ip_configurations = nic_root_properties[u'ipConfigurations'][0]
+          ctx.logger.info("nic ip_configurations0 : " + str(ip_configurations))
+          curr_properties = ip_configurations[u'properties']
+          ctx.logger.info("nic curr_properties : " + str(curr_properties))		  
+          private_ip_address = curr_properties[u'privateIPAddress']
+          ctx.logger.info("nic private_ip_address : " + str(private_ip_address))
+          ctx.instance.runtime_properties['private_ip']= str(private_ip_address)
         except:
           ctx.logger.info("network interface card " + nic_name + "could not be created.")
           sys.exit(1)

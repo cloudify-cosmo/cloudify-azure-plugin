@@ -28,9 +28,7 @@ PROVIDER_CONTEXT_RUNTIME_PROPERTY = 'provider_context'
 
 
 def configure(azure_config):
-
     _set_provider_context()
-
     _copy_azure_configuration_to_manager(azure_config)
 
 

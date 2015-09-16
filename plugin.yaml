@@ -325,5 +325,10 @@ relationships:
     
   cloudify.azure.relationships.server_connected_to_nic:
     derived_from: cloudify.relationships.connected_to
-    
-    
+    source_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        postconfigure:
+          implementation: microsoft.azurecloudify.server.set_private_ip
+          inputs:
+            azure_config:
+              default: {}
