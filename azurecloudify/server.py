@@ -131,7 +131,9 @@ def start_vm(**_):
     raw_response = requests.get(url=get_pip_info_url, headers=headers)
     ctx.logger.info("raw_response : " + str(raw_response))
     response_get_info = raw_response.json()
+    ctx.logger.info("response_get_info : " + str(response_get_info))
     currProperties = response_get_info[u'properties']
+    ctx.logger.info("currProperties : " + str(currProperties))
     currIpAddress = currProperties[u'ipAddress']
     ctx.logger.info("Current public IP address is " + str(currIpAddress))
     ctx.instance.runtime_properties['vm_public_ip']= currIpAddress

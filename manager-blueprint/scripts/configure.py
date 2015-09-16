@@ -31,8 +31,7 @@ def configure(azure_config):
 
     _set_provider_context()
 
-	# Use this only if required
-    # _copy_azure_configuration_to_manager(azure_config)
+    _copy_azure_configuration_to_manager(azure_config)
 
 
 def _set_provider_context():
@@ -42,5 +41,8 @@ def _set_provider_context():
 
 
 def _copy_azure_configuration_to_manager(azure_config):
-    merged_config = azure_config.copy()
-    # ...
+    tmp = tempfile.mktemp()
+    with open(tmp, 'w') as f:
+        json.dump(azure_config, f)
+    fabric.api.put(tmp, '~/')
+	
