@@ -129,16 +129,12 @@ def start_vm(**_):
     public_ip_name= vm_name+'_pip'
     get_pip_info_url= 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
     raw_response = requests.get(url=get_pip_info_url, headers=headers)
-    print (raw_response)
-    ctx.logger.info("xxx raw_response : " + str(raw_response))
-    response_get_info= raw_response.json()
-    print (str(response_get_info))
-    ctx.logger.info("xxx response_get_info : " +str(response_get_info))
-    print (str(response_get_info['properties']['ipAddress']))
-    ctx.instance.runtime_properties['vm_public_ip']= response_get_info['properties']['ipAddress']
-    #ctx.source.instance.runtime_properties['vm_public_ip']=response_get_info['properties']['ipAddress']
-    
-    
+    ctx.logger.info("raw_response : " + str(raw_response))
+    response_get_info = raw_response.json()
+    currProperties = response_get_info[u'properties']
+    currIpAddress = currProperties[u'ipAddress']
+    ctx.logger.info("Current public IP address is " + str(currIpAddress))
+    ctx.instance.runtime_properties['vm_public_ip']= currIpAddress
     resource_group_name = vm_name+'_resource_group'
     start_vm_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
     response_start_vm=requests.post(start_vm_url,headers=headers)
