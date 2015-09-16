@@ -132,6 +132,7 @@ def start_vm(**_):
     print (response_get_info)
     print response_get_info['properties']['ipAddress']
     ctx.instance.runtime_properties['vm_public_ip']= response_get_info['properties']['ipAddress']
+    ctx.instance.runtime_properties['manager_public_ip']= response_get_info['properties']['ipAddress']
     #ctx.source.instance.runtime_properties['vm_public_ip']=response_get_info['properties']['ipAddress']
     
     
