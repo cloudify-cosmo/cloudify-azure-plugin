@@ -48,11 +48,11 @@ def create_network_security_group(**_):
                     "direction":"Inbound"
                 }
             }
-        ]
-    }
-})
-response_nsg = requests.put(url=security_group_url, data=security_group_params, headers=headers)
-print response_nsg.text
+         ]
+      }
+   })
+    response_nsg = requests.put(url=security_group_url, data=security_group_params, headers=headers)
+    print response_nsg.text
 
   except:
     ctx.logger.info("Security group " +security_group_name + "could not be created.")
