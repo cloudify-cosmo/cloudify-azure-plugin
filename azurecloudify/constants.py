@@ -38,6 +38,7 @@ vm_createOption = 'FromImage'
 admin_username='azuretest'
 vm_version="latest"
 azure_url='https://management.azure.com'
+login_url='https://login.microsoftonline.com'
 
 
 resource = 'https://management.core.windows.net/'
