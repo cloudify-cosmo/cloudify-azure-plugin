@@ -19,7 +19,7 @@ def create_network_security_group(**_):
     subscription_id = ctx.node.properties['subscription_id']
     resource_group_name = vm_name+'_resource_group'
     location = ctx.node.properties['location']
-    security_group_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkSecurityGroups/'+security_group_name+'?api-version=2015-05-01-preview'
+    security_group_url= constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version
 
     credentials='Bearer '+ auth.get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
@@ -74,8 +74,8 @@ def delete_security_group(**_):
   
   if 1:
     try:
-      ctx.logger.info("Deleting NIC")
-      security_group_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkSecurityGroups/'+security_group_name+'?api-version=2015-05-01-preview'
+      ctx.logger.info("Deleting Security Group")
+      security_group_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version
       response_nsg = requests.delete(url=security_group_url,headers=headers)
       print(response_nic.text)
     except:
