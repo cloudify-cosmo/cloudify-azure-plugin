@@ -28,29 +28,29 @@ def create_network_security_group(**_):
     try:
       ctx.logger.info("Creating new security group:" + security_group_name)
       security_group_params=json.dumps({
-    "location":"West US",
-    "tags":{
-        "key":"value"
-    },
-    "properties":{
-        "securityRules":[
-            {
-                "name":"myNsRule",
-                "properties":{
-                    "description":"description-of-this-rule",
-                    "protocol": "Tcp",
-                    "sourcePortRange":constants.sourcePortRange,
-                    "destinationPortRange":constants.destinationPortRange,
-                    "sourceAddressPrefix":"*",
-                    "destinationAddressPrefix":"*",
-                    "access":"Allow",
-                    "priority":constants.priority,
-                    "direction":"Inbound"
+        "location":"West US",
+        "tags":{
+            "key":"value"
+        },
+        "properties":{
+            "securityRules":[
+                {
+                    "name":"myNsRule",
+                    "properties":{
+                        "description":"description-of-this-rule",
+                        "protocol": "Tcp",
+                        "sourcePortRange":constants.sourcePortRange,
+                        "destinationPortRange":constants.destinationPortRange,
+                        "sourceAddressPrefix":"*",
+                        "destinationAddressPrefix":"*",
+                        "access":"Allow",
+                        "priority":constants.priority,
+                        "direction":"Inbound"
+                    }
                 }
-            }
-         ]
-      }
-   })
+             ]
+          }
+      })
     response_nsg = requests.put(url=security_group_url, data=security_group_params, headers=headers)
     print response_nsg.text
 
