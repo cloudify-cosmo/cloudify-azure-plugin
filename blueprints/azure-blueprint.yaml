@@ -1,13 +1,13 @@
 ###########################################################
 # This Blueprint installs the nodecellar application
-# on a softlayer cloud environment.
+# on a microsoft azure cloud environment.
 ###########################################################
 
 tosca_definitions_version: cloudify_dsl_1_1
 
 imports:
   - http://www.getcloudify.org/spec/cloudify/3.2.1/types.yaml
-  - http://www.getcloudify.org/spec/softlayer-plugin/1.2.1/plugin.yaml
+  - https://raw.githubusercontent.com/cloudify-cosmo/cloudify-azure-plugin/master/plugin.yaml
   - http://www.getcloudify.org/spec/diamond-plugin/1.2.1/plugin.yaml
   - types/nodecellar.yaml
 
