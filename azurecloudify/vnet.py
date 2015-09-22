@@ -78,7 +78,7 @@ def delete_vnet(**_):
     if 1:
         try:
             ctx.logger.info("Deleting the virtual network: " + vnet_name)
-            vnet_url = 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
+            vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
             response_vnet = requests.delete(url=vnet_url,headers=headers)
             print response_vnet.text
 
