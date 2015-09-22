@@ -73,7 +73,7 @@ def delete_storage_account(**_):
     ctx.logger.info("Deleting Storage Account"+storage_account_name)
     if 1:
         try:
-            storage_account_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts/'+storage_account_name+'?api-version='+constants.api_version
+            storage_account_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts/'+storage_account_name+'?api-version='+constants.api_version
             response_sa = requests.delete(url=storage_account_url,headers=headers)
             print response_sa.text
 
