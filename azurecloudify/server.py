@@ -172,7 +172,7 @@ def delete_virtual_machine(**_):
     if 1:
         try:
             ctx.logger.info("Deleting the virtual machine: " + vm_name)
-            vm_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version
+            vm_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version
             response_vm = requests.delete(url=vm_url,headers=headers)
             print(response_vm.text)
 
