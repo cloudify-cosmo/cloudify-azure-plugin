@@ -10,7 +10,7 @@ def get_token_from_client_credentials():
     client_id = ctx.node.properties['client_id']
     aad_password = ctx.node.properties['aad_password']
     tenant_id = ctx.node.properties['tenant_id']
-    endpoints =login_url+'/'+tenant_id+'/oauth2/token'
+    endpoints =constants.login_url+'/'+tenant_id+'/oauth2/token'
     payload = {
         'grant_type': 'client_credentials',
         'client_id': client_id,
