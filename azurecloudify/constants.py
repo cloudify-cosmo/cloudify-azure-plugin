@@ -40,9 +40,6 @@ vm_version="latest"
 azure_url='https://management.azure.com'
 login_url='https://login.microsoftonline.com'
 
-
-resource_url = 'https://management.core.windows.net/'
-
 RESOURCE_GROUP_REQUIRED_PROPERTIES=['vm_name','location','subscription_id']
 STORAGE_ACCOUNT_REQUIRED_PROPERTIES = ['vm_name','location','subscription_id']
 VNET_REQUIRED_PROPERTIES = ['vm_name','location','subscription_id']
