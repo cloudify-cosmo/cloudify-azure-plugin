@@ -39,6 +39,10 @@ admin_username='azuretest'
 vm_version="latest"
 azure_url='https://management.azure.com'
 login_url='https://login.microsoftonline.com'
+sourcePortRange=65000
+destinationPortRange=60000
+priority=100
+
 
 RESOURCE_GROUP_REQUIRED_PROPERTIES=['vm_name','location','subscription_id']
 STORAGE_ACCOUNT_REQUIRED_PROPERTIES = ['vm_name','location','subscription_id']
