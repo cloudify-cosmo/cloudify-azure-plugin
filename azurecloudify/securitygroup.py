@@ -39,12 +39,12 @@ def create_network_security_group(**_):
                 "properties":{
                     "description":"description-of-this-rule",
                     "protocol": "Tcp",
-                    "sourcePortRange":"65000",
-                    "destinationPortRange":"60000",
+                    "sourcePortRange":constants.sourcePortRange,
+                    "destinationPortRange":constants.destinationPortRange,
                     "sourceAddressPrefix":"*",
                     "destinationAddressPrefix":"*",
                     "access":"Allow",
-                    "priority":100,
+                    "priority":constants.priority,
                     "direction":"Inbound"
                 }
             }
