@@ -20,34 +20,53 @@ imports:
 #####################################################################################
 
 inputs:
-  location: 
-    description: >
-      Location of the data center
-      Default value is the location id of Melbourne 1
-    default: 449596
-  domain: 
-    description: The domain
-    default: cloudify.org
-  ram: 
-    description: >
-      Item id of the ram
-      Default value is the item id of 16 GB
-    default: 1017
-  cpu: 
-    description: >
-      Item id of the cpu
-      Default value is the item id of 4 x 2.0 GHz Cores
-    default: 859
-  disk: 
-    description: >
-      Item id of the disk
-      Default value is the item id of 25 GB (SAN)
-    default: 1178
-  os: 
-    description: >
-      Item id of the operating system
-      Default value is the item id of Ubuntu Linux 12.04 
-    default: 4174
+  subscription_id:
+    type: string
+    default: ''
+
+  location:
+    type: string
+    default: 'West US'  
+
+  vm_name:
+    type: string
+    default: 'my_vm'
+
+  vm_size: 
+    type: string
+    default: 'Standard_A2'
+  
+  vm_os_type:
+    type: string
+    default: 'UbuntuServer'
+
+  key_data:
+    type: string
+    default: ''
+
+  ssh_key_path:
+    type: string
+    default: '~/.ssh/id_rsa'
+
+  client_id:
+    type: string
+    default: ''
+
+  tenant_id:
+    type: string
+    default: ''
+
+  username:
+    type: string
+    default: ''
+  
+  aad_password:
+    type: string
+    default: ''
+
+  agents_user:
+    type: string
+    default: 'azuretest' 
 
 node_types:
 
@@ -57,20 +76,19 @@ node_types:
   ###########################################################
 
   nodecellar.nodes.MonitoredServer:
-    derived_from: cloudify.softlayer.nodes.VirtualServer
+    derived_from: cloudify.azure.nodes.Server
     properties:
-      location: 
-        default: { get_input: location }
-      domain: 
-        default: { get_input: domain }
-      ram:
-        default: { get_input: ram }
-      cpu: 
-        default: { get_input: cpu }
-      disk: 
-        default: { get_input: disk }
-      os: 
-        default: { get_input: os }
+      vm_name: { get_input: vm_name }
+      vm_os_type: { get_input: vm_os_type}
+      vm_size: { get_input: vm_size}
+      key_data: { get_input: key_data}
+      subscription_id: { get_input: subscription_id}
+      location: { get_input: location }
+      client_id: { get_input: client_id}
+      tenant_id: { get_input: tenant_id}
+      username: { get_input: username}
+      aad_password: { get_input: aad_password}
+      install_agent: false
 
     interfaces:
 
