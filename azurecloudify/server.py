@@ -127,7 +127,7 @@ def start_vm(**_):
     vm_name = ctx.node.properties['vm_name']
     resource_group_name = vm_name+'_resource_group'
     public_ip_name= vm_name+'_pip'
-    get_pip_info_url= 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
+    get_pip_info_url= constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
     raw_response = requests.get(url=get_pip_info_url, headers=headers)
     ctx.logger.info("raw_response : " + str(raw_response))
     response_get_info = raw_response.json()
