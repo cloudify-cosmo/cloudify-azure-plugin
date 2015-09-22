@@ -71,7 +71,7 @@ inputs:
 node_types:
 
   ###########################################################
-  # We define a type that inherits softlayer's default
+  # We define a type that inherits microsoft azure's default
   # server, and adds monitoring capabillities on top of it.
   ###########################################################
 
