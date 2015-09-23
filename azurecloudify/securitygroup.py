@@ -10,7 +10,7 @@ from cloudify import ctx
 from cloudify.decorators import operation
 
 
-
+@operation
 def create_network_security_group(**_):
     for property_key in constants.SECURITY_GROUP_REQUIRED_PROPERTIES:
         _validate_node_properties(property_key, ctx.node.properties)
