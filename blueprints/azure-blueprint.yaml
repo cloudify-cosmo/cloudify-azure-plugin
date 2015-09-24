@@ -36,9 +36,17 @@ inputs:
     type: string
     default: 'Standard_A2'
   
-  vm_os_type:
+  image_reference_offer:
     type: string
     default: 'UbuntuServer'
+    
+  image_reference_publisher:
+    type: string
+    default: 'Canonical'
+    
+  image_reference_sku:
+    type: string
+    default: '14.04.2-LTS'
 
   key_data:
     type: string
@@ -79,7 +87,9 @@ node_types:
     derived_from: cloudify.azure.nodes.Server
     properties:
       vm_name: { get_input: vm_name }
-      vm_os_type: { get_input: vm_os_type}
+      image_reference_offer: { get_input: image_reference_offer}
+      image_reference_publisher: { get_input: image_reference_publisher}
+      image_reference_sku: { get_input: image_reference_sku}
       vm_size: { get_input: vm_size}
       key_data: { get_input: key_data}
       subscription_id: { get_input: subscription_id}
