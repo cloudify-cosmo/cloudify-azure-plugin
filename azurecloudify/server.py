@@ -86,7 +86,7 @@ def create_vm(**_):
                         "imageReference": {
                             "publisher": ctx.node.properties['image_reference_publisher'],
                             "offer": ctx.node.properties['image_reference_offer'],
-                            "sku" : constants.image_reference_sku,
+                            "sku" : ctx.node.properties['image_reference_sku'],
                             "version":constants.vm_version
                         },
                         "osDisk" : {
