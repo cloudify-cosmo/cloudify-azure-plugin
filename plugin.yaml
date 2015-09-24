@@ -77,11 +77,21 @@ node_types:
           Indicates the size of VM
         type: string
         default: 'Standard A0'
-      vm_os_type:
+      image_reference_offer:
         description: >
           Flavour of virtual machine
         type: string
         default: 'UbuntuServer'
+      image_reference_publisher:
+        description: >
+          Publisher of virtual machine
+        type: string
+        default: 'Canonical'
+      image_reference_sku:
+        description: >
+          Version of operating system
+        type: string
+        default: 'UbuntuServer'        
       key_data:
         description: >
            Indicates the ssh public-key data of the user
