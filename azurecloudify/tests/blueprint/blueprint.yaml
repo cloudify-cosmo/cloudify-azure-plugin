@@ -24,10 +24,17 @@ inputs:
     type: string
     default: 'Standard A0'
   
-  vm_os_type:
+  image_reference_offer:
     type: string
     default: 'UbuntuServer'
+    
+  image_reference_publisher:
+    type: string
+    default: 'Canonical'
  
+  image_reference_sku:
+    type: string
+    default: '14.04.2-LTS' 
 
  vm_admin_username:
     type: string
@@ -51,7 +58,9 @@ node_templates:
     type: cloudify.azure.nodes.VirtualMachine
     properties:
       vm_name: { get_input: vm_name }
-      vm_type: { get_input: vm_os_type}
+      image_reference_offer: { get_input: image_reference_offer}
+      image_reference_publisher: { get_input: image_reference_publisher}
+      image_reference_sku: { get_input: image_reference_sku}
       vm_size: { get_input: vm_size}
       vm_admin_username= { get_input: vm_admin_username}
       key_data: { get_input: key_data}
