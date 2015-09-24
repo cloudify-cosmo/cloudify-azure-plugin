@@ -84,8 +84,8 @@ def create_vm(**_):
                     },
                     "storageProfile": {
                         "imageReference": {
-                            "publisher": constants.image_reference_publisher,
-                            "offer": constants.image_reference_offer,
+                            "publisher": ctx.node.properties['image_reference_publisher'],
+                            "offer": ctx.node.properties['image_reference_offer'],
                             "sku" : constants.image_reference_sku,
                             "version":constants.vm_version
                         },
