@@ -23,9 +23,17 @@ inputs:
     type: string
     default: 'Standard A0'
   
-  vm_os_type:
+  image_reference_offer:
     type: string
     default: 'UbuntuServer'
+    
+  image_reference_publisher:
+    type: string
+    default: 'Canonical'
+    
+  image_reference_sku:
+    type: string
+    default: '14.04.2-LTS'
 
   key_data:
     type: string
