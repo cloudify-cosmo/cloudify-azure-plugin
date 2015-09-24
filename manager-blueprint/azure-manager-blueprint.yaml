@@ -21,7 +21,7 @@ inputs:
 
   vm_size: 
     type: string
-    default: 'Standard A0'
+    default: 'Standard_A2'
   
   image_reference_offer:
     type: string
