@@ -44,7 +44,7 @@ resource='https://management.core.windows.net/'
 RESOURCE_GROUP_REQUIRED_PROPERTIES=['vm_name','location','subscription_id']
 STORAGE_ACCOUNT_REQUIRED_PROPERTIES = ['vm_name','location','subscription_id']
 VNET_REQUIRED_PROPERTIES = ['vm_name','location','subscription_id']
-VM_REQUIRED_PROPERTIES = ['vm_name','vm_os_type','vm_size','subscription_id','key_data','location']
+VM_REQUIRED_PROPERTIES = ['vm_name','image_reference_offer','image_reference_publisher','image_reference_sku','vm_size','subscription_id','key_data','location']
 NIC_REQUIRED_PROPERTIES = ['vm_name','location','subscription_id']
 PUBLIC_IP_REQUIRED_PROPERTIES = ['vm_name','location','subscription_id']
 
