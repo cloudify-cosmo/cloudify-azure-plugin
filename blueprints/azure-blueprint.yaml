@@ -156,13 +156,99 @@ node_templates:
 
   mongod_host:
     type: nodecellar.nodes.MonitoredServer
-    properties:
-      hostname: mongod-host
+    relationships:
+      - target: mongod_nic
+        type: cloudify.azure.relationships.server_connected_to_nic
 
   nodejs_host:
     type: nodecellar.nodes.MonitoredServer
+    relationships:
+      - target: nodejs_nic
+        type: cloudify.azure.relationships.server_connected_to_nic
+
+  nodecellar_resource_group:
+    type: cloudify.azure.nodes.ResourceGroup
     properties:
-      hostname: nodejs-host
+      vm_name: { get_input: vm_name }
+      location: { get_input: location}
+      subscription_id: { get_input: subscription_id}
+      client_id: { get_input: client_id}
+      tenant_id: { get_input: tenant_id}
+      username: { get_input: username}
+      aad_password: { get_input: aad_password}
+     
+
+  nodecellar_storage_account:
+    type: cloudify.azure.nodes.StorageAccount
+    properties:
+      vm_name: { get_input: vm_name }
+      location: { get_input: location}
+      subscription_id: { get_input: subscription_id}
+      client_id: { get_input: client_id}
+      tenant_id: { get_input: tenant_id}
+      username: { get_input: username}
+      aad_password: { get_input: aad_password}
+      
+    relationships:
+      - target: nodecellar_resource_group
+        type: cloudify.azure.relationships.storage_account_connected_to_resource_group
+
+  nodejs_public_ip:
+    type: cloudify.azure.nodes.PublicIP
+    properties:
+      vm_name: { get_input: vm_name }
+      location: { get_input: location}
+      subscription_id: { get_input: subscription_id}
+      client_id: { get_input: client_id}
+      tenant_id: { get_input: tenant_id}
+      username: { get_input: username}
+      aad_password: { get_input: aad_password}
+    relationships:
+      - target: nodecellar_vnet
+        type: cloudify.azure.relationships.public_ip_connected_to_vnet
+
+  nodejs_nic:
+    type: cloudify.azure.nodes.NIC
+    properties:
+      vm_name: { get_input: vm_name }
+      location: { get_input: location}
+      subscription_id: { get_input: subscription_id}
+      client_id: { get_input: client_id}
+      tenant_id: { get_input: tenant_id}
+      username: { get_input: username}
+      aad_password: { get_input: aad_password}
+    relationships:
+      - target: nodejs_public_ip
+        type: cloudify.azure.relationships.nic_connected_to_public_ip
+
+  mongod_nic:
+    type: cloudify.azure.nodes.NIC
+    properties:
+      vm_name: { get_input: vm_name }
+      location: { get_input: location}
+      subscription_id: { get_input: subscription_id}
+      client_id: { get_input: client_id}
+      tenant_id: { get_input: tenant_id}
+      username: { get_input: username}
+      aad_password: { get_input: aad_password}
+    relationships:
+      - target: nodecellar_vnet
+        type: cloudify.azure.relationships.nic_connected_to_vnet
+
+  nodecellar_vnet:
+    type: cloudify.azure.nodes.VNET
+    properties:
+      vm_name: { get_input: vm_name }
+      location: { get_input: location}
+      subscription_id: { get_input: subscription_id}
+      client_id: { get_input: client_id}
+      tenant_id: { get_input: tenant_id}
+      username: { get_input: username}
+      aad_password: { get_input: aad_password}
+    relationships:
+      - target: nodecellar_storage_account
+        type: cloudify.azure.relationships.vnet_connected_to_storage_account	
+	
 
   mongod:
     type: nodecellar.nodes.MongoDatabase
