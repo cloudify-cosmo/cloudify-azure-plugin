@@ -86,19 +86,32 @@ node_types:
   nodecellar.nodes.MonitoredServer:
     derived_from: cloudify.azure.nodes.Server
     properties:
-      vm_name: { get_input: vm_name }
-      image_reference_offer: { get_input: image_reference_offer}
-      image_reference_publisher: { get_input: image_reference_publisher}
-      image_reference_sku: { get_input: image_reference_sku}
-      vm_size: { get_input: vm_size}
-      key_data: { get_input: key_data}
-      subscription_id: { get_input: subscription_id}
-      location: { get_input: location }
-      client_id: { get_input: client_id}
-      tenant_id: { get_input: tenant_id}
-      username: { get_input: username}
-      aad_password: { get_input: aad_password}
-      install_agent: false
+      vm_name:
+        default: { get_input: vm_name }
+      image_reference_offer:
+        default: { get_input: image_reference_offer}
+      image_reference_publisher:
+        default: { get_input: image_reference_publisher}
+      image_reference_sku:
+        default: { get_input: image_reference_sku}
+      vm_size:
+        default: { get_input: vm_size}
+      key_data:
+        default: { get_input: key_data}
+      subscription_id:
+        default: { get_input: subscription_id}
+      location:
+        default: { get_input: location }
+      client_id: 
+        default: { get_input: client_id}
+      tenant_id:
+        default: { get_input: tenant_id}
+      username:
+        default: { get_input: username}
+      aad_password:
+        default: { get_input: aad_password}
+      install_agent: 
+        default: false
 
     interfaces:
 
