@@ -29,6 +29,19 @@ import auth
 def creation_validation(**_):
     for property_key in constants.RESOURCE_GROUP_REQUIRED_PROPERTIES:
         _validate_node_properties(property_key, ctx.node.properties)
+    
+    resource_group =  _list_all_resource_groups(
+	utils.resource_group_name())
+
+    if ctx.node.properties['use_external_resource'] and not resource_group:
+	raise NonRecoverableError(
+	'External resource, but the supplied '
+	'resource group does not exist in the account.')
+    if not ctx.node.properties['use_external_resource'] and resource_group:
+	raise NonRecoverableError(
+	'Not external resource, but the supplied '
+	'resource group exists in the account.')
+
 
 @operation
 def create_resource_group(**_):
@@ -84,3 +97,19 @@ def delete_resource_group(**_):
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
+
+def _list_all_resource_groups(resource_name):
+    credentials=auth.get_token_from_client_credentials()
+    headers={"Content-Type": "application/json", "Authorization": credentials}
+    subscription_id=ctx.node.properties['subscription_id']
+    list_resource_group_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourcegroups?api-version='+constants.api_version
+    response_list_resource_group=requests.get(url=list_resource_group_url,headers=headers)
+    print(response_list_resource_group.text)
+    # extract the list of resource group names
+    list_of_resource_groups=[]
+
+    if resource_name in list_of_resource_groups:
+        return resource_name
+    else:
+        ctx.logger.info("Resource group %s does not exist"+ resource_name)
+	return None
