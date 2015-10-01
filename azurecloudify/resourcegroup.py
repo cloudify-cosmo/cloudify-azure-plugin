@@ -112,7 +112,7 @@ def _create_external_resource_group(name):
 	    raise NonRecoverableError(
 	    'External security group was indicated, but the given '
 	    'security group does not exist.')
-	utils.set_external_resource_name(group.name, ctx.instance)
+	utils.set_external_resource_name(resource_name, ctx.instance)
 	return True
 
 def _list_all_resource_groups(resource_name):
