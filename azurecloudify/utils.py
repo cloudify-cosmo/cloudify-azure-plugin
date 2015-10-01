@@ -31,6 +31,7 @@ def set_external_resource_name(value, ctx_instance, external=True):
 	:param ctx: The Cloudify ctx context.
 	:param external: Boolean representing if it is external resource or not.
 	"""
+	value = constants.value
 	if not external:
 	    resource_type = 'Cloudify'
 	else:
