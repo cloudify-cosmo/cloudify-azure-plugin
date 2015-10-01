@@ -24,3 +24,16 @@ and returns boolean False (if not external) or True.
 	'Using external resource_name: {0}.'
 	.format(ctx_node_properties['resource_name']))
 	return True
+	
+def set_external_resource_id(value, ctx_instance, external=True):
+	"""Sets the EXTERNAL_RESOURCE_ID runtime_property for a Node-Instance.
+	:param value: the desired EXTERNAL_RESOURCE_ID runtime_property
+	:param ctx: The Cloudify ctx context.
+	:param external: Boolean representing if it is external resource or not.
+	"""
+	if not external:
+	resource_type = 'Cloudify'
+	else:
+	resource_type = 'external'
+	ctx.logger.info('Using {0} resource: {1}'.format(resource_type, value))
+	 ctx.instance.runtime_properties['storage_account'] = value
