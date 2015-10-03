@@ -3,6 +3,10 @@ from cloudify.exceptions import NonRecoverableError
 import random
 import string
 
+def get_resource_group_name():
+    if ctx.node.properties['exsisting_resource_group_name']:
+        return ctx.node.properties['exsisting_resource_group_name']
+        
 def get_resource_name():
     if ctx.node.properties['resource_name']:
         return ctx.node.properties['resource_name']
