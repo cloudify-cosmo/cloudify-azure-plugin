@@ -21,6 +21,7 @@ import constants
 import sys
 import os
 import auth
+import utils
 from cloudify.exceptions import NonRecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation
@@ -34,65 +35,75 @@ def creation_validation(**_):
 
 @operation
 #nic:
-def create_nic(**_):
-    for property_key in constants.NIC_REQUIRED_PROPERTIES:
-       _validate_node_properties(property_key, ctx.node.properties)
-    vm_name=ctx.node.properties['vm_name']
-    nic_name = vm_name+'_nic'
-    public_ip_name=vm_name+'_pip'
-    resource_group_name = vm_name+'_resource_group'
-    location = ctx.node.properties['location']
-    subscription_id = ctx.node.properties['subscription_id']
-    vnet_name = vm_name+'_vnet'
-    
-    credentials= 'Bearer ' + auth.get_token_from_client_credentials()
-    headers = {"Content-Type": "application/json", "Authorization": credentials}
-    
-    ctx.logger.info("Checking availability of network interface card: " + nic_name)
- 
-    if 1:
-        try:
-          ctx.logger.info("Creating new network interface card: " + nic_name)
-          nic_params=json.dumps({
-                            "location":location,
-                            "properties":{
-                                "ipConfigurations":[
-                                    {
-                                        "name":constants.ip_config_name,
-                                        "properties":{
-                                            "subnet":{
-                                                "id":"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Network/virtualNetworks/"+vnet_name+"/subnets/"+constants.subnet_name
-                                            },
-                                            "privateIPAllocationMethod":"Dynamic",
-                                            "publicIPAddress":{
-                                                    "id":"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Network/publicIPAddresses/"+public_ip_name
+ def create_nic(**_):
+    if ctx.node.properties['use_external_resource']
+        if not resource_group:
+             raise NonRecoverableError(
+             'External resource, but the supplied '
+             'resource group does not exist in the account.')
+             sys.exit(1)
+         else
+             ctx.instance.runtime_properties['existing_resource_group_name']
+    else
+        for property_key in constants.NIC_REQUIRED_PROPERTIES:
+           _validate_node_properties(property_key, ctx.node.properties)
+        vm_name=ctx.node.properties['vm_name']
+        nic_name = vm_name+'_nic'
+        public_ip_name=vm_name+'_pip'
+        RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
+        resource_group_name = vm_name+'_resource_group'+RANDOM_SUFFIX_VALUE
+        location = ctx.node.properties['location']
+        subscription_id = ctx.node.properties['subscription_id']
+        vnet_name = vm_name+'_vnet'
+        
+        credentials= 'Bearer ' + auth.get_token_from_client_credentials()
+        headers = {"Content-Type": "application/json", "Authorization": credentials}
+        
+        ctx.logger.info("Checking availability of network interface card: " + nic_name)
+     
+        if 1:
+            try:
+              ctx.logger.info("Creating new network interface card: " + nic_name)
+              nic_params=json.dumps({
+                                "location":location,
+                                "properties":{
+                                    "ipConfigurations":[
+                                        {
+                                            "name":constants.ip_config_name,
+                                            "properties":{
+                                                "subnet":{
+                                                    "id":"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Network/virtualNetworks/"+vnet_name+"/subnets/"+constants.subnet_name
+                                                },
+                                                "privateIPAllocationMethod":"Dynamic",
+                                                "publicIPAddress":{
+                                                        "id":"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Network/publicIPAddresses/"+public_ip_name
+                                            }
+                                            }
                                         }
-                                        }
-                                    }
-                                ],
-                            }
-                        })
-          nic_url=constants.azure_url+"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
-          response_nic = requests.put(url=nic_url, data=nic_params, headers=headers)
-
-          print(response_nic.text)
-          ctx.logger.info("response_nic : " + response_nic.text)
-          response_nic_json = response_nic.json()
-          nic_root_properties = response_nic_json[u'properties']
-          ctx.logger.info("nic_root_properties : " + str(nic_root_properties))
-          ip_configurations = nic_root_properties[u'ipConfigurations'][0]
-          ctx.logger.info("nic ip_configurations0 : " + str(ip_configurations))
-          curr_properties = ip_configurations[u'properties']
-          ctx.logger.info("nic curr_properties : " + str(curr_properties))		  
-          private_ip_address = curr_properties[u'privateIPAddress']
-          ctx.logger.info("nic private_ip_address : " + str(private_ip_address))
-          ctx.instance.runtime_properties['private_ip']= str(private_ip_address)
-        except:
-          ctx.logger.info("network interface card " + nic_name + "could not be created.")
-          sys.exit(1)
-    else:
-     ctx.logger.info("network interface card" + nic_name + "has already been provisioned by another user.")
+                                    ],
+                                }
+                            })
+              nic_url=constants.azure_url+"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
+              response_nic = requests.put(url=nic_url, data=nic_params, headers=headers)
     
+              print(response_nic.text)
+              ctx.logger.info("response_nic : " + response_nic.text)
+              response_nic_json = response_nic.json()
+              nic_root_properties = response_nic_json[u'properties']
+              ctx.logger.info("nic_root_properties : " + str(nic_root_properties))
+              ip_configurations = nic_root_properties[u'ipConfigurations'][0]
+              ctx.logger.info("nic ip_configurations0 : " + str(ip_configurations))
+              curr_properties = ip_configurations[u'properties']
+              ctx.logger.info("nic curr_properties : " + str(curr_properties))		  
+              private_ip_address = curr_properties[u'privateIPAddress']
+              ctx.logger.info("nic private_ip_address : " + str(private_ip_address))
+              ctx.instance.runtime_properties['private_ip']= str(private_ip_address)
+            except:
+              ctx.logger.info("network interface card " + nic_name + "could not be created.")
+              sys.exit(1)
+        else:
+         ctx.logger.info("network interface card" + nic_name + "has already been provisioned by another user.")
+        
 
 @operation
 def delete_nic(**_):
