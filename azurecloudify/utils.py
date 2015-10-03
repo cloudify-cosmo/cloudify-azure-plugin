@@ -23,7 +23,7 @@ def get_public_ip_name():
     if ctx.node.properties['exsisting_public_ip_name']:
         return ctx.node.properties['exsisting_public_ip_name']
         
-def get_public_ip_name():
+def get_vm_name():
     if ctx.node.properties['exsisting_vm_name']:
         return ctx.node.properties['exsisting_vm_name']
 
