@@ -38,18 +38,18 @@ def create_vnet(**_):
     if ctx.node.properties['use_external_resource']
         if not resource_group:
             raise NonRecoverableError(
-                'External resource, but the supplied '
-                'resource group does not exist in the account.')
+                'External vnet, but the supplied '
+                'vnet does not exist in the account.')
                 sys.exit(1)
         else
-            ctx.instance.runtime_properties['existing_resource_group_name']
+            ctx.instance.runtime_properties['existing_vnet_name']
     else
         for property_key in constants.VNET_REQUIRED_PROPERTIES:
             _validate_node_properties(property_key, ctx.node.properties)
         vm_name=ctx.node.properties['vm_name']
         RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
-        resource_group_name = vm_name+'_resource_group'+RANDOM_SUFFIX_VALUE
-        vnet_name = vm_name+'_vnet'
+        resource_group_name = vm_name+'_resource_group'
+        vnet_name = vm_name+'_vnet'+RANDOM_SUFFIX_VALUE
         location = ctx.node.properties['location']
         subscription_id = ctx.node.properties['subscription_id']
         
