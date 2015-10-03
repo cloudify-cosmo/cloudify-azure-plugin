@@ -31,8 +31,8 @@ def creation_validation(**_):
     for property_key in constants.RESOURCE_GROUP_REQUIRED_PROPERTIES:
         _validate_node_properties(property_key, ctx.node.properties)
     
-    resource_group =  _list_all_resource_groups(
-	utils.resource_group_name())
+    resource_group =  _get_all_resource_groups(
+	utils.get_resource_group_name())
 
     if ctx.node.properties['use_external_resource'] and not resource_group:
 	raise NonRecoverableError(
@@ -126,7 +126,7 @@ def _create_external_resource_group(name):
 	utils.set_external_resource_name(resource_name, ctx.instance)
 	return True
 
-def _list_all_resource_groups(resource_name):
+def _get_all_resource_groups(resource__group_name):
     credentials=auth.get_token_from_client_credentials()
     headers={"Content-Type": "application/json", "Authorization": credentials}
     subscription_id=ctx.node.properties['subscription_id']
@@ -136,8 +136,8 @@ def _list_all_resource_groups(resource_name):
     # extract the list of resource group names
     list_of_resource_groups=[]
 
-    if resource_name in list_of_resource_groups:
-        return resource_name
+    if resource_group_name in list_of_resource_groups:
+        return resource_group_name
     else:
-        ctx.logger.info("Resource group %s does not exist"+ resource_name)
+        ctx.logger.info("Resource group %s does not exist"+ resource_group_name)
 	return None
