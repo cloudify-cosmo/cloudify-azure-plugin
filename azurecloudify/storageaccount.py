@@ -36,10 +36,10 @@ def create_storage_account(**_):
         if not resource_group:
             raise NonRecoverableError(
             'External resource, but the supplied '
-            'resource group does not exist in the account.')
+            'storage account does not exist in the Azure account.')
             sys.exit(1)
         else
-            ctx.instance.runtime_properties['existing_resource_group_name']
+            ctx.instance.runtime_properties['existing_storage_account_name']
     else
             for property_key in constants.STORAGE_ACCOUNT_REQUIRED_PROPERTIES:
                 _validate_node_properties(property_key, ctx.node.properties)
