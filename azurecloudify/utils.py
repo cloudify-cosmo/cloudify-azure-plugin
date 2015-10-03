@@ -1,5 +1,7 @@
 from cloudify import ctx
 from cloudify.exceptions import NonRecoverableError
+import random
+import string
 
 def get_resource_name():
     if ctx.node.properties['resource_name']:
@@ -38,3 +40,7 @@ def set_external_resource_name(value, ctx_instance, external=True):
 	    resource_type = 'external'
             ctx.logger.info('Using {0} resource: {1}'.format(resource_type, value))
 	    ctx.instance.runtime_properties['resource_name'] = value
+
+
+def random_suffix_generator(size=3, chars=string.ascii_uppercase + string.digits):
+     return ''.join(random.choice(chars) for _ in range(size))
