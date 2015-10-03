@@ -20,6 +20,7 @@ import json
 import constants
 import sys
 import os
+import utils
 from cloudify.exceptions import NonRecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation
@@ -45,32 +46,41 @@ def creation_validation(**_):
 
 @operation
 def create_resource_group(**_):
-    for property_key in constants.RESOURCE_GROUP_REQUIRED_PROPERTIES:
-        _validate_node_properties(property_key, ctx.node.properties)
-    vm_name=ctx.node.properties['vm_name']
-    resource_group_name = vm_name+'_resource_group'
-    location = ctx.node.properties['location']
-    subscription_id = ctx.node.properties['subscription_id']
-    
-    credentials='Bearer '+ auth.get_token_from_client_credentials()
-    
-    headers = {"Content-Type": "application/json", "Authorization": credentials}
-   
-    resource_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version_resource_group
-    ctx.logger.info("Checking availability of resource_group: " + resource_group_name)
-
-    if 1:
-        try:
-            ctx.logger.info("Creating new Resource group: " + resource_group_name)
-            resource_group_params=json.dumps({"name":resource_group_name,"location": location})
-            response_rg = requests.put(url=resource_group_url, data=resource_group_params, headers=headers)
-            print response_rg.text
-        except:
-            ctx.logger.info("Resource Group " + resource_group_name + " could not be created")
-            sys.exit(1)
-    else:
-        ctx.logger.info("Resource Group " + resource_group_name + " has already been provisioned")
-  
+    if ctx.node.properties['use_external_resource'] 
+        if not resource_group:
+	    	raise NonRecoverableError(
+		'External resource, but the supplied '
+		'resource group does not exist in the account.')
+        else
+        	ctx.instance.runtime_properties['existing_resource_group_name']
+    else   
+	    for property_key in constants.RESOURCE_GROUP_REQUIRED_PROPERTIES:
+	        _validate_node_properties(property_key, ctx.node.properties)
+	    vm_name=ctx.node.properties['vm_name']
+	    RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
+	    resource_group_name = vm_name+'_resource_group'+RANDOM_SUFFIX_VALUE
+	    location = ctx.node.properties['location']
+	    subscription_id = ctx.node.properties['subscription_id']
+	    
+	    credentials='Bearer '+ auth.get_token_from_client_credentials()
+	    
+	    headers = {"Content-Type": "application/json", "Authorization": credentials}
+	   
+	    resource_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version_resource_group
+	    ctx.logger.info("Checking availability of resource_group: " + resource_group_name)
+	
+	    if 1:
+	        try:
+	            ctx.logger.info("Creating new Resource group: " + resource_group_name)
+	            resource_group_params=json.dumps({"name":resource_group_name,"location": location})
+	            response_rg = requests.put(url=resource_group_url, data=resource_group_params, headers=headers)
+	            print response_rg.text
+	        except:
+	            ctx.logger.info("Resource Group " + resource_group_name + " could not be created")
+	            sys.exit(1)
+	    else:
+	        ctx.logger.info("Resource Group " + resource_group_name + " has already been provisioned")
+	  
 
 @operation
 def delete_resource_group(**_):
