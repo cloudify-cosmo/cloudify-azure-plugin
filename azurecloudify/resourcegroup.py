@@ -109,22 +109,6 @@ def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
         
-def _create_external_resource_group(name):
-	"""If use_external_resource is True, this will set the runtime_properties,
-	and then exit.
-	:param ctx: The Cloudify context.
-	:return False: Cloudify resource. Continue operation.
-	:return True: External resource. Set runtime_properties. Ignore operation.
-	"""
-	if not utils.use_external_resource(ctx.node.properties):
-	    return False
-	group = _get_resource_group_from_name(name)
-	if not group:
-	    raise NonRecoverableError(
-	    'External security group was indicated, but the given '
-	    'security group does not exist.')
-	utils.set_external_resource_name(resource_name, ctx.instance)
-	return True
 
 def _get_all_resource_groups(resource__group_name):
     credentials=auth.get_token_from_client_credentials()
