@@ -31,8 +31,8 @@ def creation_validation(**_):
     for property_key in constants.STORAGE_ACCOUNT_REQUIRED_PROPERTIES:
         _validate_node_properties(property_key, ctx.node.properties)
         
-    storage_account = _get_storage_account(
-        utils.storage_account_name())
+    storage_account = _get_all_storage_account(
+        utils.get_storage_account_name())
         
     if ctx.node.properties['use_external_resource'] and not storage_account:
         raise NonRecoverableError(
@@ -54,6 +54,7 @@ def create_storage_account(**_):
             sys.exit(1)
         else
             ctx.instance.runtime_properties['existing_storage_account_name']
+            return
     else
             for property_key in constants.STORAGE_ACCOUNT_REQUIRED_PROPERTIES:
                 _validate_node_properties(property_key, ctx.node.properties)
