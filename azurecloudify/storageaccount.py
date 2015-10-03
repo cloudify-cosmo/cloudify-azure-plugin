@@ -28,6 +28,20 @@ from cloudify.decorators import operation
 
 @operation
 def creation_validation(**_):
+    for property_key in constants.STORAGE_ACCOUNT_REQUIRED_PROPERTIES:
+        _validate_node_properties(property_key, ctx.node.properties)
+        
+    storage_account = _get_storage_account(
+        utils.storage_account_name())
+        
+    if ctx.node.properties['use_external_resource'] and not storage_account:
+        raise NonRecoverableError(
+        'External resource, but the supplied '
+        'storage account does not exist in the account.')
+    if not ctx.node.properties['use_external_resource'] and storage_account:
+        raise NonRecoverableError(
+        'Not external resource, but the supplied '
+        'storage account group exists in the account.')
     
 
 @operation
