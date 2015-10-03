@@ -76,6 +76,7 @@ def create_resource_group(**_):
 	            resource_group_params=json.dumps({"name":resource_group_name,"location": location})
 	            response_rg = requests.put(url=resource_group_url, data=resource_group_params, headers=headers)
 	            print response_rg.text
+	            ctx.instance.runtime_properties['resource_group']=resource_group_name
 	        except:
 	            ctx.logger.info("Resource Group " + resource_group_name + " could not be created")
 	            sys.exit(1)
