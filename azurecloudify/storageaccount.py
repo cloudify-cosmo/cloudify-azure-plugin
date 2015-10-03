@@ -76,6 +76,7 @@ def create_storage_account(**_):
                     storage_account_params=json.dumps({"properties": {"accountType": constants.storage_account_type,}, "location": location})
                     response_sa = requests.put(url=storage_account_url, data=storage_account_params, headers=headers)
                     print response_sa.text
+                    ctx.instance.runtime_properties['storage_account']=storage_account_name
                 except:
                     ctx.logger.info("Storage Account " + storage_account_name + "could not be created.")
                     sys.exit(1)
