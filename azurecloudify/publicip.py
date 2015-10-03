@@ -21,6 +21,7 @@ import constants
 import sys
 import os
 import auth
+import utils
 from cloudify.exceptions import NonRecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation 
