@@ -35,59 +35,69 @@ def creation_validation(**_):
 @operation
 #vnet:
 def create_vnet(**_):
-    for property_key in constants.VNET_REQUIRED_PROPERTIES:
-        _validate_node_properties(property_key, ctx.node.properties)
-    vm_name=ctx.node.properties['vm_name']
-    resource_group_name = vm_name+'_resource_group'
-    vnet_name = vm_name+'_vnet'
-    location = ctx.node.properties['location']
-    subscription_id = ctx.node.properties['subscription_id']
+    if ctx.node.properties['use_external_resource']
+        if not resource_group:
+            raise NonRecoverableError(
+                'External resource, but the supplied '
+                'resource group does not exist in the account.')
+                sys.exit(1)
+        else
+            ctx.instance.runtime_properties['existing_resource_group_name']
+    else
+        for property_key in constants.VNET_REQUIRED_PROPERTIES:
+            _validate_node_properties(property_key, ctx.node.properties)
+        vm_name=ctx.node.properties['vm_name']
+        RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
+        resource_group_name = vm_name+'_resource_group'+RANDOM_SUFFIX_VALUE
+        vnet_name = vm_name+'_vnet'
+        location = ctx.node.properties['location']
+        subscription_id = ctx.node.properties['subscription_id']
+        
+        credentials='Bearer '+ auth.get_token_from_client_credentials()
+        
+        headers = {"Content-Type": "application/json", "Authorization": credentials}
+        
+        vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
+        ctx.logger.info("Checking availability of virtual network: " + vnet_name)
     
-    credentials='Bearer '+ auth.get_token_from_client_credentials()
+        if 1:
+            try:
+                ctx.logger.info("Creating new virtual network: " + vnet_name)
+        
+                vnet_params=json.dumps({"name":vnet_name, "location": location,"properties": {"addressSpace": {"addressPrefixes": constants.vnet_address_prefixes},"subnets": [{"name": constants.subnet_name, "properties": {"addressPrefix": constants.address_prefix}}]}})
+                response_vnet = requests.put(url=vnet_url, data=vnet_params, headers=headers)
+                print response_vnet.text
+            except:
+                ctx.logger.info("Virtual Network " + vnet_name + "could not be created.")
+                sys.exit(1)
+        else:
+            ctx.logger.info("Virtual Network" + vnet_name + "has already been provisioned by another user.")
+     
     
-    headers = {"Content-Type": "application/json", "Authorization": credentials}
+    @operation
+    def delete_vnet(**_):
+        vm_name=ctx.node.properties['vm_name']
+        vnet_name = vm_name+'_vnet'
+        resource_group_name = vm_name+'_resource_group'
+        subscription_id = ctx.node.properties['subscription_id']
+        
+        credentials='Bearer '+ auth.get_token_from_client_credentials()
+        
+        headers = {"Content-Type": "application/json", "Authorization": credentials}
+        
+        ctx.logger.info("Checking availability of virtual network: " + vnet_name)
+        if 1:
+            try:
+                ctx.logger.info("Deleting the virtual network: " + vnet_name)
+                vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
+                response_vnet = requests.delete(url=vnet_url,headers=headers)
+                print response_vnet.text
     
-    vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
-    ctx.logger.info("Checking availability of virtual network: " + vnet_name)
-
-    if 1:
-        try:
-            ctx.logger.info("Creating new virtual network: " + vnet_name)
-    
-            vnet_params=json.dumps({"name":vnet_name, "location": location,"properties": {"addressSpace": {"addressPrefixes": constants.vnet_address_prefixes},"subnets": [{"name": constants.subnet_name, "properties": {"addressPrefix": constants.address_prefix}}]}})
-            response_vnet = requests.put(url=vnet_url, data=vnet_params, headers=headers)
-            print response_vnet.text
-        except:
-            ctx.logger.info("Virtual Network " + vnet_name + "could not be created.")
+            except:
+                ctx.logger.info("Virtual Network " + vnet_name + " could not be deleted.")
             sys.exit(1)
-    else:
-        ctx.logger.info("Virtual Network" + vnet_name + "has already been provisioned by another user.")
- 
-
-@operation
-def delete_vnet(**_):
-    vm_name=ctx.node.properties['vm_name']
-    vnet_name = vm_name+'_vnet'
-    resource_group_name = vm_name+'_resource_group'
-    subscription_id = ctx.node.properties['subscription_id']
-    
-    credentials='Bearer '+ auth.get_token_from_client_credentials()
-    
-    headers = {"Content-Type": "application/json", "Authorization": credentials}
-    
-    ctx.logger.info("Checking availability of virtual network: " + vnet_name)
-    if 1:
-        try:
-            ctx.logger.info("Deleting the virtual network: " + vnet_name)
-            vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
-            response_vnet = requests.delete(url=vnet_url,headers=headers)
-            print response_vnet.text
-
-        except:
-            ctx.logger.info("Virtual Network " + vnet_name + " could not be deleted.")
-        sys.exit(1)
-    else:
-        ctx.logger.info("Virtual Network " + vnet_name + " does not exist.")
+        else:
+            ctx.logger.info("Virtual Network " + vnet_name + " does not exist.")
 
 
 def _validate_node_properties(key, ctx_node_properties):
