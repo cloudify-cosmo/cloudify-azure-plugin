@@ -47,20 +47,6 @@ and returns boolean False (if not external) or True.
 	.format(ctx_node_properties['resource_name']))
 	return True
 	
-def set_external_resource_name(value, ctx_instance, external=True):
-	"""Sets the EXTERNAL_RESOURCE_NAME runtime_property for a Node-Instance.
-	:param value: the desired EXTERNAL_RESOURCE_NAME runtime_property
-	:param ctx: The Cloudify ctx context.
-	:param external: Boolean representing if it is external resource or not.
-	"""
-	value = constants.value
-	if not external:
-	    resource_type = 'Cloudify'
-	else:
-	    resource_type = 'external'
-            ctx.logger.info('Using {0} resource: {1}'.format(resource_type, value))
-	    ctx.instance.runtime_properties['resource_name'] = value
-
 
 def random_suffix_generator(size=3, chars=string.ascii_uppercase + string.digits):
      return ''.join(random.choice(chars) for _ in range(size))
