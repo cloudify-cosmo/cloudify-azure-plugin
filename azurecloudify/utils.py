@@ -7,9 +7,25 @@ def get_resource_group_name():
     if ctx.node.properties['exsisting_resource_group_name']:
         return ctx.node.properties['exsisting_resource_group_name']
         
-def get_resource_name():
-    if ctx.node.properties['resource_name']:
-        return ctx.node.properties['resource_name']
+def get_storage_account_name():
+    if ctx.node.properties['exsisting_storage_account_name']:
+        return ctx.node.properties['exsisting_storage_account_name']
+        
+def get_nic_name():
+    if ctx.node.properties['exsisting_nic_name']:
+        return ctx.node.properties['exsisting_nic_name']
+        
+def get_vnet_name():
+    if ctx.node.properties['exsisting_vnet_name']:
+        return ctx.node.properties['exsisting_vnet_name']
+        
+def get_public_ip_name():
+    if ctx.node.properties['exsisting_public_ip_name']:
+        return ctx.node.properties['exsisting_public_ip_name']
+        
+def get_public_ip_name():
+    if ctx.node.properties['exsisting_vm_name']:
+        return ctx.node.properties['exsisting_vm_name']
 
 
 def use_external_resource(ctx_node_properties):
