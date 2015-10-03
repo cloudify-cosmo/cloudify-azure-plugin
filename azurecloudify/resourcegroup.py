@@ -51,6 +51,7 @@ def create_resource_group(**_):
 	    	raise NonRecoverableError(
 		'External resource, but the supplied '
 		'resource group does not exist in the account.')
+		sys.exit(1)
         else
         	ctx.instance.runtime_properties['existing_resource_group_name']
     else   
