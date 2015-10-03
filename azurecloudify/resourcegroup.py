@@ -115,7 +115,7 @@ def _get_all_resource_groups(resource__group_name):
     credentials=auth.get_token_from_client_credentials()
     headers={"Content-Type": "application/json", "Authorization": credentials}
     subscription_id=ctx.node.properties['subscription_id']
-    list_resource_group_url='https://management.azure.com/subscriptions/'+subscription_id+'/resourcegroups?api-version='+constants.api_version
+    list_resource_group_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourcegroups?api-version='+constants.api_version
     response_list_resource_group=requests.get(url=list_resource_group_url,headers=headers)
     print(response_list_resource_group.text)
     # extract the list of resource group names
