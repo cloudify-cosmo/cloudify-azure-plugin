@@ -22,11 +22,6 @@ def get_vnet_name():
 def get_public_ip_name():
     if ctx.node.properties['exsisting_public_ip_name']:
         return ctx.node.properties['exsisting_public_ip_name']
-        
-def get_vm_name():
-    if ctx.node.properties['exsisting_vm_name']:
-        return ctx.node.properties['exsisting_vm_name']
-
 
 def use_external_resource(ctx_node_properties):
 """Checks if use_external_resource node property is true,
