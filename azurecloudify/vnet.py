@@ -72,7 +72,6 @@ def create_vnet(**_):
                 sys.exit(1)
         else:
             ctx.logger.info("Virtual Network" + vnet_name + "has already been provisioned by another user.")
-     
     
     @operation
     def delete_vnet(**_):
