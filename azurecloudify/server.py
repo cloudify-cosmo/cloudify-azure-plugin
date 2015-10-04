@@ -39,8 +39,9 @@ def create_vm(**_):
 
     for property_key in constants.VM_REQUIRED_PROPERTIES:
         _validate_node_properties(property_key, ctx.node.properties)
-        
-    vm_name = ctx.node.properties['vm_name'] 
+    
+    RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
+    vm_name = ctx.node.properties['vm_name']+RANDOM_SUFFIX_VALUE
     resource_group_name = vm_name+'_resource_group'
     storage_account_name = vm_name+'storageaccount'
     location = ctx.node.properties['location']
