@@ -126,7 +126,7 @@ def delete_nic(**_):
     credentials='Bearer '+ auth.get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
    
-    resource_group_name = vm_name+'_resource_group'
+    resource_group_name = resourcegroup.resource_group_name
     if 1:
        
         try:
