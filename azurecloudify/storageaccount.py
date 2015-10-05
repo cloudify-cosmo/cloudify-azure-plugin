@@ -56,8 +56,6 @@ def create_storage_account(**_):
             ctx.instance.runtime_properties['existing_storage_account_name']
             return
     else
-            for property_key in constants.STORAGE_ACCOUNT_REQUIRED_PROPERTIES:
-                _validate_node_properties(property_key, ctx.node.properties)
             location = ctx.node.properties['location']
             vm_name=ctx.node.properties['vm_name']
             RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
