@@ -55,8 +55,6 @@ def create_resource_group(**_):
         else
         	ctx.instance.runtime_properties['existing_resource_group_name']
     else   
-	    for property_key in constants.RESOURCE_GROUP_REQUIRED_PROPERTIES:
-	        _validate_node_properties(property_key, ctx.node.properties)
 	    vm_name=ctx.node.properties['vm_name']
 	    RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
 	    resource_group_name = vm_name+'_resource_group'+RANDOM_SUFFIX_VALUE
