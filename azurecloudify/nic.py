@@ -58,16 +58,14 @@ def creation_validation(**_):
          else
              ctx.instance.runtime_properties['constants.NIC_KEY']=ctx.node.properties['existing_nic_name']
     else
-        for property_key in constants.NIC_REQUIRED_PROPERTIES:
-           _validate_node_properties(property_key, ctx.node.properties)
-        vm_name=ctx.node.properties['vm_name']
+        
         RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
         nic_name = ctx.node.properties['nic_name']+RANDOM_SUFFIX_VALUE
         public_ip_name=ctx.node.properties['public_ip_name']
-        resource_group_name = vm_name+'_resource_group'
+        resource_group_name = ctx.node.properties['resource_group_name']
         location = ctx.node.properties['location']
         subscription_id = ctx.node.properties['subscription_id']
-        vnet_name = vm_name+'_vnet'
+        vnet_name = ctx.node.properties['vnet_name']
         credentials= 'Bearer ' + auth.get_token_from_client_credentials()
         headers = {"Content-Type": "application/json", "Authorization": credentials}
         
@@ -99,6 +97,7 @@ def creation_validation(**_):
               response_nic = requests.put(url=nic_url, data=nic_params, headers=headers)
     
               print(response_nic.text)
+              ctx.instance.runtime_properties['nic_name']=nic_name
               ctx.logger.info("response_nic : " + response_nic.text)
               response_nic_json = response_nic.json()
               nic_root_properties = response_nic_json[u'properties']
