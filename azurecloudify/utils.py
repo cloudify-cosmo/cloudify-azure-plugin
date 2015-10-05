@@ -43,5 +43,5 @@ and returns boolean False (if not external) or True.
 	return True
 	
 
-def random_suffix_generator(size=3, chars=string.ascii_uppercase + string.digits):
+def random_suffix_generator(size=5, chars=string.ascii_uppercase + string.digits):
      return ''.join(random.choice(chars) for _ in range(size))
