@@ -20,6 +20,7 @@ import json
 import constants
 import sys
 import os
+from resourcegroup import *
 import auth
 import utils
 from cloudify.exceptions import NonRecoverableError
@@ -53,15 +54,14 @@ def create_storage_account(**_):
             'storage account does not exist in the Azure account.')
             sys.exit(1)
         else
-            ctx.instance.runtime_properties['existing_storage_account_name']
+            ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]=ctx.node.properties['existing_storage_account_name']
             return
     else
             location = ctx.node.properties['location']
-            vm_name=ctx.node.properties['vm_name']
             RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
-            storage_account_name = vm_name+'storageaccount'+RANDOM_SUFFIX_VALUE
+            storage_account_name = ctx.node.properties['storage_account_name']+RANDOM_SUFFIX_VALUE
             subscription_id = ctx.node.properties['subscription_id']
-            
+            resource_group_name=create_resource_group.resource_group_name
             credentials='Bearer '+auth.get_token_from_client_credentials()
             
             headers = {"Content-Type": "application/json", "Authorization": credentials}
@@ -84,13 +84,11 @@ def create_storage_account(**_):
 
 @operation
 def delete_storage_account(**_):
-    vm_name=ctx.node.properties['vm_name']
-    storage_account_name = vm_name+'storageaccount'
-    resource_group_name = vm_name+'_resource_group'
+    
+    #storage_account_name = vm_name+'storageaccount'
+    resource_group_name = create_resource_group.resource_group_name
     subscription_id = ctx.node.properties['subscription_id']
-    
     credentials='Bearer '+auth.get_token_from_client_credentials()
-    
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     
     ctx.logger.info("Deleting Storage Account"+storage_account_name)
@@ -112,7 +110,7 @@ def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
         
-def _get_storage_account(storage_account_name):
+def _get_storage_account_name(storage_account_name):
     resource_group= ctx.node.properties['exsisting_resource_group_name']
     subscription_id=ctx.node.properties['subscription_id']
     url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group+'/providers/Microsoft.Storage/storageAccounts?api-version='+constants.api_version
