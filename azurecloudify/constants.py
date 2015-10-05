@@ -51,3 +51,4 @@ PUBLIC_IP_REQUIRED_PROPERTIES = ['vm_name','location','subscription_id']
 value= 'ruch321_resource_group'
 EXTERNAL_RESOURCE_NAME = 'ruch321_resource_group'
 
+RESOURCE_GROUP_KEY = 'resource_group_key_name'
