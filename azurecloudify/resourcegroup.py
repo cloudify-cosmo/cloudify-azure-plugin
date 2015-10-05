@@ -122,7 +122,7 @@ def _get_resource_group_name(resource_group_name):
     list_of_resource_groups=[]
 
     if resource_group_name in list_of_resource_groups:
-        return resource_group_name
+        return true
     else:
         ctx.logger.info("Resource group %s does not exist"+ resource_group_name)
 	return None
