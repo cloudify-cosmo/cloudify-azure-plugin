@@ -266,11 +266,6 @@ node_types:
          location where VM will be provisioned
         type: string
         default: 'West US'
-      vnet_name:
-        description: >
-          Indicates the name of the virtual network
-        type: string
-        default: 'my_vnet'
       client_id:
         description: >
           Indicates the user's client id
