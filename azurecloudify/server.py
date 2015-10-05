@@ -28,7 +28,7 @@ from cloudify.decorators import operation
 
 
 RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
-vm_name = ctx.node.properties['vm_name']+RANDOM_SUFFIX_VALUE
+vm_name = VM_PREFIX +RANDOM_SUFFIX_VALUE
 
 #virtualmachine:
 
