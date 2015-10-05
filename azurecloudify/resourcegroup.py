@@ -110,9 +110,11 @@ def _validate_node_properties(key, ctx_node_properties):
         
 
 def _get_resource_group_name(resource_group_name):
+    resource_group_name=ctx.node.properties['existing_resource_group_name']
     credentials=auth.get_token_from_client_credentials()
     headers={"Content-Type": "application/json", "Authorization": credentials}
     subscription_id=ctx.node.properties['subscription_id']
+    
     list_resource_group_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourcegroups?api-version='+constants.api_version
     response_list_resource_group=requests.get(url=list_resource_group_url,headers=headers)
     print(response_list_resource_group.text)
