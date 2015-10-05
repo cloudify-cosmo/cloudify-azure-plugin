@@ -28,7 +28,7 @@ from cloudify import ctx
 from cloudify.decorators import operation
 
 RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
-vnet_name = ctx.node.properties['vnet_name']+RANDOM_SUFFIX_VALUE
+vnet_name = VNET_GROUP_PREFIX+RANDOM_SUFFIX_VALUE
 
 @operation
 def creation_validation(**_):
