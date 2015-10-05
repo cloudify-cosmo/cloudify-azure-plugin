@@ -7,9 +7,6 @@ import os
 import auth
 from resourcegroup import *
 from storageaccount import *
-from vnet import *
-from nic import *
-from publicip import *
 import utils
 from cloudify.exceptions import NonRecoverableError
 from cloudify import ctx
