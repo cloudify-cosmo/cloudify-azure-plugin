@@ -48,7 +48,6 @@ def creation_validation(**_):
 
 
 @operation
-#vnet:
 def create_vnet(**_):
     if ctx.node.properties['use_external_resource']
         if not resource_group:
