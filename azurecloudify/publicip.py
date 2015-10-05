@@ -116,19 +116,19 @@ def delete_public_ip(**_):
     
 def _get_public_ip_name():
 
-headers={"Content-Type": "application/json", "Authorization": credentials}
-subscription_id=ctx.node.properties['subscription_id']
-resource_group_name=resourcegroup.resource_group_name
-list_pip_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses?api-version='+constants.api_version
-response_list_pip=requests.get(url=list_pip_url,headers=headers)
-print(response_list_pip.text)   
- # extract the list of resource group names
- list_of_pip=[]
- if resource_group_name in list_of_pip:
-     return public_ip_name
- else:
-     ctx.logger.info("Resource group %s does not exist"+ resource_group_name)
-     return None
+    headers={"Content-Type": "application/json", "Authorization": credentials}
+    subscription_id=ctx.node.properties['subscription_id']
+    resource_group_name=resourcegroup.resource_group_name
+    list_pip_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses?api-version='+constants.api_version
+    response_list_pip=requests.get(url=list_pip_url,headers=headers)
+    print(response_list_pip.text)   
+    # extract the list of resource group names
+    list_of_pip=[]
+    if resource_group_name in list_of_pip:
+	 return public_ip_name
+    else:
+	 ctx.logger.info("Public IP %s does not exist"+ public_ip_name)
+	 return None
 
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
