@@ -22,10 +22,13 @@ import sys
 import os
 import auth
 import utils
+from resourcegroup import *
 from cloudify.exceptions import NonRecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation
  
+ RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
+ nic_name = ctx.node.properties['nic_name']+RANDOM_SUFFIX_VALUE
  
 @operation
 def creation_validation(**_):
