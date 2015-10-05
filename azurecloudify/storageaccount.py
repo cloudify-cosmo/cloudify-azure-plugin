@@ -29,7 +29,7 @@ from cloudify import ctx
 from cloudify.decorators import operation
 
 RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
-storage_account_name = ctx.node.properties['storage_account_name']+RANDOM_SUFFIX_VALUE
+storage_account_name = STORAGE_ACCOUNT_PREFIX+RANDOM_SUFFIX_VALUE
 
 @operation
 def creation_validation(**_):
