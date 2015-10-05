@@ -42,7 +42,7 @@ def creation_validation(**_):
     	raise NonRecoverableError(
     	'External resource, but the supplied '
     	'public ip does not exist in the account.')
-    if not ctx.node.properties['use_external_resource'] and resource_group:
+    if not ctx.node.properties['use_external_resource'] and public_ip:
     	raise NonRecoverableError(
     	'Not external resource, but the supplied '
     	'public ip exists in the account.')
@@ -115,7 +115,7 @@ def delete_public_ip(**_):
         
     
 def _get_public_ip_name(public_ip_name):
-
+    public_ip_name=ctx.node.properties['existing_public_ip_name']
     headers={"Content-Type": "application/json", "Authorization": credentials}
     subscription_id=ctx.node.properties['subscription_id']
     resource_group_name=resourcegroup.resource_group_name
@@ -124,11 +124,11 @@ def _get_public_ip_name(public_ip_name):
     print(response_list_pip.text)   
     # extract the list of resource group names
     list_of_pip=[]
-    if resource_group_name in list_of_pip:
-	 return public_ip_name
+    if public_ip_name in list_of_pip:
+	 return True
     else:
 	 ctx.logger.info("Public IP %s does not exist"+ public_ip_name)
-	 return None
+	 return False
 
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
