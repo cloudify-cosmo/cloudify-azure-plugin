@@ -3,25 +3,6 @@ from cloudify.exceptions import NonRecoverableError
 import random
 import string
 
-def get_resource_group_name():
-    if ctx.node.properties['existing_resource_group_name']:
-        return ctx.node.properties['existing_resource_group_name']
-        
-def get_storage_account_name():
-    if ctx.node.properties['existing_storage_account_name']:
-        return ctx.node.properties['existing_storage_account_name']
-        
-def get_nic_name():
-    if ctx.node.properties['existing_nic_name']:
-        return ctx.node.properties['existing_nic_name']
-        
-def get_vnet_name():
-    if ctx.node.properties['existing_vnet_name']:
-        return ctx.node.properties['existing_vnet_name']
-        
-def get_public_ip_name():
-    if ctx.node.properties['existing_public_ip_name']:
-        return ctx.node.properties['existing_public_ip_name']
 
 def use_external_resource(ctx_node_properties):
 """Checks if use_external_resource node property is true,
