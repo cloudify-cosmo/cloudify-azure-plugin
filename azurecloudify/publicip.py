@@ -114,7 +114,7 @@ def delete_public_ip(**_):
         sys.exit(1)
         
     
-def _get_public_ip_name():
+def _get_public_ip_name(public_ip_name):
 
     headers={"Content-Type": "application/json", "Authorization": credentials}
     subscription_id=ctx.node.properties['subscription_id']
