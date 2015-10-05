@@ -112,7 +112,7 @@ def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
         
-def _get_all_storage_account(storage_account_name):
+def _get_storage_account(storage_account_name):
     resource_group= ctx.node.properties['exsisting_resource_group_name']
     subscription_id=ctx.node.properties['subscription_id']
     url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group+'/providers/Microsoft.Storage/storageAccounts?api-version='+constants.api_version
