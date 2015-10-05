@@ -157,7 +157,7 @@ node_types:
         description: >
           Indicates the name of the public ip
         type: string
-        default: 'my_vm'   
+        default: 'my_pip'   
       client_id:
         description: >
           Indicates the user's client id
@@ -199,9 +199,9 @@ node_types:
          location where VM will be provisioned
         type: string
         default: 'West US'
-      vm_name:
+      storage_account_name:
         description: >
-          Indicates the name of the virtual machine
+          Indicates the name of the storage account
         type: string
         default: 'my_vm'
       client_id:
@@ -245,11 +245,11 @@ node_types:
          location where VM will be provisioned
         type: string
         default: 'West US'
-      vm_name:
+      nic_name:
         description: >
-          Indicates the name of the virtual machine required to create network interface card
+          Indicates the name of the network interface card
         type: string
-        default: 'my_vm'
+        default: 'my_nic'
       client_id:
         description: >
           Indicates the user's client id
@@ -291,11 +291,11 @@ node_types:
          location where VM will be provisioned
         type: string
         default: 'West US'
-      vm_name:
+      vnet_name:
         description: >
-          Indicates the name of the virtual machine required to create virtual network
+          Indicates the name of the virtual network
         type: string
-        default: 'my_vm'
+        default: 'my_vnet'
       client_id:
         description: >
           Indicates the user's client id
