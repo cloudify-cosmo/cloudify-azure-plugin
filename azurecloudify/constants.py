@@ -52,3 +52,8 @@ value= 'ruch321_resource_group'
 EXTERNAL_RESOURCE_NAME = 'ruch321_resource_group'
 
 RESOURCE_GROUP_KEY = 'resource_group_key_name'
+STORAGE_ACCOUNT__KEY = 'storage_account_key_name'
+PUBLIC_IP_KEY = 'public_ip_key_name'
+VNET_KEY = 'vnet_key_name'
+NIC_KEY = 'nic_key_name'
+SECURITY_GROUP_KEY = 'security_group_key_name'
