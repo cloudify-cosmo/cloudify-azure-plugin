@@ -27,7 +27,7 @@ from cloudify.decorators import operation
 import auth
 
 RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
-resource_group_name = ctx.node.properties['resource_group_name']+RANDOM_SUFFIX_VALUE
+resource_group_name = RESOURCE_GROUP_PREFIX+RANDOM_SUFFIX_VALUE
 
 @operation
 def creation_validation(**_):
