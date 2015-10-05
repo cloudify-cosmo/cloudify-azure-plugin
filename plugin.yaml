@@ -153,7 +153,7 @@ node_types:
         default: 'West US'
       existing_public_ip_name:
       	description: >
-      	 Indicates the name of exsisting public ip
+      	 Indicates the name of existing public ip
         type: string
       client_id:
         description: >
