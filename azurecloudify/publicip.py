@@ -28,18 +28,42 @@ from cloudify import ctx
 from cloudify.decorators import operation 
 import auth
 
+RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
+public_ip_name=ctx.node.properties['public_ip_name']+]+RANDOM_SUFFIX_VALUE
+
 @operation
 def creation_validation(**_):
     for property_key in constants.PUBLIC_IP_REQUIRED_PROPERTIES:
         _validate_node_properties(property_key, ctx.node.properties)
 
+    public_ip =  _get_public_ip_name(utils.get_public_ip_name())
+
+    if ctx.node.properties['use_external_resource'] and not public_ip:
+    	raise NonRecoverableError(
+    	'External resource, but the supplied '
+    	'public ip does not exist in the account.')
+    if not ctx.node.properties['use_external_resource'] and resource_group:
+    	raise NonRecoverableError(
+    	'Not external resource, but the supplied '
+    	'public ip exists in the account.')
+
+
       
 @operation
 def create_public_ip(**_):
-    public_ip_name=ctx.node.properties['public_ip_name']
+    if ctx.node.properties['use_external_resource'] 
+        if not public_ip:
+	    	raise NonRecoverableError(
+		'External resource, but the supplied '
+		'resource group does not exist in the account.')
+		sys.exit(1)
+        else
+        	ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY] = ctx.node.properties['existing_public_ip_name']
+    else  
+    
     subscription_id = ctx.node.properties['subscription_id']
     location = ctx.node.properties['location']
-    resource_group_name = create_resource_group.resource_group_name
+    resource_group_name =resourcegroup.resource_group_name
     public_ip_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
     
     credentials='Bearer '+ auth.get_token_from_client_credentials()
@@ -59,7 +83,7 @@ def create_public_ip(**_):
         )
         response_pip = requests.put(url=public_ip_url, data=public_ip_params, headers=headers)
         print response_pip.text
-        ctx.instance.runtime_properties['public_ip_name']=public_ip_name
+        ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY]=public_ip_name
             
             
             
@@ -71,10 +95,9 @@ def create_public_ip(**_):
     
 
 def delete_public_ip(**_):
-    vm_name=ctx.node.properties['vm_name']
-    public_ip_name = vm_name+'_pip'
+    
     subscription_id = ctx.node.properties['subscription_id']
-    resource_group_name = vm_name+'_resource_group'
+    resource_group_name = resourcegroup.resource_group_name
     
     credentials='Bearer '+ auth.get_token_from_client_credentials()
     
@@ -85,11 +108,13 @@ def delete_public_ip(**_):
         public_ip_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/ publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
         response_pip = requests.delete(url=public_ip_url,headers=headers)
         print(response_pip.text)
-        ctx.node.instance
+        
     except:
         ctx.logger.info("Public IP " + public_ip_name + " could not be deleted.")
         sys.exit(1)
         
+    
+def _get_public_ip_name():
     
 
 def _validate_node_properties(key, ctx_node_properties):
