@@ -184,11 +184,6 @@ node_types:
          location where VM will be provisioned
         type: string
         default: 'West US'
-      storage_account_name:
-        description: >
-          Indicates the name of the storage account
-        type: string
-        default: 'my_vm'
       client_id:
         description: >
           Indicates the user's client id
