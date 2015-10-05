@@ -67,11 +67,6 @@ node_types:
           Indicates the subscription id of user account
         type: string
         default: ''
-      vm_name:
-        description: >
-          Indicates the name of the virtual machine
-        type: string
-        default: 'my_vm'
       vm_size:
         description: >
           Indicates the size of VM
