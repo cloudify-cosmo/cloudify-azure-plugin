@@ -278,6 +278,11 @@ node_templates:
        username: { get_input: username }
        aad_password: { get_input: aad_password }
        use_external_resource: { get_input: use_external_resource }
+       existing_resource_group_name: { get_input: existing_resource_group_name }
+       existing_storage_account_name: { get_input: existing_storage_account_name }
+       existing_vnet_name: { get_input: existing_vnet_name }
+       existing_nic_name: { get_input: existing_nic_name }
+       existing_public_ip_name: { get_input: existing_public_ip_name }
 
 node_types:
   azure_configuration_node:
