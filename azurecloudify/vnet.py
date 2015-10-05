@@ -35,7 +35,7 @@ def creation_validation(**_):
     for property_key in constants.VNET_REQUIRED_PROPERTIES:
         _validate_node_properties(property_key, ctx.node.properties)
     
-    vnet_name = _get_resource_group_name(utils.get_vnet_name())
+    vnet_name = _get_resource_group_name()
     if ctx.node.properties['use_external_resource'] and not vnet_name:
     raise NonRecoverableError(
     'External resource, but the supplied '
