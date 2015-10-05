@@ -33,7 +33,7 @@ def creation_validation(**_):
         _validate_node_properties(property_key, ctx.node.properties)
     
         
-    nic_name = _get_all_nic(utils.get_nic_name())
+    nic_name = _get_nic_name(utils.get_nic_name())
     
     if ctx.node.properties['use_external_resource'] and not nic_name:
         raise NonRecoverableError(
@@ -56,14 +56,14 @@ def creation_validation(**_):
              'nic does not exist in the account.')
              sys.exit(1)
          else
-             ctx.instance.runtime_properties['existing_nic_name']
+             ctx.instance.runtime_properties['constants.NIC_KEY']=ctx.node.properties['existing_nic_name']
     else
         for property_key in constants.NIC_REQUIRED_PROPERTIES:
            _validate_node_properties(property_key, ctx.node.properties)
         vm_name=ctx.node.properties['vm_name']
         RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
-        nic_name = vm_name+'_nic'+RANDOM_SUFFIX_VALUE
-        public_ip_name=vm_name+'_pip'
+        nic_name = ctx.node.properties['nic_name']+RANDOM_SUFFIX_VALUE
+        public_ip_name=ctx.node.properties['public_ip_name']
         resource_group_name = vm_name+'_resource_group'
         location = ctx.node.properties['location']
         subscription_id = ctx.node.properties['subscription_id']
