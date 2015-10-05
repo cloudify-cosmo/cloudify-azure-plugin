@@ -26,6 +26,10 @@ node_types:
          location where VM will be provisioned
         type: string
         default: 'West US'
+      existing_resource_group_name:
+      	description: >
+      	 Indicates the name of exsisting resource group
+        type: string
       client_id:
         description: >
           Indicates the user's client id
