@@ -85,8 +85,7 @@ def create_resource_group(**_):
 
 @operation
 def delete_resource_group(**_):
-    vm_name=ctx.node.properties['vm_name']
-    resource_group_name = vm_name+'_resource_group'
+   
     subscription_id = ctx.node.properties['subscription_id']
     
     credentials='Bearer '+auth.get_token_from_client_credentials()
