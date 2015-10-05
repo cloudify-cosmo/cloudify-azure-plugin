@@ -36,7 +36,7 @@ def creation_validation(**_):
     for property_key in constants.PUBLIC_IP_REQUIRED_PROPERTIES:
         _validate_node_properties(property_key, ctx.node.properties)
 
-    public_ip =  _get_public_ip_name(utils.get_public_ip_name())
+    public_ip =  _get_public_ip_name()
 
     if ctx.node.properties['use_external_resource'] and not public_ip:
     	raise NonRecoverableError(
