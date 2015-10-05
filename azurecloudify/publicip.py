@@ -55,7 +55,7 @@ def create_public_ip(**_):
         if not public_ip:
 	    	raise NonRecoverableError(
 		'External resource, but the supplied '
-		'resource group does not exist in the account.')
+		'public ip does not exist in the account.')
 		sys.exit(1)
         else
         	ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY] = ctx.node.properties['existing_public_ip_name']
@@ -115,7 +115,13 @@ def delete_public_ip(**_):
         
     
 def _get_public_ip_name():
-    
+
+headers={"Content-Type": "application/json", "Authorization": credentials}
+subscription_id=ctx.node.properties['subscription_id']
+resource_group_name=resourcegroup.resource_group_name
+list_pip_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses?api-version='+constants.api_version
+response_list_pip=requests.get(url=list_pip_url,headers=headers)
+print(response_list_pip.text)    
 
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
