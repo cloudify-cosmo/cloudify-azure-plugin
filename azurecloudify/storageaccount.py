@@ -36,8 +36,7 @@ def creation_validation(**_):
     for property_key in constants.STORAGE_ACCOUNT_REQUIRED_PROPERTIES:
         _validate_node_properties(property_key, ctx.node.properties)
         
-    storage_account = _get_storage_account_name(
-        utils.get_storage_account_name())
+    storage_account = _get_storage_account_name()
         
     if ctx.node.properties['use_external_resource'] and not storage_account:
         raise NonRecoverableError(
@@ -111,9 +110,20 @@ def _validate_node_properties(key, ctx_node_properties):
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
         
 def _get_storage_account_name(storage_account_name):
-    resource_group= ctx.node.properties['exsisting_resource_group_name']
+    storage_account_name= ctx.node.properties['existing_storage_account_name']
     subscription_id=ctx.node.properties['subscription_id']
     url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group+'/providers/Microsoft.Storage/storageAccounts?api-version='+constants.api_version
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     response_list = requests.get(url, headers = headers).json()
     print response_list['value']['name']
+    
+    # extract the list of all storage account names 
+    list_of_storage_accounts=[]
+
+    if storage_account_name in list_of_storage_accounts:
+        return True
+    else:
+        ctx.logger.info("Storage account %s does not exist"+ storage_account_name)
+	return False
+
+    
