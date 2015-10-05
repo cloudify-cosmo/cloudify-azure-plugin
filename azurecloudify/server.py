@@ -38,7 +38,7 @@ def creation_validation(**_):
         _validate_node_properties(property_key, ctx.node.properties)
 
 
-    vm_name = _get_vm_name(utils.get_vm_name())
+    vm_name = _get_vm_name()
     if ctx.node.properties['use_external_resource'] and not vm_name:
     raise NonRecoverableError(
     'External resource, but the supplied '
