@@ -58,12 +58,10 @@ def create_vm(**_):
     location = ctx.node.properties['location']
     vnet_name = vnet.vnet_name
     nic_name = nic.nic_name
-    public_ip_name= publicip.public_ip_mame
+    public_ip_name= publicip.public_ip_name
     credentials='Bearer '+auth.get_token_from_client_credentials()
     subscription_id = ctx.node.properties['subscription_id']
     headers = {"Content-Type": "application/json", "Authorization": credentials}
-    
-    
     
     
     
@@ -137,8 +135,8 @@ def start_vm(**_):
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     
     subscription_id = ctx.node.properties['subscription_id']
-    resource_group_name = vm_name+'_resource_group'
-    public_ip_name= vm_name+'_pip'
+    resource_group_name = resourcegroup.resource_group_name
+    public_ip_name= publicip.public_ip_name
     get_pip_info_url= constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
     raw_response = requests.get(url=get_pip_info_url, headers=headers)
     ctx.logger.info("raw_response : " + str(raw_response))
@@ -149,7 +147,7 @@ def start_vm(**_):
     currIpAddress = currProperties[u'ipAddress']
     ctx.logger.info("Current public IP address is " + str(currIpAddress))
     ctx.instance.runtime_properties['vm_public_ip']= currIpAddress
-    resource_group_name = vm_name+'_resource_group'
+    resource_group_name = resourcegroup.resource_group_name
     start_vm_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
     response_start_vm=requests.post(start_vm_url,headers=headers)
     print (response_start_vm.text)
@@ -159,13 +157,12 @@ def start_vm(**_):
 @operation
 def stop_vm(**_):
     subscription_id = ctx.node.properties['subscription_id']
-    vm_name = ctx.node.properties['vm_name']
     
     credentials='Bearer '+auth.get_token_from_client_credentials()
     
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     
-    resource_group_name = vm_name+'_resource_group'
+    resource_group_name = resourcegroup.resource_group_name
     stop_vm_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
     response_stop_vm=requests.post(stop_vm_url,headers=headers)
     print (response_stop_vm.text)
@@ -173,8 +170,7 @@ def stop_vm(**_):
 
 @operation
 def delete_virtual_machine(**_):
-    vm_name = ctx.node.properties['vm_name']
-    resource_group_name = vm_name+'_resource_group'
+    resource_group_name = resourcegroup.resource_group_name
     subscription_id = ctx.node.properties['subscription_id']
     
     credentials='Bearer '+auth.get_token_from_client_credentials()
