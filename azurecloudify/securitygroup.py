@@ -10,19 +10,21 @@ from storageaccount import *
 from vnet import *
 from nic import *
 from publicip import *
+import utils
 from cloudify.exceptions import NonRecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation
 
+RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
+security_group_name = ctx.node.properties['security_group_name']+RANDOM_SUFFIX_VALUE
 
 @operation
 def create_network_security_group(**_):
     for property_key in constants.SECURITY_GROUP_REQUIRED_PROPERTIES:
         _validate_node_properties(property_key, ctx.node.properties)
-    vm_name=ctx.node.properties['vm_name']
-    security_group_name=vm_name+'_nsg'
+    vm_name=server.vm_name
     subscription_id = ctx.node.properties['subscription_id']
-    resource_group_name = vm_name+'_resource_group'
+    resource_group_name = resourcegroup.resource_group_name
     location = ctx.node.properties['location']
     security_group_url= constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version
 
@@ -69,10 +71,9 @@ else:
   
 @operation
 def delete_security_group(**_):
-  vm_name=ctx.node.properties['vm_name']
-  security_group_name=vm_name+'_nsg'
+  vm_name=server.vm_name
   subscription_id = ctx.node.properties['subscription_id']
-  resource_group_name = vm_name+'_resource_group'
+  resource_group_name = resourcegroup.resource_group_name
   
   credentials='Bearer '+ auth.get_token_from_client_credentials()
   headers = {"Content-Type": "application/json", "Authorization": credentials}
