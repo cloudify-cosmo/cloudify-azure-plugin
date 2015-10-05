@@ -147,6 +147,10 @@ node_types:
          location where VM will be provisioned
         type: string
         default: 'West US'
+      existing_public_ip_name:
+      	description: >
+      	 Indicates the name of exsisting public ip
+        type: string
       client_id:
         description: >
           Indicates the user's client id
