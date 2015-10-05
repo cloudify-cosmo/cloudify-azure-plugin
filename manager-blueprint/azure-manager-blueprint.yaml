@@ -18,6 +18,26 @@ inputs:
   vm_name:
     type: string
     default: 'my_vm'
+    
+  resource_group_name:
+    type: string
+    default: '' 
+    
+  storage_account_name:
+    type: string
+    default: '' 
+    
+  nic_name:
+    type: string
+    default: ''
+    
+  vnet_name:
+    type: string
+    default: '' 
+    
+  public_ip_name:
+    type: string
+    default: '' 
 
   vm_size: 
     type: string
@@ -31,9 +51,25 @@ inputs:
     type: string
     default: 'Canonical'
     
-  use_exsisting_resource_group:
-    type: boolean
-    default: false
+  existing_resource_group_name:
+    type: string
+    default: ''
+    
+  existing_storage_account_name:
+    type: string
+    default: ''
+    
+  existing_vnet_name:
+    type: string
+    default: ''
+    
+  existing_public_ip_name:
+    type: string
+    default: ''
+    
+  existing_nic_name:
+    type: string
+    default: ''
     
   image_reference_sku:
     type: string
