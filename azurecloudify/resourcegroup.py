@@ -26,6 +26,9 @@ from cloudify import ctx
 from cloudify.decorators import operation
 import auth
 
+RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
+resource_group_name = ctx.node.properties['resource_group_name']+RANDOM_SUFFIX_VALUE
+
 @operation
 def creation_validation(**_):
     for property_key in constants.RESOURCE_GROUP_REQUIRED_PROPERTIES:
@@ -56,8 +59,7 @@ def create_resource_group(**_):
         	ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.node.properties['existing_resource_group_name']
     else   
 	    
-	    RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
-	    resource_group_name = ctx.node.properties['resource_group_name']+RANDOM_SUFFIX_VALUE
+	    
 	    location = ctx.node.properties['location']
 	    subscription_id = ctx.node.properties['subscription_id']
 	    
