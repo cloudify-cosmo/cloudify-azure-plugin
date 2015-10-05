@@ -26,6 +26,10 @@ from cloudify.exceptions import NonRecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation
 
+
+RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
+vm_name = ctx.node.properties['vm_name']+RANDOM_SUFFIX_VALUE
+
 #virtualmachine:
 
 @operation
@@ -34,17 +38,27 @@ def creation_validation(**_):
         _validate_node_properties(property_key, ctx.node.properties)
 
 
+    vm_name = _get_vm_name(utils.get_vm_name())
+    if ctx.node.properties['use_external_resource'] and not vm_name:
+    raise NonRecoverableError(
+    'External resource, but the supplied '
+    'vm does not exist in the account.')
+    if not ctx.node.properties['use_external_resource'] and vm_name:
+    raise NonRecoverableError(
+    'Not external resource, but the supplied '
+    'vm exists in the account.')
+
 @operation
 def create_vm(**_):
 
     RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
     vm_name = ctx.node.properties['vm_name']+RANDOM_SUFFIX_VALUE
-    resource_group_name = vm_name+'_resource_group'
-    storage_account_name = vm_name+'storageaccount'
+    resource_group_name = resourcegroup.resource_group_name
+    storage_account_name = storageaccount.storage_account_name
     location = ctx.node.properties['location']
-    vnet_name = vm_name+'_vnet'
-    nic_name = vm_name+'_nic'
-    public_ip_name= vm_name+'_pip'
+    vnet_name = vnet.vnet_name
+    nic_name = nic.nic_name
+    public_ip_name= publicip.public_ip_mame
     credentials='Bearer '+auth.get_token_from_client_credentials()
     subscription_id = ctx.node.properties['subscription_id']
     headers = {"Content-Type": "application/json", "Authorization": credentials}
@@ -123,7 +137,6 @@ def start_vm(**_):
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     
     subscription_id = ctx.node.properties['subscription_id']
-    vm_name = ctx.node.properties['vm_name']
     resource_group_name = vm_name+'_resource_group'
     public_ip_name= vm_name+'_pip'
     get_pip_info_url= constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
