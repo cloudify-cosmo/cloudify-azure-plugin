@@ -225,11 +225,6 @@ node_types:
          location where VM will be provisioned
         type: string
         default: 'West US'
-      nic_name:
-        description: >
-          Indicates the name of the network interface card
-        type: string
-        default: 'my_nic'
       client_id:
         description: >
           Indicates the user's client id
