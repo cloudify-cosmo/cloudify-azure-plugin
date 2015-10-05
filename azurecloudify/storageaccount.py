@@ -23,9 +23,13 @@ import os
 from resourcegroup import *
 import auth
 import utils
+from resourcegroup import *
 from cloudify.exceptions import NonRecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation
+
+RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
+storage_account_name = ctx.node.properties['storage_account_name']+RANDOM_SUFFIX_VALUE
 
 @operation
 def creation_validation(**_):
@@ -58,8 +62,6 @@ def create_storage_account(**_):
             return
     else
             location = ctx.node.properties['location']
-            RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
-            storage_account_name = ctx.node.properties['storage_account_name']+RANDOM_SUFFIX_VALUE
             subscription_id = ctx.node.properties['subscription_id']
             resource_group_name=create_resource_group.resource_group_name
             credentials='Bearer '+auth.get_token_from_client_credentials()
@@ -86,7 +88,7 @@ def create_storage_account(**_):
 def delete_storage_account(**_):
     
     #storage_account_name = vm_name+'storageaccount'
-    resource_group_name = create_resource_group.resource_group_name
+    resource_group_name = resourcegroup.resource_group_name
     subscription_id = ctx.node.properties['subscription_id']
     credentials='Bearer '+auth.get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
