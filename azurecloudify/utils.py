@@ -13,14 +13,10 @@ and returns boolean False (if not external) or True.
 :returns boolean: False if not external.
 """
     if not ctx_node_properties['use_external_resource']:
-	ctx.logger.debug(
-	'Using Cloudify resource_name: {0}.'
-	.format(ctx_node_properties['resource_name']))
+	ctx.logger.info('Creating a new resource')
 	return False
     else:
-	ctx.logger.debug(
-	'Using external resource_name: {0}.'
-	.format(ctx_node_properties['resource_name']))
+	ctx.logger.info('Using external resource')
 	return True
 	
 
