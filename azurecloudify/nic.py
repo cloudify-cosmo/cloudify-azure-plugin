@@ -38,7 +38,7 @@ def creation_validation(**_):
         _validate_node_properties(property_key, ctx.node.properties)
     
         
-    nic_name = _get_nic_name(utils.get_nic_name())
+    nic_name = _get_nic_name()
     
     if ctx.node.properties['use_external_resource'] and not nic_name:
         raise NonRecoverableError(
