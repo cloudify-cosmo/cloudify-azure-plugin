@@ -49,8 +49,14 @@ NIC_REQUIRED_PROPERTIES = ['vm_name','location','subscription_id']
 PUBLIC_IP_REQUIRED_PROPERTIES = ['vm_name','location','subscription_id']
 
 RESOURCE_GROUP_KEY = 'resource_group_key_name'
-STORAGE_ACCOUNT__KEY = 'storage_account_key_name'
+RESOURCE_GROUP_PREFIX = 'resource_group_'
+STORAGE_ACCOUNT_KEY = 'storage_account_key_name'
+STORAGE_ACCOUNT_PREFIX = 'storage_account_'
 PUBLIC_IP_KEY = 'public_ip_key_name'
+PUBLIC_IP_PREFIX = 'public_ip_'
 VNET_KEY = 'vnet_key_name'
+VNET_GROUP_PREFIX = 'vnet_'
 NIC_KEY = 'nic_key_name'
+NIC_PREFIX = 'nic_'
 SECURITY_GROUP_KEY = 'security_group_key_name'
+SECURITY_GROUP_PREFIX = 'security_group_'
