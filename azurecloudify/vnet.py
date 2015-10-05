@@ -34,6 +34,17 @@ vnet_name = ctx.node.properties['vnet_name']+RANDOM_SUFFIX_VALUE
 def creation_validation(**_):
     for property_key in constants.VNET_REQUIRED_PROPERTIES:
         _validate_node_properties(property_key, ctx.node.properties)
+    
+    vnet = _get_resource_group_name(utils.get_vnet_name())
+    if ctx.node.properties['use_external_resource'] and not vnet:
+    raise NonRecoverableError(
+    'External resource, but the supplied '
+    'vnet does not exist in the account.')
+    
+    if not ctx.node.properties['use_external_resource'] and vnet:
+    raise NonRecoverableError(
+    'Not external resource, but the supplied '
+    'vnet exists in the account.')
 
 
 @operation
@@ -76,9 +87,7 @@ def create_vnet(**_):
         
         resource_group_name =resourcegroup.resource_group_name
         subscription_id = ctx.node.properties['subscription_id']
-        
         credentials='Bearer '+ auth.get_token_from_client_credentials()
-        
         headers = {"Content-Type": "application/json", "Authorization": credentials}
         
         ctx.logger.info("Checking availability of virtual network: " + vnet_name)
@@ -88,7 +97,6 @@ def create_vnet(**_):
                 vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
                 response_vnet = requests.delete(url=vnet_url,headers=headers)
                 print response_vnet.text
-    
             except:
                 ctx.logger.info("Virtual Network " + vnet_name + " could not be deleted.")
             sys.exit(1)
