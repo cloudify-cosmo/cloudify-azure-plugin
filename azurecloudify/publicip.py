@@ -29,7 +29,7 @@ from cloudify.decorators import operation
 import auth
 
 RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
-public_ip_name=ctx.node.properties['public_ip_name']+]+RANDOM_SUFFIX_VALUE
+public_ip_name=PUBLIC_IP_PREFIX+RANDOM_SUFFIX_VALUE
 
 @operation
 def creation_validation(**_):
