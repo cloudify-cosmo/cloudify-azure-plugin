@@ -196,6 +196,10 @@ node_types:
          location where VM will be provisioned
         type: string
         default: 'West US'
+      existing_rstorage_account_name:
+      	description: >
+      	 Indicates the name of exsisting storage account 
+        type: string
       client_id:
         description: >
           Indicates the user's client id
