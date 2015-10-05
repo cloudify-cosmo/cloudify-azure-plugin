@@ -26,9 +26,9 @@ node_types:
          location where VM will be provisioned
         type: string
         default: 'West US'
-      vm_name:
+      resource_group_name:
         description: >
-          Indicates the name of the virtual machine required to create resource group
+          Indicates the name of the resource group 
         type: string
         default: 'my_vm'
       client_id:
@@ -153,9 +153,9 @@ node_types:
          location where VM will be provisioned
         type: string
         default: 'West US'
-      vm_name:
+      public_ip_name:
         description: >
-          Indicates the name of the virtual machine
+          Indicates the name of the public ip
         type: string
         default: 'my_vm'   
       client_id:
