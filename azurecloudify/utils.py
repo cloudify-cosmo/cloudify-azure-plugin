@@ -1,5 +1,3 @@
-from cloudify import ctx
-from cloudify.exceptions import NonRecoverableError
 import random
 import string
 
