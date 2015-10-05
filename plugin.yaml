@@ -143,11 +143,6 @@ node_types:
          location where VM will be provisioned
         type: string
         default: 'West US'
-      public_ip_name:
-        description: >
-          Indicates the name of the public ip
-        type: string
-        default: 'my_pip'   
       client_id:
         description: >
           Indicates the user's client id
