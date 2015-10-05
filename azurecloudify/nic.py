@@ -68,7 +68,6 @@ def creation_validation(**_):
         location = ctx.node.properties['location']
         subscription_id = ctx.node.properties['subscription_id']
         vnet_name = vm_name+'_vnet'
-        
         credentials= 'Bearer ' + auth.get_token_from_client_credentials()
         headers = {"Content-Type": "application/json", "Authorization": credentials}
         
