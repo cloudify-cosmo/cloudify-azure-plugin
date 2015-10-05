@@ -21,10 +21,14 @@ import constants
 import sys
 import os
 import auth
+from resourcegroup import *
 import utils
 from cloudify.exceptions import NonRecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation
+
+RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
+vnet_name = ctx.node.properties['vnet_name']+RANDOM_SUFFIX_VALUE
 
 @operation
 def creation_validation(**_):
@@ -42,19 +46,12 @@ def create_vnet(**_):
                 'vnet does not exist in the account.')
                 sys.exit(1)
         else
-            ctx.instance.runtime_properties['existing_vnet_name']
+            ctx.instance.runtime_properties[constants.VNET_KEY]=ctx.node.properties['existing_vnet_name']
     else
-        for property_key in constants.VNET_REQUIRED_PROPERTIES:
-            _validate_node_properties(property_key, ctx.node.properties)
-        vm_name=ctx.node.properties['vm_name']
-        RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
-        resource_group_name = vm_name+'_resource_group'
-        vnet_name = vm_name+'_vnet'+RANDOM_SUFFIX_VALUE
+        resource_group_name = resourcegroup.resource_group_name
         location = ctx.node.properties['location']
         subscription_id = ctx.node.properties['subscription_id']
-        
         credentials='Bearer '+ auth.get_token_from_client_credentials()
-        
         headers = {"Content-Type": "application/json", "Authorization": credentials}
         
         vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
@@ -67,6 +64,7 @@ def create_vnet(**_):
                 vnet_params=json.dumps({"name":vnet_name, "location": location,"properties": {"addressSpace": {"addressPrefixes": constants.vnet_address_prefixes},"subnets": [{"name": constants.subnet_name, "properties": {"addressPrefix": constants.address_prefix}}]}})
                 response_vnet = requests.put(url=vnet_url, data=vnet_params, headers=headers)
                 print response_vnet.text
+                ctx.instance.runtime_properties['vnet_name']=vnet_name
             except:
                 ctx.logger.info("Virtual Network " + vnet_name + "could not be created.")
                 sys.exit(1)
@@ -75,9 +73,8 @@ def create_vnet(**_):
     
     @operation
     def delete_vnet(**_):
-        vm_name=ctx.node.properties['vm_name']
-        vnet_name = vm_name+'_vnet'
-        resource_group_name = vm_name+'_resource_group'
+        
+        resource_group_name =resourcegroup.resource_group_name
         subscription_id = ctx.node.properties['subscription_id']
         
         credentials='Bearer '+ auth.get_token_from_client_credentials()
