@@ -53,16 +53,15 @@ def create_resource_group(**_):
 		'resource group does not exist in the account.')
 		sys.exit(1)
         else
-        	ctx.instance.runtime_properties['existing_resource_group_name']
+        	ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.node.properties['existing_resource_group_name']
     else   
-	    vm_name=ctx.node.properties['vm_name']
+	    
 	    RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
-	    resource_group_name = vm_name+'_resource_group'+RANDOM_SUFFIX_VALUE
+	    resource_group_name = ctx.node.properties['resource_group_name']+RANDOM_SUFFIX_VALUE
 	    location = ctx.node.properties['location']
 	    subscription_id = ctx.node.properties['subscription_id']
 	    
 	    credentials='Bearer '+ auth.get_token_from_client_credentials()
-	    
 	    headers = {"Content-Type": "application/json", "Authorization": credentials}
 	   
 	    resource_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version_resource_group
@@ -74,8 +73,7 @@ def create_resource_group(**_):
 	            resource_group_params=json.dumps({"name":resource_group_name,"location": location})
 	            response_rg = requests.put(url=resource_group_url, data=resource_group_params, headers=headers)
 	            print response_rg.text
-	            
-	            ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.node.properties['existing_resource_group_name']
+	            ctx.instance.runtime_properties['resource_group_name']=resource_group_name
 	        except:
 	            ctx.logger.info("Resource Group " + resource_group_name + " could not be created")
 	            sys.exit(1)
