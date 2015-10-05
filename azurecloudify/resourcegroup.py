@@ -109,7 +109,7 @@ def _validate_node_properties(key, ctx_node_properties):
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
         
 
-def _get_resource_group_name(resource_group_name):
+def _get_resource_group_name():
     resource_group_name=ctx.node.properties['existing_resource_group_name']
     credentials=auth.get_token_from_client_credentials()
     headers={"Content-Type": "application/json", "Authorization": credentials}
@@ -122,7 +122,7 @@ def _get_resource_group_name(resource_group_name):
     list_of_resource_groups=[]
 
     if resource_group_name in list_of_resource_groups:
-        return true
+        return True
     else:
         ctx.logger.info("Resource group %s does not exist"+ resource_group_name)
-	return None
+	return False
