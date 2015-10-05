@@ -73,7 +73,7 @@ node_types:
         default: ''
       existing_vm_name:
       	description: >
-      	 Indicates the name of exsisting virtual machine
+      	 Indicates the name of existing virtual machine
         type: string
       vm_size:
         description: >
@@ -196,9 +196,9 @@ node_types:
          location where VM will be provisioned
         type: string
         default: 'West US'
-      existing_rstorage_account_name:
+      existing_storage_account_name:
       	description: >
-      	 Indicates the name of exsisting storage account 
+      	 Indicates the name of existing storage account 
         type: string
       client_id:
         description: >
