@@ -22,6 +22,7 @@ import sys
 import os
 import auth
 import utils
+from resourcegroup import *
 from cloudify.exceptions import NonRecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation 
@@ -35,11 +36,10 @@ def creation_validation(**_):
       
 @operation
 def create_public_ip(**_):
-    vm_name=ctx.node.properties['vm_name']
-    public_ip_name=vm_name+'_pip'
+    public_ip_name=ctx.node.properties['public_ip_name']
     subscription_id = ctx.node.properties['subscription_id']
     location = ctx.node.properties['location']
-    resource_group_name = vm_name+'_resource_group'
+    resource_group_name = create_resource_group.resource_group_name
     public_ip_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
     
     credentials='Bearer '+ auth.get_token_from_client_credentials()
@@ -59,6 +59,7 @@ def create_public_ip(**_):
         )
         response_pip = requests.put(url=public_ip_url, data=public_ip_params, headers=headers)
         print response_pip.text
+        ctx.instance.runtime_properties['public_ip_name']=public_ip_name
             
             
             
@@ -84,6 +85,7 @@ def delete_public_ip(**_):
         public_ip_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/ publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
         response_pip = requests.delete(url=public_ip_url,headers=headers)
         print(response_pip.text)
+        ctx.node.instance
     except:
         ctx.logger.info("Public IP " + public_ip_name + " could not be deleted.")
         sys.exit(1)
