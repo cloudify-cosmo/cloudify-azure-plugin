@@ -121,7 +121,7 @@ def _get_vnet_name():
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     response_list = requests.get(url, headers = headers)
     if vnet_name in response_list.text:
-        return true
+        return True
     else:
         ctx.logger.info("Virtual Network %s does not exist"+ vnet_name)
         return False
