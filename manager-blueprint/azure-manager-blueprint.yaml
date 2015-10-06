@@ -71,7 +71,7 @@ inputs:
     type: string
     default: ''
 
-  username:
+  ssh_username:
     type: string
     default: ''
   
@@ -97,7 +97,7 @@ node_templates:
       location: { get_input: location }
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
-      username: { get_input: username}
+      ssh_username: { get_input: ssh_username}
       aad_password: { get_input: aad_password}
       install_agent: false
     relationships:
@@ -112,7 +112,6 @@ node_templates:
       subscription_id: { get_input: subscription_id}
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
-      username: { get_input: username}
       aad_password: { get_input: aad_password}
       use_external_resource: { get_input: use_external_resource}
       existing_resource_group_name: { get_input: existing_resource_group_name}
@@ -125,7 +124,6 @@ node_templates:
       subscription_id: { get_input: subscription_id}
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
-      username: { get_input: username}
       aad_password: { get_input: aad_password}
       use_external_resource: { get_input: use_external_resource}
       existing_storage_account_name: { get_input: existing_storage_account_name}
@@ -142,7 +140,6 @@ node_templates:
       subscription_id: { get_input: subscription_id}
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
-      username: { get_input: username}
       aad_password: { get_input: aad_password}
       use_external_resource: { get_input: use_external_resource}
       existing_public_ip_name: { get_input: existing_public_ip_name}
@@ -159,7 +156,6 @@ node_templates:
       subscription_id: { get_input: subscription_id}
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
-      username: { get_input: username}
       aad_password: { get_input: aad_password}
       use_external_resource: { get_input: use_external_resource}
       existing_nic_name: { get_input: existing_nic_name}
@@ -176,7 +172,6 @@ node_templates:
       subscription_id: { get_input: subscription_id}
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
-      username: { get_input: username}
       aad_password: { get_input: aad_password}
       use_external_resource: { get_input: use_external_resource}
       existing_vnet_name: { get_input: existing_vnet_name}
@@ -275,7 +270,7 @@ node_templates:
        image_reference_sku: { get_input: image_reference_sku}
        client_id: { get_input: client_id }
        tenant_id: { get_input: tenant_id }
-       username: { get_input: username }
+       ssh_username: { get_input: ssh_username }
        aad_password: { get_input: aad_password }
        use_external_resource: { get_input: use_external_resource }
        existing_resource_group_name: { get_input: existing_resource_group_name }
