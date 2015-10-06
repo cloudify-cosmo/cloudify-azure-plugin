@@ -197,6 +197,12 @@ def set_dependent_resources_names(azure_config,**kwargs):
     vm_private_ip = ctx.target.instance.runtime_properties['private_ip']
     ctx.logger.info("vm_private_ip is " + vm_private_ip)
     ctx.source.instance.runtime_properties['ip'] = vm_private_ip
+    ctx.source.instance.runtime_properties['resource_group'] = ctx.target.instance.runtime_properties['resource_group']
+    ctx.source.instance.runtime_properties['storage_account'] = ctx.target.instance.runtime_properties['storage_account']
+    ctx.source.instance.runtime_properties['vnet'] = ctx.target.instance.runtime_properties['vnet']
+    ctx.source.instance.runtime_properties['publicip'] = ctx.target.instance.runtime_properties['publicip']
+    ctx.source.instance.runtime_properties['nic'] = ctx.target.instance.runtime_properties['nic']
+
 
 
 def _validate_node_properties(key, ctx_node_properties):
