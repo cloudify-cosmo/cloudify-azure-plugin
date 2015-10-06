@@ -143,26 +143,11 @@ def delete_nic(**_):
 
 @operation
 def set_dependent_resources_names(azure_config,**kwargs):
-    ctx.logger.info("Setting set_private_ip")
-    vm_private_ip = ctx.target.instance.runtime_properties['private_ip']
-    ctx.logger.info("vm_private_ip is " + vm_private_ip)
-    ctx.source.instance.runtime_properties['ip'] = vm_private_ip
+    ctx.source.instance.runtime_properties['resource_group'] = ctx.target.instance.runtime_properties['resource_group']
+    ctx.source.instance.runtime_properties['storage_account'] = ctx.target.instance.runtime_properties['storage_account']
+    ctx.source.instance.runtime_properties['vnet'] = ctx.target.instance.runtime_properties['vnet']
 
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
-        
- def _get_nic_name():
-    resource_group_name=ctx.node.properties['existing_resource_group_name']
-    credentials=auth.get_token_from_client_credentials()
-    headers={"Content-Type": "application/json", "Authorization": credentials}
-    subscription_id=ctx.node.properties['subscription_id']
-    nic_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkInterfaces?api-version='+constants.api_version
-    response_get_nic=requests.get(url=nic_url,headers=headers)
-    if nic_name in response_get_nic.text:
-        return true
-    else:
-        return false
-        
-        
 
