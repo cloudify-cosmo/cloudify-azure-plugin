@@ -154,7 +154,8 @@ def _validate_node_properties(key, ctx_node_properties):
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
         
  def _get_nic_name():
-    resource_group_name=ctx.node.properties['existing_resource_group_name']
+    nic_name=ctx.node.properties['existing_nic_name']
+    resource_group_name= resourcegroup.resource_group_name
     credentials=auth.get_token_from_client_credentials()
     headers={"Content-Type": "application/json", "Authorization": credentials}
     subscription_id=ctx.node.properties['subscription_id']
