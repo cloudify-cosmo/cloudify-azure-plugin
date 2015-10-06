@@ -34,8 +34,7 @@ def creation_validation(**_):
     for property_key in constants.RESOURCE_GROUP_REQUIRED_PROPERTIES:
         _validate_node_properties(property_key, ctx.node.properties)
     
-    resource_group =  _get_resource_group_name(
-	utils.get_resource_group_name())
+    resource_group =  _get_resource_group_name()
 
     if ctx.node.properties['use_external_resource'] and not resource_group:
 	raise NonRecoverableError(
