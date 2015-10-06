@@ -111,19 +111,16 @@ def _validate_node_properties(key, ctx_node_properties):
         
 def _get_storage_account_name(storage_account_name):
     storage_account_name= ctx.node.properties['existing_storage_account_name']
+    resource_group_name= resourcegroup.resource_group_name
     subscription_id=ctx.node.properties['subscription_id']
-    url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group+'/providers/Microsoft.Storage/storageAccounts?api-version='+constants.api_version
+    url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts?api-version='+constants.api_version
     headers = {"Content-Type": "application/json", "Authorization": credentials}
-    response_list = requests.get(url, headers = headers).json()
-    print response_list['value']['name']
-    
-    # extract the list of all storage account names 
-    list_of_storage_accounts=[]
-
-    if storage_account_name in list_of_storage_accounts:
-        return True
+    response_list = requests.get(url, headers = headers)
+    if storage_account_name in response_list.text:
+        return true
     else:
         ctx.logger.info("Storage account %s does not exist"+ storage_account_name)
-	return False
+        return False
+   
 
     
