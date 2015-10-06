@@ -119,6 +119,7 @@ def _validate_node_properties(key, ctx_node_properties):
 def _get_storage_account_name():
     storage_account_name= ctx.node.properties['existing_storage_account_name']
     resource_group_name= resourcegroup.resource_group_name
+    credentials=auth.get_token_from_client_credentials()
     subscription_id=ctx.node.properties['subscription_id']
     url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts?api-version='+constants.api_version
     headers = {"Content-Type": "application/json", "Authorization": credentials}
