@@ -1,5 +1,6 @@
 subscription_id: '' 
 location: ''
+vm_name: ''
 existing_resource_group_name: ''
 existing_storage_account_name: ''
 existing_vnet_name: ''
