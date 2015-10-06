@@ -36,7 +36,7 @@ inputs:
     type: string
     default: '14.04.2-LTS' 
 
- vm_admin_username:
+ ssh_username:
     type: string
     default: 'my_username'
 
@@ -62,7 +62,7 @@ node_templates:
       image_reference_publisher: { get_input: image_reference_publisher}
       image_reference_sku: { get_input: image_reference_sku}
       vm_size: { get_input: vm_size}
-      vm_admin_username= { get_input: vm_admin_username}
+      ssh_username= { get_input: ssh_username}
       key_data: { get_input: key_data}
       parameters:
         subscription_id:{ get_input: subscription_id}
