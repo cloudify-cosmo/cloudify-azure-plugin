@@ -117,12 +117,4 @@ def _get_resource_group_name():
     
     list_resource_group_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourcegroups?api-version='+constants.api_version
     response_list_resource_group=requests.get(url=list_resource_group_url,headers=headers)
-    print(response_list_resource_group.text)
-    # extract the list of resource group names
-    list_of_resource_groups=[]
-
-    if resource_group_name in list_of_resource_groups:
-        return True
-    else:
-        ctx.logger.info("Resource group %s does not exist"+ resource_group_name)
-	return False
+   
