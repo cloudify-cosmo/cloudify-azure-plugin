@@ -192,7 +192,7 @@ def delete_virtual_machine(**_):
 
 
 @operation
-def set_dependent_resources_names (azure_config,**kwargs):
+def set_dependent_resources_names(azure_config,**kwargs):
     ctx.logger.info("Setting set_private_ip")
     vm_private_ip = ctx.target.instance.runtime_properties['private_ip']
     ctx.logger.info("vm_private_ip is " + vm_private_ip)
