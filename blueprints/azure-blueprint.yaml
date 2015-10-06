@@ -64,7 +64,7 @@ inputs:
     type: string
     default: ''
 
-  username:
+  ssh_username:
     type: string
     default: ''
   
@@ -106,8 +106,8 @@ node_types:
         default: { get_input: client_id}
       tenant_id:
         default: { get_input: tenant_id}
-      username:
-        default: { get_input: username}
+      ssh_username:
+        default: { get_input: ssh_username}
       aad_password:
         default: { get_input: aad_password}
       install_agent: 
