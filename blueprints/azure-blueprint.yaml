@@ -174,7 +174,6 @@ node_templates:
       subscription_id: { get_input: subscription_id}
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
-      username: { get_input: username}
       aad_password: { get_input: aad_password}
      
 
@@ -186,7 +185,6 @@ node_templates:
       subscription_id: { get_input: subscription_id}
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
-      username: { get_input: username}
       aad_password: { get_input: aad_password}
       
     relationships:
@@ -201,7 +199,6 @@ node_templates:
       subscription_id: { get_input: subscription_id}
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
-      username: { get_input: username}
       aad_password: { get_input: aad_password}
     relationships:
       - target: nodecellar_vnet
@@ -215,7 +212,6 @@ node_templates:
       subscription_id: { get_input: subscription_id}
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
-      username: { get_input: username}
       aad_password: { get_input: aad_password}
     relationships:
       - target: nodejs_public_ip
@@ -229,7 +225,6 @@ node_templates:
       subscription_id: { get_input: subscription_id}
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
-      username: { get_input: username}
       aad_password: { get_input: aad_password}
     relationships:
       - target: nodecellar_vnet
@@ -243,7 +238,6 @@ node_templates:
       subscription_id: { get_input: subscription_id}
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
-      username: { get_input: username}
       aad_password: { get_input: aad_password}
     relationships:
       - target: nodecellar_storage_account
