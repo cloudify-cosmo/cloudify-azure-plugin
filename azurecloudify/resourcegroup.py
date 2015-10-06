@@ -123,4 +123,3 @@ def _get_resource_group_name():
     else:
     	return false
 	    
-
