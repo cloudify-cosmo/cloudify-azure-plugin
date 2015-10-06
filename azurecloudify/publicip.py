@@ -90,9 +90,7 @@ def create_public_ip(**_):
     except:
         ctx.logger.info("Public IP" + public_ip_name + "could not be created.")
         sys.exit(1)
-    
-
-    
+ 
 
 def delete_public_ip(**_):
     
