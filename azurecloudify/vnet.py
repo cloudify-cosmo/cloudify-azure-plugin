@@ -111,7 +111,7 @@ def _get_vnet_name():
     vnet_name= ctx.node.properties['existing_vnet_name']
     resource_group_name= resourcegroup.resource_group_name
     subscription_id=ctx.node.properties['subscription_id']
-    url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts?api-version='+constants.api_version
+    url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualnetworks?api-version='+constants.api_version
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     response_list = requests.get(url, headers = headers)
     if vnet_name in response_list.text:
