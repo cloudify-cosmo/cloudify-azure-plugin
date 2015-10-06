@@ -119,7 +119,7 @@ def _get_resource_group_name():
     response_get_resource_group=requests.get(url=list_resource_group_url,headers=headers)
    
     if resource_group_name in response_get_resource_group.text:
-    	return true
+    	return True
     else:
-    	return false
+    	return False
 	    
