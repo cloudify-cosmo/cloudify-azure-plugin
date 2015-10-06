@@ -151,4 +151,18 @@ def set_dependent_resources_names(azure_config,**kwargs):
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
+        
+ def _get_nic_name():
+    resource_group_name=ctx.node.properties['existing_resource_group_name']
+    credentials=auth.get_token_from_client_credentials()
+    headers={"Content-Type": "application/json", "Authorization": credentials}
+    subscription_id=ctx.node.properties['subscription_id']
+    nic_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkInterfaces?api-version='+constants.api_version
+    response_get_nic=requests.get(url=nic_url,headers=headers)
+    if nic_name in response_get_nic.text:
+        return true
+    else:
+        return false
+        
+        
 
