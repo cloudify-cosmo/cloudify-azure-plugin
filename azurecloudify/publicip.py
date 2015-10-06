@@ -130,6 +130,14 @@ def _get_public_ip_name(public_ip_name):
 	 ctx.logger.info("Public IP %s does not exist"+ public_ip_name)
 	 return False
 
+
+@operation
+def set_dependent_resources_names(azure_config,**kwargs):
+    ctx.logger.info("Setting set_private_ip")
+    vm_private_ip = ctx.target.instance.runtime_properties['private_ip']
+    ctx.logger.info("vm_private_ip is " + vm_private_ip)
+    ctx.source.instance.runtime_properties['ip'] = vm_private_ip
+
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
