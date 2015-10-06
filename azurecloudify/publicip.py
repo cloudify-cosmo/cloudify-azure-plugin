@@ -149,6 +149,6 @@ def _get_public_ip_name():
     pip_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses?api-version='+constants.api_version
     response_get_pip=requests.get(url=pip_url,headers=headers)
     if pip_name in response_get_pip.text:
-        return true
+        return True
     else:
-        return false
+        return False
