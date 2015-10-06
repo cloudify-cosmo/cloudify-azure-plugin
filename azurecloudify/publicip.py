@@ -133,3 +133,4 @@ def _get_public_ip_name(public_ip_name):
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
+
