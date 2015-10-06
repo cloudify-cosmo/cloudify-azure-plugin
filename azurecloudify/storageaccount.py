@@ -106,10 +106,7 @@ def delete_storage_account(**_):
 
 @operation
 def set_dependent_resources_names(azure_config,**kwargs):
-    ctx.logger.info("Setting set_private_ip")
-    vm_private_ip = ctx.target.instance.runtime_properties['private_ip']
-    ctx.logger.info("vm_private_ip is " + vm_private_ip)
-    ctx.source.instance.runtime_properties['ip'] = vm_private_ip
+    ctx.source.instance.runtime_properties['resource_group'] = ctx.target.instance.runtime_properties['resource_group']
 
 
 def _validate_node_properties(key, ctx_node_properties):
@@ -119,13 +116,12 @@ def _validate_node_properties(key, ctx_node_properties):
 def _get_storage_account_name():
     storage_account_name= ctx.node.properties['existing_storage_account_name']
     resource_group_name= resourcegroup.resource_group_name
-    credentials=auth.get_token_from_client_credentials()
     subscription_id=ctx.node.properties['subscription_id']
     url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts?api-version='+constants.api_version
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     response_list = requests.get(url, headers = headers)
     if storage_account_name in response_list.text:
-        return true
+        return True
     else:
         ctx.logger.info("Storage account %s does not exist"+ storage_account_name)
         return False
