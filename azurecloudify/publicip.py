@@ -140,3 +140,15 @@ def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
 
+
+def _get_public_ip_name():
+    resource_group_name=ctx.node.properties['existing_resource_group_name']
+    credentials=auth.get_token_from_client_credentials()
+    headers={"Content-Type": "application/json", "Authorization": credentials}
+    subscription_id=ctx.node.properties['subscription_id']
+    pip_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses?api-version='+constants.api_version
+    response_get_pip=requests.get(url=pip_url,headers=headers)
+    if pip_name in response_get_pip.text:
+        return true
+    else:
+        return false
