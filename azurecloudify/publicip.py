@@ -112,22 +112,6 @@ def delete_public_ip(**_):
         sys.exit(1)
         
     
-def _get_public_ip_name(public_ip_name):
-    public_ip_name=ctx.node.properties['existing_public_ip_name']
-    headers={"Content-Type": "application/json", "Authorization": credentials}
-    subscription_id=ctx.node.properties['subscription_id']
-    resource_group_name=resourcegroup.resource_group_name
-    list_pip_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses?api-version='+constants.api_version
-    response_list_pip=requests.get(url=list_pip_url,headers=headers)
-    print(response_list_pip.text)   
-    # extract the list of resource group names
-    list_of_pip=[]
-    if public_ip_name in list_of_pip:
-	 return True
-    else:
-	 ctx.logger.info("Public IP %s does not exist"+ public_ip_name)
-	 return False
-
 
 @operation
 def set_dependent_resources_names(azure_config,**kwargs):
@@ -142,13 +126,14 @@ def _validate_node_properties(key, ctx_node_properties):
 
 
 def _get_public_ip_name():
-    resource_group_name=ctx.node.properties['existing_resource_group_name']
+    public_ip_name=ctx.node.properties['existing_public_ip_name']
+    resource_group_name=resourcegroup.resource_group_name
     credentials=auth.get_token_from_client_credentials()
     headers={"Content-Type": "application/json", "Authorization": credentials}
     subscription_id=ctx.node.properties['subscription_id']
     pip_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses?api-version='+constants.api_version
     response_get_pip=requests.get(url=pip_url,headers=headers)
-    if pip_name in response_get_pip.text:
+    if public_ip_name in response_get_pip.text:
         return True
     else:
         return False
