@@ -35,16 +35,16 @@ def creation_validation(**_):
     for property_key in constants.VNET_REQUIRED_PROPERTIES:
         _validate_node_properties(property_key, ctx.node.properties)
     
-    vnet_name = _get_vnet_name()
-    if ctx.node.properties['use_external_resource'] and not vnet_name:
-    raise NonRecoverableError(
-    'External resource, but the supplied '
-    'vnet does not exist in the account.')
+    vnet_exists = _get_vnet_name()
+    if ctx.node.properties['use_external_resource'] and not vnet_exists:
+        raise NonRecoverableError(
+        'External resource, but the supplied '
+        'vnet does not exist in the account.')
     
-    if not ctx.node.properties['use_external_resource'] and vnet_name:
-    raise NonRecoverableError(
-    'Not external resource, but the supplied '
-    'vnet exists in the account.')
+    if not ctx.node.properties['use_external_resource'] and vnet_exists:
+        raise NonRecoverableError(
+        'Not external resource, but the supplied '
+        'vnet exists in the account.')
 
 
 @operation
