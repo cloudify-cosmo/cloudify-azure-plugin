@@ -54,7 +54,7 @@ def creation_validation(**_):
 #nic:
  def create_nic(**_):
     if ctx.node.properties['use_external_resource']
-        if not nic_name:
+        if not nic_name_exists:
              raise NonRecoverableError(
              'External nic, but the supplied '
              'nic does not exist in the account.')
