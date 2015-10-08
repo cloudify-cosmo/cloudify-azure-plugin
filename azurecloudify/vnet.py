@@ -56,7 +56,7 @@ def create_vnet(**_):
         else
             ctx.instance.runtime_properties[constants.VNET_KEY]=ctx.node.properties['existing_vnet_name']
     else
-        resource_group_name = ctx.node.instance.runtime_properties['resource_group']
+        resource_group_name = ctx.instance.runtime_properties['resource_group']
         location = ctx.node.properties['location']
         subscription_id = ctx.node.properties['subscription_id']
         credentials='Bearer '+ auth.get_token_from_client_credentials()
