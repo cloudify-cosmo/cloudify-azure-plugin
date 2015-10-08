@@ -63,7 +63,7 @@ def create_storage_account(**_):
             subscription_id = ctx.node.properties['subscription_id']
             RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
             storage_account_name = contants.STORAGE_ACCOUNT_PREFIX+RANDOM_SUFFIX_VALUE
-            resource_group_name=create_resource_group.resource_group_name
+            resource_group_name=ctx.instance.runtime_properties['resource_group']
             credentials='Bearer '+auth.get_token_from_client_credentials()
             
             headers = {"Content-Type": "application/json", "Authorization": credentials}
