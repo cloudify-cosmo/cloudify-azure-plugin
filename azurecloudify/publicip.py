@@ -51,7 +51,7 @@ def creation_validation(**_):
 @operation
 def create_public_ip(**_):
     if ctx.node.properties['use_external_resource'] 
-        if not public_ip:
+        if not public_ip_exists:
 	    	raise NonRecoverableError(
 		'External resource, but the supplied '
 		'public ip does not exist in the account.')
