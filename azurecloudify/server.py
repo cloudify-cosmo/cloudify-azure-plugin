@@ -27,8 +27,7 @@ from cloudify import ctx
 from cloudify.decorators import operation
 
 
-RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
-vm_name = VM_PREFIX +RANDOM_SUFFIX_VALUE
+
 
 #virtualmachine:
 
@@ -59,6 +58,8 @@ def create_vm(**_):
     vnet_name = vnet.vnet_name
     nic_name = nic.nic_name
     public_ip_name= publicip.public_ip_name
+    RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
+    vm_name = contants.VM_PREFIX +RANDOM_SUFFIX_VALUE
     credentials='Bearer '+auth.get_token_from_client_credentials()
     subscription_id = ctx.node.properties['subscription_id']
     headers = {"Content-Type": "application/json", "Authorization": credentials}
