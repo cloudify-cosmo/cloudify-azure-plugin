@@ -60,7 +60,7 @@ def create_resource_group(**_):
 	    location = ctx.node.properties['location']
 	    subscription_id = ctx.node.properties['subscription_id']
 	    RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
-	    resource_group_name = RESOURCE_GROUP_PREFIX+RANDOM_SUFFIX_VALUE
+	    resource_group_name = contants.RESOURCE_GROUP_PREFIX+RANDOM_SUFFIX_VALUE
 	    credentials='Bearer '+ auth.get_token_from_client_credentials()
 	    headers = {"Content-Type": "application/json", "Authorization": credentials}
 	   
