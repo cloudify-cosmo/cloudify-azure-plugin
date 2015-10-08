@@ -28,8 +28,7 @@ from cloudify.exceptions import NonRecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation
 
-RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
-storage_account_name = STORAGE_ACCOUNT_PREFIX+RANDOM_SUFFIX_VALUE
+
 
 @operation
 def creation_validation(**_):
@@ -62,6 +61,8 @@ def create_storage_account(**_):
     else
             location = ctx.node.properties['location']
             subscription_id = ctx.node.properties['subscription_id']
+            RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
+            storage_account_name = contants.STORAGE_ACCOUNT_PREFIX+RANDOM_SUFFIX_VALUE
             resource_group_name=create_resource_group.resource_group_name
             credentials='Bearer '+auth.get_token_from_client_credentials()
             
