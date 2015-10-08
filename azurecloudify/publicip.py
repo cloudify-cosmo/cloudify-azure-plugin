@@ -36,13 +36,13 @@ def creation_validation(**_):
     for property_key in constants.PUBLIC_IP_REQUIRED_PROPERTIES:
         _validate_node_properties(property_key, ctx.node.properties)
 
-    public_ip =  _get_public_ip_name()
+    public_ip_exists =  _get_public_ip_name()
 
-    if ctx.node.properties['use_external_resource'] and not public_ip:
+    if ctx.node.properties['use_external_resource'] and not public_ip_exists:
     	raise NonRecoverableError(
     	'External resource, but the supplied '
     	'public ip does not exist in the account.')
-    if not ctx.node.properties['use_external_resource'] and public_ip:
+    if not ctx.node.properties['use_external_resource'] and public_ip_exists:
     	raise NonRecoverableError(
     	'Not external resource, but the supplied '
     	'public ip exists in the account.')
