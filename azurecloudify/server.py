@@ -53,11 +53,11 @@ def create_vm(**_):
     RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
     vm_name = ctx.node.properties['vm_name']+RANDOM_SUFFIX_VALUE
     resource_group_name = ctx.instance.runtime_properties['resource_group']
-    storage_account_name = storageaccount.storage_account_name
+    storage_account_name = ctx.instance.runtime_properties['storage_account']
     location = ctx.node.properties['location']
-    vnet_name = vnet.vnet_name
-    nic_name = nic.nic_name
-    public_ip_name= publicip.public_ip_name
+    vnet_name = ctx.instance.runtime_properties['vnet']
+    nic_name = ctx.instance.runtime_properties['nic']
+    public_ip_name= ctx.instance.runtime_properties['publicip']
     RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
     vm_name = contants.VM_PREFIX +RANDOM_SUFFIX_VALUE
     credentials='Bearer '+auth.get_token_from_client_credentials()
