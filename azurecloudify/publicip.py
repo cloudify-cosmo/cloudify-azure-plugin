@@ -84,7 +84,7 @@ def create_public_ip(**_):
         )
         response_pip = requests.put(url=public_ip_url, data=public_ip_params, headers=headers)
         print response_pip.text
-        ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY]=public_ip_name
+        ctx.instance.runtime_properties['publicip']=public_ip_name
             
             
             
