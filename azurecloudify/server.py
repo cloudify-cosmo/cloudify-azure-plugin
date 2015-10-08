@@ -163,7 +163,7 @@ def stop_vm(**_):
     
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     
-    resource_group_name = resourcegroup.resource_group_name
+    resource_group_name = ctx.instance.runtime_properties['resource_group']
     stop_vm_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
     response_stop_vm=requests.post(stop_vm_url,headers=headers)
     print (response_stop_vm.text)
@@ -171,7 +171,7 @@ def stop_vm(**_):
 
 @operation
 def delete_virtual_machine(**_):
-    resource_group_name = ctx.node.runtime_properties['resource_group']
+    resource_group_name = ctx.runtime_properties['resource_group']
     subscription_id = ctx.node.properties['subscription_id']
     
     credentials='Bearer '+auth.get_token_from_client_credentials()
