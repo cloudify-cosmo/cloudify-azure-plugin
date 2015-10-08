@@ -48,7 +48,7 @@ def creation_validation(**_):
 @operation
 def create_vnet(**_):
     if ctx.node.properties['use_external_resource']
-        if not resource_group:
+        if not vnet_exists:
             raise NonRecoverableError(
                 'External vnet, but the supplied '
                 'vnet does not exist in the account.')
