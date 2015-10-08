@@ -126,7 +126,7 @@ def _validate_node_properties(key, ctx_node_properties):
 
 def _get_public_ip_name():
     public_ip_name=ctx.node.properties['existing_public_ip_name']
-    resource_group_name=resourcegroup.resource_group_name
+    resource_group_name = ctx.node.instance.runtime_properties['resource_group']
     credentials=auth.get_token_from_client_credentials()
     headers={"Content-Type": "application/json", "Authorization": credentials}
     subscription_id=ctx.node.properties['subscription_id']
