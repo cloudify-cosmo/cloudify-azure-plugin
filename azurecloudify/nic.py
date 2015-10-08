@@ -60,11 +60,11 @@ def creation_validation(**_):
              'nic does not exist in the account.')
              sys.exit(1)
          else
-             ctx.instance.runtime_properties['constants.NIC_KEY']=ctx.node.properties['existing_nic_name']
+             ctx.instance.runtime_properties[constants.NIC_KEY]=ctx.node.properties['existing_nic_name']
     else
 
-        public_ip_name=publicip.public_ip_name
-        resource_group_name = resourcegroup.resource_group_name
+        public_ip_name=ctx.instance.runtime_properties['publicip']
+        resource_group_name = ctx.instance.runtime_properties['resource_group']
         location = ctx.node.properties['location']
         subscription_id = ctx.node.properties['subscription_id']
         vnet_name = vnet.vnet_name
@@ -127,7 +127,7 @@ def delete_nic(**_):
     credentials='Bearer '+ auth.get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
    
-    resource_group_name = resourcegroup.resource_group_name
+    resource_group_name = ctx.instance.runtime_properties['resource_group']
     if 1:
        
         try:
@@ -156,7 +156,7 @@ def _validate_node_properties(key, ctx_node_properties):
         
  def _get_nic_name():
     nic_name=ctx.node.properties['existing_nic_name']
-    resource_group_name= resourcegroup.resource_group_name
+    resource_group_name= ctx.instance.runtime_properties['resource_group']
     credentials=auth.get_token_from_client_credentials()
     headers={"Content-Type": "application/json", "Authorization": credentials}
     subscription_id=ctx.node.properties['subscription_id']
