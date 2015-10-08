@@ -52,7 +52,7 @@ def create_vm(**_):
 
     RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
     vm_name = ctx.node.properties['vm_name']+RANDOM_SUFFIX_VALUE
-    resource_group_name = resourcegroup.resource_group_name
+    resource_group_name = ctx.instance.runtime_properties['resource_group']
     storage_account_name = storageaccount.storage_account_name
     location = ctx.node.properties['location']
     vnet_name = vnet.vnet_name
@@ -171,7 +171,7 @@ def stop_vm(**_):
 
 @operation
 def delete_virtual_machine(**_):
-    resource_group_name = resourcegroup.resource_group_name
+    resource_group_name = ctx.node.runtime_properties['resource_group']
     subscription_id = ctx.node.properties['subscription_id']
     
     credentials='Bearer '+auth.get_token_from_client_credentials()
