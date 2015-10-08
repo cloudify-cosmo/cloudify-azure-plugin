@@ -46,7 +46,6 @@ def creation_validation(**_):
         'Not external resource, but the supplied '
         'vnet exists in the account.')
 
-
 @operation
 def create_vnet(**_):
     if ctx.node.properties['use_external_resource']
