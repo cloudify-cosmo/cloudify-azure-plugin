@@ -99,9 +99,10 @@ def creation_validation(**_):
                             })
               nic_url=constants.azure_url+"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
               response_nic = requests.put(url=nic_url, data=nic_params, headers=headers)
-    
               print(response_nic.text)
-              ctx.instance.runtime_properties['nic_name']=nic_name
+              
+              ctx.instance.runtime_properties['nic']=nic_name
+              
               ctx.logger.info("response_nic : " + response_nic.text)
               response_nic_json = response_nic.json()
               nic_root_properties = response_nic_json[u'properties']
