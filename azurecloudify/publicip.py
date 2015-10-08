@@ -28,8 +28,7 @@ from cloudify import ctx
 from cloudify.decorators import operation 
 import auth
 
-RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
-public_ip_name=PUBLIC_IP_PREFIX+RANDOM_SUFFIX_VALUE
+
 
 @operation
 def creation_validation(**_):
@@ -64,6 +63,8 @@ def create_public_ip(**_):
     subscription_id = ctx.node.properties['subscription_id']
     location = ctx.node.properties['location']
     resource_group_name =resourcegroup.resource_group_name
+    RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
+    public_ip_name=contants.PUBLIC_IP_PREFIX+RANDOM_SUFFIX_VALUE
     public_ip_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
     
     credentials='Bearer '+ auth.get_token_from_client_credentials()
