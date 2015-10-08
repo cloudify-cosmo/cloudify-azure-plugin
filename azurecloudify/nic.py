@@ -29,8 +29,7 @@ from cloudify.exceptions import NonRecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation
  
-RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
-nic_name = constants.NIC_PREFIX+RANDOM_SUFFIX_VALUE
+
  
 @operation
 def creation_validation(**_):
@@ -69,6 +68,8 @@ def creation_validation(**_):
         location = ctx.node.properties['location']
         subscription_id = ctx.node.properties['subscription_id']
         vnet_name = vnet.vnet_name
+        RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
+        nic_name = constants.NIC_PREFIX+RANDOM_SUFFIX_VALUE
         credentials= 'Bearer ' + auth.get_token_from_client_credentials()
         headers = {"Content-Type": "application/json", "Authorization": credentials}
         
