@@ -38,12 +38,12 @@ def creation_validation(**_):
         _validate_node_properties(property_key, ctx.node.properties)
 
 
-    vm_name = _get_vm_name()
-    if ctx.node.properties['use_external_resource'] and not vm_name:
+    vm_name_exists = _get_vm_name()
+    if ctx.node.properties['use_external_resource'] and not vm_name_exists:
     raise NonRecoverableError(
     'External resource, but the supplied '
     'vm does not exist in the account.')
-    if not ctx.node.properties['use_external_resource'] and vm_name:
+    if not ctx.node.properties['use_external_resource'] and vm_name_exists:
     raise NonRecoverableError(
     'Not external resource, but the supplied '
     'vm exists in the account.')
