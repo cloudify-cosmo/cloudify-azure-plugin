@@ -35,7 +35,7 @@ def creation_validation(**_):
     for property_key in constants.PUBLIC_IP_REQUIRED_PROPERTIES:
         _validate_node_properties(property_key, ctx.node.properties)
 
-    public_ip_exists =  _get_public_ip_name()
+    public_ip_exists = _get_public_ip_name()
 
     if ctx.node.properties['use_external_resource'] and not public_ip_exists:
     	raise NonRecoverableError(
@@ -50,9 +50,9 @@ def creation_validation(**_):
       
 @operation
 def create_public_ip(**_):
-    if :
+    if:
     	ctx.node.properties['use_external_resource'] 
-    else : 
+    else: 
     
         subscription_id = ctx.node.properties['subscription_id']
         location = ctx.node.properties['location']
@@ -60,7 +60,6 @@ def create_public_ip(**_):
         RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
         public_ip_name=contants.PUBLIC_IP_PREFIX+RANDOM_SUFFIX_VALUE
         public_ip_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
-        
         credentials='Bearer '+ auth.get_token_from_client_credentials()
         headers = {"Content-Type": "application/json", "Authorization": credentials}
        
@@ -91,9 +90,7 @@ def delete_public_ip(**_):
     
     subscription_id = ctx.node.properties['subscription_id']
     resource_group_name = ctx.instance.runtime_properties['resource_group']
-    
     credentials='Bearer '+ auth.get_token_from_client_credentials()
-    
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     
     try:
@@ -106,8 +103,6 @@ def delete_public_ip(**_):
         ctx.logger.info("Public IP " + public_ip_name + " could not be deleted.")
         sys.exit(1)
         
-    
-
 @operation
 def set_dependent_resources_names(azure_config,**kwargs):
    ctx.source.instance.runtime_properties['resource_group'] = ctx.target.instance.runtime_properties['resource_group']
