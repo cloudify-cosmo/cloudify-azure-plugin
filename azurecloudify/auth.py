@@ -18,6 +18,7 @@ def get_token_from_client_credentials():
         'client_secret': aad_password,
         'resource': constants.resource,
     }
+    """
     try:
          with open(constants.path_to_azure_conf+'azure_config.json', 'r') as f:
             token_expires = f.readline()
@@ -34,6 +35,7 @@ def get_token_from_client_credentials():
         token_expires = response['expires_on']
         with open(constants.path_to_azure_conf+'azure_config.json', 'w+') as f:
             f.writelines([token_expires, '\n', token])
+    """        
     return token
 
 
