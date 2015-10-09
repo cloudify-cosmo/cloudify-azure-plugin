@@ -39,6 +39,7 @@ sourcePortRange=65000
 destinationPortRange=60000
 priority=100
 resource='https://management.core.windows.net/'
+path_to_azure_conf='~/'
 
 RESOURCE_GROUP_REQUIRED_PROPERTIES=['vm_name','location','subscription_id']
 STORAGE_ACCOUNT_REQUIRED_PROPERTIES = ['vm_name','location','subscription_id']
