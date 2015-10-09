@@ -77,7 +77,7 @@ def create_resource_group(**_):
 def delete_resource_group(**_):
    
     subscription_id = ctx.node.properties['subscription_id']
-    
+    resource_group_name=ctx.instance.runtime_properties['resource_group']
     credentials='Bearer '+auth.get_token_from_client_credentials()
     
     headers = {"Content-Type": "application/json", "Authorization": credentials}
@@ -104,7 +104,6 @@ def _get_resource_group_name():
     credentials=auth.get_token_from_client_credentials()
     headers={"Content-Type": "application/json", "Authorization": credentials}
     subscription_id=ctx.node.properties['subscription_id']
-    
     list_resource_group_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourcegroups?api-version='+constants.api_version
     response_get_resource_group=requests.get(url=list_resource_group_url,headers=headers)
    
