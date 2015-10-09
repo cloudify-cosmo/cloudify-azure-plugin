@@ -35,7 +35,11 @@ def get_token_from_client_credentials():
         token_expires = response['expires_on']
         with open(constants.path_to_azure_conf+'azure_config.json', 'w+') as f:
             f.writelines([token_expires, '\n', token])
-    """        
+         
     return token
+    """  
+    
+    response = requests.post(endpoints, data=payload).json()
+    return response['access_token']
 
 
