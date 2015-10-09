@@ -70,7 +70,7 @@ def create_resource_group(**_):
 	        ctx.logger.info("Resource Group " + resource_group_name + " could not be created")
 	        sys.exit(1)
 	else:
-	        ctx.logger.info("Resource Group " + resource_group_name + " has already been provisioned")
+	    ctx.logger.info("Resource Group " + resource_group_name + " has already been provisioned")
 	  
 
 @operation
