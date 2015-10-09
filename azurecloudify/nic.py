@@ -56,9 +56,6 @@ def creation_validation(**_):
     if ctx.node.properties['use_external_resource']:
         ctx.instance.runtime_properties[constants.NIC_KEY]=ctx.node.properties['existing_nic_name']
     else:
-        ctx.instance.runtime_properties[constants.NIC_KEY]=nic_name
-    else:
-
         public_ip_name=ctx.instance.runtime_properties['publicip']
         resource_group_name = ctx.instance.runtime_properties['resource_group']
         location = ctx.node.properties['location']
@@ -96,7 +93,6 @@ def creation_validation(**_):
               nic_url=constants.azure_url+"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
               response_nic = requests.put(url=nic_url, data=nic_params, headers=headers)
               print(response_nic.text)
-              
               ctx.instance.runtime_properties['nic']=nic_name
               
               ctx.logger.info("response_nic : " + response_nic.text)
