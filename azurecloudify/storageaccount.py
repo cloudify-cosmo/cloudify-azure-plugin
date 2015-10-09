@@ -51,31 +51,30 @@ def creation_validation(**_):
 def create_storage_account(**_):
     if ctx.node.properties['use_external_resource']:
             ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]=ctx.node.properties['existing_storage_account_name']
-            return
     else:
-            location = ctx.node.properties['location']
-            subscription_id = ctx.node.properties['subscription_id']
-            RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
-            storage_account_name = contants.STORAGE_ACCOUNT_PREFIX+RANDOM_SUFFIX_VALUE
-            resource_group_name=ctx.instance.runtime_properties['resource_group']
-            credentials='Bearer '+auth.get_token_from_client_credentials()
+        location = ctx.node.properties['location']
+        subscription_id = ctx.node.properties['subscription_id']
+        RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
+        storage_account_name = contants.STORAGE_ACCOUNT_PREFIX+RANDOM_SUFFIX_VALUE
+        resource_group_name=ctx.instance.runtime_properties['resource_group']
+        credentials='Bearer '+auth.get_token_from_client_credentials()
             
-            headers = {"Content-Type": "application/json", "Authorization": credentials}
+        headers = {"Content-Type": "application/json", "Authorization": credentials}
             
-            ctx.logger.info("Checking availability of storage account: " + storage_account_name)
-            if 1:
-                try:
-                    ctx.logger.info("Creating new storage account: " + storage_account_name)
-                    storage_account_url= constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts/'+storage_account_name+'?api-version='+constants.api_version
-                    storage_account_params=json.dumps({"properties": {"accountType": constants.storage_account_type,}, "location": location})
-                    response_sa = requests.put(url=storage_account_url, data=storage_account_params, headers=headers)
-                    print response_sa.text
-                    ctx.instance.runtime_properties['storage_account']=storage_account_name
-                except:
-                    ctx.logger.info("Storage Account " + storage_account_name + "could not be created.")
-                    sys.exit(1)
-            else:
-                ctx.logger.info("Storage Account " + storage_account_name + "has already been provisioned by another user.")
+        ctx.logger.info("Checking availability of storage account: " + storage_account_name)
+        if 1:
+            try:
+                ctx.logger.info("Creating new storage account: " + storage_account_name)
+                storage_account_url= constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts/'+storage_account_name+'?api-version='+constants.api_version
+                storage_account_params=json.dumps({"properties": {"accountType": constants.storage_account_type,}, "location": location})
+                response_sa = requests.put(url=storage_account_url, data=storage_account_params, headers=headers)
+                print response_sa.text
+                ctx.instance.runtime_properties['storage_account']=storage_account_name
+            except:
+                ctx.logger.info("Storage Account " + storage_account_name + "could not be created.")
+                sys.exit(1)
+        else:
+            ctx.logger.info("Storage Account " + storage_account_name + "has already been provisioned by another user.")
 
 
 @operation
