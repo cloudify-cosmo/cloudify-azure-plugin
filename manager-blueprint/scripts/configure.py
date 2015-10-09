@@ -42,5 +42,5 @@ def _copy_azure_configuration_to_manager(azure_config):
     tmp = tempfile.mktemp()
     with open(tmp, 'w') as f:
         json.dump(azure_config, f)
-    fabric.api.put(tmp, '~/')
+    fabric.api.put(tmp, constants.path_to_azure_conf)
 	
