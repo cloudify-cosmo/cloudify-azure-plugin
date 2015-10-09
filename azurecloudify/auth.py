@@ -19,7 +19,7 @@ def get_token_from_client_credentials():
         'resource': constants.resource,
     }
     try:
-        with open(constants.path_to_azure_conf, 'r') as f:
+         with open(constants.path_to_azure_conf+'azure_config.json', 'r') as f:
             e = f.readline()
             token = f.readline()
     except:
@@ -32,7 +32,7 @@ def get_token_from_client_credentials():
         response = requests.post(endpoints, data=payload).json()
         token = response['access_token']
         e = response['expires_on']
-        with open(constants.path_to_azure_conf, 'w+') as f:
+        with open(constants.path_to_azure_conf+'azure_config.json', 'w+') as f:
             f.writelines([e, '\n', token])
     return token
 
