@@ -120,6 +120,7 @@ def delete_nic(**_):
     credentials='Bearer '+ auth.get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     resource_group_name = ctx.instance.runtime_properties['resource_group']
+    nic_name=ctx.instance.runtime_properties['nic_name']
     if 1:
        
         try:
