@@ -110,7 +110,7 @@ def creation_validation(**_):
               ctx.logger.info("network interface card " + nic_name + "could not be created.")
               sys.exit(1)
         else:
-         ctx.logger.info("network interface card" + nic_name + "has already been provisioned by another user.")
+            ctx.logger.info("network interface card" + nic_name + "has already been provisioned by another user.")
         
 
 @operation
@@ -119,7 +119,6 @@ def delete_nic(**_):
     subscription_id = ctx.node.properties['subscription_id']
     credentials='Bearer '+ auth.get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
-   
     resource_group_name = ctx.instance.runtime_properties['resource_group']
     if 1:
        
