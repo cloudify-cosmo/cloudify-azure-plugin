@@ -48,7 +48,7 @@ def creation_validation(**_):
 def create_resource_group(**_):
     if ctx.node.properties['use_external_resource'] :
         ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.node.properties['existing_resource_group_name']
-    else   
+    else:   
         location = ctx.node.properties['location']
 	subscription_id = ctx.node.properties['subscription_id']
 	RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
