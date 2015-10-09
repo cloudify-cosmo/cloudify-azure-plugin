@@ -50,12 +50,12 @@ def creation_validation(**_):
       
 @operation
 def create_public_ip(**_):
-    if 
+    if :
     	ctx.node.properties['use_external_resource'] 
-    else
+    else:
         ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY]=ctx.node.properties['existing_public_ip_nmae']
        
-    else  
+    else : 
     
     subscription_id = ctx.node.properties['subscription_id']
     location = ctx.node.properties['location']
