@@ -18,26 +18,30 @@ def get_token_from_client_credentials():
         'client_secret': aad_password,
         'resource': constants.resource,
     }
-    """
     try:
          with open(constants.path_to_azure_conf+'azure_config.json', 'r') as f:
-            token_expires = f.readline()
-            token = f.readline()
+             json_data = json.load(f)
+             token_expires = json_data["token_expires"]
+             token = json_data["auth_token"]
     except:
         print 'no token file'
         token_expires = 0
         token = None
     #open file and check, extract both
     timestamp = int(time.time())
-    if(e-timestamp <= 600 or token_expires == 0 or token == None):
+    token_expires=int(token_expires)
+    if(token_expires-timestamp <= 600 or token_expires == 0 or token == None or token == ""):
         response = requests.post(endpoints, data=payload).json()
         token = response['access_token']
         token_expires = response['expires_on']
-        with open(constants.path_to_azure_conf+'azure_config.json', 'w+') as f:
-            f.writelines([token_expires, '\n', token])
+        with open(constants.path_to_azure_conf+'azure_config.json', 'r+') as f:
+            json_data = json.load(f)
+            json_data["auth_token"] = token
+            json_data["token_expires"] = token_expires
+            f.seek(0)
+            f.write(json.dumps(json_data))
          
     return token
-    """  
     
     response = requests.post(endpoints, data=payload).json()
     return response['access_token']
