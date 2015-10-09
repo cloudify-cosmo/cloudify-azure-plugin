@@ -47,16 +47,8 @@ def creation_validation(**_):
 @operation
 def create_resource_group(**_):
     if ctx.node.properties['use_external_resource'] 
-        if not resource_group_exists:
-	    	raise NonRecoverableError(
-		'External resource, but the supplied '
-		'resource group does not exist in the account.')
-		sys.exit(1)
-        else
-        	ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.node.properties['existing_resource_group_name']
+            ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.node.properties['existing_resource_group_name']
     else   
-	    
-	    
 	    location = ctx.node.properties['location']
 	    subscription_id = ctx.node.properties['subscription_id']
 	    RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
