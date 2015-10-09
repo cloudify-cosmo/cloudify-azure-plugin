@@ -53,11 +53,11 @@ def creation_validation(**_):
 @operation
 #nic:
  def create_nic(**_):
-    if ctx.node.properties['use_external_resource']
+    if ctx.node.properties['use_external_resource']:
         ctx.instance.runtime_properties[constants.NIC_KEY]=ctx.node.properties['existing_nic_name']
-         else
-             ctx.instance.runtime_properties[constants.NIC_KEY]=nic_name
-    else
+    else:
+        ctx.instance.runtime_properties[constants.NIC_KEY]=nic_name
+    else:
 
         public_ip_name=ctx.instance.runtime_properties['publicip']
         resource_group_name = ctx.instance.runtime_properties['resource_group']
