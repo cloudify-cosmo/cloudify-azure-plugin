@@ -19,7 +19,7 @@ def get_token_from_client_credentials():
         'resource': constants.resource,
     }
     try:
-         with open(constants.path_to_azure_conf+'azure_config.json', 'r') as f:
+         with open(constants.path_to_azure_conf, 'r') as f:
              json_data = json.load(f)
              token_expires = json_data["token_expires"]
              token = json_data["auth_token"]
@@ -34,7 +34,7 @@ def get_token_from_client_credentials():
         response = requests.post(endpoints, data=payload).json()
         token = response['access_token']
         token_expires = response['expires_on']
-        with open(constants.path_to_azure_conf+'azure_config.json', 'r+') as f:
+        with open(constants.path_to_azure_conf, 'r+') as f:
             json_data = json.load(f)
             json_data["auth_token"] = token
             json_data["token_expires"] = token_expires
