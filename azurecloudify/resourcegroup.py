@@ -46,30 +46,30 @@ def creation_validation(**_):
 
 @operation
 def create_resource_group(**_):
-    if ctx.node.properties['use_external_resource'] 
-            ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.node.properties['existing_resource_group_name']
+    if ctx.node.properties['use_external_resource'] :
+        ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.node.properties['existing_resource_group_name']
     else   
-	    location = ctx.node.properties['location']
-	    subscription_id = ctx.node.properties['subscription_id']
-	    RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
-	    resource_group_name = contants.RESOURCE_GROUP_PREFIX+RANDOM_SUFFIX_VALUE
-	    credentials='Bearer '+ auth.get_token_from_client_credentials()
-	    headers = {"Content-Type": "application/json", "Authorization": credentials}
+        location = ctx.node.properties['location']
+	subscription_id = ctx.node.properties['subscription_id']
+	RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
+	resource_group_name = contants.RESOURCE_GROUP_PREFIX+RANDOM_SUFFIX_VALUE
+	credentials='Bearer '+ auth.get_token_from_client_credentials()
+	headers = {"Content-Type": "application/json", "Authorization": credentials}
 	   
-	    resource_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version_resource_group
-	    ctx.logger.info("Checking availability of resource_group: " + resource_group_name)
+	resource_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version_resource_group
+	ctx.logger.info("Checking availability of resource_group: " + resource_group_name)
 	
-	    if 1:
-	        try:
-	            ctx.logger.info("Creating new Resource group: " + resource_group_name)
-	            resource_group_params=json.dumps({"name":resource_group_name,"location": location})
-	            response_rg = requests.put(url=resource_group_url, data=resource_group_params, headers=headers)
-	            print response_rg.text
-	            ctx.instance.runtime_properties['resource_group']=resource_group_name
-	        except:
-	            ctx.logger.info("Resource Group " + resource_group_name + " could not be created")
-	            sys.exit(1)
-	    else:
+	if 1:
+	    try:
+	        ctx.logger.info("Creating new Resource group: " + resource_group_name)
+	        resource_group_params=json.dumps({"name":resource_group_name,"location": location})
+	        response_rg = requests.put(url=resource_group_url, data=resource_group_params, headers=headers)
+	        print response_rg.text
+	        ctx.instance.runtime_properties['resource_group']=resource_group_name
+	except:
+	        ctx.logger.info("Resource Group " + resource_group_name + " could not be created")
+	        sys.exit(1)
+	else:
 	        ctx.logger.info("Resource Group " + resource_group_name + " has already been provisioned")
 	  
 
