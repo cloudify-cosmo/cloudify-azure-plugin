@@ -20,20 +20,20 @@ def get_token_from_client_credentials():
     }
     try:
          with open(constants.path_to_azure_conf+'azure_config.json', 'r') as f:
-            e = f.readline()
+            token_expires = f.readline()
             token = f.readline()
     except:
         print 'no token file'
-        e = 0
+        token_expires = 0
         token = None
     #open file and check, extract both
     timestamp = int(time.time())
-    if(e-timestamp <= 600 or e == 0 or token == None):
+    if(e-timestamp <= 600 or token_expires == 0 or token == None):
         response = requests.post(endpoints, data=payload).json()
         token = response['access_token']
-        e = response['expires_on']
+        token_expires = response['expires_on']
         with open(constants.path_to_azure_conf+'azure_config.json', 'w+') as f:
-            f.writelines([e, '\n', token])
+            f.writelines([token_expires, '\n', token])
     return token
 
 
