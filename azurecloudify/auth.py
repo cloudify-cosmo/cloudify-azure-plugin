@@ -18,9 +18,8 @@ def get_token_from_client_credentials():
         'client_secret': aad_password,
         'resource': constants.resource,
     }
-    path = '/root/token.txt'
     try:
-        with open(path, 'r') as f:
+        with open(constants.path_to_azure_conf, 'r') as f:
             e = f.readline()
             token = f.readline()
     except:
@@ -33,7 +32,7 @@ def get_token_from_client_credentials():
         response = requests.post(endpoints, data=payload).json()
         token = response['access_token']
         e = response['expires_on']
-        with open(path, 'w+') as f:
+        with open(constants.path_to_azure_conf, 'w+') as f:
             f.writelines([e, '\n', token])
     return token
 
