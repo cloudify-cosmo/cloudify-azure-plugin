@@ -35,20 +35,9 @@ from cloudify.decorators import operation
 def creation_validation(**_):
     for property_key in constants.VM_REQUIRED_PROPERTIES:
         _validate_node_properties(property_key, ctx.node.properties)
-
-    vm_name_exists = _get_vm_name()
-    if ctx.node.properties['use_external_resource'] and not vm_name_exists:
-        raise NonRecoverableError(
-        'External resource, but the supplied '
-        'vm does not exist in the account.')
-    if not ctx.node.properties['use_external_resource'] and vm_name_exists:
-        raise NonRecoverableError(
-        'Not external resource, but the supplied '
-        'vm exists in the account.')
-
+   
 @operation
 def create_vm(**_):
-
     RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
     vm_name = ctx.node.properties['vm_name']+RANDOM_SUFFIX_VALUE
     resource_group_name = ctx.instance.runtime_properties['resource_group']
@@ -60,8 +49,6 @@ def create_vm(**_):
     credentials='Bearer '+auth.get_token_from_client_credentials()
     subscription_id = ctx.node.properties['subscription_id']
     headers = {"Content-Type": "application/json", "Authorization": credentials}
-    
-    
     
     ctx.logger.info("Checking availability of virtual network: " + vnet_name)
     if 1:
