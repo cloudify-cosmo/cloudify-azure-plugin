@@ -36,16 +36,15 @@ def creation_validation(**_):
     for property_key in constants.VM_REQUIRED_PROPERTIES:
         _validate_node_properties(property_key, ctx.node.properties)
 
-
     vm_name_exists = _get_vm_name()
     if ctx.node.properties['use_external_resource'] and not vm_name_exists:
-    raise NonRecoverableError(
-    'External resource, but the supplied '
-    'vm does not exist in the account.')
+        raise NonRecoverableError(
+        'External resource, but the supplied '
+        'vm does not exist in the account.')
     if not ctx.node.properties['use_external_resource'] and vm_name_exists:
-    raise NonRecoverableError(
-    'Not external resource, but the supplied '
-    'vm exists in the account.')
+        raise NonRecoverableError(
+        'Not external resource, but the supplied '
+        'vm exists in the account.')
 
 @operation
 def create_vm(**_):
@@ -58,15 +57,13 @@ def create_vm(**_):
     vnet_name = ctx.instance.runtime_properties['vnet']
     nic_name = ctx.instance.runtime_properties['nic']
     public_ip_name= ctx.instance.runtime_properties['publicip']
-    RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
-    vm_name = contants.VM_PREFIX +RANDOM_SUFFIX_VALUE
     credentials='Bearer '+auth.get_token_from_client_credentials()
     subscription_id = ctx.node.properties['subscription_id']
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     
     
     
-    ctx.logger.info("Checking availability of virtual network: " + vm_name)
+    ctx.logger.info("Checking availability of virtual network: " + vnet_name)
     if 1:
         try:
             ctx.logger.info("Creating new virtual machine: " + vm_name)
@@ -121,6 +118,7 @@ def create_vm(**_):
             virtual_machine_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version
             response_vm = requests.put(url=virtual_machine_url, data=virtual_machine_params, headers=headers)
             print(response_vm.text)
+            ctx.instance.runtime_properties['vm']=vm_name
         except:
           ctx.logger.info("Virtual Machine " + vm_name + "could not be created.")
           sys.exit(1)
@@ -132,12 +130,11 @@ def create_vm(**_):
 @operation
 def start_vm(**_):
     credentials='Bearer '+auth.get_token_from_client_credentials()
-   
     headers = {"Content-Type": "application/json", "Authorization": credentials}
-    
+    vm_name = ctx.instance.runtime_properties['vm']
     subscription_id = ctx.node.properties['subscription_id']
-    resource_group_name = resourcegroup.resource_group_name
-    public_ip_name= publicip.public_ip_name
+    resource_group_name = ctx.instance.runtime_properties['resource_group']
+    public_ip_name= ctx.instance.runtime_properties['publicip']
     get_pip_info_url= constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
     raw_response = requests.get(url=get_pip_info_url, headers=headers)
     ctx.logger.info("raw_response : " + str(raw_response))
@@ -162,7 +159,7 @@ def stop_vm(**_):
     credentials='Bearer '+auth.get_token_from_client_credentials()
     
     headers = {"Content-Type": "application/json", "Authorization": credentials}
-    
+    vm_name = ctx.instance.runtime_properties['vm']
     resource_group_name = ctx.instance.runtime_properties['resource_group']
     stop_vm_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
     response_stop_vm=requests.post(stop_vm_url,headers=headers)
@@ -173,11 +170,11 @@ def stop_vm(**_):
 def delete_virtual_machine(**_):
     resource_group_name = ctx.runtime_properties['resource_group']
     subscription_id = ctx.node.properties['subscription_id']
-    
+    vnet_name = ctx.instance.runtime_properties['vnet']
     credentials='Bearer '+auth.get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
-    
-    ctx.logger.info("Checking availability of virtual network: " + vm_name)
+    vm_name = ctx.instance.runtime_properties['vm']
+    ctx.logger.info("Checking availability of virtual network: " + vnet_name)
     if 1:
         try:
             ctx.logger.info("Deleting the virtual machine: " + vm_name)
