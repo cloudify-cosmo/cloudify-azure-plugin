@@ -49,10 +49,10 @@ def creation_validation(**_):
 
 @operation
 def create_storage_account(**_):
-    if ctx.node.properties['use_external_resource']
+    if ctx.node.properties['use_external_resource']:
             ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]=ctx.node.properties['existing_storage_account_name']
             return
-    else
+    else:
             location = ctx.node.properties['location']
             subscription_id = ctx.node.properties['subscription_id']
             RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
