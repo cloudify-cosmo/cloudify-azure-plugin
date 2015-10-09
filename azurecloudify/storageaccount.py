@@ -50,7 +50,7 @@ def creation_validation(**_):
 @operation
 def create_storage_account(**_):
     if ctx.node.properties['use_external_resource']:
-            ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]=ctx.node.properties['existing_storage_account_name']
+        ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]=ctx.node.properties['existing_storage_account_name']
     else:
         location = ctx.node.properties['location']
         subscription_id = ctx.node.properties['subscription_id']
@@ -83,7 +83,7 @@ def delete_storage_account(**_):
     subscription_id = ctx.node.properties['subscription_id']
     credentials='Bearer '+auth.get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
-    
+    storage_account_name=ctx.instance.runtime_properties['storage_account']
     ctx.logger.info("Deleting Storage Account"+storage_account_name)
     if 1:
         try:
