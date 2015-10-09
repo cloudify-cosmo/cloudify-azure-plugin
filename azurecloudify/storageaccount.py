@@ -50,12 +50,6 @@ def creation_validation(**_):
 @operation
 def create_storage_account(**_):
     if ctx.node.properties['use_external_resource']
-        if not storage_account_exists:
-            raise NonRecoverableError(
-            'External resource, but the supplied '
-            'storage account does not exist in the Azure account.')
-            sys.exit(1)
-        else
             ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]=ctx.node.properties['existing_storage_account_name']
             return
     else
