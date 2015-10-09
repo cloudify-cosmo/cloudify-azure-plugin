@@ -54,38 +54,38 @@ def create_public_ip(**_):
     	ctx.node.properties['use_external_resource'] 
     else : 
     
-    subscription_id = ctx.node.properties['subscription_id']
-    location = ctx.node.properties['location']
-    resource_group_name = ctx.instance.runtime_properties['resource_group']
-    RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
-    public_ip_name=contants.PUBLIC_IP_PREFIX+RANDOM_SUFFIX_VALUE
-    public_ip_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
-    
-    credentials='Bearer '+ auth.get_token_from_client_credentials()
-    headers = {"Content-Type": "application/json", "Authorization": credentials}
-   
-    
-    try:
-        ctx.logger.info("Creating new public ip : " + public_ip_name)
-        public_ip_params=json.dumps({
-                "location": location,
-                "name": public_ip_name,
-                "properties": {
-                    "publicIPAllocationMethod": "Dynamic",
-                    "idleTimeoutInMinutes": 4,
+        subscription_id = ctx.node.properties['subscription_id']
+        location = ctx.node.properties['location']
+        resource_group_name = ctx.instance.runtime_properties['resource_group']
+        RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
+        public_ip_name=contants.PUBLIC_IP_PREFIX+RANDOM_SUFFIX_VALUE
+        public_ip_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
+        
+        credentials='Bearer '+ auth.get_token_from_client_credentials()
+        headers = {"Content-Type": "application/json", "Authorization": credentials}
+       
+        
+        try:
+            ctx.logger.info("Creating new public ip : " + public_ip_name)
+            public_ip_params=json.dumps({
+                    "location": location,
+                    "name": public_ip_name,
+                    "properties": {
+                        "publicIPAllocationMethod": "Dynamic",
+                        "idleTimeoutInMinutes": 4,
+                    }
                 }
-            }
-        )
-        response_pip = requests.put(url=public_ip_url, data=public_ip_params, headers=headers)
-        print response_pip.text
-        ctx.instance.runtime_properties['publicip']=public_ip_name
-            
-            
-            
-    except:
-        ctx.logger.info("Public IP" + public_ip_name + "could not be created.")
-        sys.exit(1)
- 
+            )
+            response_pip = requests.put(url=public_ip_url, data=public_ip_params, headers=headers)
+            print response_pip.text
+            ctx.instance.runtime_properties['publicip']=public_ip_name
+                
+                
+                
+        except:
+            ctx.logger.info("Public IP" + public_ip_name + "could not be created.")
+            sys.exit(1)
+     
 
 def delete_public_ip(**_):
     
