@@ -42,13 +42,11 @@ def _copy_azure_configuration_to_manager(azure_config):
     tmp = tempfile.mktemp()
     with open(tmp, 'w') as f:
         json.dump(azure_config, f)
-        """
     with open(tmp, 'r+') as f:
         json_data = json.load(f)
         json_data["auth_token"] = ""
-        json_data["token_expires"] = "01/01/1970 00:00:00"
+        json_data["token_expires"] = "0" #unix timestamp for 1/1/1970 00:00:00 is 0
         f.seek(0)
         f.write(json.dumps(json_data))
-        """
     fabric.api.put(tmp, constants.path_to_azure_conf)
 	
