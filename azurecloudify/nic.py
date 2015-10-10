@@ -51,8 +51,7 @@ def creation_validation(**_):
         
 
 @operation
-#nic:
- def create_nic(**_):
+def create_nic(**_):
     if ctx.node.properties['use_external_resource']:
         ctx.instance.runtime_properties[constants.NIC_KEY]=ctx.node.properties['existing_nic_name']
     else:
