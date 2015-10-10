@@ -55,7 +55,7 @@ def create_public_ip(**_):
     else: 
         subscription_id = ctx.node.properties['subscription_id']
         location = ctx.node.properties['location']
-        resource_group_name = ctx.instance.runtime_properties['resource_group']
+        resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
         RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
         public_ip_name=contants.PUBLIC_IP_PREFIX+RANDOM_SUFFIX_VALUE
         public_ip_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
@@ -76,7 +76,7 @@ def create_public_ip(**_):
             )
             response_pip = requests.put(url=public_ip_url, data=public_ip_params, headers=headers)
             print response_pip.text
-            ctx.instance.runtime_properties['publicip']=public_ip_name
+            ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY]=public_ip_name
                 
                 
                 
@@ -88,8 +88,8 @@ def create_public_ip(**_):
 def delete_public_ip(**_):
     
     subscription_id = ctx.node.properties['subscription_id']
-    resource_group_name = ctx.instance.runtime_properties['resource_group']
-    public_ip_name= ctx.instance.runtime_properties['publicip']
+    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+    public_ip_name= ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY]
     credentials='Bearer '+ auth.get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     
@@ -115,7 +115,7 @@ def _validate_node_properties(key, ctx_node_properties):
 
 def _get_public_ip_name():
     public_ip_name=ctx.node.properties['existing_public_ip_name']
-    resource_group_name = ctx.instance.runtime_properties['resource_group']
+    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY_KEY]
     credentials=auth.get_token_from_client_credentials()
     headers={"Content-Type": "application/json", "Authorization": credentials}
     subscription_id=ctx.node.properties['subscription_id']
