@@ -41,12 +41,12 @@ priority=100
 resource='https://management.core.windows.net/'
 path_to_azure_conf='~/azure_config.json'
 
-RESOURCE_GROUP_REQUIRED_PROPERTIES=['vm_name','location','subscription_id']
-STORAGE_ACCOUNT_REQUIRED_PROPERTIES = ['vm_name','location','subscription_id']
-VNET_REQUIRED_PROPERTIES = ['vm_name','location','subscription_id']
+RESOURCE_GROUP_REQUIRED_PROPERTIES=['location','subscription_id']
+STORAGE_ACCOUNT_REQUIRED_PROPERTIES = ['location','subscription_id']
+VNET_REQUIRED_PROPERTIES = ['location','subscription_id']
 VM_REQUIRED_PROPERTIES = ['vm_name','image_reference_offer','image_reference_publisher','image_reference_sku','vm_size','subscription_id','key_data','location']
-NIC_REQUIRED_PROPERTIES = ['vm_name','location','subscription_id']
-PUBLIC_IP_REQUIRED_PROPERTIES = ['vm_name','location','subscription_id']
+NIC_REQUIRED_PROPERTIES = ['location','subscription_id']
+PUBLIC_IP_REQUIRED_PROPERTIES = ['location','subscription_id']
 
 RESOURCE_GROUP_KEY = 'resource_group_key_name'
 RESOURCE_GROUP_PREFIX = 'resource_group_'
