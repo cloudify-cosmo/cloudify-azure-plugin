@@ -212,7 +212,7 @@ node_types:
           Indicates the name of the virtual machine required to create network interface card
         type: string
         default: ''
-      
+
     interfaces:
       cloudify.interfaces.lifecycle:
         create: microsoft.azurecloudify.storageaccount.create_storage_account
@@ -304,14 +304,14 @@ node_types:
           Indicates the name of the virtual machine required to create network interface card
         type: string
         default: ''
-        
+
     interfaces:
       cloudify.interfaces.lifecycle:
         create: microsoft.azurecloudify.vnet.create_vnet
         delete: microsoft.azurecloudify.vnet.delete_vnet
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.vnet.creation_validation
-      
+
 relationships:
   
    cloudify.azure.relationships.storage_account_connected_to_resource_group:
@@ -324,7 +324,6 @@ relationships:
             azure_config:
               default: {}
 
-    
   cloudify.azure.relationships.vnet_connected_to_storage_account:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
