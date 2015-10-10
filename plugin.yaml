@@ -147,7 +147,7 @@ node_types:
         type: string
         default: 'West US'
       existing_public_ip_name:
-      	description: >
+        description: >
          Indicates the name of existing public ip
         type: string
         default: ''
