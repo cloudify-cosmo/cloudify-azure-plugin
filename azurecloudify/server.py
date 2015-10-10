@@ -40,12 +40,12 @@ def creation_validation(**_):
 def create_vm(**_):
     RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
     vm_name = ctx.node.properties['vm_name']+RANDOM_SUFFIX_VALUE
-    resource_group_name = ctx.instance.runtime_properties['resource_group']
-    storage_account_name = ctx.instance.runtime_properties['storage_account']
+    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+    storage_account_name = ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
     location = ctx.node.properties['location']
-    vnet_name = ctx.instance.runtime_properties['vnet']
-    nic_name = ctx.instance.runtime_properties['nic']
-    public_ip_name= ctx.instance.runtime_properties['publicip']
+    vnet_name = ctx.instance.runtime_properties[constants.VNET_KEY]
+    nic_name = ctx.instance.runtime_properties[constants.NIC_KEY]
+    public_ip_name= ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY]
     credentials='Bearer '+auth.get_token_from_client_credentials()
     subscription_id = ctx.node.properties['subscription_id']
     headers = {"Content-Type": "application/json", "Authorization": credentials}
@@ -120,8 +120,8 @@ def start_vm(**_):
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     vm_name = ctx.instance.runtime_properties['vm']
     subscription_id = ctx.node.properties['subscription_id']
-    resource_group_name = ctx.instance.runtime_properties['resource_group']
-    public_ip_name= ctx.instance.runtime_properties['publicip']
+    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+    public_ip_name= ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY]
     get_pip_info_url= constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
     raw_response = requests.get(url=get_pip_info_url, headers=headers)
     ctx.logger.info("raw_response : " + str(raw_response))
@@ -147,7 +147,7 @@ def stop_vm(**_):
     
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     vm_name = ctx.instance.runtime_properties['vm']
-    resource_group_name = ctx.instance.runtime_properties['resource_group']
+    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     stop_vm_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
     response_stop_vm=requests.post(stop_vm_url,headers=headers)
     print (response_stop_vm.text)
@@ -155,9 +155,9 @@ def stop_vm(**_):
 
 @operation
 def delete_virtual_machine(**_):
-    resource_group_name = ctx.runtime_properties['resource_group']
+    resource_group_name = ctx.runtime_properties[constants.RESOURCE_GROUP_KEY]
     subscription_id = ctx.node.properties['subscription_id']
-    vnet_name = ctx.instance.runtime_properties['vnet']
+    vnet_name = ctx.instance.runtime_properties[constants.VNET_KEY]
     credentials='Bearer '+auth.get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     vm_name = ctx.instance.runtime_properties['vm']
@@ -179,7 +179,7 @@ def delete_virtual_machine(**_):
 @operation
 def set_dependent_resources_names(azure_config,**kwargs):
     ctx.logger.info("Setting set_private_ip")
-    vm_private_ip = ctx.target.instance.runtime_properties['private_ip']
+    vm_private_ip = ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]
     ctx.logger.info("vm_private_ip is " + vm_private_ip)
     ctx.source.instance.runtime_properties['ip'] = vm_private_ip
     ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
