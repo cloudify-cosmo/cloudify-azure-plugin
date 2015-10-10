@@ -56,7 +56,7 @@ def create_storage_account(**_):
         subscription_id = ctx.node.properties['subscription_id']
         RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
         storage_account_name = contants.STORAGE_ACCOUNT_PREFIX+RANDOM_SUFFIX_VALUE
-        resource_group_name=ctx.instance.runtime_properties['resource_group']
+        resource_group_name=ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
         credentials='Bearer '+auth.get_token_from_client_credentials()
             
         headers = {"Content-Type": "application/json", "Authorization": credentials}
@@ -79,11 +79,11 @@ def create_storage_account(**_):
 
 @operation
 def delete_storage_account(**_):
-    resource_group_name = ctx.instance.runtime_properties['resource_group']
+    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     subscription_id = ctx.node.properties['subscription_id']
     credentials='Bearer '+auth.get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
-    storage_account_name=ctx.instance.runtime_properties['storage_account']
+    storage_account_name=ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
     ctx.logger.info("Deleting Storage Account"+storage_account_name)
     if 1:
         try:
@@ -109,7 +109,7 @@ def _validate_node_properties(key, ctx_node_properties):
         
 def _get_storage_account_name():
     storage_account_name= ctx.node.properties['existing_storage_account_name']
-    resource_group_name= ctx.instance.runtime_properties['resource_group']
+    resource_group_name= ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     subscription_id=ctx.node.properties['subscription_id']
     credentials=auth.get_token_from_client_credentials()
     url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts?api-version='+constants.api_version
