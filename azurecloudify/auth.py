@@ -34,6 +34,8 @@ def get_token_from_client_credentials():
          print 'no token file'
          token_expires = 0
          token = None
+    else:
+     token_expires = 0
     #open file and check, extract both
     timestamp = int(time.time())
     token_expires=int(token_expires)
