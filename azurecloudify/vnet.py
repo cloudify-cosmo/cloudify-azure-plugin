@@ -68,7 +68,7 @@ def create_vnet(**_):
                 vnet_params=json.dumps({"name":vnet_name, "location": location,"properties": {"addressSpace": {"addressPrefixes": constants.vnet_address_prefixes},"subnets": [{"name": constants.subnet_name, "properties": {"addressPrefix": constants.address_prefix}}]}})
                 response_vnet = requests.put(url=vnet_url, data=vnet_params, headers=headers)
                 print response_vnet.text
-                ctx.instance.runtime_properties['vnet']=vnet_name
+                ctx.instance.runtime_properties[contants.VNET_KEY]=vnet_name
             except:
                 ctx.logger.info("Virtual Network " + vnet_name + "could not be created.")
                 sys.exit(1)
