@@ -13,44 +13,44 @@ inputs:
 
   location:
     type: string
-    default: 'West US'  
+    default: 'West US'
 
-  vm_size: 
+  vm_size:
     type: string
     default: 'Standard_A2'
-  
+
   image_reference_offer:
     type: string
     default: 'UbuntuServer'
-    
+
   image_reference_publisher:
     type: string
     default: 'Canonical'
-  
+
   use_external_resource:
     type: boolean
     default: false
-    
+
   existing_resource_group_name:
     type: string
     default: ''
-    
+
   existing_storage_account_name:
     type: string
     default: ''
-    
+
   existing_vnet_name:
     type: string
     default: ''
-    
+
   existing_public_ip_name:
     type: string
     default: ''
-    
+
   existing_nic_name:
     type: string
     default: ''
-    
+
   image_reference_sku:
     type: string
     default: '14.04.2-LTS'
@@ -74,7 +74,7 @@ inputs:
   ssh_username:
     type: string
     default: ''
-  
+
   aad_password:
     type: string
     default: ''
