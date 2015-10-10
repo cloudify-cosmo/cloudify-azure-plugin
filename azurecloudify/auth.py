@@ -19,18 +19,20 @@ def get_token_from_client_credentials():
         'client_secret': aad_password,
         'resource': constants.resource,
     }
-    try:
-         lock = LockFile(constants.path_to_azure_conf)
-         lock.acquire()
-         print lock.path, 'is locked.'
-         with open(constants.path_to_azure_conf, 'r') as f:
-             json_data = json.load(f)
-             token_expires = json_data["token_expires"]
-             token = json_data["auth_token"]
-    except:
-        print 'no token file'
-        token_expires = 0
-        token = None
+    azure_conf_exists = os.path.isfile(constants.path_to_azure_conf)
+    if azure_conf_exists:
+     try:
+          lock = LockFile(constants.path_to_azure_conf)
+          lock.acquire()
+          print lock.path, 'is locked.'
+          with open(constants.path_to_azure_conf, 'r') as f:
+              json_data = json.load(f)
+              token_expires = json_data["token_expires"]
+              token = json_data["auth_token"]
+     except:
+         print 'no token file'
+         token_expires = 0
+         token = None
     #open file and check, extract both
     timestamp = int(time.time())
     token_expires=int(token_expires)
@@ -38,14 +40,15 @@ def get_token_from_client_credentials():
         response = requests.post(endpoints, data=payload).json()
         token = response['access_token']
         token_expires = response['expires_on']
-        with open(constants.path_to_azure_conf, 'r+') as f:
-            json_data = json.load(f)
-            json_data["auth_token"] = token
-            json_data["token_expires"] = token_expires
-            f.seek(0)
-            f.write(json.dumps(json_data))
-        lock.release()
-        print lock.path, 'is released.'
+        if azure_conf_exists:
+         with open(constants.path_to_azure_conf, 'r+') as f:
+             json_data = json.load(f)
+             json_data["auth_token"] = token
+             json_data["token_expires"] = token_expires
+             f.seek(0)
+             f.write(json.dumps(json_data))
+         lock.release()
+         print lock.path, 'is released.'
          
     return token
 
