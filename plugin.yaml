@@ -356,7 +356,7 @@ relationships:
             azure_config:
               default: {}
 
-  cloudify.azure.relationships.nic_connected_to_vnet:
+   cloudify.azure.relationships.nic_connected_to_vnet:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
@@ -367,7 +367,7 @@ relationships:
               default: {}
 
 
-  cloudify.azure.relationships.server_connected_to_nic:
+   cloudify.azure.relationships.server_connected_to_nic:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
