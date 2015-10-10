@@ -75,26 +75,26 @@ def create_vnet(**_):
         else:
             ctx.logger.info("Virtual Network" + vnet_name + "has already been provisioned by another user.")
     
-    @operation
-    def delete_vnet(**_):
-        resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-        vnet_name= ctx.instance.runtime_properties[constants.VNET_KEY]
-        subscription_id = ctx.node.properties['subscription_id']
-        credentials='Bearer '+ auth.get_token_from_client_credentials()
-        headers = {"Content-Type": "application/json", "Authorization": credentials}
-        
-        ctx.logger.info("Checking availability of virtual network: " + vnet_name)
-        if 1:
-            try:
-                ctx.logger.info("Deleting the virtual network: " + vnet_name)
-                vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
-                response_vnet = requests.delete(url=vnet_url,headers=headers)
-                print response_vnet.text
-            except:
-                ctx.logger.info("Virtual Network " + vnet_name + " could not be deleted.")
-                sys.exit(1)
-        else:
-            ctx.logger.info("Virtual Network " + vnet_name + " does not exist.")
+@operation
+def delete_vnet(**_):
+    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+    vnet_name= ctx.instance.runtime_properties[constants.VNET_KEY]
+    subscription_id = ctx.node.properties['subscription_id']
+    credentials='Bearer '+ auth.get_token_from_client_credentials()
+    headers = {"Content-Type": "application/json", "Authorization": credentials}
+
+    ctx.logger.info("Checking availability of virtual network: " + vnet_name)
+    if 1:
+        try:
+            ctx.logger.info("Deleting the virtual network: " + vnet_name)
+            vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
+            response_vnet = requests.delete(url=vnet_url,headers=headers)
+            print response_vnet.text
+        except:
+            ctx.logger.info("Virtual Network " + vnet_name + " could not be deleted.")
+            sys.exit(1)
+    else:
+        ctx.logger.info("Virtual Network " + vnet_name + " does not exist.")
 
 
 @operation
