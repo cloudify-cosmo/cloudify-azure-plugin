@@ -182,11 +182,11 @@ def set_dependent_resources_names(azure_config,**kwargs):
     vm_private_ip = ctx.target.instance.runtime_properties['private_ip']
     ctx.logger.info("vm_private_ip is " + vm_private_ip)
     ctx.source.instance.runtime_properties['ip'] = vm_private_ip
-    ctx.source.instance.runtime_properties['RESOURCE_GROUP_KEY'] = ctx.target.instance.runtime_properties['RESOURCE_GROUP_KEY']
-    ctx.source.instance.runtime_properties['STORAGE_ACCOUNT_KEY'] = ctx.target.instance.runtime_properties['STORAGE_ACCOUNT_KEY']
-    ctx.source.instance.runtime_properties['VNET_KEY'] = ctx.target.instance.runtime_properties['VNET_KEY']
-    ctx.source.instance.runtime_properties['PUBLIC_IP_KEY'] = ctx.target.instance.runtime_properties['PUBLIC_IP_KEY']
-    ctx.source.instance.runtime_properties['NIC_KEY'] = ctx.target.instance.runtime_properties['NIC_KEY']
+    ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+    ctx.source.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = ctx.target.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
+    ctx.source.instance.runtime_properties[constants.VNET_KEY] = ctx.target.instance.runtime_properties[constants.VNET_KEY]
+    ctx.source.instance.runtime_properties[constants.PUBLIC_IP_KEY] = ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]
+    ctx.source.instance.runtime_properties[constants..NIC_KEY] = ctx.target.instance.runtime_properties[constants.NIC_KEY]
 
 
 
