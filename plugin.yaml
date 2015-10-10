@@ -244,8 +244,8 @@ node_types:
         type: string
         default: ''
       client_id:
-       description: >
-          Indicates the user's client id
+        description: >
+         Indicates the user's client id
         type: string
         default: ''
       tenant_id:
