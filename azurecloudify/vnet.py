@@ -108,7 +108,10 @@ def _validate_node_properties(key, ctx_node_properties):
         
 def _get_vnet_name():
     vnet_name= ctx.node.properties['existing_vnet_name']
-    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+    if constants.RESOURCE_GROUP_KEY in ctx.instance.runtime_properties:
+        resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+    else:
+        raise RecoverableError("{} is not in vnet runtime_properties yet".format(constants.RESOURCE_GROUP_KEY))
     credentials=auth.get_token_from_client_credentials()
     subscription_id=ctx.node.properties['subscription_id']
     url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualnetworks?api-version='+constants.api_version
