@@ -56,14 +56,10 @@ def create_network_security_group(**_):
         })
         response_nsg = requests.put(url=security_group_url, data=security_group_params, headers=headers)
         print response_nsg.text
+    except:
+        ctx.logger.info("Security group " +security_group_name + "could not be created.")
+        sys.exit(1)
 
-  except:
-    ctx.logger.info("Security group " +security_group_name + "could not be created.")
-    sys.exit(1)
-else:
-  ctx.logger.info("Security group"  +security_group_name + "has already been provisioned by another user.")
-  
-  
   
 @operation
 def delete_security_group(**_):
