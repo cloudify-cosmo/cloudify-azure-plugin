@@ -147,15 +147,17 @@ def _validate_node_properties(key, ctx_node_properties):
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
         
 def _get_nic_name():
-    nic_name=ctx.node.properties['existing_nic_name']
-    resource_group_name= ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-    credentials=auth.get_token_from_client_credentials()
-    headers={"Content-Type": "application/json", "Authorization": credentials}
-    subscription_id=ctx.node.properties['subscription_id']
-    nic_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkInterfaces?api-version='+constants.api_version
-    response_get_nic_name=requests.get(url=nic_url,headers=headers)
-    if nic_name in response_get_nic_name.text:
-        return True
-    else:
-        return False
+	nic_name=ctx.node.properties['existing_nic_name']
+	if constants.RESOURCE_GROUP_KEY in ctx.instance.runtime_properties:
+		resource_group_name= ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+	else:
+		raise RecoverableError("{} is not in nic runtime_properties yet".format(constants.RESOURCE_GROUP_KEY))
+	credentials=auth.get_token_from_client_credentials()
+	headers={"Content-Type": "application/json", "Authorization": credentials}
+	subscription_id=ctx.node.properties['subscription_id']
+	nic_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkInterfaces?api-version='+constants.api_version
+	response_get_nic_name=requests.get(url=nic_url,headers=headers)
+	if nic_name in response_get_nic_name.text:
+		return True
+	return False
 
