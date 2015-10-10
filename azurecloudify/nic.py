@@ -36,20 +36,20 @@ def creation_validation(**_):
     for property_key in constants.NIC_REQUIRED_PROPERTIES:
         _validate_node_properties(property_key, ctx.node.properties)
     
-    if ctx.node.properties['use_external_properties']:
-    	nic_name_exists = _get_nic_name()
     
-	if not nic_name_exists:
-	    raise NonRecoverableError(
-	    'External resource, but the supplied '
-	    'nic does not exist in the account.')
+    nic_name_exists = _get_nic_name()
+    
+    if ctx.node.properties['use_external_resource'] not nic_name_exists:
+        raise NonRecoverableError(
+        'External resource, but the supplied '
+        'nic does not exist in the account.')
 	        
- """
+
     if not ctx.node.properties['use_external_resource'] and nic_name_exists:
         raise NonRecoverableError(
         'Not external resource, but the supplied '
         'nic exists in the account.')
-""""    
+    
 
 @operation
 def create_nic(**_):
