@@ -3,6 +3,7 @@ import requests
 import json
 import urllib2
 import time
+from lockfile import LockFile
 from cloudify import ctx
 import constants
 
@@ -19,6 +20,9 @@ def get_token_from_client_credentials():
         'resource': constants.resource,
     }
     try:
+         lock = LockFile(constants.path_to_azure_conf)
+         lock.acquire()
+         print lock.path, 'is locked.'
          with open(constants.path_to_azure_conf, 'r') as f:
              json_data = json.load(f)
              token_expires = json_data["token_expires"]
@@ -40,6 +44,8 @@ def get_token_from_client_credentials():
             json_data["token_expires"] = token_expires
             f.seek(0)
             f.write(json.dumps(json_data))
+        lock.release()
+        print lock.path, 'is released.'
          
     return token
 
