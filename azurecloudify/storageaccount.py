@@ -35,19 +35,19 @@ def creation_validation(**_):
     for property_key in constants.STORAGE_ACCOUNT_REQUIRED_PROPERTIES:
         _validate_node_properties(property_key, ctx.node.properties)
     
-    if ctx.node.properties['use_external_resource']:
-        storage_account_exists = _get_storage_account_name()
+   
+    storage_account_exists = _get_storage_account_name()
         
-        if not storage_account_exists:
-            raise NonRecoverableError(
-            'External resource, but the supplied '
-            'storage account does not exist in the account.')
-    """"
+    if ctx.node.properties['use_external_resource'] and not storage_account_exists:
+        raise NonRecoverableError(
+        'External resource, but the supplied '
+        'storage account does not exist in the account.')
+    
     if not ctx.node.properties['use_external_resource'] and storage_account_exists:
         raise NonRecoverableError(
         'Not external resource, but the supplied '
         'storage account group exists in the account.')
-    """"
+    
     
 
 @operation
