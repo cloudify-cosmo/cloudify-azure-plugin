@@ -285,7 +285,7 @@ node_types:
         type: string
         default: 'West US'
       existing_vnet_name:
-      	description: >
+       description: >
          Indicates the name of exsisting virtual network
         type: string
         default: ''
@@ -313,7 +313,7 @@ node_types:
         creation: microsoft.azurecloudify.vnet.creation_validation
 
 relationships:
-  
+
    cloudify.azure.relationships.storage_account_connected_to_resource_group:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
