@@ -23,7 +23,7 @@ import os
 import auth
 from resourcegroup import *
 import utils
-from cloudify.exceptions import NonRecoverableError
+from cloudify.exceptions import NonRecoverableError,RecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation
 
