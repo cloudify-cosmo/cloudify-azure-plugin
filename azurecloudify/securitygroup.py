@@ -28,10 +28,9 @@ def create_network_security_group(**_):
     credentials='Bearer '+ auth.get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
 
-  if 1:
     try:
-      ctx.logger.info("Creating new security group:" + security_group_name)
-      security_group_params=json.dumps({
+        ctx.logger.info("Creating new security group:" + security_group_name)
+        security_group_params=json.dumps({
         "location":"West US",
         "tags":{
             "key":"value"
@@ -54,7 +53,7 @@ def create_network_security_group(**_):
                 }
              ]
           }
-      })
+        })
     response_nsg = requests.put(url=security_group_url, data=security_group_params, headers=headers)
     print response_nsg.text
 
