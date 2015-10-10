@@ -3,6 +3,7 @@ import requests
 import json
 import urllib2
 import time
+import os
 from lockfile import LockFile
 from cloudify import ctx
 import constants
