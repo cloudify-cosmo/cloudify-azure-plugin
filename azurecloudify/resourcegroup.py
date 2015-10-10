@@ -31,20 +31,18 @@ import auth
 def creation_validation(**_):
     for property_key in constants.RESOURCE_GROUP_REQUIRED_PROPERTIES:
         _validate_node_properties(property_key, ctx.node.properties)
-    
-    if ctx.node.properties['use_external_resource']:
-    	resource_group_exists =  _get_resource_group_name()
+ 
+    resource_group_exists =  _get_resource_group_name()
 
-        if not resource_group_exists:
-	    raise NonRecoverableError(
-	    'External resource, but the supplied '
-	    'resource group does not exist in the account.')
-"""	
+    if ctx.node.properties['use_external_resource'] not resource_group_exists:
+	raise NonRecoverableError(
+	'External resource, but the supplied '
+	'resource group does not exist in the account.')
+	    
     if not ctx.node.properties['use_external_resource'] and resource_group_exists:
 	raise NonRecoverableError(
 	'Not external resource, but the supplied '
 	'resource group exists in the account.')
-"""
 
 @operation
 def create_resource_group(**_):
