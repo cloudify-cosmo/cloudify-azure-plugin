@@ -13,7 +13,7 @@ node_types:
     properties:
       use_external_resource:
         description: >
-	  Indicates whether to use external resource or not. Default value is false 
+          Indicates whether to use external resource or not. Default value is false 
 	type: boolean
 	default: false
       subscription_id:
@@ -28,7 +28,7 @@ node_types:
         default: 'West US'
       existing_resource_group_name:
       	description: >
-      	 Indicates the name of exsisting resource group
+          Indicates the name of exsisting resource group
         type: string
         default: ''
       client_id:
