@@ -27,8 +27,8 @@ node_types:
         type: string
         default: 'West US'
       existing_resource_group_name:
-      	description: >
-          Indicates the name of exsisting resource group
+        description: >
+         Indicates the name of exsisting resource group
         type: string
         default: ''
       client_id:
