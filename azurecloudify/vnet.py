@@ -51,7 +51,7 @@ def create_vnet(**_):
     if ctx.node.properties['use_external_resource']:
         ctx.instance.runtime_properties[constants.VNET_KEY]=ctx.node.properties['existing_vnet_name']
     else:
-        resource_group_name = ctx.instance.runtime_properties['resource_group']
+        resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
         location = ctx.node.properties['location']
         subscription_id = ctx.node.properties['subscription_id']
         credentials='Bearer '+ auth.get_token_from_client_credentials()
@@ -77,8 +77,8 @@ def create_vnet(**_):
     
     @operation
     def delete_vnet(**_):
-        resource_group_name = ctx.instance.runtime_properties['resource_group']
-        vnet_name= ctx.instance.runtime_properties['vnet_name']
+        resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+        vnet_name= ctx.instance.runtime_properties[constants.VNET_KEY]
         subscription_id = ctx.node.properties['subscription_id']
         credentials='Bearer '+ auth.get_token_from_client_credentials()
         headers = {"Content-Type": "application/json", "Authorization": credentials}
@@ -108,7 +108,7 @@ def _validate_node_properties(key, ctx_node_properties):
         
 def _get_vnet_name():
     vnet_name= ctx.node.properties['existing_vnet_name']
-    resource_group_name = ctx.instance.runtime_properties['resource_group']
+    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     credentials=auth.get_token_from_client_credentials()
     subscription_id=ctx.node.properties['subscription_id']
     url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualnetworks?api-version='+constants.api_version
