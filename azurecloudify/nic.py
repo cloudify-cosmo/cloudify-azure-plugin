@@ -25,7 +25,7 @@ import utils
 from resourcegroup import *
 from publicip import *
 from vnet import *
-from cloudify.exceptions import NonRecoverableError
+from cloudify.exceptions import NonRecoverableError,RecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation
  
