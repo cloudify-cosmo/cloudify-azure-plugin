@@ -226,8 +226,8 @@ node_types:
       use_external_resource:
         description: >
          Indicates whether to use external resource or not. Default value is false
-	type: boolean
-	default: false
+        type: boolean
+        default: false
       subscription_id:
         description: >
           Indicates the subscription id required to create network interface card. 
@@ -257,8 +257,8 @@ node_types:
         description: >
           Indicates the name of the virtual machine required to create network interface card
         type: string
-        default: ''  
-      
+        default: ''
+
     interfaces:
       cloudify.interfaces.lifecycle:
         create: microsoft.azurecloudify.nic.create_nic
@@ -272,8 +272,8 @@ node_types:
       use_external_resource:
         description: >
          Indicates whether to use external resource or not. Default value is false
-	type: boolean
-	default: false
+        type: boolean
+        default: false
       subscription_id:
         description: >
           Indicates the subscription id required to create virtual network.
