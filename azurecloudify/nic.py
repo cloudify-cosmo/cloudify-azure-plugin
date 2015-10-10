@@ -56,11 +56,11 @@ def creation_validation(**_):
     if ctx.node.properties['use_external_resource']:
         ctx.instance.runtime_properties[constants.NIC_KEY]=ctx.node.properties['existing_nic_name']
     else:
-        public_ip_name=ctx.instance.runtime_properties['publicip']
-        resource_group_name = ctx.instance.runtime_properties['resource_group']
+        public_ip_name=ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY]
+        resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
         location = ctx.node.properties['location']
         subscription_id = ctx.node.properties['subscription_id']
-        vnet_name = vnet.vnet_name
+        vnet_name = ctx.instance.runtime_properties[constants.VNET_KEY] 
         RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
         nic_name = constants.NIC_PREFIX+RANDOM_SUFFIX_VALUE
         credentials= 'Bearer ' + auth.get_token_from_client_credentials()
@@ -93,7 +93,7 @@ def creation_validation(**_):
               nic_url=constants.azure_url+"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
               response_nic = requests.put(url=nic_url, data=nic_params, headers=headers)
               print(response_nic.text)
-              ctx.instance.runtime_properties['nic']=nic_name
+              ctx.instance.runtime_properties[constants.NIC_KEY]=nic_name
               
               ctx.logger.info("response_nic : " + response_nic.text)
               response_nic_json = response_nic.json()
@@ -119,8 +119,8 @@ def delete_nic(**_):
     subscription_id = ctx.node.properties['subscription_id']
     credentials='Bearer '+ auth.get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
-    resource_group_name = ctx.instance.runtime_properties['resource_group']
-    nic_name=ctx.instance.runtime_properties['nic_name']
+    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+    nic_name=ctx.instance.runtime_properties[constants.NIC_KEY]
     if 1:
        
         try:
@@ -149,7 +149,7 @@ def _validate_node_properties(key, ctx_node_properties):
         
  def _get_nic_name():
     nic_name=ctx.node.properties['existing_nic_name']
-    resource_group_name= ctx.instance.runtime_properties['resource_group']
+    resource_group_name= ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     credentials=auth.get_token_from_client_credentials()
     headers={"Content-Type": "application/json", "Authorization": credentials}
     subscription_id=ctx.node.properties['subscription_id']
