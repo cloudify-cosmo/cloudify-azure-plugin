@@ -186,7 +186,7 @@ def set_dependent_resources_names(azure_config,**kwargs):
     ctx.source.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = ctx.target.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
     ctx.source.instance.runtime_properties[constants.VNET_KEY] = ctx.target.instance.runtime_properties[constants.VNET_KEY]
     ctx.source.instance.runtime_properties[constants.PUBLIC_IP_KEY] = ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]
-    ctx.source.instance.runtime_properties[constants..NIC_KEY] = ctx.target.instance.runtime_properties[constants.NIC_KEY]
+    ctx.source.instance.runtime_properties[constants.NIC_KEY] = ctx.target.instance.runtime_properties[constants.NIC_KEY]
 
 
 
