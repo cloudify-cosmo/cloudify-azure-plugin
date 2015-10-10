@@ -133,7 +133,7 @@ node_types:
     properties:
       use_external_resource:
         description: >
-	  Indicates whether to use external resource or not. Default value is false 
+         Indicates whether to use external resource or not. Default value is false 
 	type: boolean
 	default: false
       subscription_id:
@@ -148,7 +148,7 @@ node_types:
         default: 'West US'
       existing_public_ip_name:
       	description: >
-      	 Indicates the name of existing public ip
+         Indicates the name of existing public ip
         type: string
         default: ''
       client_id:
@@ -179,7 +179,7 @@ node_types:
     properties:
       use_external_resource:
         description: >
-	  Indicates whether to use external resource or not. Default value is false 
+          Indicates whether to use external resource or not. Default value is false 
 	type: boolean
 	default: false
       subscription_id:
@@ -194,7 +194,7 @@ node_types:
         default: 'West US'
       existing_storage_account_name:
       	description: >
-      	 Indicates the name of existing storage account 
+         Indicates the name of existing storage account 
         type: string
         default: ''
       client_id:
@@ -225,7 +225,7 @@ node_types:
     properties:
       use_external_resource:
         description: >
-	  Indicates whether to use external resource or not. Default value is false 
+         Indicates whether to use external resource or not. Default value is false 
 	type: boolean
 	default: false
       subscription_id:
@@ -240,7 +240,7 @@ node_types:
         default: 'West US'
       existing_nic_name:
       	description: >
-      	 Indicates the name of existing network interface card
+         Indicates the name of existing network interface card
         type: string
         default: ''
       client_id:
@@ -271,7 +271,7 @@ node_types:
     properties:
       use_external_resource:
         description: >
-	  Indicates whether to use external resource or not. Default value is false 
+         Indicates whether to use external resource or not. Default value is false 
 	type: boolean
 	default: false
       subscription_id:
@@ -286,7 +286,7 @@ node_types:
         default: 'West US'
       existing_vnet_name:
       	description: >
-      	 Indicates the name of exsisting virtual network
+         Indicates the name of exsisting virtual network
         type: string
         default: ''
       client_id:
