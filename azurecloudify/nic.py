@@ -146,7 +146,7 @@ def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
         
- def _get_nic_name():
+def _get_nic_name():
     nic_name=ctx.node.properties['existing_nic_name']
     resource_group_name= ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     credentials=auth.get_token_from_client_credentials()
