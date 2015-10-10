@@ -137,11 +137,11 @@ def delete_nic(**_):
 
 @operation
 def set_dependent_resources_names(azure_config,**kwargs):
-    ctx.source.instance.runtime_properties['resource_group'] = ctx.target.instance.runtime_properties['resource_group']
-    ctx.source.instance.runtime_properties['storage_account'] = ctx.target.instance.runtime_properties['storage_account']
-    ctx.source.instance.runtime_properties['vnet'] = ctx.target.instance.runtime_properties['vnet']
+    ctx.source.instance.runtime_properties['RESOURCE_GROUP_KEY'] = ctx.target.instance.runtime_properties['RESOURCE_GROUP_KEY']
+    ctx.source.instance.runtime_properties['STORAGE_ACCOUNT_KEY'] = ctx.target.instance.runtime_properties['STORAGE_ACCOUNT_KEY']
+    ctx.source.instance.runtime_properties['VNET_KEY'] = ctx.target.instance.runtime_properties['VNET_KEY']
     if 'publicip' in ctx.target.instance.runtime_properties:
-       ctx.source.instance.runtime_properties['publicip'] = ctx.target.instance.runtime_properties['publicip']
+       ctx.source.instance.runtime_properties['PUBLIC_IP_KEY'] = ctx.target.instance.runtime_properties['PUBLIC_IP_KEY']
 
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
