@@ -13,9 +13,9 @@ node_types:
     properties:
       use_external_resource:
         description: >
-          Indicates whether to use external resource or not. Default value is false 
-	type: boolean
-	default: false
+          Indicates whether to use external resource or not. Default value is false
+        type: boolean
+        default: false
       subscription_id:
         description: >
           Indicates the subscription id required to create resource group
