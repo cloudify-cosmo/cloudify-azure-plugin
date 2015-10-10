@@ -34,7 +34,7 @@ def creation_validation(**_):
  
     resource_group_exists =  _get_resource_group_name()
 
-    if ctx.node.properties['use_external_resource'] not resource_group_exists:
+    if ctx.node.properties['use_external_resource'] and not resource_group_exists:
 	raise NonRecoverableError(
 	'External resource, but the supplied '
 	'resource group does not exist in the account.')
