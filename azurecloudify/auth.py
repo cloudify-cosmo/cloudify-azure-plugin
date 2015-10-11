@@ -8,6 +8,7 @@ from cloudify import ctx
 import constants
 from cloudify.decorators import operation
 
+@operation
 def get_token_from_client_credentials(use_file=True):
  
     if not use_file and constants.AUTH_TOKEN_EXPIRY in ctx.instance.runtime_properties:
