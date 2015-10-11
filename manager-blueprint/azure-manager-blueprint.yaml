@@ -316,7 +316,7 @@ node_types:
       azure_config: {}
   
   azure_token_node:
-    type: cloudify.nodes.Root
+    derived_from: cloudify.nodes.Root
     properties:
       client_id:
         description: >
