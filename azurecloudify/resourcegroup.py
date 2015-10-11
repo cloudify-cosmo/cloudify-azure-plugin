@@ -31,59 +31,45 @@ import auth
 def creation_validation(**_):
     for property_key in constants.RESOURCE_GROUP_REQUIRED_PROPERTIES:
         _validate_node_properties(property_key, ctx.node.properties)
- 
-    resource_group_exists =  _get_resource_group_name()
-    if ctx.node.properties['use_external_resource'] and not resource_group_exists:
-	raise NonRecoverableError(
-	'External resource, but the supplied '
-	'resource group does not exist in the account.')
-	    
-    if not ctx.node.properties['use_external_resource'] and resource_group_exists:
-	raise NonRecoverableError(
-	'Not external resource, but the supplied '
-	'resource group exists in the account.')
-	
-    if ctx.node.properties['use_external_resource'] :
-        ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.node.properties['existing_resource_group_name']
-    else:   
-        RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
-	resource_group_name = contants.RESOURCE_GROUP_PREFIX+RANDOM_SUFFIX_VALUE
-	ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]=resource_group_name
-	"""
-	temp='temp'
-	temp=ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-	print temp
-	"""
+     
+    if ctx.node.properties['use_external_resource']:
+		if constants.EXISTING_RESOURCE_GROUP_KEY in ctx.node.properties:
+			existing_resource_group_name=ctx.node.properties[constants.EXISTING_RESOURCE_GROUP_KEY]
+			if existing_resource_group_name:
+				resource_group_exists = _get_resource_group_name(existing_resource_group_name)
+				if not resource_group_exists:
+					raise NonRecoverableError("Resource group {} doesn't exist your Azure account".format(existing_resource_group_name))				
+			else:
+				raise NonRecoverableError("The value of '{}' in the input, is empty".format(constants.EXISTING_RESOURCE_GROUP_KEY))
+		else
+			raise NonRecoverableError("'{}' was specified, but '{}' doesn't exist in the input".format('use_external_resource',constants.EXISTING_RESOURCE_GROUP_KEY))
+							         
 
 @operation
 def create_resource_group(**_):
-    if ctx.node.properties['use_external_resource'] :
-        return 
-        #ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.node.properties['existing_resource_group_name']
-    else:   
-        location = ctx.node.properties['location']
+    if ctx.node.properties['use_external_resource'] :		
+		ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.node.properties[constants.EXISTING_RESOURCE_GROUP_KEY]
+        return         
+    
+	location = ctx.node.properties['location']
 	subscription_id = ctx.node.properties['subscription_id']
-	#RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
-	#resource_group_name = contants.RESOURCE_GROUP_PREFIX+RANDOM_SUFFIX_VALUE
+	random_suffix_value = utils.random_suffix_generator()
+	resource_group_name = contants.RESOURCE_GROUP_PREFIX+random_suffix_value
 	credentials='Bearer '+ auth.get_token_from_client_credentials()
 	headers = {"Content-Type": "application/json", "Authorization": credentials}
 	   
 	resource_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version_resource_group
-	ctx.logger.info("Checking availability of resource_group: " + resource_group_name)
+	ctx.logger.info("Checking availability of resource_group: {}".format(resource_group_name))
 	
-	if 1:
-	    try:
-	        ctx.logger.info("Creating new Resource group: " + resource_group_name)
-	        resource_group_params=json.dumps({"name":resource_group_name,"location": location})
-	        response_rg = requests.put(url=resource_group_url, data=resource_group_params, headers=headers)
-	        print response_rg.text
-	        #ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]=resource_group_name
-            except:
-	        ctx.logger.info("Resource Group " + resource_group_name + " could not be created")
-	        sys.exit(1)
-	else:
-	    ctx.logger.info("Resource Group " + resource_group_name + " has already been provisioned")
-	  
+	try:
+		ctx.logger.info("Creating a new Resource group: {}".format(resource_group_name))
+		resource_group_params=json.dumps({"name":resource_group_name,"location": location})
+		response_rg = requests.put(url=resource_group_url, data=resource_group_params, headers=headers)
+		print response_rg.text
+		ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]=resource_group_name
+	except:
+		ctx.logger.info("Resource Group {} could not be created".format(resource_group_name))
+		raise NonRecoverableError("Resource Group {} could not be created".format(resource_group_name))
 
 @operation
 def delete_resource_group(**_):
@@ -93,26 +79,23 @@ def delete_resource_group(**_):
     credentials='Bearer '+auth.get_token_from_client_credentials()
     
     headers = {"Content-Type": "application/json", "Authorization": credentials}
-    
-    if 1:
-        try:
-            ctx.logger.info("Deleting Resource Group: " + resource_group_name)
-            resource_group_url =constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version_resource_group
-            response_rg = requests.delete(url=resource_group_url, headers=headers)
-            print(response_rg.text)
-        except:
-            ctx.logger.info("Resource Group" +  resource_group_name + "could not be deleted." )
-            sys.exit(1)
-    else:
-        ctx.logger.info("Resource Group '%s' does not exist" + resource_group_name)
+        
+	try:
+		ctx.logger.info("Deleting Resource Group: {}".format(resource_group_name))
+		resource_group_url =constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version_resource_group
+		response_rg = requests.delete(url=resource_group_url, headers=headers)
+		print(response_rg.text)
+	except:
+		ctx.logger.info("Resource Group {} could not be deleted.".format(resource_group_name))
+		
+	ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = None
 
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
         
 
-def _get_resource_group_name():
-    resource_group_name=ctx.node.properties['existing_resource_group_name']
+def _get_resource_group_name(resource_group_name):    
     credentials=auth.get_token_from_client_credentials()
     headers={"Content-Type": "application/json", "Authorization": credentials}
     subscription_id=ctx.node.properties['subscription_id']

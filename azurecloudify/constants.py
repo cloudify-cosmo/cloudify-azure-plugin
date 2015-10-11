@@ -50,14 +50,27 @@ PUBLIC_IP_REQUIRED_PROPERTIES = ['location','subscription_id']
 
 RESOURCE_GROUP_KEY = 'resource_group_key_name'
 RESOURCE_GROUP_PREFIX = 'resource_group_'
+EXISTING_RESOURCE_GROUP_KEY = 'existing_resource_group_name'
+
 STORAGE_ACCOUNT_KEY = 'storage_account_key_name'
 STORAGE_ACCOUNT_PREFIX = 'storageaccount'
+EXISTING_STORAGE_ACCOUNT_KEY = 'existing_storage_account_name'
+
 PUBLIC_IP_KEY = 'public_ip_key_name'
 PUBLIC_IP_PREFIX = 'public_ip_'
+EXISTING_PUBLIC_IP_NAME = 'existing_public_ip_name'
+
 VNET_KEY = 'vnet_key_name'
 VNET_GROUP_PREFIX = 'vnet_'
+EXISTING_VNET_GROUP_KEY = 'existing_vnet_name'
+
 VM_KEY= 'vm_'
+
 NIC_KEY = 'nic_key_name'
 NIC_PREFIX = 'nic_'
+EXISTING_NIC_KEY = 'existing_nic_name'
+
 SECURITY_GROUP_KEY = 'security_group_key_name'
 SECURITY_GROUP_PREFIX = 'security_group_'
+EXISTING_SECURITY_GROUP_KEY = 'existing_security_group_name'
+
