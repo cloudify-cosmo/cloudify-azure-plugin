@@ -274,7 +274,7 @@ node_templates:
         type: cloudify.relationships.contained_in
 
   azure_token:
-    type: cloudify.nodes.Root
+    type: azure_token_node
     properties:
       client_id: { get_input: client_id }
       tenant_id: { get_input: tenant_id }
@@ -314,6 +314,25 @@ node_types:
     derived_from: cloudify.nodes.Root
     properties:
       azure_config: {}
+  
+  azure_token_node:
+    type: cloudify.nodes.Root
+    properties:
+      client_id:
+        description: >
+          Indicates the user's client id
+        type: string
+        default: ''
+      tenant_id:
+        description: >
+          Indicates the user's tenant id
+        type: string
+        default: ''
+      aad_password:
+        description: >
+          Indicates the name of the virtual machine required to create network interface card
+        type: string
+        default: ''
 
 relationships:
 
