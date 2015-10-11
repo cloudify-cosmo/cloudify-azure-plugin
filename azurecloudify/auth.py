@@ -60,7 +60,6 @@ def get_token(use_file=True, **kwargs):
 
 
 def _get_token_and_set_runtime(endpoints, payload):
-    ctx.logger.info("In _get_token_and_set_runtime")
     response = requests.post(endpoints, data=payload).json()
     ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = response['access_token']
     ctx.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY] = response['expires_on']
@@ -68,10 +67,12 @@ def _get_token_and_set_runtime(endpoints, payload):
     return ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE]
 
 @operation
-def set_auth_token(**kwargs):
+def set_auth_token(azure_config, **kwargs):
     # This method invoked only during bootstrap
+    ctx.logger.info("In set_auth_token")
     ctx.source.instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = ctx.target.instance.runtime_properties[constants.AUTH_TOKEN_VALUE]
     ctx.source.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY] = ctx.target.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY]
+    ctx.logger.info("End of set_auth_token")
 
 def get_auth_token():
     if constants.AUTH_TOKEN_VALUE in ctx.instance.runtime_properties:
