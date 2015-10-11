@@ -4,7 +4,7 @@ import json
 import time
 from cloudify.exceptions import NonRecoverableError
 from lockfile import LockFile
-from cloudify import ctx
+from cloudify import ctx, context
 import constants
 from cloudify.decorators import operation
 
@@ -15,9 +15,15 @@ def get_token_from_client_credentials(use_file=True, **kwargs):
     if not use_file and constants.AUTH_TOKEN_EXPIRY in ctx.instance.runtime_properties:
         return ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE]
 
-    client_id = ctx.node.properties['client_id']
-    aad_password = ctx.node.properties['aad_password']
-    tenant_id = ctx.node.properties['tenant_id']
+    if ctx.type == context.NODE_INSTANCE:
+        node = ctx.node
+    else:
+        # This is a relationship node, so it can be either source or target
+        node = ctx.source.node
+
+    client_id = node.properties['client_id']
+    aad_password = node.properties['aad_password']
+    tenant_id = node.properties['tenant_id']
     endpoints = constants.login_url+'/'+tenant_id+'/oauth2/token'
     payload = {
         'grant_type': 'client_credentials',
