@@ -51,8 +51,6 @@ def create_resource_group(**_):
     subscription_id = ctx.node.properties['subscription_id']
     random_suffix_value = utils.random_suffix_generator()
     resource_group_name = constants.RESOURCE_GROUP_PREFIX+random_suffix_value
-
-    ctx.source.instance.runtime_properties[constants.AUTH_TOKEN_VALUE]
     credentials = 'Bearer ' + auth.get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
 
