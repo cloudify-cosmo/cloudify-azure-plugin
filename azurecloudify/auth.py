@@ -8,9 +8,9 @@ from cloudify import ctx
 import constants
 
 
-def get_token_from_client_credentials():
+def get_token_from_client_credentials(use_file=True):
  
-    if constants.AUTH_TOKEN_EXPIRY in ctx.instance.runtime_properties:
+    if not use_file and constants.AUTH_TOKEN_EXPIRY in ctx.instance.runtime_properties:
         return ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE]
 
     client_id = ctx.node.properties['client_id']
@@ -23,7 +23,10 @@ def get_token_from_client_credentials():
         'client_secret': aad_password,
         'resource': constants.resource,
     }
-        
+
+    if use_file:
+        return get_token_and_set_runtime(endpoints,payload)
+
     try:
         lock = LockFile(constants.path_to_azure_conf)
         lock.acquire()
@@ -35,7 +38,6 @@ def get_token_from_client_credentials():
     except:
         raise NonRecoverableError("Failures while locking or using {}".format(constants.path_to_azure_conf))
 
-    #open file and check, extract both
     timestamp = int(time.time())
     token_expires = int(token_expires)
     if token_expires-timestamp <= 600 or token_expires == 0 or token is None or token == "":
@@ -53,3 +55,8 @@ def get_token_from_client_credentials():
     return token
 
 
+def get_token_and_set_runtime(endpoints,payload):
+    response = requests.post(endpoints, data=payload).json()
+    ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = response['access_token']
+    ctx.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY] = response['expires_on']
+    return ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE]

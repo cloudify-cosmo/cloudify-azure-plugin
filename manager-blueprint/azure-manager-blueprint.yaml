@@ -108,6 +108,8 @@ node_templates:
     relationships:
       - target: manager_nic
         type: cloudify.azure.relationships.server_connected_to_nic
+      - target: azure_token
+        type: cloudify.relationships.connected_to
 
 
   manager_resource_group:
@@ -120,6 +122,10 @@ node_templates:
       aad_password: { get_input: aad_password}
       use_external_resource: { get_input: use_external_resource}
       existing_resource_group_name: { get_input: existing_resource_group_name}
+
+    relationships:
+      - target: azure_token
+        type: cloudify.relationships.connected_to
 
 
   manager_storage_account:
@@ -136,6 +142,8 @@ node_templates:
     relationships:
       - target: manager_resource_group
         type: cloudify.azure.relationships.storage_account_connected_to_resource_group
+      - target: azure_token
+        type: cloudify.relationships.connected_to
 
   manager_public_ip:
     type: cloudify.azure.nodes.PublicIP
@@ -151,6 +159,8 @@ node_templates:
     relationships:
       - target: manager_vnet
         type: cloudify.azure.relationships.public_ip_connected_to_vnet
+      - target: azure_token
+        type: cloudify.relationships.connected_to
 
   manager_nic:
     type: cloudify.azure.nodes.NIC
@@ -166,6 +176,8 @@ node_templates:
     relationships:
       - target: manager_public_ip
         type: cloudify.azure.relationships.nic_connected_to_public_ip
+      - target: azure_token
+        type: cloudify.relationships.connected_to
 
   manager_vnet:
     type: cloudify.azure.nodes.VNET
@@ -181,6 +193,8 @@ node_templates:
     relationships:
       - target: manager_storage_account
         type: cloudify.azure.relationships.vnet_connected_to_storage_account
+      - target: azure_token
+        type: cloudify.relationships.connected_to
 
   manager:
     type: cloudify.nodes.CloudifyManager
@@ -258,6 +272,20 @@ node_templates:
     relationships:
       - target: manager_server
         type: cloudify.relationships.contained_in
+
+  azure_token:
+    type: cloudify.nodes.Root
+    properties:
+      client_id: { get_input: client_id }
+      tenant_id: { get_input: tenant_id }
+      aad_password: { get_input: aad_password }
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: microsoft.azurecloudify.auth.get_token_from_client_credentials
+          inputs:
+            process:
+              use_file: False
 
   azure_configuration:
     type: azure_configuration_node
