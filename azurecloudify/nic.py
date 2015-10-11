@@ -140,7 +140,7 @@ def set_dependent_resources_names(azure_config,**kwargs):
     ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     ctx.source.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = ctx.target.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
     ctx.source.instance.runtime_properties[constants.VNET_KEY] = ctx.target.instance.runtime_properties[constants.VNET_KEY]
-    if 'publicip' in ctx.target.instance.runtime_properties:
+    if constants.PUBLIC_IP_KEY in ctx.target.instance.runtime_properties:
        ctx.source.instance.runtime_properties[constants.PUBLIC_IP_KEY] = ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]
 
 def _validate_node_properties(key, ctx_node_properties):
