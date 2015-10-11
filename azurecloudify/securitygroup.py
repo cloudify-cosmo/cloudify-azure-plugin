@@ -19,11 +19,11 @@ security_group_name = ctx.node.properties['security_group_name']+RANDOM_SUFFIX_V
 def create_network_security_group(**_):
     for property_key in constants.SECURITY_GROUP_REQUIRED_PROPERTIES:
         _validate_node_properties(property_key, ctx.node.properties)
-    vm_name=server.vm_name
+    #vm_name=server.vm_name
     subscription_id = ctx.node.properties['subscription_id']
-    resource_group_name = resourcegroup.resource_group_name
+    #resource_group_name = resourcegroup.resource_group_name
     location = ctx.node.properties['location']
-    security_group_url= constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version
+    #security_group_url= constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version
 
     credentials='Bearer '+ auth.get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
@@ -63,9 +63,9 @@ def create_network_security_group(**_):
   
 @operation
 def delete_security_group(**_):
-  vm_name=server.vm_name
+  #vm_name=server.vm_name
   subscription_id = ctx.node.properties['subscription_id']
-  resource_group_name = resourcegroup.resource_group_name
+  #resource_group_name = resourcegroup.resource_group_name
   
   credentials='Bearer '+ auth.get_token_from_client_credentials()
   headers = {"Content-Type": "application/json", "Authorization": credentials}
@@ -73,9 +73,9 @@ def delete_security_group(**_):
   if 1:
     try:
       ctx.logger.info("Deleting Security Group")
-      security_group_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version
-      response_nsg = requests.delete(url=security_group_url,headers=headers)
-      print(response_nic.text)
+      #security_group_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version
+      #response_nsg = requests.delete(url=security_group_url,headers=headers)
+      #print(response_nic.text)
     except:
       ctx.logger.info("Security Group " + security_group_name + " could not be deleted.")
       sys.exit(1)

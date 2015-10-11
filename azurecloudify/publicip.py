@@ -57,7 +57,7 @@ def create_public_ip(**_):
         location = ctx.node.properties['location']
         resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
         RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
-        public_ip_name=contants.PUBLIC_IP_PREFIX+RANDOM_SUFFIX_VALUE
+        public_ip_name=constants.PUBLIC_IP_PREFIX+RANDOM_SUFFIX_VALUE
         public_ip_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
         credentials='Bearer '+ auth.get_token_from_client_credentials()
         headers = {"Content-Type": "application/json", "Authorization": credentials}

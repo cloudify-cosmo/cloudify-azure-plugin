@@ -51,7 +51,7 @@ def create_resource_group(**_):
     subscription_id = ctx.node.properties['subscription_id']
     random_suffix_value = utils.random_suffix_generator()
     resource_group_name = constants.RESOURCE_GROUP_PREFIX+random_suffix_value
-    credentials='Bearer '+ auth.get_token_from_client_credentials()
+    credentials = 'Bearer ' + auth.get_token_from_client_credentials()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
 
     resource_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version_resource_group
@@ -59,7 +59,7 @@ def create_resource_group(**_):
 
     try:
         ctx.logger.info("Creating a new Resource group: {}".format(resource_group_name))
-        resource_group_params=json.dumps({"name":resource_group_name,"location": location})
+        resource_group_params = json.dumps({"name":resource_group_name,"location": location})
         response_rg = requests.put(url=resource_group_url, data=resource_group_params, headers=headers)
         print response_rg.text
         ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = resource_group_name
