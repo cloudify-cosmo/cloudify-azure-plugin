@@ -35,7 +35,6 @@ def creation_validation(**_):
 
 @operation
 def create_storage_account(**_):
-
     if 'use_external_resource' in ctx.node.properties and ctx.node.properties['use_external_resource']:
         if constants.EXISTING_STORAGE_ACCOUNT_KEY in ctx.node.properties:
             existing_storage_account_name = ctx.node.properties[constants.EXISTING_STORAGE_ACCOUNT_KEY]
@@ -89,6 +88,11 @@ def delete_storage_account(**_):
     except:
         ctx.logger.info("Storage Account {} could not be deleted.".format(storage_account_name))
 
+    # Clean runtime_properties
+    ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = None
+    ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = None
+    ctx.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY] = None
+
 
 @operation
 def set_dependent_resources_names(azure_config, **kwargs):
@@ -102,7 +106,11 @@ def _validate_node_properties(key, ctx_node_properties):
 
 def _get_storage_account_name(storage_account_name):
     subscription_id = ctx.node.properties['subscription_id']
-    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+    if constants.RESOURCE_GROUP_KEY in ctx.instance.runtime_properties:
+        resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+    else:
+        raise RecoverableError("{} is not in storage acoount runtime_properties yet".format(constants.RESOURCE_GROUP_KEY))
+
     credentials = auth.get_token_from_client_credentials()
     url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts?api-version='+constants.api_version
     headers = {"Content-Type": "application/json", "Authorization": credentials}

@@ -61,10 +61,10 @@ PUBLIC_IP_PREFIX = 'public_ip_'
 EXISTING_PUBLIC_IP_NAME = 'existing_public_ip_name'
 
 VNET_KEY = 'vnet_key_name'
-VNET_GROUP_PREFIX = 'vnet_'
-EXISTING_VNET_GROUP_KEY = 'existing_vnet_name'
+VNET_PREFIX = 'vnet_'
+EXISTING_VNET_KEY = 'existing_vnet_name'
 
-VM_KEY= 'vm_'
+VM_KEY = 'vm_'
 
 NIC_KEY = 'nic_key_name'
 NIC_PREFIX = 'nic_'
