@@ -42,7 +42,7 @@ def creation_validation(**_):
 	raise NonRecoverableError(
 	'Not external resource, but the supplied '
 	'resource group exists in the account.')
-	"""
+	
     if ctx.node.properties['use_external_resource'] :
         ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.node.properties['existing_resource_group_name']
     else:   
@@ -52,18 +52,18 @@ def creation_validation(**_):
 	temp='temp'
 	temp=ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
 	print temp
-	"""
+	
 
 @operation
 def create_resource_group(**_):
     if ctx.node.properties['use_external_resource'] :
         return 
-        ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.node.properties['existing_resource_group_name']
+        #ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.node.properties['existing_resource_group_name']
     else:   
         location = ctx.node.properties['location']
 	subscription_id = ctx.node.properties['subscription_id']
-	RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
-	resource_group_name = contants.RESOURCE_GROUP_PREFIX+RANDOM_SUFFIX_VALUE
+	#RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
+	#resource_group_name = contants.RESOURCE_GROUP_PREFIX+RANDOM_SUFFIX_VALUE
 	credentials='Bearer '+ auth.get_token_from_client_credentials()
 	headers = {"Content-Type": "application/json", "Authorization": credentials}
 	   
@@ -76,7 +76,7 @@ def create_resource_group(**_):
 	        resource_group_params=json.dumps({"name":resource_group_name,"location": location})
 	        response_rg = requests.put(url=resource_group_url, data=resource_group_params, headers=headers)
 	        print response_rg.text
-	        ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]=resource_group_name
+	        #ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]=resource_group_name
             except:
 	        ctx.logger.info("Resource Group " + resource_group_name + " could not be created")
 	        sys.exit(1)
