@@ -6,7 +6,7 @@ from cloudify.exceptions import NonRecoverableError
 from lockfile import LockFile
 from cloudify import ctx
 import constants
-
+from cloudify.decorators import operation
 
 def get_token_from_client_credentials(use_file=True):
  
@@ -60,3 +60,11 @@ def get_token_and_set_runtime(endpoints,payload):
     ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = response['access_token']
     ctx.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY] = response['expires_on']
     return ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE]
+
+@operation
+def set_auth_token():
+    # This method invoked only during bootstrap
+    ctx.source.instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = ctx.target.instance.runtime_properties[constants.AUTH_TOKEN_VALUE]
+    ctx.source.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY] = ctx.target.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY]
+
+

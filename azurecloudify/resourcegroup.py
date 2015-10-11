@@ -90,13 +90,6 @@ def delete_resource_group(**_):
     ctx.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY] = None
 
 
-@operation
-def set_auth_token(azure_config,**kwargs):
-    # This method invoked only during bootstrap
-    ctx.source.instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = ctx.target.instance.runtime_properties[constants.AUTH_TOKEN_VALUE]
-    ctx.source.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY] = ctx.target.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY]
-
-
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
