@@ -52,6 +52,7 @@ def creation_validation(**_):
 @operation
 def create_resource_group(**_):
     if ctx.node.properties['use_external_resource'] :
+        return 
         #ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.node.properties['existing_resource_group_name']
     else:   
         location = ctx.node.properties['location']
