@@ -55,7 +55,7 @@ def create_vnet(**_):
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     location = ctx.node.properties['location']
     subscription_id = ctx.node.properties['subscription_id']
-    credentials = 'Bearer ' + auth.get_token_from_client_credentials()
+    credentials = 'Bearer ' + auth.get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
     vnet_name = constants.VNET_GROUP_PREFIX+RANDOM_SUFFIX_VALUE
@@ -78,7 +78,7 @@ def delete_vnet(**_):
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     vnet_name = ctx.instance.runtime_properties[constants.VNET_KEY]
     subscription_id = ctx.node.properties['subscription_id']
-    credentials = 'Bearer ' + auth.get_token_from_client_credentials()
+    credentials = 'Bearer ' + auth.get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
 
     ctx.logger.info("Checking availability of virtual network: {}".format(vnet_name))
@@ -115,7 +115,7 @@ def _get_vnet_name(vnet_name):
         resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     else:
         raise RecoverableError("{} is not in vnet runtime_properties yet".format(constants.RESOURCE_GROUP_KEY))
-    credentials = auth.get_token_from_client_credentials()
+    credentials = auth.get_auth_token()
     subscription_id = ctx.node.properties['subscription_id']
     url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualnetworks?api-version='+constants.api_version
     headers = {"Content-Type": "application/json", "Authorization": credentials}

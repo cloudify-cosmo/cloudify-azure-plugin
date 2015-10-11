@@ -51,7 +51,9 @@ def create_resource_group(**_):
     subscription_id = ctx.node.properties['subscription_id']
     random_suffix_value = utils.random_suffix_generator()
     resource_group_name = constants.RESOURCE_GROUP_PREFIX+random_suffix_value
-    credentials = 'Bearer ' + auth.get_token_from_client_credentials()
+
+    ctx.source.instance.runtime_properties[constants.AUTH_TOKEN_VALUE]
+    credentials = 'Bearer ' + auth.get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
 
     resource_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version_resource_group
@@ -72,7 +74,7 @@ def delete_resource_group(**_):
    
     subscription_id = ctx.node.properties['subscription_id']
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-    credentials = 'Bearer '+auth.get_token_from_client_credentials()
+    credentials = 'Bearer '+auth.get_auth_token()
     
     headers = {"Content-Type": "application/json", "Authorization": credentials}
         
@@ -96,7 +98,7 @@ def _validate_node_properties(key, ctx_node_properties):
         
 
 def _get_resource_group_name(resource_group_name):    
-    credentials = auth.get_token_from_client_credentials()
+    credentials = auth.get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     subscription_id = ctx.node.properties['subscription_id']
     list_resource_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourcegroups?api-version='+constants.api_version

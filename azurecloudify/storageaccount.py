@@ -55,7 +55,7 @@ def create_storage_account(**_):
     random_suffix_value = utils.random_suffix_generator()
     storage_account_name = constants.STORAGE_ACCOUNT_PREFIX+random_suffix_value
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-    credentials = 'Bearer '+auth.get_token_from_client_credentials()
+    credentials = 'Bearer '+auth.get_auth_token()
 
     headers = {"Content-Type": "application/json", "Authorization": credentials}
 
@@ -77,7 +77,7 @@ def create_storage_account(**_):
 def delete_storage_account(**_):
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     subscription_id = ctx.node.properties['subscription_id']
-    credentials = 'Bearer '+auth.get_token_from_client_credentials()
+    credentials = 'Bearer '+auth.get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     storage_account_name = ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
     ctx.logger.info("Deleting Storage Account {}".format(storage_account_name))
@@ -111,7 +111,7 @@ def _get_storage_account_name(storage_account_name):
     else:
         raise RecoverableError("{} is not in storage acoount runtime_properties yet".format(constants.RESOURCE_GROUP_KEY))
 
-    credentials = auth.get_token_from_client_credentials()
+    credentials = auth.get_auth_token()
     url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts?api-version='+constants.api_version
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     response_list = requests.get(url, headers=headers)

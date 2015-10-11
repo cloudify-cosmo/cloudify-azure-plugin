@@ -61,7 +61,7 @@ def create_nic(**_):
     vnet_name = ctx.instance.runtime_properties[constants.VNET_KEY]
     random_suffix_value = utils.random_suffix_generator()
     nic_name = constants.NIC_PREFIX+random_suffix_value
-    credentials = 'Bearer ' + auth.get_token_from_client_credentials()
+    credentials = 'Bearer ' + auth.get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
 
     ctx.logger.info("Checking availability of network interface card: " + nic_name)
@@ -112,7 +112,7 @@ def create_nic(**_):
 def delete_nic(**_):
     
     subscription_id = ctx.node.properties['subscription_id']
-    credentials = 'Bearer ' + auth.get_token_from_client_credentials()
+    credentials = 'Bearer ' + auth.get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     nic_name = ctx.instance.runtime_properties[constants.NIC_KEY]
@@ -157,7 +157,7 @@ def _get_nic_name(nic_name):
         resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     else:
         raise RecoverableError("{} is not in nic runtime_properties yet".format(constants.RESOURCE_GROUP_KEY))
-    credentials = auth.get_token_from_client_credentials()
+    credentials = auth.get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     subscription_id = ctx.node.properties['subscription_id']
     nic_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkInterfaces?api-version='+constants.api_version

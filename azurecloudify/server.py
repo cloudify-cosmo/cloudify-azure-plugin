@@ -46,7 +46,7 @@ def create_vm(**_):
     vnet_name = ctx.instance.runtime_properties[constants.VNET_KEY]
     nic_name = ctx.instance.runtime_properties[constants.NIC_KEY]
     public_ip_name = ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY]
-    credentials = 'Bearer ' + auth.get_token_from_client_credentials()
+    credentials = 'Bearer ' + auth.get_auth_token()
     subscription_id = ctx.node.properties['subscription_id']
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     
@@ -113,7 +113,7 @@ def create_vm(**_):
 
 @operation
 def start_vm(**_):
-    credentials = 'Bearer ' + auth.get_token_from_client_credentials()
+    credentials = 'Bearer ' + auth.get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     vm_name = ctx.instance.runtime_properties[constants.VM_KEY]
     subscription_id = ctx.node.properties['subscription_id']
@@ -140,7 +140,7 @@ def start_vm(**_):
 def stop_vm(**_):
     subscription_id = ctx.node.properties['subscription_id']
     
-    credentials = 'Bearer ' + auth.get_token_from_client_credentials()
+    credentials = 'Bearer ' + auth.get_auth_token()
     
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     vm_name = ctx.instance.runtime_properties[constants.VM_KEY]
@@ -155,7 +155,7 @@ def delete_virtual_machine(**_):
     resource_group_name = ctx.runtime_properties[constants.RESOURCE_GROUP_KEY]
     subscription_id = ctx.node.properties['subscription_id']
     vnet_name = ctx.instance.runtime_properties[constants.VNET_KEY]
-    credentials = 'Bearer ' + auth.get_token_from_client_credentials()
+    credentials = 'Bearer ' + auth.get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     vm_name = ctx.instance.runtime_properties[constants.VM_KEY]
     ctx.logger.info("Checking availability of virtual network: {}".format(vnet_name))

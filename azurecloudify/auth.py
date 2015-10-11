@@ -11,21 +11,15 @@ from cloudify.decorators import operation
 
 @operation
 def get_token_from_client_credentials(use_file=True, **kwargs):
-    ctx.logger.info("get_token_from_client_credentials use_file is {}".format(use_file))
-    if not use_file and constants.AUTH_TOKEN_EXPIRY in ctx.instance.runtime_properties:
+    return get_token(use_file)
+
+def get_token(use_file=True, **kwargs):
+    if not use_file and constants.AUTH_TOKEN_VALUE in ctx.instance.runtime_properties:
         return ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE]
 
-    ctx.logger.info("ctx.type is xxx-{}-xxx".format(ctx.type))
-    ctx.logger.info("ctx.type is xxx-node-instance-xxx")
-    if str(ctx.type) == "node-instance":
-        node = ctx.node
-    else:
-        # This is a relationship node, so it can be either source or target
-        node = ctx.source.node
-
-    client_id = node.properties['client_id']
-    aad_password = node.properties['aad_password']
-    tenant_id = node.properties['tenant_id']
+    client_id = ctx.node.properties['client_id']
+    aad_password = ctx.node.properties['aad_password']
+    tenant_id = ctx.node.properties['tenant_id']
     endpoints = constants.login_url+'/'+tenant_id+'/oauth2/token'
     payload = {
         'grant_type': 'client_credentials',
@@ -70,7 +64,7 @@ def _get_token_and_set_runtime(endpoints, payload):
     response = requests.post(endpoints, data=payload).json()
     ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = response['access_token']
     ctx.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY] = response['expires_on']
-    ctx.logger.info("In _get_token_and_set_runtime token expiry is {}".format(response['expires_on']))
+    ctx.logger.info("In _get_token_and_set_runtime: token expiry is {}".format(response['expires_on']))
     return ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE]
 
 @operation
@@ -79,4 +73,7 @@ def set_auth_token(**kwargs):
     ctx.source.instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = ctx.target.instance.runtime_properties[constants.AUTH_TOKEN_VALUE]
     ctx.source.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY] = ctx.target.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY]
 
-
+def get_auth_token():
+    if constants.AUTH_TOKEN_VALUE in ctx.instance.runtime_properties:
+        return ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE]
+    return get_token(True)

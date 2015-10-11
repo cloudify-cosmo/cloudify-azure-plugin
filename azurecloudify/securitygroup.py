@@ -25,7 +25,7 @@ def create_network_security_group(**_):
     location = ctx.node.properties['location']
     #security_group_url= constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version
 
-    credentials='Bearer '+ auth.get_token_from_client_credentials()
+    credentials='Bearer '+ auth.get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
 
     try:
@@ -67,7 +67,7 @@ def delete_security_group(**_):
   subscription_id = ctx.node.properties['subscription_id']
   #resource_group_name = resourcegroup.resource_group_name
   
-  credentials='Bearer '+ auth.get_token_from_client_credentials()
+  credentials='Bearer '+ auth.get_auth_token()
   headers = {"Content-Type": "application/json", "Authorization": credentials}
   
   if 1:
