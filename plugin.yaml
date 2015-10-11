@@ -340,7 +340,7 @@ node_types:
           implementation: microsoft.azurecloudify.auth.get_token_from_client_credentials
           inputs:
             use_file: False
-		
+
 relationships:
 
    cloudify.azure.relationships.storage_account_connected_to_resource_group:
@@ -404,8 +404,8 @@ relationships:
           implementation: microsoft.azurecloudify.server.set_dependent_resources_names
           inputs:
             azure_config:
-              default: {}   
-			
+              default: {}
+
    cloudify.azure.relationships.resource_connected_to_azure_token:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
@@ -414,4 +414,4 @@ relationships:
           implementation: microsoft.azurecloudify.auth.set_auth_token
           inputs:
             azure_config:
-              default: {} 		  
+              default: {}
