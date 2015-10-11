@@ -49,6 +49,9 @@ def creation_validation(**_):
         RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
 	resource_group_name = contants.RESOURCE_GROUP_PREFIX+RANDOM_SUFFIX_VALUE
 	ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]=resource_group_name
+	temp='temp'
+	temp=ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+	print temp
 
 @operation
 def create_resource_group(**_):
