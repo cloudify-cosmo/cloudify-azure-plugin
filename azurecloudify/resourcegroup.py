@@ -33,7 +33,12 @@ def creation_validation(**_):
         _validate_node_properties(property_key, ctx.node.properties)
  
     resource_group_exists =  _get_resource_group_name()
-
+    if ctx.node.properties['use_external_resource'] :
+        ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.node.properties['existing_resource_group_name']
+    else:   
+        RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
+	resource_group_name = contants.RESOURCE_GROUP_PREFIX+RANDOM_SUFFIX_VALUE
+	ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]=resource_group_name
     if ctx.node.properties['use_external_resource'] and not resource_group_exists:
 	raise NonRecoverableError(
 	'External resource, but the supplied '
@@ -47,12 +52,12 @@ def creation_validation(**_):
 @operation
 def create_resource_group(**_):
     if ctx.node.properties['use_external_resource'] :
-        ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.node.properties['existing_resource_group_name']
+        #ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.node.properties['existing_resource_group_name']
     else:   
         location = ctx.node.properties['location']
 	subscription_id = ctx.node.properties['subscription_id']
-	RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
-	resource_group_name = contants.RESOURCE_GROUP_PREFIX+RANDOM_SUFFIX_VALUE
+	#RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
+	#resource_group_name = contants.RESOURCE_GROUP_PREFIX+RANDOM_SUFFIX_VALUE
 	credentials='Bearer '+ auth.get_token_from_client_credentials()
 	headers = {"Content-Type": "application/json", "Authorization": credentials}
 	   
