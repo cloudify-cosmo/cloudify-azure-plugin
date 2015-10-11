@@ -16,7 +16,7 @@ def get_token_from_client_credentials(use_file=True, **kwargs):
         return ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE]
 
     ctx.logger.info("ctx.type is {}".format(ctx.type))
-    if ctx.type == context.NODE_INSTANCE:
+    if ctx.type == "node-instance":
         node = ctx.node
     else:
         # This is a relationship node, so it can be either source or target
