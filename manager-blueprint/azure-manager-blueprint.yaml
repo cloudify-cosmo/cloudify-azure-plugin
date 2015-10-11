@@ -280,6 +280,9 @@ node_templates:
       tenant_id: { get_input: tenant_id }
       aad_password: { get_input: aad_password }
 
+    relationships:
+      - target: azure_configuration
+        type: cloudify.relationships.connected_to
 
   azure_configuration:
     type: azure_configuration_node
