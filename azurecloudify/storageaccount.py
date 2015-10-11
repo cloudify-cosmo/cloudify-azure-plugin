@@ -113,7 +113,7 @@ def _validate_node_properties(key, ctx_node_properties):
 def _get_storage_account_name():
     storage_account_name= ctx.node.properties['existing_storage_account_name']
     if constants.RESOURCE_GROUP_KEY in ctx.instance.runtime_properties:
-    resource_group_name= ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+        resource_group_name= ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     else:
         raise RecoverableError("{} is not in storage account runtime_properties yet".format(constants.RESOURCE_GROUP_KEY))
     subscription_id=ctx.node.properties['subscription_id']
