@@ -15,6 +15,7 @@ def get_token_from_client_credentials(use_file=True, **kwargs):
     if not use_file and constants.AUTH_TOKEN_EXPIRY in ctx.instance.runtime_properties:
         return ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE]
 
+    ctx.logger.info("ctx.type is {}".format(ctx.type))
     if ctx.type == context.NODE_INSTANCE:
         node = ctx.node
     else:
@@ -64,7 +65,7 @@ def get_token_from_client_credentials(use_file=True, **kwargs):
 
 
 def _get_token_and_set_runtime(endpoints, payload):
-    ctx.logger.info("In _get_token_and_set_runtime");
+    ctx.logger.info("In _get_token_and_set_runtime")
     response = requests.post(endpoints, data=payload).json()
     ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = response['access_token']
     ctx.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY] = response['expires_on']
