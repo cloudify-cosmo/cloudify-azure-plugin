@@ -8,8 +8,9 @@ from cloudify import ctx
 import constants
 from cloudify.decorators import operation
 
+
 @operation
-def get_token_from_client_credentials(use_file=True):
+def get_token_from_client_credentials(use_file=True, **kwargs):
  
     if not use_file and constants.AUTH_TOKEN_EXPIRY in ctx.instance.runtime_properties:
         return ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE]
@@ -26,7 +27,7 @@ def get_token_from_client_credentials(use_file=True):
     }
 
     if use_file:
-        return get_token_and_set_runtime(endpoints,payload)
+        return _get_token_and_set_runtime(endpoints, payload)
 
     try:
         lock = LockFile(constants.path_to_azure_conf)
@@ -56,14 +57,14 @@ def get_token_from_client_credentials(use_file=True):
     return token
 
 
-def get_token_and_set_runtime(endpoints,payload):
+def _get_token_and_set_runtime(endpoints, payload):
     response = requests.post(endpoints, data=payload).json()
     ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = response['access_token']
     ctx.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY] = response['expires_on']
     return ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE]
 
 @operation
-def set_auth_token():
+def set_auth_token(**kwargs):
     # This method invoked only during bootstrap
     ctx.source.instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = ctx.target.instance.runtime_properties[constants.AUTH_TOKEN_VALUE]
     ctx.source.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY] = ctx.target.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY]
