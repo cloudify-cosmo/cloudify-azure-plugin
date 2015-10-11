@@ -109,7 +109,7 @@ node_templates:
       - target: manager_nic
         type: cloudify.azure.relationships.server_connected_to_nic
       - target: azure_token
-        type: resource_connected_to_azure_token
+        type: cloudify.azure.relationships.resource_connected_to_azure_token
 
 
   manager_resource_group:
@@ -125,7 +125,7 @@ node_templates:
 
     relationships:
       - target: azure_token
-        type: resource_connected_to_azure_token
+        type: cloudify.azure.relationships.resource_connected_to_azure_token
 
 
   manager_storage_account:
@@ -143,7 +143,7 @@ node_templates:
       - target: manager_resource_group
         type: cloudify.azure.relationships.storage_account_connected_to_resource_group
       - target: azure_token
-        type: resource_connected_to_azure_token
+        type: cloudify.azure.relationships.resource_connected_to_azure_token
 
   manager_public_ip:
     type: cloudify.azure.nodes.PublicIP
@@ -160,7 +160,7 @@ node_templates:
       - target: manager_vnet
         type: cloudify.azure.relationships.public_ip_connected_to_vnet
       - target: azure_token
-        type: resource_connected_to_azure_token
+        type: cloudify.azure.relationships.resource_connected_to_azure_token
 
   manager_nic:
     type: cloudify.azure.nodes.NIC
@@ -177,7 +177,7 @@ node_templates:
       - target: manager_public_ip
         type: cloudify.azure.relationships.nic_connected_to_public_ip
       - target: azure_token
-        type: resource_connected_to_azure_token
+        type: cloudify.azure.relationships.resource_connected_to_azure_token
 
   manager_vnet:
     type: cloudify.azure.nodes.VNET
@@ -194,7 +194,7 @@ node_templates:
       - target: manager_storage_account
         type: cloudify.azure.relationships.vnet_connected_to_storage_account
       - target: azure_token
-        type: resource_connected_to_azure_token
+        type: cloudify.azure.relationships.resource_connected_to_azure_token
 
   manager:
     type: cloudify.nodes.CloudifyManager
@@ -274,18 +274,12 @@ node_templates:
         type: cloudify.relationships.contained_in
 
   azure_token:
-    type: azure_token_node
+    type: cloudify.azure.nodes.azure_token
     properties:
       client_id: { get_input: client_id }
       tenant_id: { get_input: tenant_id }
       aad_password: { get_input: aad_password }
-    interfaces:
-      cloudify.interfaces.lifecycle:
-        create:
-          implementation: microsoft.azurecloudify.auth.get_token_from_client_credentials
-          inputs:
-            process:
-              use_file: False
+
 
   azure_configuration:
     type: azure_configuration_node
@@ -314,34 +308,6 @@ node_types:
     derived_from: cloudify.nodes.Root
     properties:
       azure_config: {}
-  
-  azure_token_node:
-    derived_from: cloudify.nodes.Root
-    properties:
-      client_id:
-        description: >
-          Indicates the user's client id
-        type: string
-        default: ''
-      tenant_id:
-        description: >
-          Indicates the user's tenant id
-        type: string
-        default: ''
-      aad_password:
-        description: >
-          Indicates the name of the virtual machine required to create network interface card
-        type: string
-        default: ''
-
-relationships:
-
-   resource_connected_to_azure_token:
-    derived_from: cloudify.relationships.connected_to
-    source_interfaces:
-      cloudify.interfaces.relationship_lifecycle:
-        postconfigure:
-          implementation: microsoft.azurecloudify.auth.set_auth_token
 
 plugins:
     cli:

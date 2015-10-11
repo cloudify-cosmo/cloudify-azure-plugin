@@ -315,6 +315,32 @@ node_types:
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.vnet.creation_validation
 
+  cloudify.azure.nodes.azure_token:
+    derived_from: cloudify.nodes.Root
+    properties:
+      client_id:
+        description: >
+          Indicates the user's client id
+        type: string
+        default: ''
+      tenant_id:
+        description: >
+          Indicates the user's tenant id
+        type: string
+        default: ''
+      aad_password:
+        description: >
+          Indicates the name of the virtual machine required to create network interface card
+        type: string
+        default: ''
+
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: microsoft.azurecloudify.auth.get_token_from_client_credentials
+          inputs:
+            use_file: False
+		
 relationships:
 
    cloudify.azure.relationships.storage_account_connected_to_resource_group:
@@ -379,3 +405,13 @@ relationships:
           inputs:
             azure_config:
               default: {}   
+			
+   cloudify.azure.relationships.resource_connected_to_azure_token:
+    derived_from: cloudify.relationships.connected_to
+    source_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        postconfigure:
+          implementation: microsoft.azurecloudify.auth.set_auth_token
+          inputs:
+            azure_config:
+              default: {} 		  
