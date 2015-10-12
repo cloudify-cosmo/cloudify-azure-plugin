@@ -81,7 +81,6 @@ def get_auth_token(use_client_file=True,**kwargs):
             f.write(json.dumps(json_data))
             f.close()
     lock.release()
-    ctx.logger.info("Token expiry is {}".format(token_expires))
     ctx.logger.info("{} is released".format(lock.path))
     return token
 
@@ -108,7 +107,7 @@ def _get_payload_endpoints():
 
 
 def get_token_from_client_file():
-    with open(constants.path_to_azure_conf, 'r') as f:
+    with open(constants.path_to_local_azure_token_file, 'r') as f:
         json_data = json.load(f)
         token_expires = json_data["token_expires"]
         token = json_data["auth_token"]
