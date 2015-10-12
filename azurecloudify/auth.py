@@ -13,6 +13,7 @@ from cloudify.decorators import operation
 def get_token_from_client_credentials(use_file=True, **kwargs):
     return get_token(use_file)
 
+
 def get_token(use_file=True, **kwargs):
     if not use_file and constants.AUTH_TOKEN_VALUE in ctx.instance.runtime_properties:
         return ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE]
@@ -66,13 +67,15 @@ def _get_token_and_set_runtime(endpoints, payload):
     ctx.logger.info("In _get_token_and_set_runtime: token expiry is {}".format(response['expires_on']))
     return ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE]
 
+
 @operation
 def set_auth_token(azure_config, **kwargs):
-    # This method invoked only during bootstrap
+    # This method invoked only during bootstrap (it's a relationship interface
     ctx.logger.info("In set_auth_token")
     ctx.source.instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = ctx.target.instance.runtime_properties[constants.AUTH_TOKEN_VALUE]
     ctx.source.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY] = ctx.target.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY]
-    ctx.logger.info("End of set_auth_token")
+    ctx.logger.info("In set_auth_token: token expiry is {}".format(ctx.source.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY]))
+
 
 def get_auth_token():
     if constants.AUTH_TOKEN_VALUE in ctx.instance.runtime_properties:

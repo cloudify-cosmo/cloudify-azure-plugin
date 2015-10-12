@@ -409,7 +409,7 @@ relationships:
 
    cloudify.azure.relationships.resource_connected_to_azure_token:
     derived_from: cloudify.relationships.connected_to
-    source_interfaces:
+    target_interfaces:
       cloudify.interfaces.relationship_lifecycle:
         postconfigure:
           implementation: microsoft.azurecloudify.auth.set_auth_token
