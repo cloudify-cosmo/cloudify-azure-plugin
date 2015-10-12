@@ -342,6 +342,12 @@ node_types:
             use_client_file:
               default: True
 
+        configure:
+          implementation: microsoft.azurecloudify.auth.generate_token
+          inputs:
+            use_client_file:
+              default: True
+
 relationships:
 
    cloudify.azure.relationships.storage_account_connected_to_resource_group:

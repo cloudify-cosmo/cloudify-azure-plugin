@@ -48,7 +48,9 @@ def get_auth_token(use_client_file=True,**kwargs):
     # Check if token file exists on the client's VM. If so, take the value from it and set it in the runtime
     if os.path.isfile(constants.path_to_local_azure_token_file):
         # If you are here , it means that this is during bootstrap
+        ctx.logger.info("{} exists".format(constants.path_to_local_azure_token_file))
         token, token_expires = get_token_from_client_file()
+        ctx.logger.info("get_auth_token expiry is {} ".format(token_expires))
         ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = token
         ctx.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY] = token_expires
         return token
@@ -111,4 +113,6 @@ def get_token_from_client_file():
         token_expires = json_data["token_expires"]
         token = json_data["auth_token"]
         f.close()
+
+    ctx.logger.info("get_token_from_client_file expiry is {} ".format(token_expires))
     return token, token_expires
