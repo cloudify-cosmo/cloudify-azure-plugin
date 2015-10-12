@@ -339,8 +339,8 @@ node_types:
         create:
           implementation: microsoft.azurecloudify.auth.get_token_from_client_credentials
           inputs:
-            use_file:
-              default: False
+            use_client_file:
+              default: True
 
 relationships:
 

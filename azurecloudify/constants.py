@@ -17,11 +17,11 @@
 
 # instance module constants
 
-credentials =''
-COMMON_REQ_PROPERTIES=['subscription_id','location']
+credentials = ''
+COMMON_REQ_PROPERTIES = ['subscription_id','location']
 
-api_version='2015-05-01-preview'
-api_version_resource_group='2015-01-01'
+api_version = '2015-05-01-preview'
+api_version_resource_group = '2015-01-01'
 storage_account_type = 'Standard_LRS'
 
 vnet_address_prefixes = ["10.1.0.0/16","10.2.0.0/16"]
@@ -32,14 +32,15 @@ image_reference_version = 'latest'
 os_disk_name = 'osdisk'
 vm_caching = 'ReadWrite'
 vm_createOption = 'FromImage'
-vm_version="latest"
-azure_url='https://management.azure.com'
-login_url='https://login.microsoftonline.com'
-sourcePortRange=65000
-destinationPortRange=60000
-priority=100
-resource='https://management.core.windows.net/'
-path_to_azure_conf='~/azure_config.json'
+vm_version = "latest"
+azure_url = 'https://management.azure.com'
+login_url = 'https://login.microsoftonline.com'
+sourcePortRange = 65000
+destinationPortRange = 60000
+priority = 100
+resource = 'https://management.core.windows.net/'
+path_to_azure_conf = '~/azure_config.json'
+path_to_local_azure_token_file = '/tmp/azure_token_file.json'
 
 RESOURCE_GROUP_REQUIRED_PROPERTIES=['location','subscription_id']
 STORAGE_ACCOUNT_REQUIRED_PROPERTIES = ['location','subscription_id']
