@@ -17,8 +17,8 @@ def generate_token(use_client_file=True, **kwargs):
     token, token_expires = _get_token_value_expiry(endpoints, payload)
     ctx.logger.info("In generate_token: token_expires {}".format(token_expires))
     try:
+        json_data = {}
         with open(constants.path_to_local_azure_token_file, 'w') as f:
-            json_data = []
             json_data["auth_token"] = token
             json_data["token_expires"] = token_expires
             f.seek(0)
