@@ -58,7 +58,7 @@ def create_vnet(**_):
     credentials = 'Bearer ' + auth.get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     RANDOM_SUFFIX_VALUE = utils.random_suffix_generator()
-    vnet_name = constants.VNET_GROUP_PREFIX+RANDOM_SUFFIX_VALUE
+    vnet_name = constants.VNET_PREFIX+RANDOM_SUFFIX_VALUE
     vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
     ctx.logger.info("Checking availability of virtual network: {}".format(vnet_name))
 
