@@ -49,7 +49,7 @@ node_types:
       
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: microsoft.azurecloudify.resourcegroup.create_resource_group
+        configure: microsoft.azurecloudify.resourcegroup.create_resource_group
         delete: microsoft.azurecloudify.resourcegroup.delete_resource_group
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.resourcegroup.creation_validation
@@ -118,7 +118,7 @@ node_types:
 
     interfaces:
       cloudify.interfaces.lifecycle:
-        create:
+        configure:
           implementation: microsoft.azurecloudify.server.create_vm
         start:
           implementation: microsoft.azurecloudify.server.start_vm
@@ -172,7 +172,7 @@ node_types:
 
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: microsoft.azurecloudify.publicip.create_public_ip
+        configure: microsoft.azurecloudify.publicip.create_public_ip
         delete: microsoft.azurecloudify.publicip.delete_public_ip
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.publicip.creation_validation
@@ -218,7 +218,7 @@ node_types:
 
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: microsoft.azurecloudify.storageaccount.create_storage_account
+        configure: microsoft.azurecloudify.storageaccount.create_storage_account
         delete: microsoft.azurecloudify.storageaccount.delete_storage_account
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.storageaccount.creation_validation
@@ -264,7 +264,7 @@ node_types:
 
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: microsoft.azurecloudify.nic.create_nic
+        configure: microsoft.azurecloudify.nic.create_nic
         delete: microsoft.azurecloudify.nic.delete_nic
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.nic.creation_validation
@@ -310,7 +310,7 @@ node_types:
 
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: microsoft.azurecloudify.vnet.create_vnet
+        configure: microsoft.azurecloudify.vnet.create_vnet
         delete: microsoft.azurecloudify.vnet.delete_vnet
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.vnet.creation_validation
@@ -348,7 +348,7 @@ relationships:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
-        postconfigure:
+        preconfigure:
           implementation: microsoft.azurecloudify.storageaccount.set_dependent_resources_names
           inputs:
             azure_config:
@@ -358,7 +358,7 @@ relationships:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
-        postconfigure:
+        preconfigure:
           implementation: microsoft.azurecloudify.vnet.set_dependent_resources_names
           inputs:
             azure_config:
@@ -369,7 +369,7 @@ relationships:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
-        postconfigure:
+        preconfigure:
           implementation: microsoft.azurecloudify.publicip.set_dependent_resources_names
           inputs:
             azure_config:
@@ -380,7 +380,7 @@ relationships:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
-        postconfigure:
+        preconfigure:
           implementation: microsoft.azurecloudify.nic.set_dependent_resources_names
           inputs:
             azure_config:
@@ -390,7 +390,7 @@ relationships:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
-        postconfigure:
+        preconfigure:
           implementation: microsoft.azurecloudify.nic.set_dependent_resources_names
           inputs:
             azure_config:
@@ -401,7 +401,7 @@ relationships:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
-        postconfigure:
+        preconfigure:
           implementation: microsoft.azurecloudify.server.set_dependent_resources_names
           inputs:
             azure_config:
