@@ -12,10 +12,10 @@ import os.path
 
 @operation
 def generate_token(use_client_file=True, **kwargs):
-    ctx.logger.info("In get_token_from_client_credentials")
+    ctx.logger.info("In generate_token")
     endpoints, payload = _get_payload_endpoints()
     token, token_expires = _get_token_value_expiry(endpoints, payload)
-    ctx.logger.info("In get_token_from_client_credentials: token_expires {}".format(token_expires))
+    ctx.logger.info("In generate_token: token_expires {}".format(token_expires))
     try:
         with open(constants.path_to_local_azure_token_file, 'w') as f:
             json_data = []

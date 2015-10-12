@@ -337,7 +337,7 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
-          implementation: microsoft.azurecloudify.auth.get_token_from_client_credentials
+          implementation: microsoft.azurecloudify.auth.generate_token
           inputs:
             use_client_file:
               default: True
