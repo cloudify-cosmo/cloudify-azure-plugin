@@ -124,11 +124,11 @@ def start_vm(**_):
     ctx.logger.info("raw_response : {}".format(str(raw_response)))
     response_get_info = raw_response.json()
     ctx.logger.info("response_get_info : {}".format(str(response_get_info)))
-    currProperties = response_get_info[u'properties']
-    ctx.logger.info("currProperties : {}".format(str(currProperties)))
-    currIpAddress = currProperties[u'ipAddress']
-    ctx.logger.info("Current public IP address is {}".format(str(currIpAddress)))
-    ctx.instance.runtime_properties['vm_public_ip'] = currIpAddress
+    curr_properties = response_get_info[u'properties']
+    ctx.logger.info("currProperties : {}".format(str(curr_properties)))
+    curr_ip_address = curr_properties[u'ipAddress']
+    ctx.logger.info("Current public IP address is {}".format(str(curr_ip_address)))
+    ctx.instance.runtime_properties['vm_public_ip'] = curr_ip_address
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     start_vm_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
     response_start_vm = requests.post(start_vm_url, headers=headers)
@@ -152,7 +152,7 @@ def stop_vm(**_):
 
 @operation
 def delete_virtual_machine(**_):
-    resource_group_name = ctx.runtime_properties[constants.RESOURCE_GROUP_KEY]
+    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     subscription_id = ctx.node.properties['subscription_id']
     vnet_name = ctx.instance.runtime_properties[constants.VNET_KEY]
     credentials = 'Bearer ' + auth.get_auth_token()
@@ -161,9 +161,9 @@ def delete_virtual_machine(**_):
     ctx.logger.info("Checking availability of virtual network: {}".format(vnet_name))
 
     try:
-        ctx.logger.info("Deleting the virtual machine: " + vm_name)
-        vm_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version
-        response_vm = requests.delete(url=vm_url,headers=headers)
+        ctx.logger.info("Deleting the virtual machine: {}".format(vm_name))
+        vm_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version
+        response_vm = requests.delete(url=vm_url, headers=headers)
         print(response_vm.text)
 
     except:
@@ -176,7 +176,7 @@ def delete_virtual_machine(**_):
 def set_dependent_resources_names(azure_config, **kwargs):
     ctx.logger.info("Setting set_private_ip")
     vm_private_ip = ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]
-    ctx.logger.info("vm_private_ip is " + vm_private_ip)
+    ctx.logger.info("vm_private_ip is {}".format(vm_private_ip))
     ctx.source.instance.runtime_properties['ip'] = vm_private_ip
     ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     ctx.source.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = ctx.target.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]

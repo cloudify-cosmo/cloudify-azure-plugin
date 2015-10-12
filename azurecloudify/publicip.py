@@ -53,7 +53,6 @@ def create_public_ip(**_):
         ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY] = ctx.node.properties[constants.EXISTING_PUBLIC_IP_NAME]
         return
 
-
     subscription_id = ctx.node.properties['subscription_id']
     location = ctx.node.properties['location']
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]

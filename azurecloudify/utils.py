@@ -21,4 +21,4 @@ def random_suffix_generator(size=5, chars=string.ascii_lowercase + string.digits
 # Clean runtime_properties
 def clear_runtime_properties():
     for key in ctx.instance.runtime_properties:
-        ctx.instance.runtime_properties = None
+        ctx.instance.runtime_properties[key] = None
