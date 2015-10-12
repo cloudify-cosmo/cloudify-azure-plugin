@@ -67,8 +67,8 @@ def create_nic(**_):
     ctx.logger.info("Checking availability of network interface card: " + nic_name)
 
     try:
-      ctx.logger.info("Creating new network interface card: " + nic_name)
-      nic_params = json.dumps({
+        ctx.logger.info("Creating new network interface card: " + nic_name)
+        nic_params = json.dumps({
                         "location":location,
                         "properties":{
                             "ipConfigurations":[
@@ -87,22 +87,22 @@ def create_nic(**_):
                             ],
                         }
                     })
-      nic_url = constants.azure_url+"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
-      response_nic = requests.put(url=nic_url, data=nic_params, headers=headers)
-      print(response_nic.text)
-      ctx.instance.runtime_properties[constants.NIC_KEY]=nic_name
+        nic_url = constants.azure_url+"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
+        response_nic = requests.put(url=nic_url, data=nic_params, headers=headers)
+        print(response_nic.text)
+        ctx.instance.runtime_properties[constants.NIC_KEY]=nic_name
 
-      ctx.logger.info("response_nic : {}".format(response_nic.text))
-      response_nic_json = response_nic.json()
-      nic_root_properties = response_nic_json[u'properties']
-      ctx.logger.info("nic_root_properties : {}".format(str(nic_root_properties)))
-      ip_configurations = nic_root_properties[u'ipConfigurations'][0]
-      ctx.logger.info("nic ip_configurations0 : {}".format(str(ip_configurations)))
-      curr_properties = ip_configurations[u'properties']
-      ctx.logger.info("nic curr_properties : {}".format(str(curr_properties)))
-      private_ip_address = curr_properties[u'privateIPAddress']
-      ctx.logger.info("nic private_ip_address : {}".format(str(private_ip_address)))
-      ctx.instance.runtime_properties['private_ip'] = str(private_ip_address)
+        ctx.logger.info("response_nic : {}".format(response_nic.text))
+        response_nic_json = response_nic.json()
+        nic_root_properties = response_nic_json[u'properties']
+        ctx.logger.info("nic_root_properties : {}".format(str(nic_root_properties)))
+        ip_configurations = nic_root_properties[u'ipConfigurations'][0]
+        ctx.logger.info("nic ip_configurations0 : {}".format(str(ip_configurations)))
+        curr_properties = ip_configurations[u'properties']
+        ctx.logger.info("nic curr_properties : {}".format(str(curr_properties)))
+        private_ip_address = curr_properties[u'privateIPAddress']
+        ctx.logger.info("nic private_ip_address : {}".format(str(private_ip_address)))
+        ctx.instance.runtime_properties['private_ip'] = str(private_ip_address)
     except:
         ctx.logger.info("Network interface card {} could not be created.".format(nic_name))
         raise NonRecoverableError("Network interface card {} could not be created.".format(nic_name))
@@ -133,7 +133,7 @@ def set_dependent_resources_names(azure_config, **kwargs):
     ctx.source.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = ctx.target.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
     ctx.source.instance.runtime_properties[constants.VNET_KEY] = ctx.target.instance.runtime_properties[constants.VNET_KEY]
     if constants.PUBLIC_IP_KEY in ctx.target.instance.runtime_properties:
-       ctx.source.instance.runtime_properties[constants.PUBLIC_IP_KEY] = ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]
+        ctx.source.instance.runtime_properties[constants.PUBLIC_IP_KEY] = ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]
 
 
 def _validate_node_properties(key, ctx_node_properties):

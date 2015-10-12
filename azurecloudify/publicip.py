@@ -79,8 +79,9 @@ def create_public_ip(**_):
     except:
         ctx.logger.info("Public IP {} could not be created.".format(public_ip_name))
         raise NonRecoverableError("Public IP {} could not be created.".format(public_ip_name))
-     
 
+
+@operation
 def delete_public_ip(**_):
     
     subscription_id = ctx.node.properties['subscription_id']

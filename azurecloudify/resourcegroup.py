@@ -67,6 +67,7 @@ def create_resource_group(**_):
         ctx.logger.info("Resource Group {} could not be created".format(resource_group_name))
         raise NonRecoverableError("Resource Group {} could not be created".format(resource_group_name))
 
+
 @operation
 def delete_resource_group(**_):
    
