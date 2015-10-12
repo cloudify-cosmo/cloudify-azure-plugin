@@ -39,7 +39,7 @@ def creation_validation(**_):
 @operation
 def create_vm(**_):
     random_suffix_value = utils.random_suffix_generator()
-    vm_name = ctx.node.properties['vm_name']+random_suffix_value
+    vm_name = ctx.node.properties[constants.VM_PREFIX]+random_suffix_value
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     storage_account_name = ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
     location = ctx.node.properties['location']

@@ -66,6 +66,7 @@ VNET_PREFIX = 'vnet_'
 EXISTING_VNET_KEY = 'existing_vnet_name'
 
 VM_KEY = 'vm_'
+VM_PREFIX = 'vm_prefix'
 
 NIC_KEY = 'nic_key_name'
 NIC_PREFIX = 'nic_'

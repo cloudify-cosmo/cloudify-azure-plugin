@@ -1,6 +1,6 @@
 subscription_id: '' 
 location: ''
-vm_name: ''
+vm_prefix: ''
 use_external_resource: false
 existing_resource_group_name: ''
 existing_storage_account_name: ''
