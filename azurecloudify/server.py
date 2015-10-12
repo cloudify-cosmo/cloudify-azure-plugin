@@ -134,8 +134,7 @@ def start_vm(**_):
     response_start_vm = requests.post(start_vm_url, headers=headers)
     print (response_start_vm.text)
     
-    
-#stop_vm
+
 @operation
 def stop_vm(**_):
     subscription_id = ctx.node.properties['subscription_id']

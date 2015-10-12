@@ -63,7 +63,7 @@ def create_storage_account(**_):
 
     try:
         ctx.logger.info("Creating new storage account: {}".format(storage_account_name))
-        storage_account_url= constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts/'+storage_account_name+'?api-version='+constants.api_version
+        storage_account_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts/'+storage_account_name+'?api-version='+constants.api_version
         storage_account_params = json.dumps({"properties": {"accountType": constants.storage_account_type, }, "location": location})
         response_sa = requests.put(url=storage_account_url, data=storage_account_params, headers=headers)
         print response_sa.text

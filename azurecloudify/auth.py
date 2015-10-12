@@ -41,19 +41,20 @@ def _get_token_value_expiry(endpoints, payload):
 
 # If client file is used (use_client_file==True), it means that this is during bootstrap
 def get_auth_token(use_client_file=True,**kwargs):
-    if use_client_file and constants.AUTH_TOKEN_VALUE in ctx.instance.runtime_properties:
-        # If you are here , it means that this is during bootstrap
-        return ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE]
+    if use_client_file:
+        if constants.AUTH_TOKEN_VALUE in ctx.instance.runtime_properties:
+            # If you are here , it means that this is during bootstrap
+            return ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE]
 
-    # Check if token file exists on the client's VM. If so, take the value from it and set it in the runtime
-    if os.path.isfile(constants.path_to_local_azure_token_file):
-        # If you are here , it means that this is during bootstrap
-        ctx.logger.info("{} exists".format(constants.path_to_local_azure_token_file))
-        token, token_expires = get_token_from_client_file()
-        ctx.logger.info("get_auth_token expiry is {} ".format(token_expires))
-        ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = token
-        ctx.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY] = token_expires
-        return token
+        # Check if token file exists on the client's VM. If so, take the value from it and set it in the runtime
+        if os.path.isfile(constants.path_to_local_azure_token_file):
+            # If you are here , it means that this is during bootstrap
+            ctx.logger.info("{} exists".format(constants.path_to_local_azure_token_file))
+            token, token_expires = get_token_from_client_file()
+            ctx.logger.info("get_auth_token expiry is {} ".format(token_expires))
+            ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = token
+            ctx.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY] = token_expires
+            return token
 
     # From here, this is not during bootstrap, which also means that this code runs on the manager's VM.
 
