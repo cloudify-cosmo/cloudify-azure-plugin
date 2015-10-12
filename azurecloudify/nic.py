@@ -117,26 +117,15 @@ def delete_nic(**_):
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     nic_name = ctx.instance.runtime_properties[constants.NIC_KEY]
 
-       
     try:
-       ctx.logger.info("Deleting NIC {}".format(nic_name))
-       nic_url = constants.azure_url+"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
-       response_nic = requests.delete(url=nic_url,headers=headers)
-       print(response_nic.text)
+        ctx.logger.info("Deleting NIC {}".format(nic_name))
+        nic_url = constants.azure_url+"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
+        response_nic = requests.delete(url=nic_url,headers=headers)
+        print(response_nic.text)
     except:
-       ctx.logger.info("Network Interface Card {} could not be deleted.".format(nic_name))
+        ctx.logger.info("Network Interface Card {} could not be deleted.".format(nic_name))
 
-
-    # Clean runtime_properties
-    ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = None
-    ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = None
-    ctx.instance.runtime_properties[constants.VNET_KEY] = None
-    ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY] = None
-    ctx.instance.runtime_properties[constants.NIC_KEY] = None
-
-    ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = None
-    ctx.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY] = None
-
+    utils.clear_runtime_properties()
 
 @operation
 def set_dependent_resources_names(azure_config, **kwargs):

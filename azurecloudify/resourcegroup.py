@@ -84,10 +84,7 @@ def delete_resource_group(**_):
     except:
         ctx.logger.info("Resource Group {} could not be deleted.".format(resource_group_name))
 
-    # Clean runtime_properties
-    ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = None
-    ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = None
-    ctx.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY] = None
+    utils.clear_runtime_properties()
 
 
 def _validate_node_properties(key, ctx_node_properties):

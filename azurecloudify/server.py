@@ -169,12 +169,7 @@ def delete_virtual_machine(**_):
     except:
         ctx.logger.info("Virtual Machine {} could not be deleted".format(vm_name))
 
-    ctx.instance.runtime_properties['ip'] = None
-    ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = None
-    ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = None
-    ctx.instance.runtime_properties[constants.VNET_KEY] = None
-    ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY] = None
-    ctx.instance.runtime_properties[constants.NIC_KEY] = None
+    utils.clear_runtime_properties()
 
 
 @operation

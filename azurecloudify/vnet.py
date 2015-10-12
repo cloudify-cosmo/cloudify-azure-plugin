@@ -91,12 +91,7 @@ def delete_vnet(**_):
         ctx.logger.info("Virtual Network {} could not be deleted.".format(vnet_name))
         raise NonRecoverableError("Virtual Network {} could not be created.".format(vnet_name))
 
-    # Clean runtime_properties
-    ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = None
-    ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = None
-    ctx.instance.runtime_properties[constants.VNET_KEY] = None
-    ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = None
-    ctx.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY] = None
+    utils.clear_runtime_properties()
 
 
 @operation

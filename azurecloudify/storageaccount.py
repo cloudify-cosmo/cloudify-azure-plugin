@@ -88,10 +88,7 @@ def delete_storage_account(**_):
     except:
         ctx.logger.info("Storage Account {} could not be deleted.".format(storage_account_name))
 
-    # Clean runtime_properties
-    ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = None
-    ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = None
-    ctx.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY] = None
+    utils.clear_runtime_properties()
 
 
 @operation

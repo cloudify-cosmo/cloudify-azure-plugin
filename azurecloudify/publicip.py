@@ -99,9 +99,8 @@ def delete_public_ip(**_):
     except:
         ctx.logger.info("Public IP {} could not be deleted.".format(public_ip_name))
 
-    ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = None
-    ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = None
-    ctx.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY] = None
+    utils.clear_runtime_properties()
+
 
 @operation
 def set_dependent_resources_names(azure_config, **kwargs):
