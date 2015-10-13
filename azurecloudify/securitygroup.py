@@ -110,4 +110,5 @@ def _get_security_group_name(security_group_name):
     if security_group_name in security_get_resource_group.text:
         return True
     else:
+        ctx.logger.info("Security group {} does not exist".format(security_group_name))
         return False
