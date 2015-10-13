@@ -18,14 +18,21 @@ security_group_name = ctx.node.properties['security_group_name']+RANDOM_SUFFIX_V
 
 @operation
 def create_network_security_group(**_):
-    for property_key in constants.SECURITY_GROUP_REQUIRED_PROPERTIES:
-        _validate_node_properties(property_key, ctx.node.properties)
-    #vm_name=server.vm_name
-    subscription_id = ctx.node.properties['subscription_id']
-    #resource_group_name = resourcegroup.resource_group_name
-    location = ctx.node.properties['location']
-    #security_group_url= constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version
+    if 'use_external_resource' in ctx.node.properties and ctx.node.properties['use_external_resource']:
+        if constants.EXISTING_SECURITY_GROUP_KEY in ctx.node.properties:
+            existing_security_group_name = ctx.node.properties[constants.EXISTING_SECURITY_GROUP_KEY]
+            if existing_security_group_name:
+                security_group_exists = _get_security_group_name(existing_security_group_name)
+                if not security_group_exists:
+                    raise NonRecoverableError("Security group {} doesn't exist your Azure account".format(existing_security_group_name))
+            else:
+                raise NonRecoverableError("The value of '{}' in the input, is empty".format(constants.EXISTING_SECURITY_GROUP_KEY))
+        else:
+            raise NonRecoverableError("'{}' was specified, but '{}' doesn't exist in the input".format('use_external_resource',constants.EXISTING_SECURITY_GROUP_KEY))
 
+        ctx.instance.runtime_properties[constants.SECURITY_GROUP_KEY] = ctx.node.properties[constants.EXISTING_SECURITY_GROUP_KEY]
+        return
+    
     credentials='Bearer '+ auth.get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
 
