@@ -71,23 +71,17 @@ def create_network_security_group(**_):
   
 @operation
 def delete_security_group(**_):
-    #vm_name=server.vm_name
     subscription_id = ctx.node.properties['subscription_id']
-    #resource_group_name = resourcegroup.resource_group_name
-  
-    credentials='Bearer '+ auth.get_auth_token()
+    security_group_name = ctx.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
+    credentials = 'Bearer '+auth.get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
-  
-
     try:
-        ctx.logger.info("Deleting Security Group")
-        #security_group_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version
-        #response_nsg = requests.delete(url=security_group_url,headers=headers)
-        #print(response_nic.text)
+        ctx.logger.info("Deleting Security Group: {}".format(security_group_name))
+        security_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version
+        response_nsg = requests.delete(url=security_group_url, headers=headers)
+        print(response_nsg.text)
     except:
-        ctx.logger.info("Security Group " + security_group_name + " could not be deleted.")
-        sys.exit(1)
-
+        ctx.logger.info("Security Group {} could not be deleted.".format(security_group_name))
     utils.clear_runtime_properties()
 
 
