@@ -65,8 +65,8 @@ def create_network_security_group(**_):
         response_nsg = requests.put(url=security_group_url, data=security_group_params, headers=headers)
         print response_nsg.text
     except:
-        ctx.logger.info("Security group " +security_group_name + "could not be created.")
-        sys.exit(1)
+        ctx.logger.info("Security Group {} could not be created".format(security_group_name))
+        raise NonRecoverableError("Security Group {} could not be created".format(security_group_name))
 
   
 @operation
