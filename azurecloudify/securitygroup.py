@@ -34,6 +34,7 @@ def create_network_security_group(**_):
     subscription_id = ctx.node.properties['subscription_id']
     random_suffix_value = utils.random_suffix_generator()
     security_group_name = constants.SECURITY_GROUP_PREFIX+random_suffix_value
+    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     credentials='Bearer '+ auth.get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     security_group_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version
