@@ -108,7 +108,7 @@ def _get_security_group_name(security_group_name):
     credentials = auth.get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     subscription_id = ctx.node.properties['subscription_id']
-    #list_security_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourcegroups?api-version='+constants.api_version
+    list_security_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkSecurityGroups?api-version='+constants.api_version
     response_get_security_group = requests.get(url=list_security_group_url, headers=headers)
    
     if security_group_name in security_get_resource_group.text:
