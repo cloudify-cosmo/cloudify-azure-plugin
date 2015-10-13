@@ -36,7 +36,7 @@ def create_network_security_group(**_):
     security_group_name = constants.SECURITY_GROUP_PREFIX+random_suffix_value
     credentials='Bearer '+ auth.get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
-
+    security_group_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version
     try:
         ctx.logger.info("Creating new security group:" + security_group_name)
         security_group_params=json.dumps({
@@ -91,16 +91,3 @@ def delete_security_group(**_):
 def _validate_node_properties(key, ctx_node_properties):
       if key not in ctx_node_properties:
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
-        
-
-def _get_security_group_name(security_group_name):    
-    credentials = auth.get_auth_token()
-    headers = {"Content-Type": "application/json", "Authorization": credentials}
-    subscription_id = ctx.node.properties['subscription_id']
-    #list_security_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourcegroups?api-version='+constants.api_version
-    response_get_security_group = requests.get(url=list_security_group_url, headers=headers)
-   
-    if security_group_name in response_get_security_group.text:
-        return True
-    else:
-        return False
