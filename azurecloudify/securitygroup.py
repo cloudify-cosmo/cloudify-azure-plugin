@@ -100,7 +100,11 @@ def _validate_node_properties(key, ctx_node_properties):
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
         
         
-def _get_security_group_name(security_group_name):    
+def _get_security_group_name(security_group_name):  
+    if constants.RESOURCE_GROUP_KEY in ctx.instance.runtime_properties:
+        resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+    else:
+        raise RecoverableError("{} is not in public ip runtime_properties yet.".format(constants.RESOURCE_GROUP_KEY))
     credentials = auth.get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     subscription_id = ctx.node.properties['subscription_id']
