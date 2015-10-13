@@ -82,6 +82,8 @@ def delete_security_group(**_):
         print(response_nsg.text)
     except:
         ctx.logger.info("Security Group {} could not be deleted.".format(security_group_name))
+        
+    
     utils.clear_runtime_properties()
 
 
