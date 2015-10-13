@@ -14,6 +14,12 @@ from cloudify.decorators import operation
 
 
 @operation
+def creation_validation(**_):
+    for property_key in constants.RESOURCE_GROUP_REQUIRED_PROPERTIES:
+        _validate_node_properties(property_key, ctx.node.properties)
+
+
+@operation
 def create_network_security_group(**_):
     if 'use_external_resource' in ctx.node.properties and ctx.node.properties['use_external_resource']:
         if constants.EXISTING_SECURITY_GROUP_KEY in ctx.node.properties:
