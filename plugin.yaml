@@ -67,7 +67,7 @@ node_types:
           Indicates the subscription id of user account
         type: string
         default: ''
-      vm_name:
+      vm_prefix:
         description: >
           Indicates the prefix of the VM's name
       vm_size:

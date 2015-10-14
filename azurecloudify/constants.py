@@ -45,7 +45,7 @@ path_to_local_azure_token_file = '/tmp/azure_token_file.json'
 RESOURCE_GROUP_REQUIRED_PROPERTIES=['location','subscription_id']
 STORAGE_ACCOUNT_REQUIRED_PROPERTIES = ['location','subscription_id']
 VNET_REQUIRED_PROPERTIES = ['location','subscription_id']
-VM_REQUIRED_PROPERTIES = ['vm_name','image_reference_offer','image_reference_publisher','image_reference_sku','vm_size','subscription_id','key_data','location']
+VM_REQUIRED_PROPERTIES = ['vm_prefix','image_reference_offer','image_reference_publisher','image_reference_sku','vm_size','subscription_id','key_data','location']
 NIC_REQUIRED_PROPERTIES = ['location','subscription_id']
 PUBLIC_IP_REQUIRED_PROPERTIES = ['location','subscription_id']
 
@@ -65,7 +65,7 @@ VNET_KEY = 'vnet_key_name'
 VNET_PREFIX = 'vnet_'
 EXISTING_VNET_KEY = 'existing_vnet_name'
 
-VM_KEY = 'vm_'
+VM_KEY = 'vm_key_name'
 VM_PREFIX = 'vm_prefix'
 
 NIC_KEY = 'nic_key_name'
