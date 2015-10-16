@@ -67,10 +67,17 @@ def create_vm(**_):
                 "osProfile": {
                     "computername": vm_name,
                     "adminUsername": ctx.node.properties['ssh_username'],
-                    "adminPassword":"Password1!",
                     "linuxConfiguration": {
-                        "disablePasswordAuthentication": "true"
-                        }
+-                        "disablePasswordAuthentication": "true",
+-                        "ssh": {
+-                            "publicKeys": [
+-                                {
+-                                    "path": "/home/"+ctx.node.properties['ssh_username']+"/.ssh/authorized_keys",
+-                                    "keyData": "keyData": ctx.node.properties['key_data']
+-                                }
+                             ]
+                         }
+                     }
                 },
                 "storageProfile": {
                     "imageReference": {
