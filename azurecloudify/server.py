@@ -71,7 +71,6 @@ def create_vm(**_):
                     "linuxConfiguration": {
                         "disablePasswordAuthentication": "false"
                         }
-                    }
                 },
                 "storageProfile": {
                     "imageReference": {
