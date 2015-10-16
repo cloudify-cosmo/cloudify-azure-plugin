@@ -68,13 +68,13 @@ def create_vm(**_):
                     "computername": vm_name,
                     "adminUsername": ctx.node.properties['ssh_username'],
                     "linuxConfiguration": {
--                        "disablePasswordAuthentication": "true",
--                        "ssh": {
--                            "publicKeys": [
--                                {
--                                    "path": "/home/"+ctx.node.properties['ssh_username']+"/.ssh/authorized_keys",
--                                    "keyData": ctx.node.properties['key_data']
--                                }
+                        "disablePasswordAuthentication": "true",
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "/home/"+ctx.node.properties['ssh_username']+"/.ssh/authorized_keys",
+                                    "keyData": ctx.node.properties['key_data']
+                                }
                              ]
                          }
                      }
