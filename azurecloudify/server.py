@@ -69,8 +69,7 @@ def create_vm(**_):
                     "adminUsername": ctx.node.properties['ssh_username'],
                     "adminPassword":"password",
                     "linuxConfiguration": {
-                        "disablePasswordAuthentication": "false",
-                            ]
+                        "disablePasswordAuthentication": "false"
                         }
                     }
                 },
