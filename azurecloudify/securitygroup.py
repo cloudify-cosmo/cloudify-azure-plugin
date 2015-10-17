@@ -76,6 +76,8 @@ def create_network_security_group(**_):
         ctx.logger.info("Security Group {} could not be created".format(security_group_name))
         raise NonRecoverableError("Security Group {} could not be created".format(security_group_name))
 
+def set_dependent_resources_names(azure_config, **kwargs):
+    ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
   
 @operation
 def delete_security_group(**_):
