@@ -38,6 +38,10 @@ inputs:
   existing_resource_group_name:
     type: string
     default: ''
+    
+  existing_security_group_name:
+    type: string
+    default: ''
 
   existing_storage_account_name:
     type: string
