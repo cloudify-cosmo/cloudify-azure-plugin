@@ -111,7 +111,7 @@ def _get_security_group_name(security_group_name):
     list_security_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkSecurityGroups?api-version='+constants.api_version
     response_get_security_group = requests.get(url=list_security_group_url, headers=headers)
    
-    if security_group_name in security_get_resource_group.text:
+    if security_group_name in response_get_security_group.text:
         return True
     else:
         ctx.logger.info("Security group {} does not exist".format(security_group_name))
