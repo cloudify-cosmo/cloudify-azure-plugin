@@ -54,7 +54,7 @@ def create_network_security_group(**_):
         "properties":{
             "securityRules":[
                 {
-                    "name":"myNsRule",
+                    "name":constants.nsg_rule_name,
                     "properties":{
                         "description":"description-of-this-rule",
                         "protocol": "Tcp",
