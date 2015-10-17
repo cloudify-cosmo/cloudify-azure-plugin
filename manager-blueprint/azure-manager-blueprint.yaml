@@ -144,9 +144,9 @@ node_templates:
       
     relationships:
       - target: manager_resource_group
-       type: cloudify.azure.relationships.security_group_connected_to_resource_group
+        type: cloudify.azure.relationships.security_group_connected_to_resource_group
       - target: azure_token
-       type: cloudify.azure.relationships.resource_connected_to_azure_token
+        type: cloudify.azure.relationships.resource_connected_to_azure_token
 
 
   manager_storage_account:
