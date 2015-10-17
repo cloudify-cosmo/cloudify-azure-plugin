@@ -38,6 +38,7 @@ login_url = 'https://login.microsoftonline.com'
 sourcePortRange = 65000
 destinationPortRange = 60000
 priority = 100
+nsg_rule_name='my_ns_rules'
 resource = 'https://management.core.windows.net/'
 path_to_azure_conf = '~/azure_config.json'
 path_to_local_azure_token_file = '/tmp/azure_token_file.json'
