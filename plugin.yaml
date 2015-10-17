@@ -43,7 +43,7 @@ node_types:
         default: ''
       aad_password:
         description: >
-          Indicates the name of the virtual machine required to create network interface card
+          Indicates the name of the virtual machine required to create resource group
         type: string
         default: ''
       
@@ -54,6 +54,52 @@ node_types:
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.resourcegroup.creation_validation
         
+  cloudify.azure.nodes.SecurityGroup:
+    derived_from: cloudify.nodes.Network
+    properties:
+      use_external_resource:
+        description: >
+          Indicates whether to use external resource or not. Default value is false
+        type: boolean
+        default: false
+      subscription_id:
+        description: >
+          Indicates the subscription id required to create resource group
+        type: string
+        default: ''
+      location:
+        description: >
+         location where VM will be provisioned
+        type: string
+        default: 'West US'
+      existing_security_group_name:
+        description: >
+         Indicates the name of exsisting network security group
+        type: string
+        default: ''
+      client_id:
+        description: >
+          Indicates the user's client id
+        type: string
+        default: ''
+      tenant_id:
+        description: >
+          Indicates the user's tenant id
+        type: string
+        default: ''
+      aad_password:
+        description: >
+          Indicates the name of the virtual machine required to create network security group
+        type: string
+        default: ''
+      
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        configure: microsoft.azurecloudify.resourcegroup.create_network_security_group
+        delete: microsoft.azurecloudify.securitygroup.delete_security_group
+      cloudify.interfaces.validation:
+        creation: microsoft.azurecloudify.securitygroup.creation_validation
+              
   cloudify.azure.nodes.Server:
     derived_from: cloudify.nodes.Compute
     properties:
