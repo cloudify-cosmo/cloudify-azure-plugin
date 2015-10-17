@@ -95,7 +95,7 @@ node_types:
       
     interfaces:
       cloudify.interfaces.lifecycle:
-        configure: microsoft.azurecloudify.resourcegroup.create_security_group
+        configure: microsoft.azurecloudify.securitygroup.create_security_group
         delete: microsoft.azurecloudify.securitygroup.delete_security_group
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.securitygroup.creation_validation
