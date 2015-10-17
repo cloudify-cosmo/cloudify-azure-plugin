@@ -20,7 +20,7 @@ def creation_validation(**_):
 
 
 @operation
-def create_network_security_group(**_):
+def create_security_group(**_):
     if 'use_external_resource' in ctx.node.properties and ctx.node.properties['use_external_resource']:
         if constants.EXISTING_SECURITY_GROUP_KEY in ctx.node.properties:
             existing_security_group_name = ctx.node.properties[constants.EXISTING_SECURITY_GROUP_KEY]
