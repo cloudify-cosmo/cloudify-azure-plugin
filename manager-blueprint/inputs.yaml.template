@@ -4,6 +4,7 @@ vm_prefix: ''
 use_external_resource: false
 existing_resource_group_name: ''
 existing_storage_account_name: ''
+existing_security_group_name: ''
 existing_vnet_name: ''
 existing_nic_name: ''
 existing_public_ip_name: ''
