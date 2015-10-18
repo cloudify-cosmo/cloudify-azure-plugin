@@ -28,9 +28,9 @@ inputs:
     type: string
     default: 'West US'  
 
-  vm_name:
+  vm_prefix:
     type: string
-    default: 'my_vm'
+    default: 'cfy'
 
   vm_size: 
     type: string
@@ -47,6 +47,34 @@ inputs:
   image_reference_sku:
     type: string
     default: '14.04.2-LTS'
+    
+  use_external_resource:
+    type: boolean
+    default: false
+
+  existing_resource_group_name:
+    type: string
+    default: ''
+    
+  existing_security_group_name:
+    type: string
+    default: ''
+
+  existing_storage_account_name:
+    type: string
+    default: ''
+
+  existing_vnet_name:
+    type: string
+    default: ''
+
+  existing_public_ip_name:
+    type: string
+    default: ''
+
+  existing_nic_name:
+    type: string
+    default: ''
 
   key_data:
     type: string
@@ -86,8 +114,8 @@ node_types:
   nodecellar.nodes.MonitoredServer:
     derived_from: cloudify.azure.nodes.Server
     properties:
-      vm_name:
-        default: { get_input: vm_name }
+      vm_prefix:
+        default: { get_input: vm_prefix }
       image_reference_offer:
         default: { get_input: image_reference_offer}
       image_reference_publisher:
@@ -159,90 +187,123 @@ node_templates:
     relationships:
       - target: mongod_nic
         type: cloudify.azure.relationships.server_connected_to_nic
+      - target: azure_token
+        type: cloudify.azure.relationships.resource_connected_to_azure_token
 
   nodejs_host:
     type: nodecellar.nodes.MonitoredServer
     relationships:
       - target: nodejs_nic
         type: cloudify.azure.relationships.server_connected_to_nic
+      - target: azure_token
+        type: cloudify.azure.relationships.resource_connected_to_azure_token
 
   nodecellar_resource_group:
     type: cloudify.azure.nodes.ResourceGroup
     properties:
-      vm_name: { get_input: vm_name }
       location: { get_input: location}
       subscription_id: { get_input: subscription_id}
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
       aad_password: { get_input: aad_password}
+      use_external_resource: { get_input: use_external_resource}
+      existing_resource_group_name: { get_input: existing_resource_group_name}
+      
+    relationships:
+      - target: azure_token
+        type: cloudify.azure.relationships.resource_connected_to_azure_token
      
-
   nodecellar_storage_account:
     type: cloudify.azure.nodes.StorageAccount
     properties:
-      vm_name: { get_input: vm_name }
       location: { get_input: location}
       subscription_id: { get_input: subscription_id}
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
       aad_password: { get_input: aad_password}
+      use_external_resource: { get_input: use_external_resource}
+      existing_storage_account_name: { get_input: existing_storage_account_name}
       
     relationships:
       - target: nodecellar_resource_group
         type: cloudify.azure.relationships.storage_account_connected_to_resource_group
+      - target: azure_token
+        type: cloudify.azure.relationships.resource_connected_to_azure_token
 
   nodejs_public_ip:
     type: cloudify.azure.nodes.PublicIP
     properties:
-      vm_name: { get_input: vm_name }
       location: { get_input: location}
       subscription_id: { get_input: subscription_id}
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
       aad_password: { get_input: aad_password}
+      use_external_resource: { get_input: use_external_resource}
+      existing_public_ip_name: { get_input: existing_public_ip_name}
+      
     relationships:
       - target: nodecellar_vnet
         type: cloudify.azure.relationships.public_ip_connected_to_vnet
+      - target: azure_token
+        type: cloudify.azure.relationships.resource_connected_to_azure_token
 
   nodejs_nic:
     type: cloudify.azure.nodes.NIC
     properties:
-      vm_name: { get_input: vm_name }
       location: { get_input: location}
       subscription_id: { get_input: subscription_id}
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
       aad_password: { get_input: aad_password}
+      use_external_resource: { get_input: use_external_resource}
+      existing_nic_name: { get_input: existing_nic_name}
+      
     relationships:
       - target: nodejs_public_ip
         type: cloudify.azure.relationships.nic_connected_to_public_ip
+      - target: azure_token
+        type: cloudify.azure.relationships.resource_connected_to_azure_token
 
   mongod_nic:
     type: cloudify.azure.nodes.NIC
     properties:
-      vm_name: { get_input: vm_name }
       location: { get_input: location}
       subscription_id: { get_input: subscription_id}
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
       aad_password: { get_input: aad_password}
+      use_external_resource: { get_input: use_external_resource}
+      existing_nic_name: { get_input: existing_nic_name}
+      
     relationships:
       - target: nodecellar_vnet
         type: cloudify.azure.relationships.nic_connected_to_vnet
+      - target: azure_token
+        type: cloudify.azure.relationships.resource_connected_to_azure_token
 
   nodecellar_vnet:
     type: cloudify.azure.nodes.VNET
     properties:
-      vm_name: { get_input: vm_name }
       location: { get_input: location}
       subscription_id: { get_input: subscription_id}
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
       aad_password: { get_input: aad_password}
+      use_external_resource: { get_input: use_external_resource}
+      existing_vnet_name: { get_input: existing_vnet_name}
+      
     relationships:
       - target: nodecellar_storage_account
         type: cloudify.azure.relationships.vnet_connected_to_storage_account
-
+      - target: azure_token
+        type: cloudify.azure.relationships.resource_connected_to_azure_token
+        
+  azure_token:
+    type: cloudify.azure.nodes.azure_token
+    properties:
+      client_id: { get_input: client_id }
+      tenant_id: { get_input: tenant_id }
+      aad_password: { get_input: aad_password }
 
   mongod:
     type: nodecellar.nodes.MongoDatabase
