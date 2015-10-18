@@ -5,7 +5,7 @@
 plugins:
   microsoft:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/master.zip
+    source: https://www.dropbox.com/s/co17ohoswxb5bx8/cloudify-azure-plugin-master.zip?dl=0
 
 node_types:
   cloudify.azure.nodes.ResourceGroup:
