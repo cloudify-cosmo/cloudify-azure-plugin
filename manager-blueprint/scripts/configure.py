@@ -33,9 +33,52 @@ def configure(azure_config):
 
 
 def _set_provider_context():
-    provider = {}
-    ctx.instance.runtime_properties[
-        PROVIDER_CONTEXT_RUNTIME_PROPERTY] = provider
+    # Do not use this code section as a reference - it is a workaround for a
+    #  deprecated feature and will be removed in the near future
+
+    resources = dict()
+    ctx.logger.info("In _set_provider_context")
+
+    # the reference to storage only works the workflow is executed as a
+    # local workflow (i.e. in a local environment context)
+    node_instances = ctx._endpoint.storage.get_node_instances()
+    nodes_by_id = \
+        {node.id: node for node in ctx._endpoint.storage.get_nodes()}
+
+    node_id_to_provider_context_field = {
+        'manager_server': 'manager_server',
+        'manager_resource_group': 'manager_resource_group',
+        'manager_security_group': 'manager_security_group',
+        'manager_storage_account': 'manager_storage_account',
+        'manager_public_ip': 'manager_public_ip',
+        'manager_nic': 'manager_nic',
+        'manager_vnet': 'manager_vnet'
+    }
+    for node_instance in node_instances:
+        if node_instance.node_id in node_id_to_provider_context_field:
+            run_props = node_instance.runtime_properties
+            props = nodes_by_id[node_instance.node_id].properties
+            provider_context_field = \
+                node_id_to_provider_context_field[node_instance.node_id]
+            resources[provider_context_field] = {
+                'use_external_resource': props['use_external_resource']
+            }
+
+            for runtime_prop in run_props:
+                resources[provider_context_field][runtime_prop] = run_props[runtime_prop]
+                ctx.logger.info("field {} prop {} = {}".format(provider_context_field,runtime_prop, run_props[runtime_prop]))
+
+            if node_instance.node_id == 'manager_server':
+                resources[provider_context_field]['ip'] = run_props[constants.PRIVATE_IP_ADDRESS_KEY]
+                ctx.logger.info("provider_context_field {} private IP is {}".format(provider_context_field, run_props[constants.PRIVATE_IP_ADDRESS_KEY]))
+
+    provider = {
+        'resources': resources
+    }
+
+    ctx.instance.runtime_properties[PROVIDER_CONTEXT_RUNTIME_PROPERTY] = provider
+    ctx.logger.info("End of _set_provider_context")
+
 
 
 def _copy_azure_configuration_to_manager(azure_config):
