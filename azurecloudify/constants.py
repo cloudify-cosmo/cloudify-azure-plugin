@@ -58,6 +58,7 @@ STORAGE_ACCOUNT_KEY = 'storage_account_key_name'
 STORAGE_ACCOUNT_PREFIX = 'storageaccount'
 EXISTING_STORAGE_ACCOUNT_KEY = 'existing_storage_account_name'
 
+PRIVATE_IP_ADDRESS_KEY = 'private_ip_address_key_name'
 PUBLIC_IP_KEY = 'public_ip_key_name'
 PUBLIC_IP_PREFIX = 'public_ip_'
 EXISTING_PUBLIC_IP_NAME = 'existing_public_ip_name'

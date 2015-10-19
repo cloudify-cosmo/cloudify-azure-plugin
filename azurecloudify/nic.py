@@ -102,7 +102,7 @@ def create_nic(**_):
         ctx.logger.info("nic curr_properties : {}".format(str(curr_properties)))
         private_ip_address = curr_properties[u'privateIPAddress']
         ctx.logger.info("nic private_ip_address : {}".format(str(private_ip_address)))
-        ctx.instance.runtime_properties['private_ip'] = str(private_ip_address)
+        ctx.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY] = str(private_ip_address)
     except:
         ctx.logger.info("Network interface card {} could not be created.".format(nic_name))
         raise NonRecoverableError("Network interface card {} could not be created.".format(nic_name))
