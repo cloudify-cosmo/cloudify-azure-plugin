@@ -60,9 +60,11 @@ def _set_provider_context():
             props = nodes_by_id[node_instance.node_id].properties
             provider_context_field = \
                 node_id_to_provider_context_field[node_instance.node_id]
-            resources[provider_context_field] = {
-                'use_external_resource': props['use_external_resource']
-            }
+
+            if 'use_external_resource' in props:
+                resources[provider_context_field] = {
+                    'use_external_resource': props['use_external_resource']
+                }
 
             for runtime_prop in run_props:
                 resources[provider_context_field][runtime_prop] = run_props[runtime_prop]
