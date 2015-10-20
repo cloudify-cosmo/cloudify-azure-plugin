@@ -65,14 +65,16 @@ def _set_provider_context():
                 resources[provider_context_field] = {
                     'use_external_resource': props['use_external_resource']
                 }
+            else:
+                resources[provider_context_field] = {}
 
             for runtime_prop in run_props:
                 resources[provider_context_field][runtime_prop] = run_props[runtime_prop]
                 ctx.logger.info("field {} prop {} = {}".format(provider_context_field,runtime_prop, run_props[runtime_prop]))
 
             if node_instance.node_id == 'manager_server':
-                resources[provider_context_field]['ip'] = run_props[constants.PRIVATE_IP_ADDRESS_KEY]
-                ctx.logger.info("provider_context_field {} private IP is {}".format(provider_context_field, run_props[constants.PRIVATE_IP_ADDRESS_KEY]))
+                resources[provider_context_field]['ip'] = run_props['ip']
+                ctx.logger.info("provider_context_field {} private IP is {}".format(provider_context_field, run_props['ip']))
 
     provider = {
         'resources': resources
