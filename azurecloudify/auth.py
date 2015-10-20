@@ -36,17 +36,22 @@ def _get_token_value_expiry(endpoints, payload):
     response = requests.post(endpoints, data=payload).json()
     token = response['access_token']
     token_expires = response['expires_on']
+    ctx.logger.info("_get_token_value_expiry token is {} ".format(token))
     return token, token_expires
 
 
 # If client file is used (use_client_file==True), it means that this is during bootstrap
-def get_auth_token(use_client_file=True,**kwargs):
+def get_auth_token(use_client_file=True, **kwargs):
+    ctx.logger.info("In auth.get_auth_token")
     if use_client_file:
         if constants.AUTH_TOKEN_VALUE in ctx.instance.runtime_properties:
             # If you are here , it means that this is during bootstrap
+            ctx.logger.info("In auth.get_auth_token returning token from runtime props")
+            ctx.logger.info("In auth.get_auth_token token from runtime props is:{}".format(ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE]))
             return ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE]
 
         # Check if token file exists on the client's VM. If so, take the value from it and set it in the runtime
+        ctx.logger.info("In auth.get_auth_token checking local azure file path {}".format(constants.path_to_local_azure_token_file))
         if os.path.isfile(constants.path_to_local_azure_token_file):
             # If you are here , it means that this is during bootstrap
             ctx.logger.info("{} exists".format(constants.path_to_local_azure_token_file))
@@ -54,11 +59,12 @@ def get_auth_token(use_client_file=True,**kwargs):
             ctx.logger.info("get_auth_token expiry is {} ".format(token_expires))
             ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = token
             ctx.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY] = token_expires
+            ctx.logger.info("get_auth_token token1 is {} ".format(token))
             return token
 
     # From here, this is not during bootstrap, which also means that this code runs on the manager's VM.
-
     try:
+        ctx.logger.info("In auth.get_auth_token b4 locking {}".format(constants.path_to_azure_conf))
         lock = LockFile(constants.path_to_azure_conf)
         lock.acquire()
         ctx.logger.info("{} is locked".format(lock.path))
@@ -66,14 +72,22 @@ def get_auth_token(use_client_file=True,**kwargs):
             json_data = json.load(f)
             token_expires = json_data["token_expires"]
             token = json_data["auth_token"]
+            ctx.logger.info("get_auth_token token2 is {} ".format(token))
     except:
         raise NonRecoverableError("Failures while locking or using {}".format(constants.path_to_azure_conf))
 
+    ctx.logger.info("In auth.get_auth_token b4 timestamp")
     timestamp = int(time.time())
+    ctx.logger.info("In auth.get_auth_token timestamp is {}".format(timestamp))
+    ctx.logger.info("In auth.get_auth_token token_expires1 is {}".format(token_expires))
     token_expires = int(token_expires)
+    ctx.logger.info("In auth.get_auth_token token_expires2 is {}".format(token_expires))
     if token_expires-timestamp <= 600 or token_expires == 0 or token is None or token == "":
+        ctx.logger.info("In auth.get_auth_token token_expires-timestamp {}".format(token_expires-timestamp))
         endpoints, payload = _get_payload_endpoints()
         token, token_expires = _get_token_value_expiry(endpoints, payload)
+        ctx.logger.info("get_auth_token token3 is {} ".format(token))
+        ctx.logger.info("In auth.get_auth_token b4 opening {}".format(constants.path_to_azure_conf))
         with open(constants.path_to_azure_conf, 'r+') as f:
             json_data = json.load(f)
             json_data["auth_token"] = token
@@ -83,6 +97,7 @@ def get_auth_token(use_client_file=True,**kwargs):
             f.close()
     lock.release()
     ctx.logger.info("{} is released".format(lock.path))
+    ctx.logger.info("get_auth_token token4 is {} ".format(token))
     return token
 
 
