@@ -88,13 +88,15 @@ def create_nic(**_):
         if constants.PUBLIC_IP_KEY in ctx.instance.runtime_properties:
             public_ip_name = ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY]
             nic_properties = nic_json['properties']
-            properties_ip_configurations = nic_properties['ipConfigurations']
-            ip_configurations_properties = properties_ip_configurations['properties']
+            properties_ip_configurations0 = nic_properties['ipConfigurations'][0]
+            ip_configurations_properties = properties_ip_configurations0['properties']
             public_ip_address_json = {
-                "id": network_str+"/publicIPAddresses/" + public_ip_name
+                "id": network_str+"publicIPAddresses/" + public_ip_name
             }
             ip_configurations_properties['publicIPAddress'] = public_ip_address_json
 
+        ctx.logger.info("nic_json : {}".format(nic_json))
+        print nic_json
         nic_params = json.dumps(nic_json)
         nic_url = constants.azure_url+network_str+"/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
         response_nic = requests.put(url=nic_url, data=nic_params, headers=headers)
