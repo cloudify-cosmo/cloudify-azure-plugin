@@ -49,12 +49,11 @@ def create_nic(**_):
             else:
                 raise NonRecoverableError("The value of '{}' in the input, is empty".format(constants.EXISTING_NIC_KEY))
         else:
-            raise NonRecoverableError("'{}' was specified, but '{}' doesn't exist in the input".format('use_external_resource',constants.EXISTING_NIC_KEY))
+            raise NonRecoverableError("'{}' was specified, but '{}' doesn't exist in the input".format('use_external_resource', constants.EXISTING_NIC_KEY))
 
         ctx.instance.runtime_properties[constants.NIC_KEY] = ctx.node.properties[constants.EXISTING_NIC_KEY]
         return
 
-    public_ip_name = ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY]
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     location = ctx.node.properties['location']
     subscription_id = ctx.node.properties['subscription_id']
@@ -64,33 +63,43 @@ def create_nic(**_):
     credentials = 'Bearer ' + auth.get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
 
-    ctx.logger.info("Checking availability of network interface card: " + nic_name)
+    ctx.logger.info("Checking availability of network interface card: {}".format(nic_name))
 
     try:
-        ctx.logger.info("Creating new network interface card: " + nic_name)
-        nic_params = json.dumps({
-                        "location":location,
-                        "properties":{
-                            "ipConfigurations":[
-                                {
-                                    "name":constants.ip_config_name,
-                                    "properties":{
-                                        "subnet":{
-                                            "id":"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Network/virtualNetworks/"+vnet_name+"/subnets/"+constants.subnet_name
-                                        },
-                                        "privateIPAllocationMethod":"Dynamic",
-                                        "publicIPAddress":{
-                                                "id":"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Network/publicIPAddresses/"+public_ip_name
-                                    }
-                                    }
-                                }
-                            ],
+        ctx.logger.info("Creating new network interface card: {}".format(nic_name))
+        network_str = "/subscriptions/{}/resourceGroups/{}/providers/Microsoft.Network/".format(subscription_id, resource_group_name)
+        nic_json = {
+            "location": location,
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": constants.ip_config_name,
+                        "properties": {
+                            "subnet": {
+                                "id": network_str + "virtualNetworks/" + vnet_name + "/subnets/" + constants.subnet_name
+                            },
+                            "privateIPAllocationMethod": "Dynamic"
                         }
-                    })
-        nic_url = constants.azure_url+"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
+                    }
+                ],
+            }
+        }
+
+        if constants.PUBLIC_IP_KEY in ctx.instance.runtime_properties:
+            public_ip_name = ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY]
+            nic_properties = nic_json['properties']
+            properties_ip_configurations = nic_properties['ipConfigurations']
+            ip_configurations_properties = properties_ip_configurations['properties']
+            public_ip_address_json = {
+                "id": network_str+"/publicIPAddresses/" + public_ip_name
+            }
+            ip_configurations_properties['publicIPAddress'] = public_ip_address_json
+
+        nic_params = json.dumps(nic_json)
+        nic_url = constants.azure_url+network_str+"/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
         response_nic = requests.put(url=nic_url, data=nic_params, headers=headers)
         print(response_nic.text)
-        ctx.instance.runtime_properties[constants.NIC_KEY]=nic_name
+        ctx.instance.runtime_properties[constants.NIC_KEY] = nic_name
 
         ctx.logger.info("response_nic : {}".format(response_nic.text))
         response_nic_json = response_nic.json()
