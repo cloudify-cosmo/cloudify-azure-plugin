@@ -74,7 +74,8 @@ def create_public_ip(**_):
         })
         response_pip = requests.put(url=public_ip_url, data=public_ip_params, headers=headers)
         print response_pip.text
-        ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY]=public_ip_name
+        ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY] = public_ip_name
+        ctx.logger.info("{} is {}".format(constants.PUBLIC_IP_KEY, public_ip_name))
 
     except:
         ctx.logger.info("Public IP {} could not be created.".format(public_ip_name))
@@ -107,6 +108,7 @@ def set_dependent_resources_names(azure_config, **kwargs):
     ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     ctx.source.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = ctx.target.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
     ctx.source.instance.runtime_properties[constants.VNET_KEY] = ctx.target.instance.runtime_properties[constants.VNET_KEY]
+    ctx.logger.info("{} is {}".format(constants.VNET_KEY, ctx.target.instance.runtime_properties[constants.VNET_KEY]))
 
 
 def _validate_node_properties(key, ctx_node_properties):

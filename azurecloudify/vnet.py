@@ -69,6 +69,7 @@ def create_vnet(**_):
         response_vnet = requests.put(url=vnet_url, data=vnet_params, headers=headers)
         print response_vnet.text
         ctx.instance.runtime_properties[constants.VNET_KEY] = vnet_name
+        ctx.logger.info("{} is {}".format(constants.VNET_KEY, vnet_name))
     except:
         ctx.logger.info("Virtual Network {} could not be created.".format(vnet_name))
         sys.exit(1)
