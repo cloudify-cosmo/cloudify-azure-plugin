@@ -119,22 +119,14 @@ def start_vm(**_):
     vm_name = ctx.instance.runtime_properties[constants.VM_KEY]
     subscription_id = ctx.node.properties['subscription_id']
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-    public_ip_name = ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY]
-    get_pip_info_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
-    raw_response = requests.get(url=get_pip_info_url, headers=headers)
-    ctx.logger.info("raw_response : {}".format(str(raw_response)))
-    response_get_info = raw_response.json()
-    ctx.logger.info("response_get_info : {}".format(str(response_get_info)))
-    curr_properties = response_get_info[u'properties']
-    ctx.logger.info("currProperties : {}".format(str(curr_properties)))
-    curr_ip_address = curr_properties[u'ipAddress']
-    ctx.logger.info("Current public IP address is {}".format(str(curr_ip_address)))
-    ctx.instance.runtime_properties['vm_public_ip'] = curr_ip_address
-    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+
+    if constants.PUBLIC_IP_KEY in ctx.instance.runtime_properties:
+        _set_private_ip(subscription_id, resource_group_name, headers)
+
     start_vm_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
     response_start_vm = requests.post(start_vm_url, headers=headers)
     print (response_start_vm.text)
-    
+
 
 @operation
 def stop_vm(**_):
@@ -186,7 +178,21 @@ def set_dependent_resources_names(azure_config, **kwargs):
     ctx.source.instance.runtime_properties[constants.NIC_KEY] = ctx.target.instance.runtime_properties[constants.NIC_KEY]
 
 
-
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
+
+
+def _set_private_ip(subscription_id,resource_group_name,headers):
+    public_ip_name = ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY]
+    get_pip_info_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
+    raw_response = requests.get(url=get_pip_info_url, headers=headers)
+    ctx.logger.info("raw_response : {}".format(str(raw_response)))
+    response_get_info = raw_response.json()
+    ctx.logger.info("response_get_info : {}".format(str(response_get_info)))
+    curr_properties = response_get_info[u'properties']
+    ctx.logger.info("currProperties : {}".format(str(curr_properties)))
+    curr_ip_address = curr_properties[u'ipAddress']
+    ctx.logger.info("Current public IP address is {}".format(str(curr_ip_address)))
+    ctx.instance.runtime_properties['vm_public_ip'] = curr_ip_address
+
