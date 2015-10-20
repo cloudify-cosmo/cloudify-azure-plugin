@@ -45,11 +45,11 @@ def create_vm(**_):
     location = ctx.node.properties['location']
     vnet_name = ctx.instance.runtime_properties[constants.VNET_KEY]
     nic_name = ctx.instance.runtime_properties[constants.NIC_KEY]
-    public_ip_name = ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY]
     credentials = 'Bearer ' + auth.get_auth_token()
     subscription_id = ctx.node.properties['subscription_id']
     headers = {"Content-Type": "application/json", "Authorization": credentials}
-    
+    if constants.PUBLIC_IP_KEY in ctx.instance.runtime_properties:
+        _set_public_ip(subscription_id, resource_group_name, headers)
     ctx.logger.info("Checking availability of virtual machine: {}".format(vnet_name))
 
     try:
@@ -119,10 +119,6 @@ def start_vm(**_):
     vm_name = ctx.instance.runtime_properties[constants.VM_KEY]
     subscription_id = ctx.node.properties['subscription_id']
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-
-    if constants.PUBLIC_IP_KEY in ctx.instance.runtime_properties:
-        _set_public_ip(subscription_id, resource_group_name, headers)
-
     start_vm_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
     response_start_vm = requests.post(start_vm_url, headers=headers)
     print (response_start_vm.text)
