@@ -139,7 +139,7 @@ node_types:
       aad_password:
         default: { get_input: aad_password}
       install_agent: 
-        default: false
+        default: true
 
     interfaces:
 
