@@ -163,7 +163,7 @@ def _get_nic_name(nic_name):
     else:
         raise RecoverableError("{} is not in nic runtime_properties yet".format(constants.RESOURCE_GROUP_KEY))
     credentials = auth.get_auth_token()
-    headers = {"Content-Type": "application/json", "Authorization": credentials}
+    headers = {"Content-Type": "application/json", "Authorization": "{}".format(credentials)}
     subscription_id = ctx.node.properties['subscription_id']
     nic_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkInterfaces?api-version='+constants.api_version
     response_get_nic_name = requests.get(url=nic_url,headers=headers)

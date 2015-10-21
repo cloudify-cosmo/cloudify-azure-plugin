@@ -116,9 +116,9 @@ def _get_vnet_name(vnet_name):
     credentials = auth.get_auth_token()
     subscription_id = ctx.node.properties['subscription_id']
     url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualnetworks?api-version='+constants.api_version
-    headers = {"Content-Type": "application/json", "Authorization": credentials}
+    headers = {"Content-Type": "application/json", "Authorization": "{}".format(credentials)}
     response_list = requests.get(url, headers=headers)
-    ctx.logger.info("VNET response_list.text {} ".format(response_list.text))
+    ctx.logger.info("VNET response_list.text {}".format(response_list.text))
     if vnet_name in response_list.text:
         return True
     else:

@@ -112,7 +112,7 @@ def _get_storage_account_name(storage_account_name):
 
     credentials = auth.get_auth_token()
     url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts?api-version='+constants.api_version
-    headers = {"Content-Type": "application/json", "Authorization": credentials}
+    headers = {"Content-Type": "application/json", "Authorization": "{}".format(credentials)}
     response_list = requests.get(url, headers=headers)
     ctx.logger.info("storage account response_list.text {} ".format(response_list.text))
     if storage_account_name in response_list.text:
