@@ -131,7 +131,7 @@ def delete_nic(**_):
     try:
         ctx.logger.info("Deleting NIC {}".format(nic_name))
         nic_url = constants.azure_url+"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
-        response_nic = requests.delete(url=nic_url,headers=headers)
+        response_nic = requests.delete(url=nic_url, headers=headers)
         print(response_nic.text)
     except:
         ctx.logger.info("Network Interface Card {} could not be deleted.".format(nic_name))

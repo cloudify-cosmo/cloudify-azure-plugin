@@ -43,15 +43,13 @@ def create_vm(**_):
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     storage_account_name = ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
     location = ctx.node.properties['location']
-    vnet_name = ctx.instance.runtime_properties[constants.VNET_KEY]
     nic_name = ctx.instance.runtime_properties[constants.NIC_KEY]
     credentials = 'Bearer ' + auth.get_auth_token()
     subscription_id = ctx.node.properties['subscription_id']
     headers = {"Content-Type": "application/json", "Authorization": credentials}
-    ctx.logger.info("Checking availability of virtual machine: {}".format(vnet_name))
 
     try:
-        ctx.logger.info("Creating new virtual machine: ".format(vnet_name))
+        ctx.logger.info("Creating new virtual machine: ".format(vm_name))
         virtual_machine_params = json.dumps(
         {
             "id":"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Compute/virtualMachines/"+vm_name,
@@ -142,11 +140,9 @@ def stop_vm(**_):
 def delete_virtual_machine(**_):
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     subscription_id = ctx.node.properties['subscription_id']
-    vnet_name = ctx.instance.runtime_properties[constants.VNET_KEY]
     credentials = 'Bearer ' + auth.get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     vm_name = ctx.instance.runtime_properties[constants.VM_KEY]
-    ctx.logger.info("Checking availability of virtual network: {}".format(vnet_name))
 
     try:
         ctx.logger.info("Deleting the virtual machine: {}".format(vm_name))

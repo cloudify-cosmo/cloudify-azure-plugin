@@ -60,7 +60,6 @@ def create_vnet(**_):
     random_suffix_value = utils.random_suffix_generator()
     vnet_name = constants.VNET_PREFIX+random_suffix_value
     vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
-    ctx.logger.info("Checking availability of virtual network: {}".format(vnet_name))
 
     try:
         ctx.logger.info("Creating new virtual network: {}".format(vnet_name))
@@ -68,6 +67,7 @@ def create_vnet(**_):
         vnet_params = json.dumps({"name": vnet_name, "location": location,"properties": {"addressSpace": {"addressPrefixes": constants.vnet_address_prefixes},"subnets": [{"name": constants.subnet_name, "properties": {"addressPrefix": constants.address_prefix}}]}})
         response_vnet = requests.put(url=vnet_url, data=vnet_params, headers=headers)
         print response_vnet.text
+        ctx.logger.info("response_vnet : {}".format(response_vnet.text))
         ctx.instance.runtime_properties[constants.VNET_KEY] = vnet_name
         ctx.logger.info("{} is {}".format(constants.VNET_KEY, vnet_name))
     except:
@@ -108,6 +108,7 @@ def _validate_node_properties(key, ctx_node_properties):
 
 
 def _get_vnet_name(vnet_name):
+    ctx.logger.info("In _get_vnet_name looking for {} ".format(vnet_name))
     if constants.RESOURCE_GROUP_KEY in ctx.instance.runtime_properties:
         resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     else:
@@ -117,6 +118,7 @@ def _get_vnet_name(vnet_name):
     url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualnetworks?api-version='+constants.api_version
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     response_list = requests.get(url, headers=headers)
+    ctx.logger.info("VNET response_list.text {} ".format(response_list.text))
     if vnet_name in response_list.text:
         return True
     else:

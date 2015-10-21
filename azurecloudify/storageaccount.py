@@ -85,6 +85,7 @@ def delete_storage_account(**_):
         storage_account_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts/'+storage_account_name+'?api-version='+constants.api_version
         response_sa = requests.delete(url=storage_account_url, headers=headers)
         print response_sa.text
+        ctx.logger.info("response_sa storage account : {}".format(response_sa.text))
     except:
         ctx.logger.info("Storage Account {} could not be deleted.".format(storage_account_name))
 
@@ -102,6 +103,7 @@ def _validate_node_properties(key, ctx_node_properties):
 
 
 def _get_storage_account_name(storage_account_name):
+    ctx.logger.info("In _get_storage_account_name looking for {} ".format(storage_account_name))
     subscription_id = ctx.node.properties['subscription_id']
     if constants.RESOURCE_GROUP_KEY in ctx.instance.runtime_properties:
         resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
@@ -112,6 +114,7 @@ def _get_storage_account_name(storage_account_name):
     url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts?api-version='+constants.api_version
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     response_list = requests.get(url, headers=headers)
+    ctx.logger.info("storage account response_list.text {} ".format(response_list.text))
     if storage_account_name in response_list.text:
         return True
     else:

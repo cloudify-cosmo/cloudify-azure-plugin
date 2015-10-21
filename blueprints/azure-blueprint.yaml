@@ -206,7 +206,7 @@ node_templates:
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
       aad_password: { get_input: aad_password}
-      use_external_resource: { get_input: use_external_resource}
+      use_external_resource: True
       existing_resource_group_name: { get_input: existing_resource_group_name}
       
     relationships:
@@ -221,7 +221,7 @@ node_templates:
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
       aad_password: { get_input: aad_password}
-      use_external_resource: { get_input: use_external_resource}
+      use_external_resource: True
       existing_storage_account_name: { get_input: existing_storage_account_name}
       
     relationships:
@@ -289,7 +289,7 @@ node_templates:
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
       aad_password: { get_input: aad_password}
-      use_external_resource: { get_input: use_external_resource}
+      use_external_resource: True
       existing_vnet_name: { get_input: existing_vnet_name}
       
     relationships:
