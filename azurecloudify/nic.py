@@ -58,6 +58,7 @@ def create_nic(**_):
     location = ctx.node.properties['location']
     subscription_id = ctx.node.properties['subscription_id']
     vnet_name = ctx.instance.runtime_properties[constants.VNET_KEY]
+    current_subnet_name = ctx.instance.runtime_properties[constants.SUBNET_KEY]
     random_suffix_value = utils.random_suffix_generator()
     nic_name = constants.NIC_PREFIX+random_suffix_value
     credentials = 'Bearer ' + auth.get_auth_token()
@@ -73,10 +74,10 @@ def create_nic(**_):
             "properties": {
                 "ipConfigurations": [
                     {
-                        "name": constants.ip_config_name,
+                        "name": constants.IP_PREFIX+utils.random_suffix_generator(),
                         "properties": {
                             "subnet": {
-                                "id": network_str + "virtualNetworks/" + vnet_name + "/subnets/" + constants.subnet_name
+                                "id": network_str + "virtualNetworks/" + vnet_name + "/subnets/" + current_subnet_name
                             },
                             "privateIPAllocationMethod": "Dynamic"
                         }
@@ -143,6 +144,7 @@ def set_dependent_resources_names(azure_config, **kwargs):
     ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     ctx.source.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = ctx.target.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
     ctx.source.instance.runtime_properties[constants.VNET_KEY] = ctx.target.instance.runtime_properties[constants.VNET_KEY]
+    ctx.source.instance.runtime_properties[constants.SUBNET_KEY] = ctx.target.instance.runtime_properties[constants.SUBNET_KEY]
     ctx.logger.info("{} is {}".format(constants.VNET_KEY, ctx.target.instance.runtime_properties[constants.VNET_KEY]))
     if constants.PUBLIC_IP_KEY in ctx.target.instance.runtime_properties:
         ctx.logger.info("{} is {}".format(constants.PUBLIC_IP_KEY, ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]))

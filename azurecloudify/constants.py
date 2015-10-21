@@ -25,9 +25,8 @@ api_version_resource_group = '2015-01-01'
 storage_account_type = 'Standard_LRS'
 
 vnet_address_prefixes = ["10.1.0.0/16","10.2.0.0/16"]
-subnet_name = 'Subnet-1'
 address_prefix = "10.1.0.0/24"
-ip_config_name = 'myip1'
+IP_PREFIX = 'myip1'
 image_reference_version = 'latest'
 os_disk_name = 'osdisk'
 vm_caching = 'ReadWrite'
@@ -66,6 +65,9 @@ EXISTING_PUBLIC_IP_NAME = 'existing_public_ip_name'
 VNET_KEY = 'vnet_key_name'
 VNET_PREFIX = 'vnet_'
 EXISTING_VNET_KEY = 'existing_vnet_name'
+
+SUBNET_KEY = 'subnet_key_name'
+SUBNET_PREFIX = 'subvnet_'
 
 VM_KEY = 'vm_key_name'
 VM_PREFIX = 'vm_prefix'

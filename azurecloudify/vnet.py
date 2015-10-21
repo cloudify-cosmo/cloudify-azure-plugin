@@ -63,8 +63,9 @@ def create_vnet(**_):
 
     try:
         ctx.logger.info("Creating new virtual network: {}".format(vnet_name))
-
-        vnet_params = json.dumps({"name": vnet_name, "location": location,"properties": {"addressSpace": {"addressPrefixes": constants.vnet_address_prefixes},"subnets": [{"name": constants.subnet_name, "properties": {"addressPrefix": constants.address_prefix}}]}})
+        current_subnet_name = constants.SUBNET_PREFIX+utils.random_suffix_generator()
+        ctx.instance.runtime_properties[constants.SUBNET_KEY] = current_subnet_name
+        vnet_params = json.dumps({"name": vnet_name, "location": location,"properties": {"addressSpace": {"addressPrefixes": constants.vnet_address_prefixes},"subnets": [{"name": current_subnet_name, "properties": {"addressPrefix": constants.address_prefix}}]}})
         response_vnet = requests.put(url=vnet_url, data=vnet_params, headers=headers)
         print response_vnet.text
         ctx.logger.info("response_vnet : {}".format(response_vnet.text))
