@@ -180,7 +180,7 @@ def _validate_node_properties(key, ctx_node_properties):
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
 
 
-def _set_public_ip(subscription_id,resource_group_name,headers):
+def _set_public_ip(subscription_id, resource_group_name, headers):
     public_ip_name = ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY]
     get_pip_info_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
     raw_response = requests.get(url=get_pip_info_url, headers=headers)

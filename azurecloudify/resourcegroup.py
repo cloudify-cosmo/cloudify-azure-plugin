@@ -95,9 +95,9 @@ def _validate_node_properties(key, ctx_node_properties):
 
 def _get_resource_group_name(resource_group_name):
     ctx.logger.info("In _get_resource_group_name looking for {}".format(resource_group_name))
-    credentials = auth.get_auth_token()
+    credentials = 'Bearer ' + auth.get_auth_token()
     ctx.logger.info("In _get_resource_group_name credentials is {}".format(credentials))
-    headers = {"Content-Type": "application/json", "Authorization": "{}".format(credentials)}
+    headers = {"Content-Type": "application/json", "Authorization": credentials}
     subscription_id = ctx.node.properties['subscription_id']
     list_resource_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourcegroups?api-version='+constants.api_version
     response_get_resource_group = requests.get(url=list_resource_group_url, headers=headers)

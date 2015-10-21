@@ -108,8 +108,8 @@ def _get_security_group_name(security_group_name):
         resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     else:
         raise RecoverableError("{} is not in public ip runtime_properties yet.".format(constants.RESOURCE_GROUP_KEY))
-    credentials = auth.get_auth_token()
-    headers = {"Content-Type": "application/json", "Authorization": "{}".format(credentials)}
+    credentials = 'Bearer ' + auth.get_auth_token()
+    headers = {"Content-Type": "application/json", "Authorization": credentials}
     subscription_id = ctx.node.properties['subscription_id']
     list_security_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkSecurityGroups?api-version='+constants.api_version
     response_get_security_group = requests.get(url=list_security_group_url, headers=headers)
