@@ -99,7 +99,7 @@ def _get_resource_group_name(resource_group_name):
     ctx.logger.info("In _get_resource_group_name credentials is {}".format(credentials))
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     subscription_id = ctx.node.properties['subscription_id']
-    list_resource_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourcegroups?api-version='+constants.api_version
+    list_resource_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourcegroups?api-version='+constants.api_version_resource_group
     response_get_resource_group = requests.get(url=list_resource_group_url, headers=headers)
     ctx.logger.info("response_get_resource_group.text {} ".format(response_get_resource_group.text))
     if resource_group_name in response_get_resource_group.text:
