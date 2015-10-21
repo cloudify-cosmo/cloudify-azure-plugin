@@ -206,7 +206,7 @@ node_templates:
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
       aad_password: { get_input: aad_password}
-      use_external_resource: True
+      use_external_resource: { get_input: use_external_resource}
       existing_resource_group_name: { get_input: existing_resource_group_name}
       
     relationships:
@@ -221,7 +221,7 @@ node_templates:
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
       aad_password: { get_input: aad_password}
-      use_external_resource: True
+      use_external_resource: { get_input: use_external_resource}
       existing_storage_account_name: { get_input: existing_storage_account_name}
       
     relationships:
@@ -242,7 +242,7 @@ node_templates:
       existing_public_ip_name: { get_input: existing_public_ip_name}
       
     relationships:
-      - target: nodecellar_vnet
+      - target: nodejs_vnet
         type: cloudify.azure.relationships.public_ip_connected_to_vnet
       - target: azure_token
         type: cloudify.azure.relationships.resource_connected_to_azure_token
@@ -276,12 +276,12 @@ node_templates:
       existing_nic_name: { get_input: existing_nic_name}
       
     relationships:
-      - target: nodecellar_vnet
+      - target: mongod_vnet
         type: cloudify.azure.relationships.nic_connected_to_vnet
       - target: azure_token
         type: cloudify.azure.relationships.resource_connected_to_azure_token
 
-  nodecellar_vnet:
+  mongod_vnet:
     type: cloudify.azure.nodes.VNET
     properties:
       location: { get_input: location}
@@ -289,7 +289,24 @@ node_templates:
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
       aad_password: { get_input: aad_password}
-      use_external_resource: True
+      use_external_resource: { get_input: use_external_resource}
+      existing_vnet_name: { get_input: existing_vnet_name}
+      
+    relationships:
+      - target: nodecellar_storage_account
+        type: cloudify.azure.relationships.vnet_connected_to_storage_account
+      - target: azure_token
+        type: cloudify.azure.relationships.resource_connected_to_azure_token
+
+  nodejs_vnet:
+    type: cloudify.azure.nodes.VNET
+    properties:
+      location: { get_input: location}
+      subscription_id: { get_input: subscription_id}
+      client_id: { get_input: client_id}
+      tenant_id: { get_input: tenant_id}
+      aad_password: { get_input: aad_password}
+      use_external_resource: { get_input: use_external_resource}
       existing_vnet_name: { get_input: existing_vnet_name}
       
     relationships:
