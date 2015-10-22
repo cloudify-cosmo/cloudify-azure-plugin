@@ -55,13 +55,15 @@ def create_resource_group(**_):
     headers = {"Content-Type": "application/json", "Authorization": credentials}
 
     resource_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version_resource_group
-    ctx.logger.info("Checking availability of resource_group: {}".format(resource_group_name))
 
     try:
         ctx.logger.info("Creating a new Resource group: {}".format(resource_group_name))
-        resource_group_params = json.dumps({"name":resource_group_name,"location": location})
+        resource_group_params = json.dumps({"name": resource_group_name,"location": location})
         response_rg = requests.put(url=resource_group_url, data=resource_group_params, headers=headers)
-        print response_rg.text
+        ctx.logger.info("create_resource_group {} response_rg.text is {}".format(resource_group_name, response_rg.text))
+        if utils.request_failed("{}:{}".format('create_resource_group', resource_group_name), response_rg):
+            raise NonRecoverableError("Resource group {} could not be created".format(resource_group_name))
+
         ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = resource_group_name
     except:
         ctx.logger.info("Resource Group {} could not be created".format(resource_group_name))

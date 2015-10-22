@@ -101,11 +101,14 @@ def create_vm(**_):
             })
         virtual_machine_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version
         response_vm = requests.put(url=virtual_machine_url, data=virtual_machine_params, headers=headers)
-        print(response_vm.text)
+        ctx.logger.info("create_vm:{} response_vm.text is {}".format(vm_name, response_vm.text))
+        if utils.request_failed("{}:{}".format('create_vm', vm_name), response_vm):
+            raise NonRecoverableError("Virtual Machine {} could not be created".format(vm_name))
+
         ctx.instance.runtime_properties[constants.VM_KEY] = vm_name
     except:
-      ctx.logger.info("Virtual Machine {} could not be created".format(vm_name))
-      raise NonRecoverableError("Virtual Machine {} could not be created".format(vm_name))
+        ctx.logger.info("Virtual Machine {} could not be created".format(vm_name))
+        raise NonRecoverableError("Virtual Machine {} could not be created".format(vm_name))
 
 
 @operation
@@ -119,8 +122,9 @@ def start_vm(**_):
         _set_public_ip(subscription_id, resource_group_name, headers)
     start_vm_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
     response_start_vm = requests.post(start_vm_url, headers=headers)
-    print (response_start_vm.text)
-
+    ctx.logger.info("start_vm {} response_start_vm.text is {}".format(vm_name, response_start_vm.text))
+    if utils.request_failed("{}:{}".format('start_vm', vm_name), response_start_vm):
+        raise NonRecoverableError("Virtual Machine {} could not be started".format(vm_name))
 
 @operation
 def stop_vm(**_):

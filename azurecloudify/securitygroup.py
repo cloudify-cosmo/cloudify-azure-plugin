@@ -41,37 +41,40 @@ def create_security_group(**_):
     random_suffix_value = utils.random_suffix_generator()
     security_group_name = constants.SECURITY_GROUP_PREFIX+random_suffix_value
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-    credentials='Bearer '+ auth.get_auth_token()
+    credentials = 'Bearer '+ auth.get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     security_group_url=constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version
     try:
         ctx.logger.info("Creating new security group:" + security_group_name)
-        security_group_params=json.dumps({
-        "location":"West US",
-        "tags":{
-            "key":"value"
+        security_group_params = json.dumps({
+        "location": "West US",
+        "tags": {
+            "key": "value"
         },
-        "properties":{
-            "securityRules":[
+        "properties": {
+            "securityRules": [
                 {
                     "name":constants.nsg_rule_name,
-                    "properties":{
-                        "description":"description-of-this-rule",
+                    "properties": {
+                        "description": "description-of-this-rule",
                         "protocol": "Tcp",
-                        "sourcePortRange":constants.sourcePortRange,
-                        "destinationPortRange":constants.destinationPortRange,
-                        "sourceAddressPrefix":"*",
-                        "destinationAddressPrefix":"*",
-                        "access":"Allow",
-                        "priority":constants.priority,
-                        "direction":"Inbound"
+                        "sourcePortRange": constants.sourcePortRange,
+                        "destinationPortRange": constants.destinationPortRange,
+                        "sourceAddressPrefix": "*",
+                        "destinationAddressPrefix": "*",
+                        "access": "Allow",
+                        "priority": constants.priority,
+                        "direction": "Inbound"
                     }
                 }
              ]
           }
         })
         response_nsg = requests.put(url=security_group_url, data=security_group_params, headers=headers)
-        print response_nsg.text
+        ctx.logger.info("create_security_group {} response_nsg.text is {}".format(security_group_name, response_nsg.text))
+        if utils.request_failed("{}:{}".format('create_security_group', security_group_name), response_nsg):
+            raise NonRecoverableError("create_security_group {} could not be created".format(security_group_name))
+
     except:
         ctx.logger.info("Security Group {} could not be created".format(security_group_name))
         raise NonRecoverableError("Security Group {} could not be created".format(security_group_name))

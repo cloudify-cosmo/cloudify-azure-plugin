@@ -101,7 +101,11 @@ def create_nic(**_):
         nic_params = json.dumps(nic_json)
         nic_url = constants.azure_url+network_str+"/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
         response_nic = requests.put(url=nic_url, data=nic_params, headers=headers)
-        print(response_nic.text)
+
+        ctx.logger.info("create_nic {} response_nic.text is {}".format(nic_name, response_nic.text))
+        if utils.request_failed("{}:{}".format('create_nic', nic_name), response_nic):
+            raise NonRecoverableError("NIC {} could not be created".format(nic_name))
+
         ctx.instance.runtime_properties[constants.NIC_KEY] = nic_name
 
         ctx.logger.info("response_nic : {}".format(response_nic.text))
