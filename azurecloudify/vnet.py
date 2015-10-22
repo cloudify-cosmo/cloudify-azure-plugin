@@ -68,11 +68,11 @@ def create_vnet(**_):
         vnet_params = json.dumps({"name": vnet_name, "location": location, "properties": {"addressSpace": {"addressPrefixes": constants.vnet_address_prefixes},"subnets": [{"name": current_subnet_name, "properties": {"addressPrefix": constants.address_prefix}}]}})
         response_vnet = requests.put(url=vnet_url, data=vnet_params, headers=headers)
 
-        ctx.logger.info("create_vnet {}, subnet {} response_vnet.text is {}".format(vnet_name, current_subnet_name, response_vnet.text))
-        if utils.request_failed("{}:{}/{}".format('create_vnet', vnet_name, current_subnet_name), response_vnet):
-            raise NonRecoverableError("VNET {}/{} could not be created".format(vnet_name, current_subnet_name))
+        if response_vnet.text:
+            ctx.logger.info("create_vnet {}, subnet {} response_vnet.text is {}".format(vnet_name, current_subnet_name, response_vnet.text))
+            if utils.request_failed("{}:{}/{}".format('create_vnet', vnet_name, current_subnet_name), response_vnet):
+                raise NonRecoverableError("VNET {}/{} could not be created".format(vnet_name, current_subnet_name))
 
-        ctx.logger.info("response_vnet : {}".format(response_vnet.text))
         ctx.instance.runtime_properties[constants.VNET_KEY] = vnet_name
         ctx.logger.info("{} is {}".format(constants.VNET_KEY, vnet_name))
     except:

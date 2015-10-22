@@ -59,17 +59,16 @@ def create_storage_account(**_):
 
     headers = {"Content-Type": "application/json", "Authorization": credentials}
 
-    ctx.logger.info("Checking availability of storage account: {}".format(storage_account_name))
-
     try:
         ctx.logger.info("Creating new storage account: {}".format(storage_account_name))
         storage_account_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts/'+storage_account_name+'?api-version='+constants.api_version
         storage_account_params = json.dumps({"properties": {"accountType": constants.storage_account_type, }, "location": location})
         response_sa = requests.put(url=storage_account_url, data=storage_account_params, headers=headers)
 
-        ctx.logger.info("create_storage_account:{} response_sa.text is {}".format(storage_account_name, response_sa.text))
-        if utils.request_failed("{}:{}".format('create_storage_account', storage_account_name), response_sa):
-            raise NonRecoverableError("Storage account {} could not be created".format(storage_account_name))
+        if response_sa.text:
+            ctx.logger.info("create_storage_account:{} response_sa.text is {}".format(storage_account_name, response_sa.text))
+            if utils.request_failed("{}:{}".format('create_storage_account', storage_account_name), response_sa):
+                raise NonRecoverableError("Storage account {} could not be created".format(storage_account_name))
 
         ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = storage_account_name
     except:

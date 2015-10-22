@@ -13,6 +13,7 @@ def clear_runtime_properties():
 
 
 def request_failed(caller_string, raw_response):
+    ctx.logger.info("In request_failed:{}".format(caller_string))
     response_get_info = raw_response.json()
     error_keys = ('error', u'error')
     code_keys = ('code', u'code')

@@ -73,9 +73,10 @@ def create_public_ip(**_):
             }
         })
         response_pip = requests.put(url=public_ip_url, data=public_ip_params, headers=headers)
-        ctx.logger.info("create_public_ip {} response_pip.text is {}".format(public_ip_name, response_pip.text))
-        if utils.request_failed("{}:{}".format('create_public_ip', public_ip_name), response_pip):
-            raise NonRecoverableError("public_ip {} could not be created".format(public_ip_name))
+        if response_pip.text:
+            ctx.logger.info("create_public_ip {} response_pip.text is {}".format(public_ip_name, response_pip.text))
+            if utils.request_failed("{}:{}".format('create_public_ip', public_ip_name), response_pip):
+                raise NonRecoverableError("public_ip {} could not be created".format(public_ip_name))
 
         ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY] = public_ip_name
         ctx.logger.info("{} is {}".format(constants.PUBLIC_IP_KEY, public_ip_name))

@@ -60,9 +60,10 @@ def create_resource_group(**_):
         ctx.logger.info("Creating a new Resource group: {}".format(resource_group_name))
         resource_group_params = json.dumps({"name": resource_group_name,"location": location})
         response_rg = requests.put(url=resource_group_url, data=resource_group_params, headers=headers)
-        ctx.logger.info("create_resource_group {} response_rg.text is {}".format(resource_group_name, response_rg.text))
-        if utils.request_failed("{}:{}".format('create_resource_group', resource_group_name), response_rg):
-            raise NonRecoverableError("Resource group {} could not be created".format(resource_group_name))
+        if response_rg.text:
+            ctx.logger.info("create_resource_group {} response_rg.text is {}".format(resource_group_name, response_rg.text))
+            if utils.request_failed("{}:{}".format('create_resource_group', resource_group_name), response_rg):
+                raise NonRecoverableError("Resource group {} could not be created".format(resource_group_name))
 
         ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = resource_group_name
     except:

@@ -71,9 +71,10 @@ def create_security_group(**_):
           }
         })
         response_nsg = requests.put(url=security_group_url, data=security_group_params, headers=headers)
-        ctx.logger.info("create_security_group {} response_nsg.text is {}".format(security_group_name, response_nsg.text))
-        if utils.request_failed("{}:{}".format('create_security_group', security_group_name), response_nsg):
-            raise NonRecoverableError("create_security_group {} could not be created".format(security_group_name))
+        if response_nsg.text:
+            ctx.logger.info("create_security_group {} response_nsg.text is {}".format(security_group_name, response_nsg.text))
+            if utils.request_failed("{}:{}".format('create_security_group', security_group_name), response_nsg):
+                raise NonRecoverableError("create_security_group {} could not be created".format(security_group_name))
 
     except:
         ctx.logger.info("Security Group {} could not be created".format(security_group_name))
