@@ -128,7 +128,7 @@ def start_vm(**_):
             if _vm_is_started(credentials, headers, vm_name, subscription_id, resource_group_name):
                 _set_public_ip(subscription_id, resource_group_name, headers)
             else:
-                raise RecoverableError("start_vm: Failed to start {} ".format(vm_name))
+                raise RecoverableError("start_vm: vm {} is not ready yet ...".format(vm_name))
         else:
             raise RecoverableError("start_vm: Failed to start {} ".format(vm_name))
 
