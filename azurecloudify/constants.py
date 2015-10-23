@@ -82,3 +82,5 @@ EXISTING_SECURITY_GROUP_KEY = 'existing_security_group_name'
 
 AUTH_TOKEN_VALUE = 'auth_token_value'
 AUTH_TOKEN_EXPIRY = 'auth_token_expiry'
+
+REQUEST_ACCEPTED = 'request accepted'

@@ -22,14 +22,9 @@ import sys
 import auth
 import utils
 import os
-from cloudify.exceptions import NonRecoverableError
+from cloudify.exceptions import NonRecoverableError,RecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation
-
-
-
-
-#virtualmachine:
 
 @operation
 def creation_validation(**_):
@@ -52,10 +47,10 @@ def create_vm(**_):
         ctx.logger.info("Creating new virtual machine: ".format(vm_name))
         virtual_machine_params = json.dumps(
         {
-            "id":"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Compute/virtualMachines/"+vm_name,
-            "name":vm_name,
-            "type":"Microsoft.Compute/virtualMachines",
-            "location":location,
+            "id": "/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Compute/virtualMachines/"+vm_name,
+            "name": vm_name,
+            "type": "Microsoft.Compute/virtualMachines",
+            "location": location,
             "properties": {
                 "hardwareProfile": {
                     "vmSize": ctx.node.properties['vm_size']
@@ -83,7 +78,7 @@ def create_vm(**_):
                         "version": constants.vm_version
                     },
                     "osDisk": {
-                        "name": constants.os_disk_name,
+                        "name": constants.os_disk_name+random_suffix_value,
                         "vhd": {
                             "uri": "http://"+storage_account_name+".blob.core.windows.net/vhds/osdisk.vhd"
                         },
@@ -105,7 +100,10 @@ def create_vm(**_):
             ctx.logger.info("create_vm:{} response_vm.text is {}".format(vm_name, response_vm.text))
             if utils.request_failed("{}:{}".format('create_vm', vm_name), response_vm):
                 raise NonRecoverableError("Virtual Machine {} could not be created".format(vm_name))
-
+        elif response_vm:
+            ctx.logger.info("create_vm:{} response_vm is {}".format(vm_name, response_vm))
+        else:
+            ctx.logger.info("create_vm:{} response_vm is empty".format(vm_name))
         ctx.instance.runtime_properties[constants.VM_KEY] = vm_name
     except:
         ctx.logger.info("Virtual Machine {} could not be created".format(vm_name))
@@ -119,14 +117,21 @@ def start_vm(**_):
     vm_name = ctx.instance.runtime_properties[constants.VM_KEY]
     subscription_id = ctx.node.properties['subscription_id']
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-    if constants.PUBLIC_IP_KEY in ctx.instance.runtime_properties:
-        _set_public_ip(subscription_id, resource_group_name, headers)
-    start_vm_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
-    response_start_vm = requests.post(start_vm_url, headers=headers)
-    if response_start_vm.text:
-        ctx.logger.info("start_vm {} response_start_vm.text is {}".format(vm_name, response_start_vm.text))
-        if utils.request_failed("{}:{}".format('start_vm', vm_name), response_start_vm):
-            raise NonRecoverableError("Virtual Machine {} could not be started".format(vm_name))
+
+    if constants.REQUEST_ACCEPTED in ctx.instance.runtime_properties:
+        if _vm_is_started(credentials, headers, vm_name, subscription_id, resource_group_name):
+            _set_public_ip(subscription_id, resource_group_name, headers)
+        else:
+            raise RecoverableError("start_vm: request already accepted - Waiting for vm {} to start...".format(vm_name))
+    else:
+        if _start_vm_call(credentials, headers, vm_name, subscription_id, resource_group_name):
+            if _vm_is_started(credentials, headers, vm_name, subscription_id, resource_group_name):
+                _set_public_ip(subscription_id, resource_group_name, headers)
+            else:
+                raise RecoverableError("start_vm: Failed to start {} ".format(vm_name))
+        else:
+            raise RecoverableError("start_vm: Failed to start {} ".format(vm_name))
+
 
 @operation
 def stop_vm(**_):
@@ -187,15 +192,65 @@ def _validate_node_properties(key, ctx_node_properties):
 
 
 def _set_public_ip(subscription_id, resource_group_name, headers):
-    public_ip_name = ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY]
-    get_pip_info_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
-    raw_response = requests.get(url=get_pip_info_url, headers=headers)
-    ctx.logger.info("raw_response : {}".format(str(raw_response)))
-    response_get_info = raw_response.json()
-    ctx.logger.info("response_get_info : {}".format(str(response_get_info)))
-    curr_properties = response_get_info[u'properties']
-    ctx.logger.info("currProperties : {}".format(str(curr_properties)))
-    curr_ip_address = curr_properties[u'ipAddress']
-    ctx.logger.info("Current public IP address is {}".format(str(curr_ip_address)))
-    ctx.instance.runtime_properties['vm_public_ip'] = curr_ip_address
+    if constants.PUBLIC_IP_KEY in ctx.instance.runtime_properties:
+        public_ip_name = ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY]
+        get_pip_info_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
+        raw_response = requests.get(url=get_pip_info_url, headers=headers)
+        ctx.logger.info("raw_response : {}".format(str(raw_response)))
+        response_get_info = raw_response.json()
+        ctx.logger.info("response_get_info : {}".format(str(response_get_info)))
+        curr_properties = response_get_info[u'properties']
+        ctx.logger.info("currProperties : {}".format(str(curr_properties)))
+        curr_ip_address = curr_properties[u'ipAddress']
+        ctx.logger.info("Current public IP address is {}".format(str(curr_ip_address)))
+        ctx.instance.runtime_properties['vm_public_ip'] = curr_ip_address
 
+
+def _vm_is_started(credentials, headers, vm_name, subscription_id , resource_group_name):
+    ctx.logger.info("In _vm_is_started checking {}".format(vm_name))
+    check_vm_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?api-version='+constants.api_version
+    check_vm_response = requests.get(check_vm_url, headers=headers)
+    if check_vm_response.text:
+        ctx.logger.info("_vm_is_started:{} resp is {}".format(vm_name, check_vm_response.text))
+        ctx.logger.info("_vm_is_started:{} status code is {}".format(vm_name, check_vm_response.status_code))
+        response_json = check_vm_response.json()
+        if u'properties' in response_json:
+            curr_properties = response_json[u'properties']
+            #print "curr_properties is {}".format(curr_properties)
+            if u'provisioningState' in curr_properties:
+                provisioning_state = curr_properties['provisioningState']
+                ctx.logger.info("_vm_is_started:{} provisioningState is {}".format(vm_name, provisioning_state))
+                if u'Failed' == provisioning_state:
+                    raise NonRecoverableError("In _vm_is_started checking {} provisioningState is {}".format(vm_name, provisioning_state))
+                elif u'Succeeded' == provisioning_state:
+                    return True
+                else:
+                    return False
+        else:
+            ctx.logger.info("_vm_is_started:{} - There are no properties in the response".format(vm_name))
+            return False
+    if check_vm_response.status_code:
+        ctx.logger.info("_vm_is_started:{} - Status code is {}".format(vm_name,check_vm_response.status_code))
+    return False
+
+
+def _start_vm_call(credentials, headers, vm_name, subscription_id , resource_group_name):
+    ctx.logger.info("In _vm_is_started checking {}".format(vm_name))
+    start_vm_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
+    response_start_vm = requests.post(start_vm_url, headers=headers)
+    if response_start_vm.text:
+        ctx.logger.info("_start_vm_call {} response_start_vm.text is {}".format(vm_name, response_start_vm.text))
+        ctx.logger.info("_start_vm_call:{} status code is {}".format(vm_name, response_start_vm.status_code))
+        if utils.request_failed("{}:{}".format('_start_vm_call', vm_name), response_start_vm):
+            raise NonRecoverableError("Virtual Machine {} could not be started".format(vm_name))
+    if response_start_vm.status_code:
+        ctx.logger.info("_start_vm_call:{} - Status code is {}".format(vm_name, response_start_vm.status_code))
+        if response_start_vm.status_code == 202:
+            ctx.instance.runtime_properties[constants.REQUEST_ACCEPTED] = True
+            return True
+        elif response_start_vm.status_code == 200:
+            ctx.instance.runtime_properties[constants.REQUEST_ACCEPTED] = True
+            return True
+        else:
+            return False
+    raise NonRecoverableError("_start_vm_call:{} - No Status code for vm {}".format(vm_name, response_start_vm.status_code))
