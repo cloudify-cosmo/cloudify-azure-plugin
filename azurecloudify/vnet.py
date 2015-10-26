@@ -57,27 +57,22 @@ def create_vnet(**_):
     subscription_id = ctx.node.properties['subscription_id']
     credentials = 'Bearer ' + auth.get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
-    random_suffix_value = utils.random_suffix_generator()
-    vnet_name = constants.VNET_PREFIX+random_suffix_value
-    vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
+    if constants.VNET_KEY in ctx.instance.runtime_properties:
+        vnet_name = ctx.instance.runtime_properties[constants.VNET_KEY]
+        current_subnet_name = ctx.instance.runtime_properties[constants.SUBNET_KEY]
+    else:
+        vnet_name = constants.VNET_PREFIX+utils.random_suffix_generator()
+        ctx.instance.runtime_properties[constants.VNET_KEY] = vnet_name
 
-    try:
-        ctx.logger.info("Creating new virtual network: {}".format(vnet_name))
         current_subnet_name = constants.SUBNET_PREFIX+utils.random_suffix_generator()
         ctx.instance.runtime_properties[constants.SUBNET_KEY] = current_subnet_name
-        vnet_params = json.dumps({"name": vnet_name, "location": location, "properties": {"addressSpace": {"addressPrefixes": constants.vnet_address_prefixes},"subnets": [{"name": current_subnet_name, "properties": {"addressPrefix": constants.address_prefix}}]}})
-        response_vnet = requests.put(url=vnet_url, data=vnet_params, headers=headers)
 
-        if response_vnet.text:
-            ctx.logger.info("create_vnet {}, subnet {} response_vnet.text is {}".format(vnet_name, current_subnet_name, response_vnet.text))
-            if utils.request_failed("{}:{}/{}".format('create_vnet', vnet_name, current_subnet_name), response_vnet):
-                raise NonRecoverableError("VNET {}/{} could not be created".format(vnet_name, current_subnet_name))
+    check_vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
+    create_vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
+    vnet_params = json.dumps({"name": vnet_name, "location": location, "properties": {"addressSpace": {"addressPrefixes": constants.vnet_address_prefixes},"subnets": [{"name": current_subnet_name, "properties": {"addressPrefix": constants.address_prefix}}]}})
+    utils.check_or_create_resource(headers, vnet_name, vnet_params, check_vnet_url, create_vnet_url, 'vnet')
 
-        ctx.instance.runtime_properties[constants.VNET_KEY] = vnet_name
-        ctx.logger.info("{} is {}".format(constants.VNET_KEY, vnet_name))
-    except:
-        ctx.logger.info("Virtual Network {} could not be created.".format(vnet_name))
-        sys.exit(1)
+    ctx.logger.info("{} is {}".format(constants.VNET_KEY, vnet_name))
 
 
 @operation

@@ -56,17 +56,21 @@ def create_public_ip(**_):
     subscription_id = ctx.node.properties['subscription_id']
     location = ctx.node.properties['location']
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-    random_suffix_value = utils.random_suffix_generator()
-    public_ip_name = constants.PUBLIC_IP_PREFIX+random_suffix_value
     credentials = 'Bearer ' + auth.get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
+
+    if constants.VNET_KEY in ctx.instance.runtime_properties:
+        public_ip_name = ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY]
+    else:
+        random_suffix_value = utils.random_suffix_generator()
+        public_ip_name = constants.PUBLIC_IP_PREFIX+random_suffix_value
+        ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY] = public_ip_name
 
     check_public_ip_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
     create_public_ip_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
     public_ip_params = _get_public_ip_params(location, public_ip_name)
     utils.check_or_create_resource(headers, public_ip_name, public_ip_params, check_public_ip_url, create_public_ip_url, 'public_ip')
 
-    ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY] = public_ip_name
     ctx.logger.info("{} is {}".format(constants.PUBLIC_IP_KEY, public_ip_name))
 
 @operation
@@ -128,6 +132,4 @@ def _get_public_ip_params(location, public_ip_name):
             "idleTimeoutInMinutes": 4,
         }
     })
-
-
 
