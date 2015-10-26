@@ -5,6 +5,7 @@ import constants
 from cloudify.exceptions import NonRecoverableError,RecoverableError
 import requests
 from requests import Request,Session,Response
+import json
 
 
 def random_suffix_generator(size=5, chars=string.ascii_lowercase + string.digits):
@@ -64,3 +65,43 @@ def resource_provisioned(caller_string, resource_name, current_response):
     if current_response.status_code:
         ctx.logger.info("{}:resource_provisioned {} - Status code is {}".format(caller_string, resource_name, current_response.status_code))
     return False
+
+def resource_was_created(headers, resource_name, check_resource_url):
+    ctx.logger.info("In resource_was_created checking {}".format(resource_name))
+    check_resource_response = requests.get(check_resource_url, headers=headers)
+    return resource_provisioned('resource_was_created', resource_name, check_resource_response)
+
+
+def check_or_create_resource(headers, resource_name, resource_params, check_resource_url, create_resource_url, resource_type):
+    if constants.REQUEST_ACCEPTED in ctx.instance.runtime_properties:
+        if resource_was_created(headers, resource_name, check_resource_url):
+            ctx.logger.info("check_or_create_resource resource {} ({}) is ready ".format(resource_name,resource_type))
+            return
+        else:
+            raise NonRecoverableError("check_or_create_resource: resource {} ({}) is not ready yet".format(resource_name, resource_type))
+    elif create_resource(headers, resource_name, resource_params, create_resource_url, resource_type):
+        if resource_was_created(headers, resource_name, check_resource_url):
+            ctx.logger.info("_create_resource resource {} ({}) is ready ".format(resource_name, resource_type))
+        else:
+            raise NonRecoverableError("check_or_create_resource: resource {} ({}) is not ready yet".format(resource_name, resource_type))
+
+def create_resource(headers, resource_name, resource_params, create_resource_url, resource_type):
+    ctx.logger.info("_create_resource: creating resource {} ({})".format(resource_name,resource_type))
+    response_resource = requests.put(url=create_resource_url, data=resource_params, headers=headers)
+    if response_resource.text:
+        ctx.logger.info("_create_resource {} ({}) response_resource.text is {}".format(resource_name, resource_type, response_resource.text))
+        if request_failed("{}:{}".format('_create_resource', resource_name), response_resource):
+            raise NonRecoverableError("_create_resource resource {} ({}) could not be created".format(resource_name, resource_type))
+
+    if response_resource.status_code:
+        ctx.logger.info("_create_resource:{} ({}) - Status code is {}".format(resource_name, resource_type, response_resource.status_code))
+        if response_resource.status_code == 202:
+            ctx.instance.runtime_properties[constants.REQUEST_ACCEPTED] = True
+            return True
+        elif response_resource.status_code == 200:
+            ctx.instance.runtime_properties[constants.REQUEST_ACCEPTED] = True
+            return True
+        else:
+            raise NonRecoverableError("check_or_create_resource:{} ({}) - Status code for resource {} is not 200 nor 202".format(resource_name, resource_type, response_resource.status_code))
+
+    raise NonRecoverableError("check_or_create_resource:{} ({}) - No Status code for resource {}".format(resource_name, resource_type, response_resource.status_code))
