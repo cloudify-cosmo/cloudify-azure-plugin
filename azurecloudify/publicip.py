@@ -25,7 +25,7 @@ import utils
 from resourcegroup import *
 from cloudify.exceptions import NonRecoverableError,RecoverableError
 from cloudify import ctx
-from cloudify.decorators import operation 
+from cloudify.decorators import operation
 import auth
 
 
@@ -35,7 +35,7 @@ def creation_validation(**_):
     for property_key in constants.PUBLIC_IP_REQUIRED_PROPERTIES:
         _validate_node_properties(property_key, ctx.node.properties)
 
-      
+
 @operation
 def create_public_ip(**_):
     if 'use_external_resource' in ctx.node.properties and ctx.node.properties['use_external_resource']:
@@ -58,49 +58,29 @@ def create_public_ip(**_):
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     random_suffix_value = utils.random_suffix_generator()
     public_ip_name = constants.PUBLIC_IP_PREFIX+random_suffix_value
-    public_ip_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
     credentials = 'Bearer ' + auth.get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
 
-    try:
-        ctx.logger.info("Creating new public ip : " + public_ip_name)
-        public_ip_params = json.dumps({
-            "location": location,
-            "name": public_ip_name,
-            "properties": {
-                "publicIPAllocationMethod": "Dynamic",
-                "idleTimeoutInMinutes": 4,
-            }
-        })
-        response_pip = requests.put(url=public_ip_url, data=public_ip_params, headers=headers)
-        if response_pip.text:
-            ctx.logger.info("create_public_ip {} response_pip.text is {}".format(public_ip_name, response_pip.text))
-            if utils.request_failed("{}:{}".format('create_public_ip', public_ip_name), response_pip):
-                raise NonRecoverableError("public_ip {} could not be created".format(public_ip_name))
+    _check_or_create_public_ip(credentials, headers, public_ip_name, subscription_id, resource_group_name, location)
 
-        ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY] = public_ip_name
-        ctx.logger.info("{} is {}".format(constants.PUBLIC_IP_KEY, public_ip_name))
-
-    except:
-        ctx.logger.info("Public IP {} could not be created.".format(public_ip_name))
-        raise NonRecoverableError("Public IP {} could not be created.".format(public_ip_name))
-
+    ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY] = public_ip_name
+    ctx.logger.info("{} is {}".format(constants.PUBLIC_IP_KEY, public_ip_name))
 
 @operation
 def delete_public_ip(**_):
-    
+
     subscription_id = ctx.node.properties['subscription_id']
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     public_ip_name = ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY]
     credentials = 'Bearer ' + auth.get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
-    
+
     try:
         ctx.logger.info("Deleting Public IP")
         public_ip_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/ publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
         response_pip = requests.delete(url=public_ip_url,headers=headers)
         print(response_pip.text)
-        
+
     except:
         ctx.logger.info("Public IP {} could not be deleted.".format(public_ip_name))
 
@@ -135,3 +115,58 @@ def _get_public_ip_name(public_ip_name):
         return True
     else:
         return False
+
+
+def _public_ip_was_created(credentials, headers, public_ip_name, subscription_id, resource_group_name):
+    ctx.logger.info("In _public_ip_was_created checking {}".format(public_ip_name))
+    check_public_ip_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
+    check_public_ip_response = requests.get(check_public_ip_url, headers=headers)
+    return utils.resource_provisioned('_public_ip_was_created', public_ip_name, check_public_ip_response)
+
+
+def _check_or_create_public_ip(credentials, headers, public_ip_name, subscription_id, resource_group_name, location):
+    if constants.REQUEST_ACCEPTED in ctx.instance.runtime_properties:
+        if _public_ip_was_created(credentials, headers, public_ip_name, subscription_id, resource_group_name):
+            ctx.logger.info("_check_or_create_public_ip public: ip {} is ready ".format(public_ip_name))
+            return
+        else:
+            raise NonRecoverableError("_check_or_create_public_ip: public ip {} is not ready yet".format(public_ip_name))
+    else:
+        if _create_public_ip(credentials, headers, public_ip_name, subscription_id, resource_group_name, location):
+            if _public_ip_was_created(credentials, headers, public_ip_name, subscription_id, resource_group_name):
+                ctx.logger.info("_create_public_ip public: ip {} is ready ".format(public_ip_name))
+
+
+def _create_public_ip(credentials, headers, public_ip_name, subscription_id, resource_group_name, location):
+        ctx.logger.info("_create_public_ip: creating public ip {}".format(public_ip_name))
+        public_ip_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
+
+        public_ip_params = json.dumps({
+            "location": location,
+            "name": public_ip_name,
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "idleTimeoutInMinutes": 4,
+            }
+        })
+
+        response_pip = requests.put(url=public_ip_url, data=public_ip_params, headers=headers)
+        if response_pip.text:
+            ctx.logger.info("_create_public_ip {} response_pip.text is {}".format(public_ip_name, response_pip.text))
+            if utils.request_failed("{}:{}".format('_create_public_ip', public_ip_name), response_pip):
+                raise NonRecoverableError("_create_public_ip public_ip {} could not be created".format(public_ip_name))
+
+        if response_pip.status_code:
+            ctx.logger.info("_create_public_ip:{} - Status code is {}".format(public_ip_name, response_pip.status_code))
+            if response_pip.status_code == 202:
+                ctx.instance.runtime_properties[constants.REQUEST_ACCEPTED] = True
+                return True
+            elif response_pip.status_code == 200:
+                ctx.instance.runtime_properties[constants.REQUEST_ACCEPTED] = True
+                return True
+            else:
+                raise NonRecoverableError("_check_or_create_public_ip:{} - Status code for public_ip {} is not 200 nor 202".format(public_ip_name, response_pip.status_code))
+
+        raise NonRecoverableError("_check_or_create_public_ip:{} - No Status code for public_ip {}".format(public_ip_name, response_pip.status_code))
+
+
