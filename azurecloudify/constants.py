@@ -84,3 +84,4 @@ AUTH_TOKEN_VALUE = 'auth_token_value'
 AUTH_TOKEN_EXPIRY = 'auth_token_expiry'
 
 REQUEST_ACCEPTED = 'request accepted'
+CREATE_RESPONSE = 'CREATE_RESPONSE'

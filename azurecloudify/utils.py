@@ -43,7 +43,7 @@ def request_failed(caller_string, raw_response):
     return False
 
 
-def resource_provisioned(caller_string, resource_name, current_response):
+def resource_provisioned(caller_string, resource_name, current_response,save_response=False):
     if current_response.text:
         ctx.logger.info("{}:resource_provisioned {} resp is {}".format(caller_string, resource_name, current_response.text))
         ctx.logger.info("{}:resource_provisioned {} status code is {}".format(caller_string, resource_name, current_response.status_code))
@@ -56,6 +56,8 @@ def resource_provisioned(caller_string, resource_name, current_response):
                 if u'Failed' == provisioning_state:
                     raise NonRecoverableError("{}:resource_provisioned checking {} provisioningState is {}".format(caller_string, resource_name, provisioning_state))
                 elif u'Succeeded' == provisioning_state:
+                    if save_response:
+                        ctx.instance.runtime_properties[constants.CREATE_RESPONSE] = response_json
                     return True
                 else:
                     return False
@@ -66,21 +68,21 @@ def resource_provisioned(caller_string, resource_name, current_response):
         ctx.logger.info("{}:resource_provisioned {} - Status code is {}".format(caller_string, resource_name, current_response.status_code))
     return False
 
-def resource_was_created(headers, resource_name, check_resource_url):
+def resource_was_created(headers, resource_name, check_resource_url, save_response=False):
     ctx.logger.info("In resource_was_created checking {}".format(resource_name))
     check_resource_response = requests.get(check_resource_url, headers=headers)
-    return resource_provisioned('resource_was_created', resource_name, check_resource_response)
+    return resource_provisioned('resource_was_created', resource_name, check_resource_response, save_response)
 
 
-def check_or_create_resource(headers, resource_name, resource_params, check_resource_url, create_resource_url, resource_type):
+def check_or_create_resource(headers, resource_name, resource_params, check_resource_url, create_resource_url, resource_type, save_response=False):
     if constants.REQUEST_ACCEPTED in ctx.instance.runtime_properties:
-        if resource_was_created(headers, resource_name, check_resource_url):
+        if resource_was_created(headers, resource_name, check_resource_url, save_response):
             ctx.logger.info("check_or_create_resource resource {} ({}) is ready ".format(resource_name,resource_type))
             return
         else:
             raise NonRecoverableError("check_or_create_resource: resource {} ({}) is not ready yet".format(resource_name, resource_type))
     elif create_resource(headers, resource_name, resource_params, create_resource_url, resource_type):
-        if resource_was_created(headers, resource_name, check_resource_url):
+        if resource_was_created(headers, resource_name, check_resource_url, save_response):
             ctx.logger.info("_create_resource resource {} ({}) is ready ".format(resource_name, resource_type))
         else:
             raise NonRecoverableError("check_or_create_resource: resource {} ({}) is not ready yet".format(resource_name, resource_type))
