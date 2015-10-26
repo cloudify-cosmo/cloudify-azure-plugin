@@ -119,13 +119,13 @@ def start_vm(**_):
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
 
     if constants.REQUEST_ACCEPTED in ctx.instance.runtime_properties:
-        if _vm_is_started(credentials, headers, vm_name, subscription_id, resource_group_name):
+        if _vm_is_started(headers, vm_name, subscription_id, resource_group_name):
             _set_public_ip(subscription_id, resource_group_name, headers)
         else:
             raise RecoverableError("start_vm: request already accepted - Waiting for vm {} to start...".format(vm_name))
     else:
-        if _start_vm_call(credentials, headers, vm_name, subscription_id, resource_group_name):
-            if _vm_is_started(credentials, headers, vm_name, subscription_id, resource_group_name):
+        if _start_vm_call(headers, vm_name, subscription_id, resource_group_name):
+            if _vm_is_started(headers, vm_name, subscription_id, resource_group_name):
                 _set_public_ip(subscription_id, resource_group_name, headers)
             else:
                 raise RecoverableError("start_vm: vm {} is not ready yet ...".format(vm_name))
@@ -206,14 +206,14 @@ def _set_public_ip(subscription_id, resource_group_name, headers):
         ctx.instance.runtime_properties['vm_public_ip'] = curr_ip_address
 
 
-def _vm_is_started(credentials, headers, vm_name, subscription_id, resource_group_name):
+def _vm_is_started(headers, vm_name, subscription_id, resource_group_name):
     ctx.logger.info("In _vm_is_started checking {}".format(vm_name))
     check_vm_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?api-version='+constants.api_version
     check_vm_response = requests.get(check_vm_url, headers=headers)
     return utils.resource_provisioned('_vm_is_started', check_vm_response)
 
 
-def _start_vm_call(credentials, headers, vm_name, subscription_id , resource_group_name):
+def _start_vm_call(headers, vm_name, subscription_id , resource_group_name):
     ctx.logger.info("In _vm_is_started checking {}".format(vm_name))
     start_vm_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
     response_start_vm = requests.post(start_vm_url, headers=headers)

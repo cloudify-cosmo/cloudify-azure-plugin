@@ -100,6 +100,9 @@ def create_resource(headers, resource_name, resource_params, create_resource_url
         if response_resource.status_code == 202:
             ctx.instance.runtime_properties[constants.REQUEST_ACCEPTED] = True
             return True
+        elif response_resource.status_code == 201:
+            ctx.instance.runtime_properties[constants.REQUEST_ACCEPTED] = True
+            return True
         elif response_resource.status_code == 200:
             ctx.instance.runtime_properties[constants.REQUEST_ACCEPTED] = True
             return True
