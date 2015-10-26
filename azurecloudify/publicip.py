@@ -59,7 +59,7 @@ def create_public_ip(**_):
     credentials = 'Bearer ' + auth.get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
 
-    if constants.VNET_KEY in ctx.instance.runtime_properties:
+    if constants.PUBLIC_IP_KEY in ctx.instance.runtime_properties:
         public_ip_name = ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY]
     else:
         random_suffix_value = utils.random_suffix_generator()
