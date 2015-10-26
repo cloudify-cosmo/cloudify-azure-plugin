@@ -57,6 +57,7 @@ def resource_provisioned(caller_string, resource_name, current_response,save_res
                     raise NonRecoverableError("{}:resource_provisioned checking {} provisioningState is {}".format(caller_string, resource_name, provisioning_state))
                 elif u'Succeeded' == provisioning_state:
                     if save_response:
+                        ctx.logger.info("{}:resource_provisioned {}  - Saving json {}".format(caller_string, resource_name, str(response_json)))
                         ctx.instance.runtime_properties[constants.CREATE_RESPONSE] = response_json
                     return True
                 else:

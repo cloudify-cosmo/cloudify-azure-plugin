@@ -210,7 +210,7 @@ def _vm_is_started(headers, vm_name, subscription_id, resource_group_name):
     ctx.logger.info("In _vm_is_started checking {}".format(vm_name))
     check_vm_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?api-version='+constants.api_version
     check_vm_response = requests.get(check_vm_url, headers=headers)
-    return utils.resource_provisioned('_vm_is_started', check_vm_response)
+    return utils.resource_provisioned('_vm_is_started',vm_name, check_vm_response)
 
 
 def _start_vm_call(headers, vm_name, subscription_id , resource_group_name):

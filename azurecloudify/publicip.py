@@ -59,12 +59,16 @@ def create_public_ip(**_):
     credentials = 'Bearer ' + auth.get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
 
+    ctx.logger.info("{}  - Setting or looking for".format(constants.PUBLIC_IP_KEY))
     if constants.PUBLIC_IP_KEY in ctx.instance.runtime_properties:
+        ctx.logger.info("{}  - looking for".format(constants.PUBLIC_IP_KEY))
         public_ip_name = ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY]
+        ctx.logger.info("{} is #1 {}".format(constants.PUBLIC_IP_KEY,public_ip_name))
     else:
         random_suffix_value = utils.random_suffix_generator()
         public_ip_name = constants.PUBLIC_IP_PREFIX+random_suffix_value
         ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY] = public_ip_name
+        ctx.logger.info("{} is #2 {}".format(constants.PUBLIC_IP_KEY,public_ip_name))
 
     check_public_ip_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
     create_public_ip_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version

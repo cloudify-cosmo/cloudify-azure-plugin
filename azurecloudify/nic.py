@@ -73,8 +73,7 @@ def _get_nic_params(current_subnet_name, location, resource_group_name, subscrip
 
 def set_nic_private_ip():
     if constants.CREATE_RESPONSE in ctx.instance.runtime_properties:
-        response_nic = ctx.instance.runtime_properties[constants.CREATE_RESPONSE]
-        response_nic_json = response_nic.json()
+        response_nic_json = ctx.instance.runtime_properties[constants.CREATE_RESPONSE]
         nic_root_properties = response_nic_json[u'properties']
         ctx.logger.info("nic_root_properties : {}".format(str(nic_root_properties)))
         ip_configurations = nic_root_properties[u'ipConfigurations'][0]
