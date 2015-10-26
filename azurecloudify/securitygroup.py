@@ -59,7 +59,7 @@ def create_security_group(**_):
                         "description": constants.NSG_RULES_DESCRIPTION,
                         "protocol": ctx.node.properties['security_group_protocol'],
                         "sourcePortRange": ctx.node.properties['security_group_sourcePortRange'] ,
-                        "destinationPortRange": ctx.node.properties['security_group_sourcePortRange'],
+                        "destinationPortRange": ctx.node.properties['security_group_destinationPortRange'],
                         "sourceAddressPrefix": ctx.node.properties['security_group_sourceAddressPrefix'],
                         "destinationAddressPrefix": ctx.node.properties['security_group_destinationAddressPrefix'],
                         "access": ctx.node.properties['security_group_access'],
