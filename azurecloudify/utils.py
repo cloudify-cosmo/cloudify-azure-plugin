@@ -81,12 +81,12 @@ def check_or_create_resource(headers, resource_name, resource_params, check_reso
             ctx.logger.info("check_or_create_resource resource {} ({}) is ready ".format(resource_name,resource_type))
             return
         else:
-            raise NonRecoverableError("check_or_create_resource: resource {} ({}) is not ready yet".format(resource_name, resource_type))
+            raise RecoverableError("check_or_create_resource: resource {} ({}) is not ready yet".format(resource_name, resource_type))
     elif create_resource(headers, resource_name, resource_params, create_resource_url, resource_type):
         if resource_was_created(headers, resource_name, check_resource_url, save_response):
             ctx.logger.info("_create_resource resource {} ({}) is ready ".format(resource_name, resource_type))
         else:
-            raise NonRecoverableError("check_or_create_resource: resource {} ({}) is not ready yet".format(resource_name, resource_type))
+            raise RecoverableError("check_or_create_resource: resource {} ({}) is not ready yet".format(resource_name, resource_type))
 
 def create_resource(headers, resource_name, resource_params, create_resource_url, resource_type):
     ctx.logger.info("_create_resource: creating resource {} ({})".format(resource_name,resource_type))
