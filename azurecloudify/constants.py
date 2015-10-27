@@ -79,6 +79,7 @@ EXISTING_NIC_KEY = 'existing_nic_name'
 SECURITY_GROUP_KEY = 'security_group_key_name'
 SECURITY_GROUP_PREFIX = 'security_group_'
 EXISTING_SECURITY_GROUP_KEY = 'existing_security_group_name'
+NSG_RULES_DESCRIPTION = 'IMPLEMENTING SECURITY GROUP RULES'
 
 AUTH_TOKEN_VALUE = 'auth_token_value'
 AUTH_TOKEN_EXPIRY = 'auth_token_expiry'
