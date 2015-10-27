@@ -226,7 +226,7 @@ node_templates:
       
     relationships:
       - target: nodecellar_resource_group
-        type: cloudify.azure.relationships.storage_account_connected_to_resource_group
+        type: cloudify.azure.relationships.storage_account_contained_in_resource_group
       - target: azure_token
         type: cloudify.azure.relationships.resource_connected_to_azure_token
 
@@ -294,7 +294,7 @@ node_templates:
       
     relationships:
       - target: nodecellar_storage_account
-        type: cloudify.azure.relationships.vnet_connected_to_storage_account
+        type: cloudify.azure.relationships.vnet_contained_in_storage_account
       - target: azure_token
         type: cloudify.azure.relationships.resource_connected_to_azure_token
 
@@ -311,7 +311,7 @@ node_templates:
       
     relationships:
       - target: nodecellar_storage_account
-        type: cloudify.azure.relationships.vnet_connected_to_storage_account
+        type: cloudify.azure.relationships.vnet_contained_in_storage_account
       - target: azure_token
         type: cloudify.azure.relationships.resource_connected_to_azure_token
         
