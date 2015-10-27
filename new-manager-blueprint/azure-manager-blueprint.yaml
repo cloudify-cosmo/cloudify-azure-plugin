@@ -4,9 +4,8 @@ imports:
   - http://www.getcloudify.org/spec/cloudify/3.3m6/types.yaml
   - https://raw.githubusercontent.com/cloudify-cosmo/cloudify-azure-plugin/master/plugin.yaml
   - http://www.getcloudify.org/spec/openstack-plugin/1.3m6/plugin.yaml
+  - http://www.getcloudify.org/spec/fabric-plugin/1.3m6/plugin.yaml
   - types/manager-types.yaml
-
-
 
 
 inputs:
@@ -14,114 +13,90 @@ inputs:
   #############################
   # Provider specific Inputs
   #############################
-
-  keystone_username:
+  
+  subscription_id:
+    type: string
     default: ''
-    type: string
 
-  keystone_password:
-    default: ''
+  location:
     type: string
+    default: 'West US'
 
-  keystone_tenant_name:
-    default: ''
+  vm_prefix:
     type: string
+    default: 'cfy'
 
-  keystone_url:
-    default: ''
+  vm_size:
     type: string
+    default: 'Standard_A2'
 
-  region:
-    default: ''
+  image_reference_offer:
     type: string
+    default: 'UbuntuServer'
 
-  nova_url:
-    default: ''
+  image_reference_publisher:
     type: string
+    default: 'Canonical'
 
-  neutron_url:
-    default: ''
-    type: string
-
-  manager_public_key_name:
-    type: string
-
-  agent_public_key_name:
-    type: string
-
-  image_id:
-    type: string
-
-  flavor_id:
-    type: string
-
-  external_network_name:
-    type: string
-
-  use_existing_manager_keypair:
+  use_external_resource:
     type: boolean
     default: false
 
-  use_existing_agent_keypair:
-    type: boolean
-    default: false
-
-  manager_server_name:
-    default: cloudify-manager-server
+  existing_resource_group_name:
     type: string
-
-  ssh_user:
-    default: centos
+    default: ''
+    
+  existing_security_group_name:
     type: string
+    default: ''
 
-  ssh_key_filename:
-    default: ~/.ssh/cloudify-manager-kp.pem
+  existing_storage_account_name:
     type: string
+    default: ''
 
-  agent_private_key_path:
-    default: ~/.ssh/cloudify-agent-kp.pem
+  existing_vnet_name:
     type: string
+    default: ''
+
+  existing_public_ip_name:
+    type: string
+    default: ''
+
+  existing_nic_name:
+    type: string
+    default: ''
+
+  image_reference_sku:
+    type: string
+    default: '14.04.2-LTS'
+
+  key_data:
+    type: string
+    default: ''
+
+  ssh_key_path:
+    type: string
+    default: '~/.ssh/id_rsa'
+
+  client_id:
+    type: string
+    default: ''
+
+  tenant_id:
+    type: string
+    default: ''
+
+  ssh_username:
+    type: string
+    default: ''
+
+  aad_password:
+    type: string
+    default: ''
 
   agents_user:
-    default: ubuntu
     type: string
-
-  resources_prefix:
-    default: ''
-    type: string
-
-  management_network_name:
-    default: cloudify-management-network
-    type: string
-
-  management_subnet_name:
-    default: cloudify-management-network-subnet
-    type: string
-
-  management_router:
-    default: cloudify-management-router
-    type: string
-
-  manager_security_group_name:
-    default: cloudify-sg-manager
-    type: string
-
-  agents_security_group_name:
-    default: cloudify-sg-agents
-    type: string
-
-  manager_port_name:
-    default: cloudify-manager-port
-    type: string
-
-  #############################
-  # Security Settings
-  #############################
-  username:
-    default: admin
-
-  password:
-    default: admin
+    default: 'azuretest'
 
   #############################
   # Agent Packages
@@ -376,14 +351,25 @@ inputs:
 
 
 dsl_definitions:
-  openstack_configuration: &openstack_configuration
-    username: { get_input: keystone_username }
-    password: { get_input: keystone_password }
-    tenant_name: { get_input: keystone_tenant_name }
-    auth_url: { get_input: keystone_url }
-    region: { get_input: region }
-    nova_url: { get_input: nova_url }
-    neutron_url: { get_input: neutron_url }
+  azure_configuration: &azure_configuration
+    subscription_id: { get_input: subscription_id }
+    location: { get_input: location }
+    vm_size: { get_input: vm_size }
+    vm_prefix: { get_input: vm_prefix }       
+    image_reference_offer: { get_input: image_reference_offer}
+    image_reference_publisher: { get_input: image_reference_publisher}
+    image_reference_sku: { get_input: image_reference_sku}
+    client_id: { get_input: client_id }
+    tenant_id: { get_input: tenant_id }
+    ssh_username: { get_input: ssh_username }
+    aad_password: { get_input: aad_password }
+    use_external_resource: { get_input: use_external_resource }
+    existing_resource_group_name: { get_input: existing_resource_group_name }
+    existing_security_group_name: { get_input: existing_security_group_name }
+    existing_storage_account_name: { get_input: existing_storage_account_name }
+    existing_vnet_name: { get_input: existing_vnet_name }
+    existing_nic_name: { get_input: existing_nic_name }
+    existing_public_ip_name: { get_input: existing_public_ip_name }
 
 ######################################################################
 # These nodes comprise the manager's infrastructure and components
@@ -403,7 +389,7 @@ node_templates:
       agent_local_key_path: { get_input: agent_private_key_path }
       cloudify:
         plugins:
-          openstack_config_path: /etc/cloudify/openstack_plugin/openstack_config.json
+          azure_config_path: /etc/cloudify/azure_plugin/azure_config.json
 
         resources_prefix: { get_input: resources_prefix }
 
@@ -417,7 +403,7 @@ node_templates:
           remote_execution_port: 22
           user: { get_input: agents_user }
           env:
-            OPENSTACK_CONFIG_PATH: { get_property: [SELF, cloudify, plugins, openstack_config_path] }
+            AZURE_CONFIG_PATH: { get_property: [SELF, cloudify, plugins, azure_config_path] }
 
         workflows:
           task_retries: -1  # this means forever
@@ -434,165 +420,160 @@ node_templates:
             tasks_file: components/manager/scripts/configure.py
             task_name: configure
             task_properties:
-              openstack_config: *openstack_configuration
+              azure_config: *azure_configuration
             fabric_env:
-              user: { get_input: ssh_user }
-              key_filename: { get_property: [management_keypair, private_key_path] }
-              host_string: { get_attribute: [manager_server_ip, floating_ip_address] }
+              user: { get_input: agents_user }
+              key_filename: { get_input: ssh_key_path }
+              host_string: { get_attribute: [manager_server, vm_public_ip] }
         create:
           implementation: fabric.fabric_plugin.tasks.run_script
           inputs:
             script_path: components/manager/scripts/configure_manager.sh
             fabric_env:
-              user: { get_input: ssh_user }
-              key_filename: { get_property: [management_keypair, private_key_path] }
-              host_string: { get_attribute: [manager_server_ip, floating_ip_address] }
+              user: { get_input: agents_user }
+              key_filename: { get_input: ssh_key_path }
+              host_string: { get_attribute: [manager_server, vm_public_ip] }
               always_use_pty: true
 
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_host
+        target: manager_server
         target_interfaces:
           cloudify.interfaces.relationship_lifecycle:
             postconfigure:
              implementation: components/manager/scripts/set_manager_public_ip.sh
              inputs:
-              public_ip: { get_attribute: [manager_server_ip, floating_ip_address] }
+              public_ip: { get_attribute: [manager_server, vm_public_ip] }
       - type: cloudify.relationships.depends_on
         target: nginx
         target_interfaces:
           cloudify.interfaces.relationship_lifecycle:
             postconfigure: components/manager/scripts/set_manager_private_ip.sh
 
-  management_keypair:
-    type: cloudify.openstack.nodes.KeyPair
-    properties:
-      use_external_resource: { get_input: use_existing_manager_keypair }
-      resource_id: { get_input: manager_public_key_name }
-      private_key_path: { get_input: ssh_key_filename }
-      openstack_config: *openstack_configuration
 
-  agent_keypair:
-    type: cloudify.openstack.nodes.KeyPair
+  manager_server:
+    type: cloudify.azure.nodes.Server
     properties:
-      use_external_resource: { get_input: use_existing_agent_keypair }
-      resource_id: { get_input: agent_public_key_name }
-      private_key_path: { get_input: agent_private_key_path }
-      openstack_config: *openstack_configuration
-
-  management_network:
-    type: cloudify.openstack.nodes.Network
-    properties:
-      resource_id: { get_input: management_network_name }
-      openstack_config: *openstack_configuration
-
-  management_subnet:
-    type: cloudify.openstack.nodes.Subnet
-    properties:
-      resource_id: { get_input: management_subnet_name }
-      subnet:
-        ip_version: 4
-        cidr: 10.67.79.0/24
-      openstack_config: *openstack_configuration
-    relationships:
-      - target: management_network
-        type: cloudify.relationships.contained_in
-      - target: router
-        type: cloudify.openstack.subnet_connected_to_router
-
-  manager_port:
-    type: cloudify.openstack.nodes.Port
-    properties:
-      openstack_config: *openstack_configuration
-      resource_id: { get_input: manager_port_name }
-    relationships:
-      - type: cloudify.relationships.contained_in
-        target: management_network
-      - type: cloudify.relationships.depends_on
-        target: management_subnet
-      - type: cloudify.openstack.port_connected_to_security_group
-        target: management_security_group
-
-  router:
-    type: cloudify.openstack.nodes.Router
-    properties:
-      resource_id: { get_input: management_router }
-      openstack_config: *openstack_configuration
-    relationships:
-      - target: external_network
-        type: cloudify.relationships.connected_to
-
-  external_network:
-    type: cloudify.openstack.nodes.Network
-    properties:
-      use_external_resource: true
-      resource_id: { get_input: external_network_name }
-      openstack_config: *openstack_configuration
-
-  agents_security_group:
-    type: cloudify.openstack.nodes.SecurityGroup
-    properties:
-      resource_id: { get_input: agents_security_group_name }
-      security_group:
-        description: Security group for Cloudify agent VMs
-      rules:
-        - port: 22
-          remote_ip_prefix: { get_property: [management_subnet, subnet, cidr] }
-        - port: 5985
-          remote_ip_prefix: { get_property: [management_subnet, subnet, cidr] }
-      openstack_config: *openstack_configuration
-
-  management_security_group:
-    type: cloudify.openstack.nodes.SecurityGroup
-    properties:
-      resource_id: { get_input: manager_security_group_name }
-      security_group:
-        description: Security group for Cloudify Manager VM
-      rules:
-        - port: 80
-          remote_ip_prefix: 0.0.0.0/0
-        - port: 443
-          remote_ip_prefix: 0.0.0.0/0
-        - port: 22
-          remote_ip_prefix: 0.0.0.0/0
-        - port: 8101
-          remote_ip_prefix: { get_property: [management_subnet, subnet, cidr] }
-        - port: 5672
-          remote_ip_prefix: { get_property: [management_subnet, subnet, cidr] }
-        - port: 53229
-          remote_ip_prefix: { get_property: [management_subnet, subnet, cidr] }
-      openstack_config: *openstack_configuration
-
-  manager_server_ip:
-    type: cloudify.openstack.nodes.FloatingIP
-    properties:
-      floatingip:
-        floating_network_name: { get_input: external_network_name }
-      openstack_config: *openstack_configuration
-
-  manager_host:
-    type: cloudify.openstack.nodes.Server
-    properties:
-      resource_id: { get_input: manager_server_name }
+      image_reference_offer: { get_input: image_reference_offer}
+      image_reference_publisher: { get_input: image_reference_publisher}
+      image_reference_sku: { get_input: image_reference_sku}
+      vm_prefix: { get_input: vm_prefix}      
+      vm_size: { get_input: vm_size}
+      key_data: { get_input: key_data}
+      subscription_id: { get_input: subscription_id}
+      location: { get_input: location }
+      client_id: { get_input: client_id}
+      tenant_id: { get_input: tenant_id}
+      ssh_username: { get_input: ssh_username}
+      aad_password: { get_input: aad_password}
       install_agent: false
-      server:
-        image: { get_input: image_id }
-        flavor: { get_input: flavor_id }
-      management_network_name: { get_property: [management_network, resource_id] }
-      openstack_config: *openstack_configuration
     relationships:
-      - target: manager_server_ip
-        type: cloudify.openstack.server_connected_to_floating_ip
-        source_interfaces:
-          cloudify.interfaces.relationship_lifecycle:
-            postconfigure:
-             implementation: components/manager/scripts/set_manager_public_ip.sh
-             inputs:
-              public_ip: { get_attribute: [manager_server_ip, floating_ip_address] }
-      - target: management_keypair
-        type: cloudify.openstack.server_connected_to_keypair
-      - target: manager_port
-        type: cloudify.openstack.server_connected_to_port
+      - target: manager_nic
+        type: cloudify.azure.relationships.server_connected_to_nic
+      - target: azure_token
+        type: cloudify.azure.relationships.resource_connected_to_azure_token
+
+
+  manager_resource_group:
+    type: cloudify.azure.nodes.ResourceGroup
+    properties:
+      location: { get_input: location}
+      subscription_id: { get_input: subscription_id}
+      client_id: { get_input: client_id}
+      tenant_id: { get_input: tenant_id}
+      aad_password: { get_input: aad_password}
+      use_external_resource: { get_input: use_external_resource}
+      existing_resource_group_name: { get_input: existing_resource_group_name}
+
+    relationships:
+      - target: azure_token
+        type: cloudify.azure.relationships.resource_connected_to_azure_token
+        
+  manager_security_group:
+    type: cloudify.azure.nodes.SecurityGroup
+    properties:
+      location: { get_input: location}
+      subscription_id: { get_input: subscription_id}
+      client_id: { get_input: client_id}
+      tenant_id: { get_input: tenant_id}
+      aad_password: { get_input: aad_password}
+      use_external_resource: { get_input: use_external_resource}
+      existing_security_group_name: { get_input: existing_security_group_name}
+      
+    relationships:
+      - target: manager_resource_group
+        type: cloudify.azure.relationships.security_group_connected_to_resource_group
+      - target: azure_token
+        type: cloudify.azure.relationships.resource_connected_to_azure_token
+
+
+  manager_storage_account:
+    type: cloudify.azure.nodes.StorageAccount
+    properties:
+      location: { get_input: location}
+      subscription_id: { get_input: subscription_id}
+      client_id: { get_input: client_id}
+      tenant_id: { get_input: tenant_id}
+      aad_password: { get_input: aad_password}
+      use_external_resource: { get_input: use_external_resource}
+      existing_storage_account_name: { get_input: existing_storage_account_name}
+
+    relationships:
+      - target: manager_resource_group
+        type: cloudify.azure.relationships.storage_account_contained_in_resource_group
+      - target: azure_token
+        type: cloudify.azure.relationships.resource_connected_to_azure_token
+
+  manager_public_ip:
+    type: cloudify.azure.nodes.PublicIP
+    properties:
+      location: { get_input: location}
+      subscription_id: { get_input: subscription_id}
+      client_id: { get_input: client_id}
+      tenant_id: { get_input: tenant_id}
+      aad_password: { get_input: aad_password}
+      use_external_resource: { get_input: use_external_resource}
+      existing_public_ip_name: { get_input: existing_public_ip_name}
+
+    relationships:
+      - target: manager_vnet
+        type: cloudify.azure.relationships.public_ip_connected_to_vnet
+      - target: azure_token
+        type: cloudify.azure.relationships.resource_connected_to_azure_token
+
+  manager_nic:
+    type: cloudify.azure.nodes.NIC
+    properties:
+      location: { get_input: location}
+      subscription_id: { get_input: subscription_id}
+      client_id: { get_input: client_id}
+      tenant_id: { get_input: tenant_id}
+      aad_password: { get_input: aad_password}
+      use_external_resource: { get_input: use_external_resource}
+      existing_nic_name: { get_input: existing_nic_name}
+
+    relationships:
+      - target: manager_public_ip
+        type: cloudify.azure.relationships.nic_connected_to_public_ip
+      - target: azure_token
+        type: cloudify.azure.relationships.resource_connected_to_azure_token
+
+  manager_vnet:
+    type: cloudify.azure.nodes.VNET
+    properties:
+      location: { get_input: location}
+      subscription_id: { get_input: subscription_id}
+      client_id: { get_input: client_id}
+      tenant_id: { get_input: tenant_id}
+      aad_password: { get_input: aad_password}
+      use_external_resource: { get_input: use_external_resource}
+      existing_vnet_name: { get_input: existing_vnet_name}
+
+    relationships:
+      - target: manager_storage_account
+        type: cloudify.azure.relationships.vnet_contained_in_storage_account
+      - target: azure_token
+        type: cloudify.azure.relationships.resource_connected_to_azure_token
 
   # #####################################################################
   # The Python and Java nodes are used to provide runtime environments
@@ -607,13 +588,13 @@ node_templates:
     type: manager.nodes.PythonRuntime
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_host
+        target: manager_server
 
   java_runtime:
     type: manager.nodes.JavaRuntime
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_host
+        target: manager_server
 
   ######################################################################
   # These are the nodes comprising the Cloudify Manager's components
@@ -622,13 +603,13 @@ node_templates:
     type: manager.nodes.RabbitMQ
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_host
+        target: manager_server
 
   elasticsearch:
     type: manager.nodes.Elasticsearch
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_host
+        target: manager_server
       - type: cloudify.relationships.depends_on
         target: java_runtime
 
@@ -636,7 +617,7 @@ node_templates:
     type: manager.nodes.Logstash
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_host
+        target: manager_server
       - type: cloudify.relationships.depends_on
         target: java_runtime
       - type: logstash_to_elasticsearch
@@ -646,13 +627,13 @@ node_templates:
     type: manager.nodes.InfluxDB
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_host
+        target: manager_server
 
   nginx:
     type: manager.nodes.Nginx
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_host
+        target: manager_server
       # circular relationship
       # - type: nginx_to_webui
       #   target: webui
@@ -661,7 +642,7 @@ node_templates:
     type: manager.nodes.Riemann
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_host
+        target: manager_server
       - type: cloudify.relationships.depends_on
         target: java_runtime
       - type: riemann_to_rabbitmq
@@ -673,7 +654,7 @@ node_templates:
     type: manager.nodes.RestService
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_host
+        target: manager_server
       - type: cloudify.relationships.depends_on
         target: python_runtime
       - type: rest_to_mgr_config
@@ -687,7 +668,7 @@ node_templates:
     type: manager.nodes.ManagementWorker
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_host
+        target: manager_server
       - type: cloudify.relationships.depends_on
         target: python_runtime
       - type: mgmtworker_to_rabbitmq
@@ -699,7 +680,7 @@ node_templates:
     type: manager.nodes.AmqpInfluxBroker
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_host
+        target: manager_server
       - type: cloudify.relationships.depends_on
         target: python_runtime
       - type: amqpinflux_to_rabbitmq
@@ -711,7 +692,7 @@ node_templates:
     type: manager.nodes.WebUI
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_host
+        target: manager_server
       # circular relationship
       # - type: webui_to_nginx
       #   target: nginx
@@ -727,7 +708,7 @@ node_templates:
   #   type: manager.nodes.CLI
   #   relationships:
   #     - type: cloudify.relationships.contained_in
-  #       target: manager_host
+  #       target: manager_server
   #     - type: cloudify.relationships.depends_on
   #       target: nginx
   #     - type: cloudify.relationships.depends_on
@@ -737,7 +718,3 @@ plugins:
   cli:
     install: false
     executor: central_deployment_agent
-
-outputs:
-  manager_ip:
-    value: { get_attribute: [manager_server_ip, floating_ip_address] }
