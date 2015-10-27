@@ -443,7 +443,7 @@ node_templates:
             postconfigure:
              implementation: components/manager/scripts/set_manager_public_ip.sh
              inputs:
-              public_ip: { get_attribute: [manager_public_ip, floating_ip_address] }
+              public_ip: { get_attribute: [manager_server, vm_public_ip] }
       - type: cloudify.relationships.depends_on
         target: nginx
         target_interfaces:
@@ -588,13 +588,13 @@ node_templates:
     type: manager.nodes.PythonRuntime
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_host
+        target: manager_server
 
   java_runtime:
     type: manager.nodes.JavaRuntime
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_host
+        target: manager_server
 
   ######################################################################
   # These are the nodes comprising the Cloudify Manager's components
@@ -603,13 +603,13 @@ node_templates:
     type: manager.nodes.RabbitMQ
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_host
+        target: manager_server
 
   elasticsearch:
     type: manager.nodes.Elasticsearch
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_host
+        target: manager_server
       - type: cloudify.relationships.depends_on
         target: java_runtime
 
@@ -617,7 +617,7 @@ node_templates:
     type: manager.nodes.Logstash
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_host
+        target: manager_server
       - type: cloudify.relationships.depends_on
         target: java_runtime
       - type: logstash_to_elasticsearch
@@ -627,13 +627,13 @@ node_templates:
     type: manager.nodes.InfluxDB
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_host
+        target: manager_server
 
   nginx:
     type: manager.nodes.Nginx
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_host
+        target: manager_server
       # circular relationship
       # - type: nginx_to_webui
       #   target: webui
@@ -654,7 +654,7 @@ node_templates:
     type: manager.nodes.RestService
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_host
+        target: manager_server
       - type: cloudify.relationships.depends_on
         target: python_runtime
       - type: rest_to_mgr_config
@@ -668,7 +668,7 @@ node_templates:
     type: manager.nodes.ManagementWorker
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_host
+        target: manager_server
       - type: cloudify.relationships.depends_on
         target: python_runtime
       - type: mgmtworker_to_rabbitmq
@@ -680,7 +680,7 @@ node_templates:
     type: manager.nodes.AmqpInfluxBroker
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_host
+        target: manager_server
       - type: cloudify.relationships.depends_on
         target: python_runtime
       - type: amqpinflux_to_rabbitmq
@@ -692,7 +692,7 @@ node_templates:
     type: manager.nodes.WebUI
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_host
+        target: manager_server
       # circular relationship
       # - type: webui_to_nginx
       #   target: nginx
@@ -708,7 +708,7 @@ node_templates:
   #   type: manager.nodes.CLI
   #   relationships:
   #     - type: cloudify.relationships.contained_in
-  #       target: manager_host
+  #       target: manager_server
   #     - type: cloudify.relationships.depends_on
   #       target: nginx
   #     - type: cloudify.relationships.depends_on
