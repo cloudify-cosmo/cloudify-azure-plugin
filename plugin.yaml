@@ -400,8 +400,8 @@ relationships:
             azure_config:
               default: {}
 
-   cloudify.azure.relationships.vnet_contained_in_storage_account:
-    derived_from: cloudify.relationships.contained_in
+   cloudify.azure.relationships.vnet_connected_to_storage_account:
+    derived_from: cloudify.relationships.connected_to
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
         preconfigure:
@@ -463,7 +463,7 @@ relationships:
               default: {}
 
    cloudify.azure.relationships.resource_connected_to_azure_token:
-    derived_from: cloudify.relationships.connected_to
+    derived_from: cloudify.relationships.depends_on
     target_interfaces:
       cloudify.interfaces.relationship_lifecycle:
         postconfigure:
@@ -471,3 +471,6 @@ relationships:
           inputs:
             azure_config:
               default: {}
+
+   cloudify.azure.relationships.resource_contained_in_resource_group:
+    derived_from: cloudify.relationships.contained_in
