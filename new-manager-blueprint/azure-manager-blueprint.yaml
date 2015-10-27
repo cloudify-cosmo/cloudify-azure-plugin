@@ -642,7 +642,7 @@ node_templates:
     type: manager.nodes.Riemann
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_host
+        target: manager_server
       - type: cloudify.relationships.depends_on
         target: java_runtime
       - type: riemann_to_rabbitmq
