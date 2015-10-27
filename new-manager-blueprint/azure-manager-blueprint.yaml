@@ -351,7 +351,7 @@ inputs:
 
 
 dsl_definitions:
-  azure_configuration: &azure_config
+  azure_configuration: &azure_configuration
     subscription_id: { get_input: subscription_id }
     location: { get_input: location }
     vm_size: { get_input: vm_size }
@@ -422,28 +422,28 @@ node_templates:
             task_properties:
               azure_config: *azure_configuration
             fabric_env:
-              user: { get_input: ssh_user }
-              key_filename: { get_property: [management_keypair, private_key_path] }
-              host_string: { get_attribute: [manager_server_ip, floating_ip_address] }
+              user: { get_input: agents_user }
+              key_filename: { get_input: ssh_key_path }
+              host_string: { get_attribute: [manager_server, vm_public_ip] }
         create:
           implementation: fabric.fabric_plugin.tasks.run_script
           inputs:
             script_path: components/manager/scripts/configure_manager.sh
             fabric_env:
-              user: { get_input: ssh_user }
-              key_filename: { get_property: [management_keypair, private_key_path] }
-              host_string: { get_attribute: [manager_server_ip, floating_ip_address] }
+              user: { get_input: agents_user }
+              key_filename: { get_input: ssh_key_path }
+              host_string: { get_attribute: [manager_server, vm_public_ip] }
               always_use_pty: true
 
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_host
+        target: manager_server
         target_interfaces:
           cloudify.interfaces.relationship_lifecycle:
             postconfigure:
              implementation: components/manager/scripts/set_manager_public_ip.sh
              inputs:
-              public_ip: { get_attribute: [manager_server_ip, floating_ip_address] }
+              public_ip: { get_attribute: [manager_public_ip, floating_ip_address] }
       - type: cloudify.relationships.depends_on
         target: nginx
         target_interfaces:
