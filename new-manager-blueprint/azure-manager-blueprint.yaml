@@ -718,3 +718,7 @@ plugins:
   cli:
     install: false
     executor: central_deployment_agent
+
+outputs:
+  manager_ip:
+    value: { get_attribute: [manager_server, vm_public_ip] }
