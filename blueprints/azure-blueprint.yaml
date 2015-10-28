@@ -289,7 +289,7 @@ node_templates:
       - target: nodecellar_resource_group
         type: cloudify.azure.relationships.resource_contained_in_resource_group
 
-  nodecelllar_vnet:
+  nodecellar_vnet:
     type: cloudify.azure.nodes.VNET
     properties:
       location: { get_input: location}
