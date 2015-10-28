@@ -55,7 +55,7 @@ node_types:
         creation: microsoft.azurecloudify.resourcegroup.creation_validation
         
   cloudify.azure.nodes.SecurityGroup:
-    derived_from: cloudify.nodes.Network
+    derived_from: cloudify.nodes.SecurityGroup
     properties:
       use_external_resource:
         description: >
