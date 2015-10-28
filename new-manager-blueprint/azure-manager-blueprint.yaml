@@ -97,6 +97,15 @@ inputs:
   agents_user:
     type: string
     default: 'azuretest'
+    
+  #############################
+  # Security Settings
+  #############################
+  username:
+    default: admin
+
+  password:
+    default: admin
 
   #############################
   # Agent Packages
