@@ -400,7 +400,7 @@ node_templates:
         plugins:
           azure_config_path: /etc/cloudify/azure_plugin/azure_config.json
 
-        resources_prefix: { get_input: resources_prefix }
+        resources_prefix: { get_input: vm_prefix }
 
         transient_deployment_workers_mode:
           enabled: false
