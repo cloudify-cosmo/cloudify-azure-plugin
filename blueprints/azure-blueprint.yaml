@@ -247,11 +247,9 @@ node_templates:
       
     relationships:
       - target: nodejs_vnet
-        type: cloudify.azure.relationships.public_ip_connected_to_vnet
+        type: cloudify.azure.relationships.public_ip_contained_in_vnet
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
-      - target: nodecellar_resource_group
-        type: cloudify.azure.relationships.resource_contained_in_resource_group
 
   nodejs_nic:
     type: cloudify.azure.nodes.NIC
