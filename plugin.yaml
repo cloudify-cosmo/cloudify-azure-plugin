@@ -420,8 +420,8 @@ relationships:
             azure_config:
               default: {}
 
-   cloudify.azure.relationships.public_ip_contained_in_vnet:
-    derived_from: cloudify.relationships.contained_in
+   cloudify.azure.relationships.public_ip_connected_to_vnet:
+    derived_from: cloudify.relationships.connected_to
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
         preconfigure:
