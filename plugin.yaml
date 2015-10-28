@@ -462,7 +462,7 @@ relationships:
             azure_config:
               default: {}
 
-   cloudify.azure.relationships.resource_connected_to_azure_token:
+   cloudify.azure.relationships.resource_depends_on_azure_token:
     derived_from: cloudify.relationships.depends_on
     target_interfaces:
       cloudify.interfaces.relationship_lifecycle:
