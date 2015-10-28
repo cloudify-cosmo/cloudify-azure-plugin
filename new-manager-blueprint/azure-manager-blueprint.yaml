@@ -575,6 +575,13 @@ node_templates:
       - target: azure_token
         type: cloudify.azure.relationships.resource_connected_to_azure_token
 
+  azure_token:
+    type: cloudify.azure.nodes.azure_token
+    properties:
+      client_id: { get_input: client_id }
+      tenant_id: { get_input: tenant_id }
+      aad_password: { get_input: aad_password }
+
   # #####################################################################
   # The Python and Java nodes are used to provide runtime environments
   # on specific hosts. It allows us to define the runtime environment
