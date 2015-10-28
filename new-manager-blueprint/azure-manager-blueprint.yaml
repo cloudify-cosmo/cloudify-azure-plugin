@@ -77,6 +77,10 @@ inputs:
   ssh_key_path:
     type: string
     default: '~/.ssh/'
+    
+  ssh_key_filename:
+    type: string
+    default: 'id_rsa'
 
   client_id:
     type: string
