@@ -3,7 +3,6 @@ tosca_definitions_version: cloudify_dsl_1_2
 imports:
   - http://www.getcloudify.org/spec/cloudify/3.3m6/types.yaml
   - https://dl.dropboxusercontent.com/u/58809323/cloudify-azure-plugin_213.yaml
-  - http://www.getcloudify.org/spec/openstack-plugin/1.3m6/plugin.yaml
   - http://www.getcloudify.org/spec/fabric-plugin/1.3m6/plugin.yaml
   - types/manager-types.yaml
 
@@ -94,7 +93,7 @@ inputs:
     type: string
     default: ''
 
-  agents_user:
+  ssh_user:
     type: string
     default: 'azuretest'
     
@@ -370,7 +369,7 @@ dsl_definitions:
     image_reference_sku: { get_input: image_reference_sku}
     client_id: { get_input: client_id }
     tenant_id: { get_input: tenant_id }
-    ssh_username: { get_input: agents_user }
+    ssh_username: { get_input: ssh_user }
     aad_password: { get_input: aad_password }
     use_external_resource: { get_input: use_external_resource }
     existing_resource_group_name: { get_input: existing_resource_group_name }
@@ -393,7 +392,7 @@ node_templates:
   manager_configuration:
     type: cloudify.nodes.MyCloudifyManager
     properties:
-      ssh_user: { get_input: agents_user }
+      ssh_user: { get_input: ssh_user }
       ssh_key_filename: { get_input: ssh_key_filename }
       agent_local_key_path: { get_input: ssh_key_path }
       cloudify:
@@ -410,7 +409,7 @@ node_templates:
           min_workers: 0
           max_workers: 5
           remote_execution_port: 22fss
-          user: { get_input: agents_user }
+          user: { get_input: ssh_user }
           env:
             AZURE_CONFIG_PATH: { get_property: [SELF, cloudify, plugins, azure_config_path] }
 
@@ -431,28 +430,28 @@ node_templates:
             task_properties:
               azure_config: *azure_configuration
             fabric_env:
-              user: { get_input: agents_user }
+              user: { get_input: ssh_user }
               key_filename: { get_input: ssh_key_path }
-              host_string: { get_attribute: [manager_server, vm_public_ip] }
+              host_string: { get_attribute: [manager_host, vm_public_ip] }
         create:
           implementation: fabric.fabric_plugin.tasks.run_script
           inputs:
             script_path: components/manager/scripts/configure_manager.sh
             fabric_env:
-              user: { get_input: agents_user }
+              user: { get_input: ssh_user }
               key_filename: { get_input: ssh_key_path }
-              host_string: { get_attribute: [manager_server, vm_public_ip] }
+              host_string: { get_attribute: [manager_host, vm_public_ip] }
               always_use_pty: true
 
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_server
+        target: manager_host
         target_interfaces:
           cloudify.interfaces.relationship_lifecycle:
             postconfigure:
              implementation: components/manager/scripts/set_manager_public_ip.sh
              inputs:
-              public_ip: { get_attribute: [manager_server, vm_public_ip] }
+              public_ip: { get_attribute: [manager_host, vm_public_ip] }
       - type: cloudify.relationships.depends_on
         target: nginx
         target_interfaces:
@@ -460,7 +459,7 @@ node_templates:
             postconfigure: components/manager/scripts/set_manager_private_ip.sh
 
 
-  manager_server:
+  manager_host:
     type: cloudify.azure.nodes.Server
     properties:
       image_reference_offer: { get_input: image_reference_offer}
@@ -473,7 +472,7 @@ node_templates:
       location: { get_input: location }
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
-      ssh_username: { get_input: agents_user}
+      ssh_username: { get_input: ssh_user}
       aad_password: { get_input: aad_password}
       install_agent: false
     relationships:
@@ -604,13 +603,13 @@ node_templates:
     type: manager.nodes.PythonRuntime
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_server
+        target: manager_host
 
   java_runtime:
     type: manager.nodes.JavaRuntime
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_server
+        target: manager_host
 
   ######################################################################
   # These are the nodes comprising the Cloudify Manager's components
@@ -619,13 +618,13 @@ node_templates:
     type: manager.nodes.RabbitMQ
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_server
+        target: manager_host
 
   elasticsearch:
     type: manager.nodes.Elasticsearch
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_server
+        target: manager_host
       - type: cloudify.relationships.depends_on
         target: java_runtime
 
@@ -633,7 +632,7 @@ node_templates:
     type: manager.nodes.Logstash
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_server
+        target: manager_host
       - type: cloudify.relationships.depends_on
         target: java_runtime
       - type: logstash_to_elasticsearch
@@ -643,13 +642,13 @@ node_templates:
     type: manager.nodes.InfluxDB
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_server
+        target: manager_host
 
   nginx:
     type: manager.nodes.Nginx
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_server
+        target: manager_host
       # circular relationship
       # - type: nginx_to_webui
       #   target: webui
@@ -658,7 +657,7 @@ node_templates:
     type: manager.nodes.Riemann
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_server
+        target: manager_host
       - type: cloudify.relationships.depends_on
         target: java_runtime
       - type: riemann_to_rabbitmq
@@ -670,7 +669,7 @@ node_templates:
     type: manager.nodes.RestService
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_server
+        target: manager_host
       - type: cloudify.relationships.depends_on
         target: python_runtime
       - type: rest_to_mgr_config
@@ -684,7 +683,7 @@ node_templates:
     type: manager.nodes.ManagementWorker
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_server
+        target: manager_host
       - type: cloudify.relationships.depends_on
         target: python_runtime
       - type: mgmtworker_to_rabbitmq
@@ -696,7 +695,7 @@ node_templates:
     type: manager.nodes.AmqpInfluxBroker
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_server
+        target: manager_host
       - type: cloudify.relationships.depends_on
         target: python_runtime
       - type: amqpinflux_to_rabbitmq
@@ -708,7 +707,7 @@ node_templates:
     type: manager.nodes.WebUI
     relationships:
       - type: cloudify.relationships.contained_in
-        target: manager_server
+        target: manager_host
       # circular relationship
       # - type: webui_to_nginx
       #   target: nginx
@@ -724,7 +723,7 @@ node_templates:
   #   type: manager.nodes.CLI
   #   relationships:
   #     - type: cloudify.relationships.contained_in
-  #       target: manager_server
+  #       target: manager_host
   #     - type: cloudify.relationships.depends_on
   #       target: nginx
   #     - type: cloudify.relationships.depends_on
@@ -737,4 +736,4 @@ plugins:
 
 outputs:
   manager_ip:
-    value: { get_attribute: [manager_server, vm_public_ip] }
+    value: { get_attribute: [manager_host, vm_public_ip] }
