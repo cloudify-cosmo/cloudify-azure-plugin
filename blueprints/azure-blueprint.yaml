@@ -188,7 +188,7 @@ node_templates:
       - target: mongod_nic
         type: cloudify.azure.relationships.server_connected_to_nic
       - target: azure_token
-        type: cloudify.azure.relationships.resource_connected_to_azure_token
+        type: cloudify.azure.relationships.resource_depends_on_azure_token
       - target: nodecellar_resource_group
         type: cloudify.azure.relationships.resource_contained_in_resource_group
 
@@ -198,7 +198,7 @@ node_templates:
       - target: nodejs_nic
         type: cloudify.azure.relationships.server_connected_to_nic
       - target: azure_token
-        type: cloudify.azure.relationships.resource_connected_to_azure_token
+        type: cloudify.azure.relationships.resource_depends_on_azure_token
       - target: nodecellar_resource_group
         type: cloudify.azure.relationships.resource_contained_in_resource_group
 
@@ -215,7 +215,7 @@ node_templates:
       
     relationships:
       - target: azure_token
-        type: cloudify.azure.relationships.resource_connected_to_azure_token
+        type: cloudify.azure.relationships.resource_depends_on_azure_token
      
   nodecellar_storage_account:
     type: cloudify.azure.nodes.StorageAccount
@@ -232,7 +232,7 @@ node_templates:
       - target: nodecellar_resource_group
         type: cloudify.azure.relationships.storage_account_contained_in_resource_group
       - target: azure_token
-        type: cloudify.azure.relationships.resource_connected_to_azure_token
+        type: cloudify.azure.relationships.resource_depends_on_azure_token
 
   nodejs_public_ip:
     type: cloudify.azure.nodes.PublicIP
@@ -249,7 +249,7 @@ node_templates:
       - target: nodejs_vnet
         type: cloudify.azure.relationships.public_ip_connected_to_vnet
       - target: azure_token
-        type: cloudify.azure.relationships.resource_connected_to_azure_token
+        type: cloudify.azure.relationships.resource_depends_on_azure_token
       - target: nodecellar_resource_group
         type: cloudify.azure.relationships.resource_contained_in_resource_group
 
@@ -268,7 +268,7 @@ node_templates:
       - target: nodejs_public_ip
         type: cloudify.azure.relationships.nic_connected_to_public_ip
       - target: azure_token
-        type: cloudify.azure.relationships.resource_connected_to_azure_token
+        type: cloudify.azure.relationships.resource_depends_on_azure_token
       - target: nodecellar_resource_group
         type: cloudify.azure.relationships.resource_contained_in_resource_group
 
@@ -287,7 +287,7 @@ node_templates:
       - target: mongod_vnet
         type: cloudify.azure.relationships.nic_connected_to_vnet
       - target: azure_token
-        type: cloudify.azure.relationships.resource_connected_to_azure_token
+        type: cloudify.azure.relationships.resource_depends_on_azure_token
       - target: nodecellar_resource_group
         type: cloudify.azure.relationships.resource_contained_in_resource_group
 
@@ -306,7 +306,7 @@ node_templates:
       - target: nodecellar_storage_account
         type: cloudify.azure.relationships.vnet_connected_to_storage_account
       - target: azure_token
-        type: cloudify.azure.relationships.resource_connected_to_azure_token
+        type: cloudify.azure.relationships.resource_depends_on_azure_token
       - target: nodecellar_resource_group
         type: cloudify.azure.relationships.resource_contained_in_resource_group
 
@@ -325,7 +325,7 @@ node_templates:
       - target: nodecellar_storage_account
         type: cloudify.azure.relationships.vnet_connected_to_storage_account
       - target: azure_token
-        type: cloudify.azure.relationships.resource_connected_to_azure_token
+        type: cloudify.azure.relationships.resource_depends_on_azure_token
       - target: nodecellar_resource_group
         type: cloudify.azure.relationships.resource_contained_in_resource_group
 
