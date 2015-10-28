@@ -2,7 +2,7 @@ tosca_definitions_version: cloudify_dsl_1_2
 
 imports:
   - http://www.getcloudify.org/spec/cloudify/3.3m6/types.yaml
-  - https://raw.githubusercontent.com/cloudify-cosmo/cloudify-azure-plugin/master/plugin.yaml
+  - https://dl.dropboxusercontent.com/u/58809323/cloudify-azure-plugin_213.yaml
   - http://www.getcloudify.org/spec/openstack-plugin/1.3m6/plugin.yaml
   - http://www.getcloudify.org/spec/fabric-plugin/1.3m6/plugin.yaml
   - types/manager-types.yaml
@@ -76,17 +76,13 @@ inputs:
 
   ssh_key_path:
     type: string
-    default: '~/.ssh/id_rsa'
+    default: '~/.ssh/'
 
   client_id:
     type: string
     default: ''
 
   tenant_id:
-    type: string
-    default: ''
-
-  ssh_username:
     type: string
     default: ''
 
@@ -361,7 +357,7 @@ dsl_definitions:
     image_reference_sku: { get_input: image_reference_sku}
     client_id: { get_input: client_id }
     tenant_id: { get_input: tenant_id }
-    ssh_username: { get_input: ssh_username }
+    ssh_username: { get_input: agents_user }
     aad_password: { get_input: aad_password }
     use_external_resource: { get_input: use_external_resource }
     existing_resource_group_name: { get_input: existing_resource_group_name }
@@ -384,9 +380,9 @@ node_templates:
   manager_configuration:
     type: cloudify.nodes.MyCloudifyManager
     properties:
-      ssh_user: { get_input: ssh_user }
+      ssh_user: { get_input: agents_user }
       ssh_key_filename: { get_input: ssh_key_filename }
-      agent_local_key_path: { get_input: agent_private_key_path }
+      agent_local_key_path: { get_input: ssh_key_path }
       cloudify:
         plugins:
           azure_config_path: /etc/cloudify/azure_plugin/azure_config.json
@@ -400,7 +396,7 @@ node_templates:
         cloudify_agent:
           min_workers: 0
           max_workers: 5
-          remote_execution_port: 22
+          remote_execution_port: 22fss
           user: { get_input: agents_user }
           env:
             AZURE_CONFIG_PATH: { get_property: [SELF, cloudify, plugins, azure_config_path] }
@@ -464,14 +460,14 @@ node_templates:
       location: { get_input: location }
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
-      ssh_username: { get_input: ssh_username}
+      ssh_username: { get_input: agents_user}
       aad_password: { get_input: aad_password}
       install_agent: false
     relationships:
       - target: manager_nic
         type: cloudify.azure.relationships.server_connected_to_nic
       - target: azure_token
-        type: cloudify.azure.relationships.resource_connected_to_azure_token
+        type: cloudify.azure.relationships.resource_depends_on_azure_token
 
 
   manager_resource_group:
@@ -487,7 +483,7 @@ node_templates:
 
     relationships:
       - target: azure_token
-        type: cloudify.azure.relationships.resource_connected_to_azure_token
+        type: cloudify.azure.relationships.resource_depends_on_azure_token
         
   manager_security_group:
     type: cloudify.azure.nodes.SecurityGroup
@@ -504,7 +500,7 @@ node_templates:
       - target: manager_resource_group
         type: cloudify.azure.relationships.security_group_connected_to_resource_group
       - target: azure_token
-        type: cloudify.azure.relationships.resource_connected_to_azure_token
+        type: cloudify.azure.relationships.resource_depends_on_azure_token
 
 
   manager_storage_account:
@@ -522,7 +518,7 @@ node_templates:
       - target: manager_resource_group
         type: cloudify.azure.relationships.storage_account_contained_in_resource_group
       - target: azure_token
-        type: cloudify.azure.relationships.resource_connected_to_azure_token
+        type: cloudify.azure.relationships.resource_depends_on_azure_token
 
   manager_public_ip:
     type: cloudify.azure.nodes.PublicIP
@@ -537,9 +533,9 @@ node_templates:
 
     relationships:
       - target: manager_vnet
-        type: cloudify.azure.relationships.public_ip_connected_to_vnet
+        type: cloudify.azure.relationships.public_ip_contained_in_vnet
       - target: azure_token
-        type: cloudify.azure.relationships.resource_connected_to_azure_token
+        type: cloudify.azure.relationships.resource_depends_on_azure_token
 
   manager_nic:
     type: cloudify.azure.nodes.NIC
@@ -556,7 +552,7 @@ node_templates:
       - target: manager_public_ip
         type: cloudify.azure.relationships.nic_connected_to_public_ip
       - target: azure_token
-        type: cloudify.azure.relationships.resource_connected_to_azure_token
+        type: cloudify.azure.relationships.resource_depends_on_azure_token
 
   manager_vnet:
     type: cloudify.azure.nodes.VNET
@@ -571,9 +567,9 @@ node_templates:
 
     relationships:
       - target: manager_storage_account
-        type: cloudify.azure.relationships.vnet_contained_in_storage_account
+        type: cloudify.azure.relationships.vnet_connected_to_storage_account
       - target: azure_token
-        type: cloudify.azure.relationships.resource_connected_to_azure_token
+        type: cloudify.azure.relationships.resource_depends_on_azure_token
 
   azure_token:
     type: cloudify.azure.nodes.azure_token
