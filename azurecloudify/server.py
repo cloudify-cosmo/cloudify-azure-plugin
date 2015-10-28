@@ -80,7 +80,7 @@ def create_vm(**_):
                     "osDisk": {
                         "name": constants.os_disk_name+random_suffix_value,
                         "vhd": {
-                            "uri": "http://"+storage_account_name+".blob.core.windows.net/vhds/osdisk.vhd"
+                            "uri": "http://"+storage_account_name+".blob.core.windows.net/vhds/osdisk{}.vhd".format(random_suffix_value)
                         },
                         "caching": "ReadWrite",
                         "createOption": "FromImage"

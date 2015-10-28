@@ -403,5 +403,5 @@ outputs:
   endpoint:
     description: Web application endpoint
     value:
-      ip_address: { get_attribute: [nodejs_host, public_ip] }
+      ip_address: { get_attribute: [nodejs_host, vm_public_ip] }
       port: { get_property: [nodecellar, port] }

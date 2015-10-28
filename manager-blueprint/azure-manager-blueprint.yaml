@@ -113,7 +113,7 @@ node_templates:
       - target: manager_nic
         type: cloudify.azure.relationships.server_connected_to_nic
       - target: azure_token
-        type: cloudify.azure.relationships.resource_connected_to_azure_token
+        type: cloudify.azure.relationships.resource_depends_on_azure_token
 
 
   manager_resource_group:
@@ -129,7 +129,7 @@ node_templates:
 
     relationships:
       - target: azure_token
-        type: cloudify.azure.relationships.resource_connected_to_azure_token
+        type: cloudify.azure.relationships.resource_depends_on_azure_token
         
   manager_security_group:
     type: cloudify.azure.nodes.SecurityGroup
@@ -146,7 +146,7 @@ node_templates:
       - target: manager_resource_group
         type: cloudify.azure.relationships.security_group_connected_to_resource_group
       - target: azure_token
-        type: cloudify.azure.relationships.resource_connected_to_azure_token
+        type: cloudify.azure.relationships.resource_depends_on_azure_token
 
 
   manager_storage_account:
@@ -164,7 +164,7 @@ node_templates:
       - target: manager_resource_group
         type: cloudify.azure.relationships.storage_account_contained_in_resource_group
       - target: azure_token
-        type: cloudify.azure.relationships.resource_connected_to_azure_token
+        type: cloudify.azure.relationships.resource_depends_on_azure_token
 
   manager_public_ip:
     type: cloudify.azure.nodes.PublicIP
@@ -181,7 +181,7 @@ node_templates:
       - target: manager_vnet
         type: cloudify.azure.relationships.public_ip_contained_in_vnet
       - target: azure_token
-        type: cloudify.azure.relationships.resource_connected_to_azure_token
+        type: cloudify.azure.relationships.resource_depends_on_azure_token
 
   manager_nic:
     type: cloudify.azure.nodes.NIC
@@ -198,7 +198,7 @@ node_templates:
       - target: manager_public_ip
         type: cloudify.azure.relationships.nic_connected_to_public_ip
       - target: azure_token
-        type: cloudify.azure.relationships.resource_connected_to_azure_token
+        type: cloudify.azure.relationships.resource_depends_on_azure_token
 
   manager_vnet:
     type: cloudify.azure.nodes.VNET
@@ -215,7 +215,7 @@ node_templates:
       - target: manager_storage_account
         type: cloudify.azure.relationships.vnet_connected_to_storage_account
       - target: azure_token
-        type: cloudify.azure.relationships.resource_connected_to_azure_token
+        type: cloudify.azure.relationships.resource_depends_on_azure_token
 
   manager:
     type: cloudify.nodes.CloudifyManager
