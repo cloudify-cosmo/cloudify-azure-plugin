@@ -174,7 +174,7 @@ def set_dependent_resources_names(azure_config, **kwargs):
         ctx.source.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = ctx.target.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
         ctx.logger.info("{} is {}".format(constants.STORAGE_ACCOUNT_KEY, ctx.target.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]))
         ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-        ctx.logger.info("{} is {}".format(constants.RESOURCE_GROUP_KEY, ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEYs]))
+        ctx.logger.info("{} is {}".format(constants.RESOURCE_GROUP_KEY, ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]))
         return
 
     if constants.PRIVATE_IP_ADDRESS_KEY in ctx.target.instance.runtime_properties:
