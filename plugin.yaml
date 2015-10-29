@@ -132,6 +132,9 @@ node_types:
           Indicates the destination address prefix required to create network security group
         type: string
         default: '*'
+      rules:
+       default: []
+       
       
       
     interfaces:
