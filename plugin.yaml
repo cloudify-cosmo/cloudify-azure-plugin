@@ -94,42 +94,42 @@ node_types:
         default: ''
       security_group_protocol:
         description: >
-          Indicates the name of the virtual machine required to create network security group
+          Indicates the name of the protocol required to create network security group
         type: string
         default: '*'
       security_group_access:
         description: >
-          Indicates the name of the virtual machine required to create network security group
+          Indicates the access required to create network security group
         type: string
         default: 'Allow'
       security_group_priority:
         description: >
-          Indicates the name of the virtual machine required to create network security group
+          Indicates the priority required to create network security group
         type: string
         default: '100'
       security_group_direction:
         description: >
-          Indicates the name of the virtual machine required to create network security group
+          Indicates the direction required to create network security group
         type: string
         default: 'Inbound' 
       security_group_sourcePortRange:
         description: >
-          Indicates the name of the virtual machine required to create network security group
+          Indicates the source port range required to create network security group
         type: string
         default: '*'
       security_group_destinationPortRange:
         description: >
-          Indicates the name of the virtual machine required to create network security group
+          Indicates the destination port rangerequired to create network security group
         type: string
         default: '*'
       security_group_sourceAddressPrefix:
         description: >
-          Indicates the name of the virtual machine required to create network security group
+          Indicates the source address prefix required to create network security group
         type: string
         default: '*'
       security_group_destinationAddressPrefix:
         description: >
-          Indicates the name of the virtual machine required to create network security group
+          Indicates the destination address prefix required to create network security group
         type: string
         default: '*'
       
