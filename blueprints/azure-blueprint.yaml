@@ -187,6 +187,8 @@ node_templates:
     relationships:
       - target: mongod_nic
         type: cloudify.azure.relationships.server_connected_to_nic
+      - target: nodecellar_storage_account
+        type: cloudify.azure.relationships.server_connected_to_storage_account
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
       - target: nodecellar_resource_group
@@ -197,7 +199,9 @@ node_templates:
     relationships:
       - target: nodejs_nic
         type: cloudify.azure.relationships.server_connected_to_nic
-      - target: azure_token
+      - target: nodecellar_storage_account
+        type: cloudify.azure.relationships.server_connected_to_storage_account
+      - target: azure_token	  
         type: cloudify.azure.relationships.resource_depends_on_azure_token
       - target: nodecellar_resource_group
         type: cloudify.azure.relationships.resource_contained_in_resource_group
@@ -303,8 +307,6 @@ node_templates:
       existing_vnet_name: { get_input: existing_vnet_name}
       
     relationships:
-      - target: nodecellar_storage_account
-        type: cloudify.azure.relationships.vnet_connected_to_storage_account
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
       - target: nodecellar_resource_group
@@ -322,8 +324,6 @@ node_templates:
       existing_vnet_name: { get_input: existing_vnet_name}
       
     relationships:
-      - target: nodecellar_storage_account
-        type: cloudify.azure.relationships.vnet_connected_to_storage_account
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
       - target: nodecellar_resource_group

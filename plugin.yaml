@@ -400,7 +400,7 @@ relationships:
             azure_config:
               default: {}
 
-   cloudify.azure.relationships.vnet_connected_to_storage_account:
+   cloudify.azure.relationships.server_connected_to_storage_account:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
