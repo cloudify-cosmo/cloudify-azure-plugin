@@ -147,6 +147,8 @@ node_templates:
         type: cloudify.azure.relationships.server_connected_to_nic
       - target: manager_storage_account
         type: cloudify.azure.relationships.server_connected_to_storage_account
+      - target: manager_security_group
+        type: cloudify.azure.relationships.server_connected_to_security_group  
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
 
@@ -213,8 +215,6 @@ node_templates:
     relationships:
       - target: manager_resource_group
         type: cloudify.azure.relationships.security_group_connected_to_resource_group
-      - target: manager_vnet
-        type: cloudify.azure.relationships.security_group_connected_to_vnet
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
 
