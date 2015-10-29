@@ -90,6 +90,39 @@ inputs:
   agents_user:
     type: string
     default: 'azuretest'
+    
+  security_group_protocol: 
+    type: string
+    default: '*'
+    
+  security_group_access: 
+    type: string
+    default: 'Allow' 
+  
+  security_group_priority: 
+    type: string
+    default: '100'
+    
+  security_group_direction: 
+    type: string
+    default: 'Inbound'
+    
+  security_group_sourcePortRange: 
+    type: string
+    default: '*'
+    
+  security_group_destinationPortRange: 
+    type: string
+    default: '*'
+    
+  security_group_sourceAddressPrefix: 
+    type: string
+    default: '*'
+    
+  security_group_destinationAddressPrefix: 
+    type: string
+    default: '*'
+  
 
 node_templates:
 
@@ -143,6 +176,14 @@ node_templates:
       aad_password: { get_input: aad_password}
       use_external_resource: { get_input: use_external_resource}
       existing_security_group_name: { get_input: existing_security_group_name}
+      security_group_protocol: { get_input: existing_security_group_protocol}
+      security_group_access: { get_input: existing_security_group_access}
+      security_group_priority: { get_input: existing_security_group_priority}
+      security_group_sourcePortRange: { get_input: existing_security_group_sourcePortRange}
+      security_group_destinationPortRange: { get_input: existing_security_group_destinationPortRange}
+      security_group_sourceAddressPrefix: { get_input: existing_security_group_sourceAddressPrefix}
+      security_group_destinationAddressPrefix: { get_input: existing_security_group_destinationAddressPrefix}
+      security_group_direction: { get_input: existing_security_group_direction}
       rules:
         - protocol: TCP
           from_port: 80
