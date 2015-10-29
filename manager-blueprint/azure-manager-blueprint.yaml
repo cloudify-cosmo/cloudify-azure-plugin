@@ -143,7 +143,32 @@ node_templates:
       aad_password: { get_input: aad_password}
       use_external_resource: { get_input: use_external_resource}
       existing_security_group_name: { get_input: existing_security_group_name}
-      
+      rules:
+        - protocol: TCP
+          from_port: 80
+          to_port: 80
+          cidr_ip: 0.0.0.0/32
+        - protocol: TCP
+          from_port: 443
+          to_port: 443
+          cidr_ip: 0.0.0.0/32
+        - protocol: TCP
+          from_port: 22
+          to_port: 22
+          cidr_ip: 0.0.0.0/32
+        - protocol: TCP
+          from_port: 8101
+          to_port: 8101
+          cidr_ip: 0.0.0.0/32
+        - protocol: TCP
+          from_port: 5672
+          to_port: 5672
+          cidr_ip: 0.0.0.0/32
+        - protocol: TCP
+          from_port: 53229
+          to_port: 53229
+          cidr_ip: 0.0.0.0/32
+
     relationships:
       - target: manager_resource_group
         type: cloudify.azure.relationships.security_group_connected_to_resource_group
