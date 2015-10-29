@@ -170,7 +170,7 @@ def delete_virtual_machine(**_):
 @operation
 def set_dependent_resources_names(azure_config, **kwargs):
 
-    if constants.STORAGE_ACCOUNT_KEY in ctx.source.instance.runtime_properties:
+    if constants.STORAGE_ACCOUNT_KEY in ctx.target.instance.runtime_properties:
         ctx.source.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = ctx.target.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
         ctx.logger.info("{} is {}".format(constants.STORAGE_ACCOUNT_KEY, ctx.target.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]))
         ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
