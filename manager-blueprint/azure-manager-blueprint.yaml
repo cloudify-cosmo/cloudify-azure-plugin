@@ -214,6 +214,8 @@ node_templates:
       existing_vnet_name: { get_input: existing_vnet_name}
 
     relationships:
+      - target: manager_resource_group
+        type: cloudify.azure.relationships.vnet_contained_in_resource_group
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
 
