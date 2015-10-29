@@ -83,12 +83,16 @@ def delete_vnet(**_):
     credentials = 'Bearer ' + auth.get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
 
-    ctx.logger.info("Checking availability of virtual network: {}".format(vnet_name))
     try:
         ctx.logger.info("Deleting the virtual network: {}".format(vnet_name))
         vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
         response_vnet = requests.delete(url=vnet_url, headers=headers)
-        print response_vnet.text
+        if response_vnet.text:
+            ctx.logger.info("Deleted VNET {}, response is: {}".format(vnet_name,response_vnet.text))
+        elif response_vnet.status_code:
+            ctx.logger.info("Deleted VNET {}, status code is: {}".format(vnet_name,response_vnet.status_code))
+        else:
+            ctx.logger.info("Deleted VNET {}, there is status code".format(vnet_name))
     except:
         ctx.logger.info("Virtual Network {} could not be deleted.".format(vnet_name))
         raise NonRecoverableError("Virtual Network {} could not be created.".format(vnet_name))
