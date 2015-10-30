@@ -397,7 +397,7 @@ node_templates:
       agent_local_key_path: { get_input: ssh_key_path }
       cloudify:
         plugins:
-          azure_config_path: /etc/cloudify/azure_plugin/azure_config.json
+          azure_config_path: ~/azure_config.json
 
         resources_prefix: { get_input: vm_prefix }
 
@@ -408,7 +408,7 @@ node_templates:
         cloudify_agent:
           min_workers: 0
           max_workers: 5
-          remote_execution_port: 22fss
+          remote_execution_port: 22
           user: { get_input: ssh_user }
           env:
             AZURE_CONFIG_PATH: { get_property: [SELF, cloudify, plugins, azure_config_path] }
