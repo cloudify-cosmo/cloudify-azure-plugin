@@ -1,5 +1,5 @@
 import subprocess,os, sys
-
+#This is a neww line I have added just now.
 def creating_rev_zone():
 	domain_name= sys.argv[1]
 	old_file="/etc/bind/db.127"
