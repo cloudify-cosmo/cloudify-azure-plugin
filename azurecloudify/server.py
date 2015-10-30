@@ -182,6 +182,8 @@ def set_dependent_resources_names(azure_config, **kwargs):
         vm_private_ip = ctx.target.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY]
         ctx.logger.info("vm_private_ip is {}".format(vm_private_ip))
         ctx.source.instance.runtime_properties['ip'] = vm_private_ip
+        ctx.source.instance.runtime_properties['host_ip'] = vm_private_ip
+        ctx.logger.info("host_ip is {}".format(vm_private_ip))
 
     if constants.VNET_KEY in ctx.target.instance.runtime_properties:
         ctx.source.instance.runtime_properties[constants.VNET_KEY] = ctx.target.instance.runtime_properties[constants.VNET_KEY]
@@ -221,6 +223,7 @@ def _set_public_ip(subscription_id, resource_group_name, headers):
         curr_ip_address = curr_properties[u'ipAddress']
         ctx.logger.info("Current public IP address is {}".format(str(curr_ip_address)))
         ctx.instance.runtime_properties['vm_public_ip'] = curr_ip_address
+        ctx.instance.runtime_properties['public_ip'] = curr_ip_address
 
 
 def _vm_is_started(headers, vm_name, subscription_id, resource_group_name):
