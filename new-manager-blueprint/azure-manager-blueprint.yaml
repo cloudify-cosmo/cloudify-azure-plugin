@@ -75,11 +75,11 @@ inputs:
 
   ssh_key_path:
     type: string
-    default: '~/.ssh/'
+    default: '~/.ssh/cloudify-agent-kp.pem'
     
   ssh_key_filename:
     type: string
-    default: 'id_rsa'
+    default: '~/.ssh/id_rsa'
 
   client_id:
     type: string
