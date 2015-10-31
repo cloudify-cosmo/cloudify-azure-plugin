@@ -75,7 +75,7 @@ inputs:
 
   ssh_key_path:
     type: string
-    default: '~/.ssh/cloudify-agent-kp.pem'
+    default: '/home/azuretest/.ssh/cloudify-agent-kp.pem'
     
   ssh_key_filename:
     type: string
@@ -431,7 +431,7 @@ node_templates:
               azure_config: *azure_configuration
             fabric_env:
               user: { get_input: ssh_user }
-              key_filename: { get_input: ssh_key_path }
+              key_filename: { get_input: ssh_key_filename }
               host_string: { get_attribute: [manager_host, vm_public_ip] }
         create:
           implementation: fabric.fabric_plugin.tasks.run_script
@@ -439,7 +439,7 @@ node_templates:
             script_path: components/manager/scripts/configure_manager.sh
             fabric_env:
               user: { get_input: ssh_user }
-              key_filename: { get_input: ssh_key_path }
+              key_filename: { get_input: ssh_key_filename }
               host_string: { get_attribute: [manager_host, vm_public_ip] }
               always_use_pty: true
 
