@@ -87,6 +87,10 @@ def set_dependent_resources_names(azure_config, **kwargs):
     
 @operation
 def delete_security_group(**_):
+    if 'use_external_resource' in ctx.node.properties and ctx.node.properties['use_external_resource']:
+        ctx.logger.info("An existing security group was used, so there's no need to delete")
+        return
+
     subscription_id = ctx.node.properties['subscription_id']
     security_group_name = ctx.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
     credentials = 'Bearer '+auth.get_auth_token()

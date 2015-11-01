@@ -77,6 +77,10 @@ def create_vnet(**_):
 
 @operation
 def delete_vnet(**_):
+    if 'use_external_resource' in ctx.node.properties and ctx.node.properties['use_external_resource']:
+        ctx.logger.info("An existing VNET was used, so there's no need to delete")
+        return
+
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     vnet_name = ctx.instance.runtime_properties[constants.VNET_KEY]
     subscription_id = ctx.node.properties['subscription_id']

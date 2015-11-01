@@ -79,6 +79,9 @@ def create_public_ip(**_):
 
 @operation
 def delete_public_ip(**_):
+    if 'use_external_resource' in ctx.node.properties and ctx.node.properties['use_external_resource']:
+        ctx.logger.info("An existing Public IP was used, so there's no need to delete")
+        return
 
     subscription_id = ctx.node.properties['subscription_id']
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
