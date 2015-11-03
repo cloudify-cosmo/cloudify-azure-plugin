@@ -1,0 +1,27 @@
+subscription_id: 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXX'
+location: 'westus'
+vm_prefix: 'myvm'
+vm_size: 'Standard_A2'
+image_reference_publisher: 'Canonical'
+image_reference_offer: 'UbuntuServer'
+image_reference_sku: '12.04.5-LTS'
+client_id: 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXX'
+use_external_resource: False
+tenant_id: 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXX'
+existing_resource_group_name: ''
+existing_storage_account_name: ''
+existing_vnet_name: ''
+existing_nic_name: ''
+existing_public_ip_name: ''
+ssh_username: 'azuretest'
+aad_password: 'mypassword'
+key_data:  |
+   ---- BEGIN SSH2 PUBLIC KEY ----
+   Comment: "rsa-key-20150804"
+   
+   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX   
+   ---- END SSH2 PUBLIC KEY ----
