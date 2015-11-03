@@ -73,9 +73,13 @@ inputs:
     type: string
     default: ''
 
+  agent_remote_key_path:
+    type: string
+    default: '/home/azuretest/.ssh/agent_kp.pem'
+
   ssh_key_path:
     type: string
-    default: '/home/azuretest/.ssh/cloudify-agent-kp.pem'
+    default: '~/.ssh/id_rsa'
     
   ssh_key_filename:
     type: string
@@ -395,6 +399,7 @@ node_templates:
       ssh_user: { get_input: ssh_user }
       ssh_key_filename: { get_input: ssh_key_filename }
       agent_local_key_path: { get_input: ssh_key_path }
+      agent_remote_key_path: { get_input: agent_remote_key_path }
       cloudify:
         plugins:
           azure_config_path: ~/azure_config.json
