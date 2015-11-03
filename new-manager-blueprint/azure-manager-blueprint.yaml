@@ -77,7 +77,7 @@ inputs:
     type: string
     default: '/home/azuretest/.ssh/agent_kp.pem'
 
-  ssh_key_path:
+  agent_local_key_path:
     type: string
     default: '~/.ssh/id_rsa'
     
@@ -398,7 +398,7 @@ node_templates:
     properties:
       ssh_user: { get_input: ssh_user }
       ssh_key_filename: { get_input: ssh_key_filename }
-      agent_local_key_path: { get_input: ssh_key_path }
+      agent_local_key_path: { get_input: agent_local_key_path }
       agent_remote_key_path: { get_input: agent_remote_key_path }
       cloudify:
         plugins:
