@@ -30,7 +30,8 @@ from cloudify.decorators import operation
 def creation_validation(**_):
     for property_key in constants.VM_REQUIRED_PROPERTIES:
         _validate_node_properties(property_key, ctx.node.properties)
-   
+
+
 @operation
 def create_vm(**_):
     random_suffix_value = utils.random_suffix_generator()
@@ -45,55 +46,8 @@ def create_vm(**_):
 
     try:
         ctx.logger.info("Creating new virtual machine: ".format(vm_name))
-        virtual_machine_params = json.dumps(
-        {
-            "id": "/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Compute/virtualMachines/"+vm_name,
-            "name": vm_name,
-            "type": "Microsoft.Compute/virtualMachines",
-            "location": location,
-            "properties": {
-                "hardwareProfile": {
-                    "vmSize": ctx.node.properties['vm_size']
-                },
-                "osProfile": {
-                    "computername": vm_name,
-                    "adminUsername": ctx.node.properties['ssh_username'],
-                    "linuxConfiguration": {
-                        "disablePasswordAuthentication": "true",
-                        "ssh": {
-                            "publicKeys": [
-                                {
-                                    "path": "/home/"+ctx.node.properties['ssh_username']+"/.ssh/authorized_keys",
-                                    "keyData": ctx.node.properties['key_data']
-                                }
-                             ]
-                         }
-                     }
-                },
-                "storageProfile": {
-                    "imageReference": {
-                        "publisher": ctx.node.properties['image_reference_publisher'],
-                        "offer": ctx.node.properties['image_reference_offer'],
-                        "sku": ctx.node.properties['image_reference_sku'],
-                        "version": constants.vm_version
-                    },
-                    "osDisk": {
-                        "name": constants.os_disk_name+random_suffix_value,
-                        "vhd": {
-                            "uri": "http://"+storage_account_name+".blob.core.windows.net/vhds/osdisk{}.vhd".format(random_suffix_value)
-                        },
-                        "caching": "ReadWrite",
-                        "createOption": "FromImage"
-                    }
-                },
-                "networkProfile": {
-                    "networkInterfaces": [
-                        {
-                            "id": "/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Network/networkInterfaces/"+nic_name
-                        }
-                    ]}
-                }
-            })
+        virtual_machine_params = get_virtual_machine_params(location, nic_name, random_suffix_value, resource_group_name,
+                                               storage_account_name, subscription_id, vm_name)
         virtual_machine_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version
         response_vm = requests.put(url=virtual_machine_url, data=virtual_machine_params, headers=headers)
         if response_vm.text:
@@ -252,3 +206,55 @@ def _start_vm_call(headers, vm_name, subscription_id , resource_group_name):
         else:
             return False
     raise NonRecoverableError("_start_vm_call:{} - No Status code for vm {}".format(vm_name, response_start_vm.status_code))
+
+
+def get_virtual_machine_params(location, nic_name, random_suffix_value, resource_group_name, storage_account_name, subscription_id, vm_name):
+    return json.dumps(
+        {
+            "id": "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Compute/virtualMachines/{2}".format(subscription_id, resource_group_name, vm_name),
+            "name": vm_name,
+            "type": "Microsoft.Compute/virtualMachines",
+            "location": location,
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": ctx.node.properties['vm_size']
+                },
+                "osProfile": {
+                    "computername": vm_name,
+                    "adminUsername": ctx.node.properties['ssh_username'],
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": "true",
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "/home/{0}/.ssh/authorized_keys".format(ctx.node.properties['ssh_username']),
+                                    "keyData": ctx.node.properties['key_data']
+                                }
+                            ]
+                        }
+                    }
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": ctx.node.properties['image_reference_publisher'],
+                        "offer": ctx.node.properties['image_reference_offer'],
+                        "sku": ctx.node.properties['image_reference_sku'],
+                        "version": constants.vm_version
+                    },
+                    "osDisk": {
+                        "name": "{0}{1}".format(constants.os_disk_name, random_suffix_value),
+                        "vhd": {
+                            "uri": "http://{0}.blob.core.windows.net/vhds/osdisk{1}.vhd".format(storage_account_name, random_suffix_value)
+                        },
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Network/networkInterfaces/{2}".format(subscription_id, resource_group_name, nic_name)
+                        }
+                    ]}
+            }
+        })
