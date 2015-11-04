@@ -56,7 +56,9 @@ def create_availability_set(**_):
     
 @operation
 def delete_availability_set(**_):
-    subscription_id = ''
+    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+    location = ctx.node.properties['location']
+    subscription_id = ctx.node.properties['subscription_id']
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     availability_set_name =''
     delete_url = 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/availabilitySets/'+availability_set_name+'?api-version=2015-05-01-preview'
