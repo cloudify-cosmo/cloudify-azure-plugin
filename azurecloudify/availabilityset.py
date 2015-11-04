@@ -52,3 +52,13 @@ def create_availability_set(**_):
     )
     response_as = requests.put(url=availability_set_url, data=availability_set_params, headers=headers) 
     print response_as.text 
+    
+    
+@operation
+def delete_availability_set(**_):
+    subscription_id = ''
+    headers = {"Content-Type": "application/json", "Authorization": credentials}
+    availability_set_name =''
+    delete_url = 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/availabilitySets/'+availability_set_name+'?api-version=2015-05-01-preview'
+    response_as = requests.delete(url=delete_url, headers=headers)
+    print(response_as.text)
