@@ -149,6 +149,11 @@ def stop_vm(**_):
 
 @operation
 def delete_virtual_machine(**_):
+    delete_current_virtual_machine()
+    utils.clear_runtime_properties()
+
+
+def delete_current_virtual_machine(**_):
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     subscription_id = ctx.node.properties['subscription_id']
     credentials = 'Bearer ' + auth.get_auth_token()
@@ -163,8 +168,6 @@ def delete_virtual_machine(**_):
 
     except:
         ctx.logger.info("Virtual Machine {} could not be deleted".format(vm_name))
-
-    utils.clear_runtime_properties()
 
 
 @operation
