@@ -32,7 +32,7 @@ def creation_validation(**_):
 
 
 @operation
-def create_storage_account(**_):
+def create_availability_set(**_):
     location = ctx.node.properties['location']
     subscription_id = ctx.node.properties['subscription_id']
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
