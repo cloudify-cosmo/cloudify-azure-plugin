@@ -125,8 +125,14 @@ def create_nic(**_):
 
     set_nic_private_ip()
 
+
 @operation
 def delete_nic(**_):
+    delete_current_nic()
+    utils.clear_runtime_properties()
+
+
+def delete_current_nic(**_):
     if 'use_external_resource' in ctx.node.properties and ctx.node.properties['use_external_resource']:
         ctx.logger.info("An existing NIC was used, so there's no need to delete")
         return
@@ -145,7 +151,6 @@ def delete_nic(**_):
     except:
         ctx.logger.info("Network Interface Card {} could not be deleted.".format(nic_name))
 
-    utils.clear_runtime_properties()
 
 @operation
 def set_dependent_resources_names(azure_config, **kwargs):
