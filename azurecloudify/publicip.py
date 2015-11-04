@@ -77,8 +77,14 @@ def create_public_ip(**_):
 
     ctx.logger.info("{} is {}".format(constants.PUBLIC_IP_KEY, public_ip_name))
 
+
 @operation
 def delete_public_ip(**_):
+    delete_current_public_ip()
+    utils.clear_runtime_properties()
+
+
+def delete_current_public_ip(**_):
     if 'use_external_resource' in ctx.node.properties and ctx.node.properties['use_external_resource']:
         ctx.logger.info("An existing Public IP was used, so there's no need to delete")
         return
@@ -97,8 +103,6 @@ def delete_public_ip(**_):
 
     except:
         ctx.logger.info("Public IP {} could not be deleted.".format(public_ip_name))
-
-    utils.clear_runtime_properties()
 
 
 @operation

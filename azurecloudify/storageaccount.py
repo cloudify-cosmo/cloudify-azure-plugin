@@ -78,6 +78,11 @@ def create_storage_account(**_):
 
 @operation
 def delete_storage_account(**_):
+    delete_current_storage_account()
+    utils.clear_runtime_properties()
+
+
+def delete_current_storage_account(**_):
     if 'use_external_resource' in ctx.node.properties and ctx.node.properties['use_external_resource']:
         ctx.logger.info("An existing storage_account was used, so there's no need to delete")
         return
@@ -95,8 +100,6 @@ def delete_storage_account(**_):
         ctx.logger.info("response_sa storage account : {}".format(response_sa.text))
     except:
         ctx.logger.info("Storage Account {} could not be deleted.".format(storage_account_name))
-
-    utils.clear_runtime_properties()
 
 
 @operation

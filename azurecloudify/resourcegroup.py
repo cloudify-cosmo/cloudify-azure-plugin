@@ -73,6 +73,11 @@ def create_resource_group(**_):
 
 @operation
 def delete_resource_group(**_):
+    delete_current_resource_group()
+    utils.clear_runtime_properties()
+
+
+def delete_current_resource_group(**_):
     if 'use_external_resource' in ctx.node.properties and ctx.node.properties['use_external_resource']:
         ctx.logger.info("An existing resource group was used, so there's no need to delete")
         return
@@ -90,8 +95,6 @@ def delete_resource_group(**_):
         print(response_rg.text)
     except:
         ctx.logger.info("Resource Group {} could not be deleted.".format(resource_group_name))
-
-    utils.clear_runtime_properties()
 
 
 def _validate_node_properties(key, ctx_node_properties):

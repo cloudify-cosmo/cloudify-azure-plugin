@@ -77,6 +77,11 @@ def create_vnet(**_):
 
 @operation
 def delete_vnet(**_):
+    delete_current_vnet()
+    utils.clear_runtime_properties()
+
+
+def delete_current_vnet(**_):
     if 'use_external_resource' in ctx.node.properties and ctx.node.properties['use_external_resource']:
         ctx.logger.info("An existing VNET was used, so there's no need to delete")
         return
@@ -100,8 +105,6 @@ def delete_vnet(**_):
     except:
         ctx.logger.info("Virtual Network {} could not be deleted.".format(vnet_name))
         raise NonRecoverableError("Virtual Network {} could not be created.".format(vnet_name))
-
-    utils.clear_runtime_properties()
 
 
 @operation

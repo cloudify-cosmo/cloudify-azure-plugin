@@ -80,13 +80,20 @@ def create_security_group(**_):
         ctx.logger.info("Security Group {} could not be created".format(security_group_name))
         raise NonRecoverableError("Security Group {} could not be created".format(security_group_name))
 
+
 @operation
 def set_dependent_resources_names(azure_config, **kwargs):
     ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     ctx.source.instance.runtime_properties[constants.VNET_KEY] = ctx.target.instance.runtime_properties[constants.VNET_KEY]
-    
+
+
 @operation
 def delete_security_group(**_):
+    delete_current_security_group()
+    utils.clear_runtime_properties()
+
+
+def delete_current_security_group(**_):
     if 'use_external_resource' in ctx.node.properties and ctx.node.properties['use_external_resource']:
         ctx.logger.info("An existing security group was used, so there's no need to delete")
         return
@@ -103,9 +110,6 @@ def delete_security_group(**_):
     except:
         ctx.logger.info("Security Group {} could not be deleted.".format(security_group_name))
         
-    
-    utils.clear_runtime_properties()
-
 
 def _validate_node_properties(key, ctx_node_properties):
       if key not in ctx_node_properties:
