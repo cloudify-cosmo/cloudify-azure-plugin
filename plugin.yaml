@@ -464,8 +464,8 @@ relationships:
             azure_config:
               default: {}
 
-   cloudify.azure.relationships.security_group_connected_to_resource_group:
-    derived_from: cloudify.relationships.connected_to
+   cloudify.azure.relationships.security_group_contained_in_resource_group:
+    derived_from: cloudify.relationships.contained_in
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
         preconfigure:
