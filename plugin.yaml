@@ -474,6 +474,16 @@ relationships:
             azure_config:
               default: {}
 
+   cloudify.azure.relationships.vnet_connected_to_security_group:
+    derived_from: cloudify.relationships.connected_to
+    source_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        preconfigure:
+          implementation: microsoft.azurecloudify.vnet.set_dependent_resources_names
+          inputs:
+            azure_config:
+              default: {}
+
    cloudify.azure.relationships.server_connected_to_security_group:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
@@ -515,7 +525,6 @@ relationships:
           inputs:
             azure_config:
               default: {}
-
 
    cloudify.azure.relationships.server_connected_to_nic:
     derived_from: cloudify.relationships.connected_to
