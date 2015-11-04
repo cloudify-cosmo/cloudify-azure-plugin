@@ -86,3 +86,5 @@ AUTH_TOKEN_EXPIRY = 'auth_token_expiry'
 
 REQUEST_ACCEPTED = 'request accepted'
 CREATE_RESPONSE = 'CREATE_RESPONSE'
+
+USE_EXTERNAL_RESOURCE = 'use_external_resource'

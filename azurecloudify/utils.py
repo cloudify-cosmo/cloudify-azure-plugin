@@ -113,3 +113,29 @@ def create_resource(headers, resource_name, resource_params, create_resource_url
             raise NonRecoverableError("check_or_create_resource:{0} ({1}) - Status code for resource {2} is not 200 nor 202".format(resource_name, resource_type, response_resource.status_code))
 
     raise NonRecoverableError("check_or_create_resource:{0} ({1}) - No Status code for resource {2}".format(resource_name, resource_type, response_resource.status_code))
+
+
+def set_resource_name(get_resource_func, resource_desc,
+                      runtime_resource_key, properties_resource_key, resource_key_prefix):
+    if constants.USE_EXTERNAL_RESOURCE in ctx.node.properties and ctx.node.properties[constants.USE_EXTERNAL_RESOURCE]:
+        if properties_resource_key in ctx.node.properties and ctx.node.properties[properties_resource_key]:
+            existing_resource_name = ctx.node.properties[properties_resource_key]
+            if not get_resource_func(existing_resource_name):
+                raise NonRecoverableError("{0} {1} doesn't exist in your Azure account".format(resource_desc, existing_resource_name))
+        else:
+            raise NonRecoverableError("'{0}' was specified, but '{1}' is either empty or doesn't exist in the input".format(constants.USE_EXTERNAL_RESOURCE, properties_resource_key))
+
+        ctx.instance.runtime_properties[runtime_resource_key] = existing_resource_name
+        ctx.logger.info("Using an existing {0}:{1}".format(resource_desc, existing_resource_name))
+        resource_name_to_be_used_or_created = None
+    elif properties_resource_key in ctx.node.properties and ctx.node.properties[properties_resource_key]:
+        required_resource_name = ctx.node.properties[properties_resource_key]
+        if get_resource_func(required_resource_name):
+            raise NonRecoverableError("{0} {1} already exists in your Azure account".format(resource_desc, required_resource_name))
+        else:
+            resource_name_to_be_used_or_created = required_resource_name
+    else:
+        random_suffix_value = random_suffix_generator()
+        resource_name_to_be_used_or_created = "{0}){1}".format(resource_key_prefix, random_suffix_value)
+
+    return resource_name_to_be_used_or_created

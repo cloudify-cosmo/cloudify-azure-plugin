@@ -35,45 +35,35 @@ def creation_validation(**_):
 
 @operation
 def create_storage_account(**_):
-    if 'use_external_resource' in ctx.node.properties and ctx.node.properties['use_external_resource']:
-        if constants.EXISTING_STORAGE_ACCOUNT_KEY in ctx.node.properties:
-            existing_storage_account_name = ctx.node.properties[constants.EXISTING_STORAGE_ACCOUNT_KEY]
-            if existing_storage_account_name:
-                storage_account_exists = _get_storage_account_name(existing_storage_account_name)
-                if not storage_account_exists:
-                    raise NonRecoverableError("Storage account {} doesn't exist your Azure account".format(existing_storage_account_name))
-            else:
-                raise NonRecoverableError("The value of '{}' in the input, is empty".format(constants.EXISTING_STORAGE_ACCOUNT_KEY))
-        else:
-            raise NonRecoverableError("'{}' was specified, but '{}' doesn't exist in the input".format('use_external_resource',constants.EXISTING_RESOURCE_GROUP_KEY))
-
-        ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = ctx.node.properties[constants.EXISTING_STORAGE_ACCOUNT_KEY]
+    storage_account_name = utils.set_resource_name(_get_storage_account_name, 'Storage account',
+                      constants.STORAGE_ACCOUNT_KEY, constants.EXISTING_STORAGE_ACCOUNT_KEY,
+                      constants.STORAGE_ACCOUNT_PREFIX)
+    if storage_account_name is None:
+        # Using an existing storage account, so don't create anything
         return
 
     location = ctx.node.properties['location']
     subscription_id = ctx.node.properties['subscription_id']
-    random_suffix_value = utils.random_suffix_generator()
-    storage_account_name = constants.STORAGE_ACCOUNT_PREFIX+random_suffix_value
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     credentials = 'Bearer '+auth.get_auth_token()
 
     headers = {"Content-Type": "application/json", "Authorization": credentials}
 
     try:
-        ctx.logger.info("Creating new storage account: {}".format(storage_account_name))
+        ctx.logger.info("Creating new storage account: {0}".format(storage_account_name))
         storage_account_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts/'+storage_account_name+'?api-version='+constants.api_version
         storage_account_params = json.dumps({"properties": {"accountType": constants.storage_account_type, }, "location": location})
         response_sa = requests.put(url=storage_account_url, data=storage_account_params, headers=headers)
 
         if response_sa.text:
-            ctx.logger.info("create_storage_account:{} response_sa.text is {}".format(storage_account_name, response_sa.text))
-            if utils.request_failed("{}:{}".format('create_storage_account', storage_account_name), response_sa):
-                raise NonRecoverableError("Storage account {} could not be created".format(storage_account_name))
+            ctx.logger.info("create_storage_account:{0} response_sa.text is {1}".format(storage_account_name, response_sa.text))
+            if utils.request_failed("{0}:{1}".format('create_storage_account', storage_account_name), response_sa):
+                raise NonRecoverableError("Storage account {0} could not be created".format(storage_account_name))
 
         ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = storage_account_name
     except:
-        ctx.logger.info("Storage Account {} could not be created.".format(storage_account_name))
-        raise NonRecoverableError("Storage Account {} could not be created.".format(storage_account_name))
+        ctx.logger.info("Storage Account {0} could not be created.".format(storage_account_name))
+        raise NonRecoverableError("Storage Account {0} could not be created.".format(storage_account_name))
 
 
 @operation
