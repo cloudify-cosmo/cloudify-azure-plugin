@@ -7,7 +7,7 @@ location = ''
 subscription_id = ''
 resource_group_name = ''
 availability_set_name= ''
-credentials = ''
+credentials = 'Bearer ' + auth.get_auth_token()
 headers = {"Content-Type": "application/json", "Authorization": credentials}
 availability_set_url = 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/availabilitySets/'+availability_set_name+'?api-version='
 availability_set_params = json.dumps({ 
