@@ -222,7 +222,8 @@ node_types:
 
 
   cloudify.azure.nodes.PublicIP:
-    derived_from: cloudify.nodes.VirtualIP
+#   Later change to derived_from: cloudify.nodes.VirtualIP
+    derived_from: cloudify.nodes.Root
     properties:
       use_external_resource:
         description: >
@@ -360,7 +361,8 @@ node_types:
         creation: microsoft.azurecloudify.nic.creation_validation
 
   cloudify.azure.nodes.VNET:
-    derived_from: cloudify.nodes.Network
+#   Later change to derived_from: cloudify.nodes.Network
+    derived_from: cloudify.nodes.Root
     properties:
       use_external_resource:
         description: >
