@@ -39,8 +39,12 @@ def create_security_group(**_):
     headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
 
-    random_suffix_value = utils.random_suffix_generator()
-    security_group_name = constants.SECURITY_GROUP_PREFIX+random_suffix_value
+    if constants.SECURITY_GROUP_KEY in ctx.instance.runtime_properties:
+        security_group_name = ctx.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
+    else:
+        random_suffix_value = utils.random_suffix_generator()
+        security_group_name = constants.SECURITY_GROUP_PREFIX+random_suffix_value
+
     security_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version
     try:
         ctx.logger.info("Creating a new security group: {0}".format(security_group_name))
@@ -73,7 +77,7 @@ def create_security_group(**_):
             ctx.logger.info("create_security_group {0} response_nsg.text is {1}".format(security_group_name, response_nsg.text))
             if utils.request_failed("{0}:{1}".format('create_security_group', security_group_name), response_nsg):
                 raise NonRecoverableError("create_security_group {0} could not be created".format(security_group_name))
-
+        ctx.instance.runtime_properties[constants.SECURITY_GROUP_KEY] = security_group_name
     except:
         ctx.logger.info("Security Group {0} could not be created".format(security_group_name))
         raise NonRecoverableError("Security Group {} could not be created".format(security_group_name))

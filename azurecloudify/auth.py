@@ -133,13 +133,9 @@ def get_token_from_client_file():
     return token, token_expires
 
 
-def get_credentials(return_resource_group=True):
+def get_credentials():
     subscription_id = ctx.node.properties['subscription_id']
     location = ctx.node.properties['location']
-    if return_resource_group:
-        resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-    else:
-        resource_group_name = None
     credentials = 'Bearer ' + get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     return headers, location, subscription_id
