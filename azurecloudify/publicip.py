@@ -53,7 +53,7 @@ def create_public_ip(**_):
     public_ip_params = _get_public_ip_params(location, public_ip_name)
     utils.check_or_create_resource(headers, public_ip_name, public_ip_params, check_public_ip_url, create_public_ip_url, 'public_ip')
 
-    ctx.logger.info("{} is {}".format(constants.PUBLIC_IP_KEY, public_ip_name))
+    ctx.logger.info("{0} is {1}".format(constants.PUBLIC_IP_KEY, public_ip_name))
 
 
 @operation
@@ -63,7 +63,7 @@ def delete_public_ip(**_):
 
 
 def delete_current_public_ip(**_):
-    if 'use_external_resource' in ctx.node.properties and ctx.node.properties['use_external_resource']:
+    if constants.USE_EXTERNAL_RESOURCE in ctx.node.properties and ctx.node.properties[constants.USE_EXTERNAL_RESOURCE]:
         ctx.logger.info("An existing Public IP was used, so there's no need to delete")
         return
 
@@ -74,11 +74,11 @@ def delete_current_public_ip(**_):
     try:
         ctx.logger.info("Deleting Public IP")
         public_ip_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/ publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
-        response_pip = requests.delete(url=public_ip_url,headers=headers)
+        response_pip = requests.delete(url=public_ip_url, headers=headers)
         print(response_pip.text)
 
     except:
-        ctx.logger.info("Public IP {} could not be deleted.".format(public_ip_name))
+        ctx.logger.info("Public IP {0} could not be deleted.".format(public_ip_name))
 
 
 @operation
@@ -86,7 +86,7 @@ def set_dependent_resources_names(azure_config, **kwargs):
     ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     ctx.source.instance.runtime_properties[constants.VNET_KEY] = ctx.target.instance.runtime_properties[constants.VNET_KEY]
     ctx.source.instance.runtime_properties[constants.SUBNET_KEY] = ctx.target.instance.runtime_properties[constants.SUBNET_KEY]
-    ctx.logger.info("{} is {}".format(constants.VNET_KEY, ctx.target.instance.runtime_properties[constants.VNET_KEY]))
+    ctx.logger.info("{0} is {1}".format(constants.VNET_KEY, ctx.target.instance.runtime_properties[constants.VNET_KEY]))
 
 
 def _validate_node_properties(key, ctx_node_properties):
@@ -98,10 +98,8 @@ def _get_public_ip_name(public_ip_name):
     if constants.RESOURCE_GROUP_KEY in ctx.instance.runtime_properties:
         resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     else:
-        raise RecoverableError("{} is not in public ip runtime_properties yet.".format(constants.RESOURCE_GROUP_KEY))
-    credentials = 'Bearer ' + auth.get_auth_token()
-    headers = {"Content-Type": "application/json", "Authorization": credentials}
-    subscription_id = ctx.node.properties['subscription_id']
+        raise RecoverableError("{0} is not in public ip runtime_properties yet.".format(constants.RESOURCE_GROUP_KEY))
+    headers, location, subscription_id = auth.get_credentials()
     pip_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses?api-version='+constants.api_version
     response_get_pip = requests.get(url=pip_url,headers=headers)
     if public_ip_name in response_get_pip.text:

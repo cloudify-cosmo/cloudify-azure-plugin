@@ -110,10 +110,8 @@ def _get_vnet_name(vnet_name):
         resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     else:
         raise RecoverableError("{0} is not in vnet runtime_properties yet".format(constants.RESOURCE_GROUP_KEY))
-    credentials = 'Bearer ' + auth.get_auth_token()
-    subscription_id = ctx.node.properties['subscription_id']
+    headers, location, subscription_id = auth.get_credentials()
     url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualnetworks?api-version='+constants.api_version
-    headers = {"Content-Type": "application/json", "Authorization": credentials}
     response_list = requests.get(url, headers=headers)
     ctx.logger.info("VNET response_list.text {0}".format(response_list.text))
     if vnet_name in response_list.text:

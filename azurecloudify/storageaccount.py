@@ -69,7 +69,7 @@ def delete_storage_account(**_):
 
 
 def delete_current_storage_account(**_):
-    if 'use_external_resource' in ctx.node.properties and ctx.node.properties['use_external_resource']:
+    if constants.USE_EXTERNAL_RESOURCE in ctx.node.properties and ctx.node.properties[constants.USE_EXTERNAL_RESOURCE]:
         ctx.logger.info("An existing storage_account was used, so there's no need to delete")
         return
 
@@ -97,20 +97,20 @@ def _validate_node_properties(key, ctx_node_properties):
 
 
 def _get_storage_account_name(storage_account_name):
-    ctx.logger.info("In _get_storage_account_name looking for {} ".format(storage_account_name))
-    subscription_id = ctx.node.properties['subscription_id']
+    ctx.logger.info("In _get_storage_account_name looking for {0} ".format(storage_account_name))
+    headers, location, subscription_id = auth.get_credentials()
+
     if constants.RESOURCE_GROUP_KEY in ctx.instance.runtime_properties:
         resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     else:
         raise RecoverableError("{} is not in storage acoount runtime_properties yet".format(constants.RESOURCE_GROUP_KEY))
 
-    credentials = 'Bearer ' + auth.get_auth_token()
     url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts?api-version='+constants.api_version
-    headers = {"Content-Type": "application/json", "Authorization": credentials}
+
     response_list = requests.get(url, headers=headers)
-    ctx.logger.info("storage account response_list.text {} ".format(response_list.text))
+    ctx.logger.info("storage account response_list.text {0} ".format(response_list.text))
     if storage_account_name in response_list.text:
         return True
     else:
-        ctx.logger.info("Storage account {} does not exist".format(storage_account_name))
+        ctx.logger.info("Storage account {0} does not exist".format(storage_account_name))
         return False

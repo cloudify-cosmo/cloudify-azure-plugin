@@ -65,7 +65,7 @@ def delete_resource_group(**_):
 
 
 def delete_current_resource_group(**_):
-    if 'use_external_resource' in ctx.node.properties and ctx.node.properties['use_external_resource']:
+    if constants.USE_EXTERNAL_RESOURCE in ctx.node.properties and ctx.node.properties[constants.USE_EXTERNAL_RESOURCE]:
         ctx.logger.info("An existing resource group was used, so there's no need to delete")
         return
 
@@ -90,8 +90,7 @@ def _get_resource_group_name(resource_group_name):
     ctx.logger.info("In _get_resource_group_name looking for {0}".format(resource_group_name))
     credentials = 'Bearer ' + auth.get_auth_token()
     ctx.logger.info("In _get_resource_group_name credentials is {0}".format(credentials))
-    headers = {"Content-Type": "application/json", "Authorization": credentials}
-    subscription_id = ctx.node.properties['subscription_id']
+    headers, location, subscription_id = auth.get_credentials()
     list_resource_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourcegroups?api-version='+constants.api_version_resource_group
     response_get_resource_group = requests.get(url=list_resource_group_url, headers=headers)
     ctx.logger.info("response_get_resource_group.text {0} ".format(response_get_resource_group.text))

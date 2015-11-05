@@ -176,7 +176,7 @@ def _vm_is_started(headers, vm_name, subscription_id, resource_group_name):
     return utils.resource_provisioned('_vm_is_started',vm_name, check_vm_response)
 
 
-def _start_vm_call(headers, vm_name, subscription_id , resource_group_name):
+def _start_vm_call(headers, vm_name, subscription_id, resource_group_name):
     ctx.logger.info("In _vm_is_started checking {}".format(vm_name))
     start_vm_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
     response_start_vm = requests.post(start_vm_url, headers=headers)
