@@ -117,6 +117,9 @@ def create_resource(headers, resource_name, resource_params, create_resource_url
 
 def set_resource_name(get_resource_func, resource_desc,
                       runtime_resource_key, properties_resource_key, resource_key_prefix):
+    if runtime_resource_key in ctx.instance.runtime_properties:
+        return ctx.instance.runtime_properties[runtime_resource_key]
+
     if constants.USE_EXTERNAL_RESOURCE in ctx.node.properties and ctx.node.properties[constants.USE_EXTERNAL_RESOURCE]:
         if properties_resource_key in ctx.node.properties and ctx.node.properties[properties_resource_key]:
             existing_resource_name = ctx.node.properties[properties_resource_key]

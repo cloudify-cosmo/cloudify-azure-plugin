@@ -38,19 +38,11 @@ def creation_validation(**_):
 
 @operation
 def create_public_ip(**_):
-    if 'use_external_resource' in ctx.node.properties and ctx.node.properties['use_external_resource']:
-        if constants.EXISTING_PUBLIC_IP_NAME in ctx.node.properties:
-            existing_public_ip_name = ctx.node.properties[constants.EXISTING_PUBLIC_IP_NAME]
-            if existing_public_ip_name:
-                public_ip_exists = _get_public_ip_name(existing_public_ip_name)
-                if not public_ip_exists:
-                    raise NonRecoverableError("Public ip {} doesn't exist your Azure account".format(existing_public_ip_name))
-            else:
-                raise NonRecoverableError("The value of '{}' in the input, is empty".format(constants.EXISTING_PUBLIC_IP_NAME))
-        else:
-            raise NonRecoverableError("'{}' was specified, but '{}' doesn't exist in the input".format('use_external_resource',constants.EXISTING_PUBLIC_IP_NAME))
-
-        ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY] = ctx.node.properties[constants.EXISTING_PUBLIC_IP_NAME]
+    public_ip_name = utils.set_resource_name(_get_public_ip_name, 'Public IP',
+                                             constants.PUBLIC_IP_KEY, constants.EXISTING_PUBLIC_IP_NAME,
+                                             constants.PUBLIC_IP_PREFIX)
+    if public_ip_name is None:
+        # Using an existing public ip, so don't create anything
         return
 
     subscription_id = ctx.node.properties['subscription_id']
@@ -58,17 +50,6 @@ def create_public_ip(**_):
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     credentials = 'Bearer ' + auth.get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
-
-    ctx.logger.info("{}  - Setting or looking for".format(constants.PUBLIC_IP_KEY))
-    if constants.PUBLIC_IP_KEY in ctx.instance.runtime_properties:
-        ctx.logger.info("{}  - looking for".format(constants.PUBLIC_IP_KEY))
-        public_ip_name = ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY]
-        ctx.logger.info("{} is #1 {}".format(constants.PUBLIC_IP_KEY,public_ip_name))
-    else:
-        random_suffix_value = utils.random_suffix_generator()
-        public_ip_name = constants.PUBLIC_IP_PREFIX+random_suffix_value
-        ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY] = public_ip_name
-        ctx.logger.info("{} is #2 {}".format(constants.PUBLIC_IP_KEY,public_ip_name))
 
     check_public_ip_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
     create_public_ip_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
