@@ -117,7 +117,8 @@ node_templates:
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
       - target: nodecellar_resource_group
-        type: cloudify.azure.relationships.resource_contained_in_resource_group
+        type: cloudify.relationships.connected_to
+#       type: cloudify.azure.relationships.resource_contained_in_resource_group
 
   nodejs_host:
     type: nodecellar.nodes.MonitoredServer
@@ -129,7 +130,8 @@ node_templates:
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
       - target: nodecellar_resource_group
-        type: cloudify.azure.relationships.resource_contained_in_resource_group
+        type: cloudify.relationships.connected_to
+#       type: cloudify.azure.relationships.resource_contained_in_resource_group
 
   nodecellar_resource_group:
     type: cloudify.azure.nodes.ResourceGroup
@@ -139,7 +141,7 @@ node_templates:
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
       aad_password: { get_input: aad_password}
-      use_external_resource: { get_input: use_external_resource}
+      use_external_resource: true
       existing_resource_group_name: { get_input: existing_resource_group_name}
       
     relationships:
@@ -154,7 +156,7 @@ node_templates:
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
       aad_password: { get_input: aad_password}
-      use_external_resource: { get_input: use_external_resource}
+      use_external_resource: true
       existing_storage_account_name: { get_input: existing_storage_account_name}
       
     relationships:
