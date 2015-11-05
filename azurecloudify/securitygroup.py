@@ -21,7 +21,7 @@ def creation_validation(**_):
 
 @operation
 def create_security_group(**_):
-    if 'use_external_resource' in ctx.node.properties and ctx.node.properties['use_external_resource']:
+    if constants.USE_EXTERNAL_RESOURCE in ctx.node.properties and ctx.node.properties[constants.USE_EXTERNAL_RESOURCE]:
         if constants.EXISTING_SECURITY_GROUP_KEY in ctx.node.properties:
             existing_security_group_name = ctx.node.properties[constants.EXISTING_SECURITY_GROUP_KEY]
             if existing_security_group_name:
@@ -91,25 +91,23 @@ def delete_security_group(**_):
 
 
 def delete_current_security_group(**_):
-    if 'use_external_resource' in ctx.node.properties and ctx.node.properties['use_external_resource']:
+    if constants.USE_EXTERNAL_RESOURCE in ctx.node.properties and ctx.node.properties[constants.USE_EXTERNAL_RESOURCE]:
         ctx.logger.info("An existing security group was used, so there's no need to delete")
         return
 
-    subscription_id = ctx.node.properties['subscription_id']
     security_group_name = ctx.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
-    credentials = 'Bearer '+auth.get_auth_token()
-    headers = {"Content-Type": "application/json", "Authorization": credentials}
+    headers, location, subscription_id = auth.get_credentials()
     try:
-        ctx.logger.info("Deleting Security Group: {}".format(security_group_name))
-        security_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version
+        ctx.logger.info("Deleting Security Group: {0}".format(security_group_name))
+        security_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+security_group_name+'/providers/microsoft.network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version
         response_nsg = requests.delete(url=security_group_url, headers=headers)
         print(response_nsg.text)
     except:
-        ctx.logger.info("Security Group {} could not be deleted.".format(security_group_name))
+        ctx.logger.info("Security Group {0} could not be deleted.".format(security_group_name))
         
 
 def _validate_node_properties(key, ctx_node_properties):
-      if key not in ctx_node_properties:
+    if key not in ctx_node_properties:
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
         
         
