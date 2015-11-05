@@ -37,31 +37,20 @@ def creation_validation(**_):
 
 @operation
 def create_vnet(**_):
-    if 'use_external_resource' in ctx.node.properties and ctx.node.properties['use_external_resource']:
-        if constants.EXISTING_VNET_KEY in ctx.node.properties:
-            existing_vnet_name = ctx.node.properties[constants.EXISTING_VNET_KEY]
-            if existing_vnet_name:
-                vnet_exists = _get_vnet_name(existing_vnet_name)
-                if not vnet_exists:
-                    raise NonRecoverableError("Vnet {0} doesn't exist your Azure account".format(existing_vnet_name))
-            else:
-                raise NonRecoverableError("The value of '{0}' in the input, is empty".format(constants.EXISTING_VNET_KEY))
-        else:
-            raise NonRecoverableError("'{0}' was specified, but '{1}' doesn't exist in the input".format('use_external_resource', constants.EXISTING_VNET_KEY))
 
-        ctx.instance.runtime_properties[constants.VNET_KEY] = ctx.node.properties[constants.EXISTING_VNET_KEY]
+    vnet_name = utils.set_resource_name(_get_vnet_name, 'VNET',constants.VNET_KEY, constants.EXISTING_VNET_KEY,
+                                        constants.VNET_PREFIX)
+    if vnet_name is None:
+        # Using an existing VNET, so don't create anything
         return
 
     headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
 
     if constants.VNET_KEY in ctx.instance.runtime_properties:
-        vnet_name = ctx.instance.runtime_properties[constants.VNET_KEY]
         current_subnet_name = ctx.instance.runtime_properties[constants.SUBNET_KEY]
     else:
-        vnet_name = constants.VNET_PREFIX+utils.random_suffix_generator()
         ctx.instance.runtime_properties[constants.VNET_KEY] = vnet_name
-
         current_subnet_name = constants.SUBNET_PREFIX+utils.random_suffix_generator()
         ctx.instance.runtime_properties[constants.SUBNET_KEY] = current_subnet_name
 
