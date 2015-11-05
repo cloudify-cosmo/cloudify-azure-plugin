@@ -130,7 +130,7 @@ def delete_nic(**_):
 
 
 def delete_current_nic(**_):
-    if 'use_external_resource' in ctx.node.properties and ctx.node.properties['use_external_resource']:
+    if constants.USE_EXTERNAL_RESOURCE in ctx.node.properties and ctx.node.properties[constants.USE_EXTERNAL_RESOURCE]:
         ctx.logger.info("An existing NIC was used, so there's no need to delete")
         return
 
