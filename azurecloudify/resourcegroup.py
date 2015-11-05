@@ -33,8 +33,8 @@ def creation_validation(**_):
 @operation
 def create_resource_group(**_):
     resource_group_name = utils.set_resource_name(_get_resource_group_name, 'Resource group',
-                      constants.RESOURCE_GROUP_KEY, constants.EXISTING_RESOURCE_GROUP_KEY,
-                      constants.RESOURCE_GROUP_PREFIX)
+                                                  constants.RESOURCE_GROUP_KEY, constants.EXISTING_RESOURCE_GROUP_KEY,
+                                                  constants.RESOURCE_GROUP_PREFIX)
     if resource_group_name is None:
         # Using an existing resource group, so don't create anything
         return

@@ -44,7 +44,6 @@ def create_vm(**_):
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
 
     try:
-        ctx.logger.info("b4 get_virtual_machine_params: {0}".format(vm_name))
         virtual_machine_params = get_virtual_machine_params(location, nic_name, random_suffix_value, resource_group_name,
                                                             storage_account_name, subscription_id, vm_name)
         virtual_machine_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version

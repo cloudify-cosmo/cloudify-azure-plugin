@@ -45,7 +45,7 @@ def _get_nic_params(current_subnet_name, location, resource_group_name, subscrip
         "properties": {
             "ipConfigurations": [
                 {
-                    "name": constants.IP_PREFIX + utils.random_suffix_generator(),
+                    "name": "{0}{1}".format(vnet_name, current_subnet_name),
                     "properties": {
                         "subnet": {
                             "id": network_str + "virtualNetworks/" + vnet_name + "/subnets/" + current_subnet_name
@@ -66,7 +66,6 @@ def _get_nic_params(current_subnet_name, location, resource_group_name, subscrip
         }
         ip_configurations_properties['publicIPAddress'] = public_ip_address_json
     ctx.logger.info("nic_json : {}".format(nic_json))
-    print nic_json
     nic_params = json.dumps(nic_json)
     return network_str, nic_params
 
@@ -87,8 +86,7 @@ def set_nic_private_ip():
 
 @operation
 def create_nic(**_):
-    ctx.logger.info("In create_nic ...")
-    if 'use_external_resource' in ctx.node.properties and ctx.node.properties['use_external_resource']:
+    if constants.USE_EXTERNAL_RESOURCE in ctx.node.properties and ctx.node.properties[constants.USE_EXTERNAL_RESOURCE]:
         if constants.EXISTING_NIC_KEY in ctx.node.properties:
             existing_nic_name = ctx.node.properties[constants.EXISTING_NIC_KEY]
             if existing_nic_name:
@@ -110,23 +108,19 @@ def create_nic(**_):
     current_subnet_name = ctx.instance.runtime_properties[constants.SUBNET_KEY]
     if constants.NIC_KEY in ctx.instance.runtime_properties:
         nic_name = ctx.instance.runtime_properties[constants.NIC_KEY]
-        ctx.logger.info("In create_nic NIC1 is {0}".format(nic_name))
     else:
         random_suffix_value = utils.random_suffix_generator()
         nic_name = constants.NIC_PREFIX+random_suffix_value
         ctx.instance.runtime_properties[constants.NIC_KEY] = nic_name
-        ctx.logger.info("In create_nic NIC2 is {0}".format(nic_name))
 
     ctx.logger.info("Creating new network interface card: {}".format(nic_name))
     network_str, nic_params = _get_nic_params(current_subnet_name, location, resource_group_name, subscription_id, vnet_name)
     check_nic_url = constants.azure_url+network_str+"/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
     create_nic_url = constants.azure_url+network_str+"/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
-    ctx.logger.info("create_nic b4 check_or_create_resource NIC is {0}".format(nic_name))
     utils.check_or_create_resource(headers, vnet_name, nic_params, check_nic_url, create_nic_url, 'NIC', True)
 
     set_nic_private_ip()
 
-    ctx.logger.info("End of create_nic NIC is {0}".format(nic_name))
 
 @operation
 def delete_nic(**_):
