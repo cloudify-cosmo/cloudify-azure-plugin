@@ -36,6 +36,7 @@ def creation_validation(**_):
 def create_vm(**_):
     random_suffix_value = utils.random_suffix_generator()
     vm_name = ctx.node.properties[constants.VM_PREFIX]+random_suffix_value
+    ctx.logger.info("Creating new virtual machine: {0}".format(vm_name))
     storage_account_name = ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
     nic_name = ctx.instance.runtime_properties[constants.NIC_KEY]
 
@@ -43,23 +44,23 @@ def create_vm(**_):
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
 
     try:
-        ctx.logger.info("Creating new virtual machine: ".format(vm_name))
+        ctx.logger.info("b4 get_virtual_machine_params: {0}".format(vm_name))
         virtual_machine_params = get_virtual_machine_params(location, nic_name, random_suffix_value, resource_group_name,
                                                             storage_account_name, subscription_id, vm_name)
         virtual_machine_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version
         response_vm = requests.put(url=virtual_machine_url, data=virtual_machine_params, headers=headers)
         if response_vm.text:
-            ctx.logger.info("create_vm:{} response_vm.text is {}".format(vm_name, response_vm.text))
-            if utils.request_failed("{}:{}".format('create_vm', vm_name), response_vm):
-                raise NonRecoverableError("Virtual Machine {} could not be created".format(vm_name))
+            ctx.logger.info("create_vm:{0} response_vm.text is {1}".format(vm_name, response_vm.text))
+            if utils.request_failed("{0}:{1}".format('create_vm', vm_name), response_vm):
+                raise NonRecoverableError("Virtual Machine {0} could not be created".format(vm_name))
         elif response_vm:
-            ctx.logger.info("create_vm:{} response_vm is {}".format(vm_name, response_vm))
+            ctx.logger.info("create_vm:{0} response_vm is {1}".format(vm_name, response_vm))
         else:
-            ctx.logger.info("create_vm:{} response_vm is empty".format(vm_name))
+            ctx.logger.info("create_vm:{0} response_vm is empty".format(vm_name))
         ctx.instance.runtime_properties[constants.VM_KEY] = vm_name
     except:
-        ctx.logger.info("Virtual Machine {} could not be created".format(vm_name))
-        raise NonRecoverableError("Virtual Machine {} could not be created".format(vm_name))
+        ctx.logger.info("Virtual Machine {0} could not be created".format(vm_name))
+        raise NonRecoverableError("Virtual Machine {0} could not be created".format(vm_name))
 
 
 @operation
@@ -118,7 +119,7 @@ def delete_current_virtual_machine(**_):
 
 @operation
 def set_dependent_resources_names(azure_config, **kwargs):
-
+    ctx.logger.info("server set_dependent_resources_names")
     if constants.STORAGE_ACCOUNT_KEY in ctx.target.instance.runtime_properties:
         ctx.source.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = ctx.target.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
         ctx.logger.info("{} is {}".format(constants.STORAGE_ACCOUNT_KEY, ctx.target.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]))
@@ -138,7 +139,7 @@ def set_dependent_resources_names(azure_config, **kwargs):
         ctx.logger.info("{} is {}".format(constants.PUBLIC_IP_KEY, ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]))
         ctx.source.instance.runtime_properties[constants.PUBLIC_IP_KEY] = ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]
     else:
-        ctx.logger.info("{} is NOT in runtime props ".format(constants.PUBLIC_IP_KEY))
+        ctx.logger.info("{} is NOT in runtime props".format(constants.PUBLIC_IP_KEY))
 
     if constants.NIC_KEY in ctx.target.instance.runtime_properties:
         ctx.source.instance.runtime_properties[constants.NIC_KEY] = ctx.target.instance.runtime_properties[constants.NIC_KEY]
@@ -148,7 +149,7 @@ def set_dependent_resources_names(azure_config, **kwargs):
         ctx.source.instance.runtime_properties[constants.SECURITY_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
         ctx.logger.info("{} is {}".format(constants.SECURITY_GROUP_KEY, ctx.target.instance.runtime_properties[constants.SECURITY_GROUP_KEY]))
         
-
+    ctx.logger.info("server End of set_dependent_resources_names")
 
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
