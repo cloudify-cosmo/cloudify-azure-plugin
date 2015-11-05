@@ -45,11 +45,8 @@ def create_public_ip(**_):
         # Using an existing public ip, so don't create anything
         return
 
-    subscription_id = ctx.node.properties['subscription_id']
-    location = ctx.node.properties['location']
+    headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-    credentials = 'Bearer ' + auth.get_auth_token()
-    headers = {"Content-Type": "application/json", "Authorization": credentials}
 
     check_public_ip_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
     create_public_ip_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version

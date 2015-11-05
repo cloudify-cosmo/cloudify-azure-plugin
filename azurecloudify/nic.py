@@ -102,9 +102,9 @@ def create_nic(**_):
         ctx.instance.runtime_properties[constants.NIC_KEY] = ctx.node.properties[constants.EXISTING_NIC_KEY]
         return
 
+    headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-    location = ctx.node.properties['location']
-    subscription_id = ctx.node.properties['subscription_id']
+
     vnet_name = ctx.instance.runtime_properties[constants.VNET_KEY]
     current_subnet_name = ctx.instance.runtime_properties[constants.SUBNET_KEY]
     if constants.NIC_KEY in ctx.instance.runtime_properties:
@@ -113,9 +113,6 @@ def create_nic(**_):
         random_suffix_value = utils.random_suffix_generator()
         nic_name = constants.NIC_PREFIX+random_suffix_value
         ctx.instance.runtime_properties[constants.NIC_KEY] = nic_name
-
-    credentials = 'Bearer ' + auth.get_auth_token()
-    headers = {"Content-Type": "application/json", "Authorization": credentials}
 
     ctx.logger.info("Creating new network interface card: {}".format(nic_name))
     network_str, nic_params = _get_nic_params(current_subnet_name, location, resource_group_name, subscription_id, vnet_name)

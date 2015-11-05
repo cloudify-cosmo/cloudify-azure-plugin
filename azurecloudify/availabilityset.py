@@ -33,17 +33,11 @@ def creation_validation(**_):
 
 @operation
 def create_availability_set(**_):
-    location = ctx.node.properties['location']
-    subscription_id = ctx.node.properties['subscription_id']
+    availability_set_name = ''
+    headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-    availability_set_name= ''
-    credentials = 'Bearer '+auth.get_auth_token()
 
-    headers = {"Content-Type": "application/json", "Authorization": credentials}
-
-    credentials = 'Bearer ' + auth.get_auth_token()
-    headers = {"Content-Type": "application/json", "Authorization": credentials}
-    availability_set_url = 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/availabilitySets/'+availability_set_name+'?api-version='
+    availability_set_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/availabilitySets/'+availability_set_name+'?api-version='
     availability_set_params = json.dumps({ 
        "name": availability_set_name, 
        "type": "Microsoft.Compute/availabilitySets", 

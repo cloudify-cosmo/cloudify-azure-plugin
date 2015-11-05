@@ -42,12 +42,8 @@ def create_storage_account(**_):
         # Using an existing storage account, so don't create anything
         return
 
-    location = ctx.node.properties['location']
-    subscription_id = ctx.node.properties['subscription_id']
+    headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-    credentials = 'Bearer '+auth.get_auth_token()
-
-    headers = {"Content-Type": "application/json", "Authorization": credentials}
 
     try:
         ctx.logger.info("Creating new storage account: {0}".format(storage_account_name))

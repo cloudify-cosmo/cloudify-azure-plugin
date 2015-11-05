@@ -39,10 +39,7 @@ def create_resource_group(**_):
         # Using an existing resource group, so don't create anything
         return
 
-    location = ctx.node.properties['location']
-    subscription_id = ctx.node.properties['subscription_id']
-    credentials = 'Bearer ' + auth.get_auth_token()
-    headers = {"Content-Type": "application/json", "Authorization": credentials}
+    headers, location, subscription_id = auth.get_credentials()
 
     resource_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version_resource_group
 

@@ -52,11 +52,9 @@ def create_vnet(**_):
         ctx.instance.runtime_properties[constants.VNET_KEY] = ctx.node.properties[constants.EXISTING_VNET_KEY]
         return
 
+    headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-    location = ctx.node.properties['location']
-    subscription_id = ctx.node.properties['subscription_id']
-    credentials = 'Bearer ' + auth.get_auth_token()
-    headers = {"Content-Type": "application/json", "Authorization": credentials}
+
     if constants.VNET_KEY in ctx.instance.runtime_properties:
         vnet_name = ctx.instance.runtime_properties[constants.VNET_KEY]
         current_subnet_name = ctx.instance.runtime_properties[constants.SUBNET_KEY]
