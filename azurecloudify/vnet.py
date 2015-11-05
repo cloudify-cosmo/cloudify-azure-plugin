@@ -37,7 +37,7 @@ def creation_validation(**_):
 @operation
 def create_vnet(**_):
 
-    vnet_name = utils.set_resource_name(_get_vnet_name, 'VNET',constants.VNET_KEY, constants.EXISTING_VNET_KEY,
+    vnet_name = utils.set_resource_name(_get_vnet_name, 'VNET', constants.VNET_KEY, constants.EXISTING_VNET_KEY,
                                         constants.VNET_PREFIX)
     if vnet_name is None:
         # Using an existing VNET, so don't create anything

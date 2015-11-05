@@ -133,12 +133,14 @@ def set_resource_name(get_resource_func, resource_desc,
         resource_name_to_be_used_or_created = None
     elif properties_resource_key in ctx.node.properties and ctx.node.properties[properties_resource_key]:
         required_resource_name = ctx.node.properties[properties_resource_key]
+        ctx.logger.info("required_resource_name is:{0}, type is:{1}".format(required_resource_name, resource_desc))
         if get_resource_func(required_resource_name):
             raise NonRecoverableError("{0} {1} already exists in your Azure account".format(resource_desc, required_resource_name))
         else:
             resource_name_to_be_used_or_created = required_resource_name
     else:
         random_suffix_value = random_suffix_generator()
-        resource_name_to_be_used_or_created = "{0}){1}".format(resource_key_prefix, random_suffix_value)
+        resource_name_to_be_used_or_created = "{0}{1}".format(resource_key_prefix, random_suffix_value)
 
+    ctx.logger.info("resource_name_to_be_used_or_created is:{0}, type is:{1}".format(resource_name_to_be_used_or_created, resource_desc))
     return resource_name_to_be_used_or_created
