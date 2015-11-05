@@ -74,9 +74,7 @@ def delete_current_storage_account(**_):
         return
 
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-    subscription_id = ctx.node.properties['subscription_id']
-    credentials = 'Bearer '+auth.get_auth_token()
-    headers = {"Content-Type": "application/json", "Authorization": credentials}
+    headers, location, subscription_id = auth.get_credentials()
     storage_account_name = ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
     ctx.logger.info("Deleting Storage Account {0}".format(storage_account_name))
     try:

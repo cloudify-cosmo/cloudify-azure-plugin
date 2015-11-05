@@ -74,9 +74,7 @@ def delete_current_vnet(**_):
 
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     vnet_name = ctx.instance.runtime_properties[constants.VNET_KEY]
-    subscription_id = ctx.node.properties['subscription_id']
-    credentials = 'Bearer ' + auth.get_auth_token()
-    headers = {"Content-Type": "application/json", "Authorization": credentials}
+    headers, location, subscription_id = auth.get_credentials()
 
     try:
         ctx.logger.info("Deleting the virtual network: {0}".format(vnet_name))

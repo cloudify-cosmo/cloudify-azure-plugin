@@ -134,9 +134,7 @@ def delete_current_nic(**_):
         ctx.logger.info("An existing NIC was used, so there's no need to delete")
         return
 
-    subscription_id = ctx.node.properties['subscription_id']
-    credentials = 'Bearer ' + auth.get_auth_token()
-    headers = {"Content-Type": "application/json", "Authorization": credentials}
+    headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     nic_name = ctx.instance.runtime_properties[constants.NIC_KEY]
 

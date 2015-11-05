@@ -64,10 +64,8 @@ def create_vm(**_):
 
 @operation
 def start_vm(**_):
-    credentials = 'Bearer ' + auth.get_auth_token()
-    headers = {"Content-Type": "application/json", "Authorization": credentials}
+    headers, location, subscription_id = auth.get_credentials()
     vm_name = ctx.instance.runtime_properties[constants.VM_KEY]
-    subscription_id = ctx.node.properties['subscription_id']
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
 
     if constants.REQUEST_ACCEPTED in ctx.instance.runtime_properties:
@@ -87,11 +85,7 @@ def start_vm(**_):
 
 @operation
 def stop_vm(**_):
-    subscription_id = ctx.node.properties['subscription_id']
-    
-    credentials = 'Bearer ' + auth.get_auth_token()
-    
-    headers = {"Content-Type": "application/json", "Authorization": credentials}
+    headers, location, subscription_id = auth.get_credentials()
     vm_name = ctx.instance.runtime_properties[constants.VM_KEY]
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     stop_vm_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
@@ -107,9 +101,7 @@ def delete_virtual_machine(**_):
 
 def delete_current_virtual_machine(**_):
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-    subscription_id = ctx.node.properties['subscription_id']
-    credentials = 'Bearer ' + auth.get_auth_token()
-    headers = {"Content-Type": "application/json", "Authorization": credentials}
+    headers, location, subscription_id = auth.get_credentials()
     vm_name = ctx.instance.runtime_properties[constants.VM_KEY]
 
     try:

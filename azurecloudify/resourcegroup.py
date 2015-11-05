@@ -69,19 +69,16 @@ def delete_current_resource_group(**_):
         ctx.logger.info("An existing resource group was used, so there's no need to delete")
         return
 
-    subscription_id = ctx.node.properties['subscription_id']
+    headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-    credentials = 'Bearer '+auth.get_auth_token()
-    
-    headers = {"Content-Type": "application/json", "Authorization": credentials}
-        
+
     try:
-        ctx.logger.info("Deleting Resource Group: {}".format(resource_group_name))
+        ctx.logger.info("Deleting Resource Group: {0}".format(resource_group_name))
         resource_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version_resource_group
         response_rg = requests.delete(url=resource_group_url, headers=headers)
         print(response_rg.text)
     except:
-        ctx.logger.info("Resource Group {} could not be deleted.".format(resource_group_name))
+        ctx.logger.info("Resource Group {0} could not be deleted.".format(resource_group_name))
 
 
 def _validate_node_properties(key, ctx_node_properties):

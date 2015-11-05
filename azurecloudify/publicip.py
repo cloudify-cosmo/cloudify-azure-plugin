@@ -67,11 +67,9 @@ def delete_current_public_ip(**_):
         ctx.logger.info("An existing Public IP was used, so there's no need to delete")
         return
 
-    subscription_id = ctx.node.properties['subscription_id']
+    headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     public_ip_name = ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY]
-    credentials = 'Bearer ' + auth.get_auth_token()
-    headers = {"Content-Type": "application/json", "Authorization": credentials}
 
     try:
         ctx.logger.info("Deleting Public IP")
