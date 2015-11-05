@@ -43,11 +43,11 @@ def create_vnet(**_):
             if existing_vnet_name:
                 vnet_exists = _get_vnet_name(existing_vnet_name)
                 if not vnet_exists:
-                    raise NonRecoverableError("Vnet {} doesn't exist your Azure account".format(existing_vnet_name))
+                    raise NonRecoverableError("Vnet {0} doesn't exist your Azure account".format(existing_vnet_name))
             else:
-                raise NonRecoverableError("The value of '{}' in the input, is empty".format(constants.EXISTING_VNET_KEY))
+                raise NonRecoverableError("The value of '{0}' in the input, is empty".format(constants.EXISTING_VNET_KEY))
         else:
-            raise NonRecoverableError("'{}' was specified, but '{}' doesn't exist in the input".format('use_external_resource', constants.EXISTING_VNET_KEY))
+            raise NonRecoverableError("'{0}' was specified, but '{1}' doesn't exist in the input".format('use_external_resource', constants.EXISTING_VNET_KEY))
 
         ctx.instance.runtime_properties[constants.VNET_KEY] = ctx.node.properties[constants.EXISTING_VNET_KEY]
         return
@@ -70,7 +70,7 @@ def create_vnet(**_):
     vnet_params = json.dumps({"name": vnet_name, "location": location, "properties": {"addressSpace": {"addressPrefixes": constants.vnet_address_prefixes},"subnets": [{"name": current_subnet_name, "properties": {"addressPrefix": constants.address_prefix}}]}})
     utils.check_or_create_resource(headers, vnet_name, vnet_params, check_vnet_url, create_vnet_url, 'VNET')
 
-    ctx.logger.info("{} is {}".format(constants.VNET_KEY, vnet_name))
+    ctx.logger.info("{0} is {1}".format(constants.VNET_KEY, vnet_name))
 
 
 @operation
@@ -91,18 +91,18 @@ def delete_current_vnet(**_):
     headers = {"Content-Type": "application/json", "Authorization": credentials}
 
     try:
-        ctx.logger.info("Deleting the virtual network: {}".format(vnet_name))
+        ctx.logger.info("Deleting the virtual network: {0}".format(vnet_name))
         vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
         response_vnet = requests.delete(url=vnet_url, headers=headers)
         if response_vnet.text:
-            ctx.logger.info("Deleted VNET {}, response is: {}".format(vnet_name,response_vnet.text))
+            ctx.logger.info("Deleted VNET {0}, response is: {1}".format(vnet_name, response_vnet.text))
         elif response_vnet.status_code:
-            ctx.logger.info("Deleted VNET {}, status code is: {}".format(vnet_name,response_vnet.status_code))
+            ctx.logger.info("Deleted VNET {0}, status code is: {1}".format(vnet_name, response_vnet.status_code))
         else:
-            ctx.logger.info("Deleted VNET {}, there is status code".format(vnet_name))
+            ctx.logger.info("Deleted VNET {0}, there is status code".format(vnet_name))
     except:
-        ctx.logger.info("Virtual Network {} could not be deleted.".format(vnet_name))
-        raise NonRecoverableError("Virtual Network {} could not be created.".format(vnet_name))
+        ctx.logger.info("Virtual Network {0} could not be deleted.".format(vnet_name))
+        raise NonRecoverableError("Virtual Network {0} could not be created.".format(vnet_name))
 
 
 @operation
@@ -116,19 +116,19 @@ def _validate_node_properties(key, ctx_node_properties):
 
 
 def _get_vnet_name(vnet_name):
-    ctx.logger.info("In _get_vnet_name looking for {} ".format(vnet_name))
+    ctx.logger.info("In _get_vnet_name looking for {0} ".format(vnet_name))
     if constants.RESOURCE_GROUP_KEY in ctx.instance.runtime_properties:
         resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     else:
-        raise RecoverableError("{} is not in vnet runtime_properties yet".format(constants.RESOURCE_GROUP_KEY))
+        raise RecoverableError("{0} is not in vnet runtime_properties yet".format(constants.RESOURCE_GROUP_KEY))
     credentials = 'Bearer ' + auth.get_auth_token()
     subscription_id = ctx.node.properties['subscription_id']
     url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualnetworks?api-version='+constants.api_version
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     response_list = requests.get(url, headers=headers)
-    ctx.logger.info("VNET response_list.text {}".format(response_list.text))
+    ctx.logger.info("VNET response_list.text {0}".format(response_list.text))
     if vnet_name in response_list.text:
         return True
     else:
-        ctx.logger.info("Virtual Network {} does not exist".format(vnet_name))
+        ctx.logger.info("Virtual Network {0} does not exist".format(vnet_name))
         return False

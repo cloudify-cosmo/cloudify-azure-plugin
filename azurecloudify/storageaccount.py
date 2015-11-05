@@ -78,14 +78,14 @@ def delete_current_storage_account(**_):
     credentials = 'Bearer '+auth.get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     storage_account_name = ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
-    ctx.logger.info("Deleting Storage Account {}".format(storage_account_name))
+    ctx.logger.info("Deleting Storage Account {0}".format(storage_account_name))
     try:
         storage_account_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts/'+storage_account_name+'?api-version='+constants.api_version
         response_sa = requests.delete(url=storage_account_url, headers=headers)
         print response_sa.text
-        ctx.logger.info("response_sa storage account : {}".format(response_sa.text))
+        ctx.logger.info("response_sa storage account : {0}".format(response_sa.text))
     except:
-        ctx.logger.info("Storage Account {} could not be deleted.".format(storage_account_name))
+        ctx.logger.info("Storage Account {0} could not be deleted.".format(storage_account_name))
 
 
 @operation
