@@ -108,8 +108,10 @@ def delete_current_virtual_machine(**_):
         ctx.logger.info("Deleting the virtual machine: {}".format(vm_name))
         vm_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version
         response_vm = requests.delete(url=vm_url, headers=headers)
-        print(response_vm.text)
-
+        if response_vm.text:
+            ctx.logger.info("delete_current_virtual_machine response is {0}".format(response_vm.text))
+        else:
+            ctx.logger.info("delete_current_virtual_machine status code is {0}".format(response_vm.status_code))
     except:
         ctx.logger.info("Virtual Machine {} could not be deleted".format(vm_name))
 
