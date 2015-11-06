@@ -92,11 +92,11 @@ def create_nic(**_):
             if existing_nic_name:
                 nic_exists = _get_nic_name(existing_nic_name)
                 if not nic_exists:
-                    raise NonRecoverableError("NIC {} doesn't exist your Azure account".format(existing_nic_name))
+                    raise NonRecoverableError("NIC {0} doesn't exist your Azure account".format(existing_nic_name))
             else:
-                raise NonRecoverableError("The value of '{}' in the input, is empty".format(constants.EXISTING_NIC_KEY))
+                raise NonRecoverableError("The value of '{0}' in the input, is empty".format(constants.EXISTING_NIC_KEY))
         else:
-            raise NonRecoverableError("'{}' was specified, but '{}' doesn't exist in the input".format('use_external_resource', constants.EXISTING_NIC_KEY))
+            raise NonRecoverableError("'{0}' was specified, but '{1}' doesn't exist in the input".format(constants.USE_EXTERNAL_RESOURCE, constants.EXISTING_NIC_KEY))
 
         ctx.instance.runtime_properties[constants.NIC_KEY] = ctx.node.properties[constants.EXISTING_NIC_KEY]
         return
@@ -113,7 +113,7 @@ def create_nic(**_):
         nic_name = constants.NIC_PREFIX+random_suffix_value
         ctx.instance.runtime_properties[constants.NIC_KEY] = nic_name
 
-    ctx.logger.info("Creating new network interface card: {}".format(nic_name))
+    ctx.logger.info("Creating new network interface card: {0}".format(nic_name))
     network_str, nic_params = _get_nic_params(current_subnet_name, location, resource_group_name, subscription_id, vnet_name)
     check_nic_url = constants.azure_url+network_str+"/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
     create_nic_url = constants.azure_url+network_str+"/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
@@ -138,12 +138,12 @@ def delete_current_nic(**_):
     nic_name = ctx.instance.runtime_properties[constants.NIC_KEY]
 
     try:
-        ctx.logger.info("Deleting NIC {}".format(nic_name))
+        ctx.logger.info("Deleting NIC {0}".format(nic_name))
         nic_url = constants.azure_url+"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
         response_nic = requests.delete(url=nic_url, headers=headers)
         print(response_nic.text)
     except:
-        ctx.logger.info("Network Interface Card {} could not be deleted.".format(nic_name))
+        ctx.logger.info("Network Interface Card {0} could not be deleted.".format(nic_name))
 
 
 @operation
@@ -151,12 +151,12 @@ def set_dependent_resources_names(azure_config, **kwargs):
     ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     ctx.source.instance.runtime_properties[constants.VNET_KEY] = ctx.target.instance.runtime_properties[constants.VNET_KEY]
     ctx.source.instance.runtime_properties[constants.SUBNET_KEY] = ctx.target.instance.runtime_properties[constants.SUBNET_KEY]
-    ctx.logger.info("{} is {}".format(constants.VNET_KEY, ctx.target.instance.runtime_properties[constants.VNET_KEY]))
+    ctx.logger.info("{0} is {1}".format(constants.VNET_KEY, ctx.target.instance.runtime_properties[constants.VNET_KEY]))
     if constants.PUBLIC_IP_KEY in ctx.target.instance.runtime_properties:
-        ctx.logger.info("{} is {}".format(constants.PUBLIC_IP_KEY, ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]))
+        ctx.logger.info("{0} is {1}".format(constants.PUBLIC_IP_KEY, ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]))
         ctx.source.instance.runtime_properties[constants.PUBLIC_IP_KEY] = ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]
     else:
-        ctx.logger.info("{} is NOT in runtime props ".format(constants.PUBLIC_IP_KEY))
+        ctx.logger.info("{0} is NOT in runtime props ".format(constants.PUBLIC_IP_KEY))
 
 
 
@@ -169,7 +169,7 @@ def _get_nic_name(nic_name):
     if constants.RESOURCE_GROUP_KEY in ctx.instance.runtime_properties:
         resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     else:
-        raise RecoverableError("{} is not in nic runtime_properties yet".format(constants.RESOURCE_GROUP_KEY))
+        raise RecoverableError("{0} is not in nic runtime_properties yet".format(constants.RESOURCE_GROUP_KEY))
     headers, location, subscription_id = auth.get_credentials()
     nic_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkInterfaces?api-version='+constants.api_version
     response_get_nic_name = requests.get(url=nic_url,headers=headers)

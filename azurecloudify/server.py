@@ -118,7 +118,6 @@ def delete_current_virtual_machine(**_):
 
 @operation
 def set_dependent_resources_names(azure_config, **kwargs):
-    ctx.logger.info("server set_dependent_resources_names")
     if constants.STORAGE_ACCOUNT_KEY in ctx.target.instance.runtime_properties:
         ctx.source.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = ctx.target.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
         ctx.logger.info("{} is {}".format(constants.STORAGE_ACCOUNT_KEY, ctx.target.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]))
@@ -126,29 +125,47 @@ def set_dependent_resources_names(azure_config, **kwargs):
         ctx.logger.info("{} is {}".format(constants.RESOURCE_GROUP_KEY, ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]))
         return
 
-    if constants.PRIVATE_IP_ADDRESS_KEY in ctx.target.instance.runtime_properties:
-        ctx.logger.info("Setting set_private_ip")
-        vm_private_ip = ctx.target.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY]
-        ctx.logger.info("vm_private_ip is {}".format(vm_private_ip))
-        ctx.source.instance.runtime_properties['ip'] = vm_private_ip
-        ctx.source.instance.runtime_properties['host_ip'] = vm_private_ip
-        ctx.logger.info("host_ip is {}".format(vm_private_ip))
-
-    if constants.PUBLIC_IP_KEY in ctx.target.instance.runtime_properties:
-        ctx.logger.info("{} is {}".format(constants.PUBLIC_IP_KEY, ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]))
-        ctx.source.instance.runtime_properties[constants.PUBLIC_IP_KEY] = ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]
-    else:
-        ctx.logger.info("{} is NOT in runtime props".format(constants.PUBLIC_IP_KEY))
-
-    if constants.NIC_KEY in ctx.target.instance.runtime_properties:
-        ctx.source.instance.runtime_properties[constants.NIC_KEY] = ctx.target.instance.runtime_properties[constants.NIC_KEY]
-        ctx.logger.info("{} is {}".format(constants.NIC_KEY, ctx.target.instance.runtime_properties[constants.NIC_KEY]))
+    _set_ips_from_target()
     
     if constants.SECURITY_GROUP_KEY in ctx.target.instance.runtime_properties:
         ctx.source.instance.runtime_properties[constants.SECURITY_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
         ctx.logger.info("{} is {}".format(constants.SECURITY_GROUP_KEY, ctx.target.instance.runtime_properties[constants.SECURITY_GROUP_KEY]))
         
-    ctx.logger.info("server End of set_dependent_resources_names")
+    for curr_key in ctx.target.instance.runtime_properties:
+        if curr_key.startswith(constants.NIC_KEY):
+            ctx.source.instance.runtime_properties[curr_key] = ctx.target.instance.runtime_properties[curr_key]
+            ctx.logger.info("{} is {}".format(curr_key, ctx.target.instance.runtime_properties[curr_key]))
+
+
+def _set_ips_from_target():
+    if constants.PUBLIC_IP_KEY in ctx.target.instance.runtime_properties:
+        ctx.logger.info("{} is {}".format(constants.PUBLIC_IP_KEY, ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]))
+        ctx.source.instance.runtime_properties[constants.PUBLIC_IP_KEY] = ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]
+        _set_private_ip(True)
+    else:
+        ctx.logger.info("{} is NOT in runtime props".format(constants.PUBLIC_IP_KEY))
+        _set_private_ip(False)
+
+
+# This will make sure that a vm with both public and private ip
+# will set its private ip, only if the private ip hasn't been set yet by another NIC
+#
+# A vm with a NIC which has only private ip, will set its private ip,
+# even if the private ip has already been set by another NIC.
+def _set_private_ip(check_if_private_exists):
+    if check_if_private_exists and constants.PRIVATE_IP_ADDRESS_KEY in ctx.source.instance.runtime_properties:
+        return
+
+    if constants.PRIVATE_IP_ADDRESS_KEY in ctx.target.instance.runtime_properties:
+        ctx.logger.info("Setting private ip")
+        vm_private_ip = ctx.target.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY]
+        ctx.logger.info("vm_private_ip is {}".format(vm_private_ip))
+
+        # Which one of the following two is required ?
+        ctx.source.instance.runtime_properties['ip'] = vm_private_ip
+        ctx.source.instance.runtime_properties['host_ip'] = vm_private_ip
+
+        ctx.logger.info("host_ip is {}".format(vm_private_ip))
 
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
@@ -200,53 +217,70 @@ def _start_vm_call(headers, vm_name, subscription_id, resource_group_name):
     raise NonRecoverableError("_start_vm_call:{} - No Status code for vm {}".format(vm_name, response_start_vm.status_code))
 
 
-def get_virtual_machine_params(location, nic_name, random_suffix_value, resource_group_name, storage_account_name, subscription_id, vm_name):
-    return json.dumps(
-        {
-            "id": "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Compute/virtualMachines/{2}".format(subscription_id, resource_group_name, vm_name),
-            "name": vm_name,
-            "type": "Microsoft.Compute/virtualMachines",
-            "location": location,
-            "properties": {
-                "hardwareProfile": {
-                    "vmSize": ctx.node.properties['vm_size']
-                },
-                "osProfile": {
-                    "computername": vm_name,
-                    "adminUsername": ctx.node.properties['ssh_username'],
-                    "linuxConfiguration": {
-                        "disablePasswordAuthentication": "true",
-                        "ssh": {
-                            "publicKeys": [
-                                {
-                                    "path": "/home/{0}/.ssh/authorized_keys".format(ctx.node.properties['ssh_username']),
-                                    "keyData": ctx.node.properties['key_data']
-                                }
-                            ]
-                        }
-                    }
-                },
-                "storageProfile": {
-                    "imageReference": {
-                        "publisher": ctx.node.properties['image_reference_publisher'],
-                        "offer": ctx.node.properties['image_reference_offer'],
-                        "sku": ctx.node.properties['image_reference_sku'],
-                        "version": constants.vm_version
-                    },
-                    "osDisk": {
-                        "name": "{0}{1}".format(constants.os_disk_name, random_suffix_value),
-                        "vhd": {
-                            "uri": "http://{0}.blob.core.windows.net/vhds/osdisk{1}.vhd".format(storage_account_name, random_suffix_value)
-                        },
-                        "caching": "ReadWrite",
-                        "createOption": "FromImage"
-                    }
-                },
-                "networkProfile": {
-                    "networkInterfaces": [
-                        {
-                            "id": "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Network/networkInterfaces/{2}".format(subscription_id, resource_group_name, nic_name)
-                        }
-                    ]}
+def get_virtual_machine_params(location, nic_name, random_suffix_value, resource_group_name, storage_account_name,
+                               subscription_id, vm_name):
+    vm_json = _get_vm_base_json(location, random_suffix_value, resource_group_name, storage_account_name,
+                                subscription_id, vm_name)
+
+    vm_properties = vm_json['properties']
+    network_profile = vm_properties['networkProfile']
+    network_interfaces = network_profile['networkInterfaces']
+    for curr_key in ctx.instance.runtime_properties:
+        if curr_key.startswith(constants.NIC_KEY):
+            nic_name = ctx.instance.runtime_properties[curr_key]
+            curr_interface = {
+                "id": "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Network/networkInterfaces/{2}".format(subscription_id, resource_group_name, nic_name)
             }
-        })
+            network_interfaces.append(curr_interface)
+    return json.dumps(vm_json)
+
+
+def _get_vm_base_json(location, random_suffix_value, resource_group_name, storage_account_name, subscription_id,
+                      vm_name):
+    return {
+        "id": "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Compute/virtualMachines/{2}".format(
+            subscription_id, resource_group_name, vm_name),
+        "name": vm_name,
+        "type": "Microsoft.Compute/virtualMachines",
+        "location": location,
+        "properties": {
+            "hardwareProfile": {
+                "vmSize": ctx.node.properties['vm_size']
+            },
+            "osProfile": {
+                "computername": vm_name,
+                "adminUsername": ctx.node.properties['ssh_username'],
+                "linuxConfiguration": {
+                    "disablePasswordAuthentication": "true",
+                    "ssh": {
+                        "publicKeys": [
+                            {
+                                "path": "/home/{0}/.ssh/authorized_keys".format(ctx.node.properties['ssh_username']),
+                                "keyData": ctx.node.properties['key_data']
+                            }
+                        ]
+                    }
+                }
+            },
+            "storageProfile": {
+                "imageReference": {
+                    "publisher": ctx.node.properties['image_reference_publisher'],
+                    "offer": ctx.node.properties['image_reference_offer'],
+                    "sku": ctx.node.properties['image_reference_sku'],
+                    "version": constants.vm_version
+                },
+                "osDisk": {
+                    "name": "{0}{1}".format(constants.os_disk_name, random_suffix_value),
+                    "vhd": {
+                        "uri": "http://{0}.blob.core.windows.net/vhds/osdisk{1}.vhd".format(storage_account_name,
+                                                                                            random_suffix_value)
+                    },
+                    "caching": "ReadWrite",
+                    "createOption": "FromImage"
+                }
+            },
+            "networkProfile": {
+                "networkInterfaces": []
+            }
+        }
+    }

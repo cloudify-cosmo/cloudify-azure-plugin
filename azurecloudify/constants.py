@@ -24,7 +24,7 @@ api_version = '2015-05-01-preview'
 api_version_resource_group = '2015-01-01'
 storage_account_type = 'Standard_LRS'
 
-vnet_address_prefixes = ["10.1.0.0/16","10.2.0.0/16"]
+vnet_address_prefixes = ["10.1.0.0/16", "10.2.0.0/16"]
 address_prefix = "10.1.0.0/24"
 IP_PREFIX = 'myip1'
 image_reference_version = 'latest'
@@ -42,12 +42,12 @@ resource = 'https://management.core.windows.net/'
 path_to_azure_conf = '~/azure_config.json'
 path_to_local_azure_token_file = '/tmp/azure_token_file.json'
 
-RESOURCE_GROUP_REQUIRED_PROPERTIES=['location','subscription_id']
-STORAGE_ACCOUNT_REQUIRED_PROPERTIES = ['location','subscription_id']
-VNET_REQUIRED_PROPERTIES = ['location','subscription_id']
-VM_REQUIRED_PROPERTIES = ['vm_prefix','image_reference_offer','image_reference_publisher','image_reference_sku','vm_size','subscription_id','key_data','location']
-NIC_REQUIRED_PROPERTIES = ['location','subscription_id']
-PUBLIC_IP_REQUIRED_PROPERTIES = ['location','subscription_id']
+RESOURCE_GROUP_REQUIRED_PROPERTIES=['location', 'subscription_id']
+STORAGE_ACCOUNT_REQUIRED_PROPERTIES = ['location', 'subscription_id']
+VNET_REQUIRED_PROPERTIES = ['location', 'subscription_id']
+VM_REQUIRED_PROPERTIES = ['vm_prefix', 'image_reference_offer', 'image_reference_publisher', 'image_reference_sku', 'vm_size', 'subscription_id', 'key_data', 'location']
+NIC_REQUIRED_PROPERTIES = ['location', 'subscription_id']
+PUBLIC_IP_REQUIRED_PROPERTIES = ['location', 'subscription_id']
 
 RESOURCE_GROUP_KEY = 'resource_group_key_name'
 RESOURCE_GROUP_PREFIX = 'resource_group_'
