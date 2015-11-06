@@ -38,13 +38,12 @@ def create_vm(**_):
     vm_name = ctx.node.properties[constants.VM_PREFIX]+random_suffix_value
     ctx.logger.info("Creating new virtual machine: {0}".format(vm_name))
     storage_account_name = ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
-    nic_name = ctx.instance.runtime_properties[constants.NIC_KEY]
 
     headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
 
     try:
-        virtual_machine_params = get_virtual_machine_params(location, nic_name, random_suffix_value, resource_group_name,
+        virtual_machine_params = get_virtual_machine_params(location, random_suffix_value, resource_group_name,
                                                             storage_account_name, subscription_id, vm_name)
         virtual_machine_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version
         response_vm = requests.put(url=virtual_machine_url, data=virtual_machine_params, headers=headers)
@@ -217,7 +216,7 @@ def _start_vm_call(headers, vm_name, subscription_id, resource_group_name):
     raise NonRecoverableError("_start_vm_call:{} - No Status code for vm {}".format(vm_name, response_start_vm.status_code))
 
 
-def get_virtual_machine_params(location, nic_name, random_suffix_value, resource_group_name, storage_account_name,
+def get_virtual_machine_params(location, random_suffix_value, resource_group_name, storage_account_name,
                                subscription_id, vm_name):
     vm_json = _get_vm_base_json(location, random_suffix_value, resource_group_name, storage_account_name,
                                 subscription_id, vm_name)
@@ -232,6 +231,7 @@ def get_virtual_machine_params(location, nic_name, random_suffix_value, resource
                 "id": "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Network/networkInterfaces/{2}".format(subscription_id, resource_group_name, nic_name)
             }
             network_interfaces.append(curr_interface)
+    ctx.logger.info("get_virtual_machine_params:{0} {1}".format(vm_name, json.dumps(vm_json)))
     return json.dumps(vm_json)
 
 

@@ -98,7 +98,7 @@ def create_nic(**_):
         else:
             raise NonRecoverableError("'{0}' was specified, but '{1}' doesn't exist in the input".format(constants.USE_EXTERNAL_RESOURCE, constants.EXISTING_NIC_KEY))
 
-        ctx.instance.runtime_properties[constants.NIC_KEY] = ctx.node.properties[constants.EXISTING_NIC_KEY]
+        ctx.instance.runtime_properties[constants.NIC_KEY+ctx.node.id+ctx.instance.id] = ctx.node.properties[constants.EXISTING_NIC_KEY]
         return
 
     headers, location, subscription_id = auth.get_credentials()
@@ -111,7 +111,7 @@ def create_nic(**_):
     else:
         random_suffix_value = utils.random_suffix_generator()
         nic_name = constants.NIC_PREFIX+random_suffix_value
-        ctx.instance.runtime_properties[constants.NIC_KEY] = nic_name
+        ctx.instance.runtime_properties[constants.NIC_KEY+ctx.node.id+ctx.instance.id] = nic_name
 
     ctx.logger.info("Creating new network interface card: {0}".format(nic_name))
     network_str, nic_params = _get_nic_params(current_subnet_name, location, resource_group_name, subscription_id, vnet_name)
