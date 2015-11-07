@@ -230,6 +230,12 @@ def get_virtual_machine_params(location, random_suffix_value, resource_group_nam
             curr_interface = {
                 "id": "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Network/networkInterfaces/{2}".format(subscription_id, resource_group_name, nic_name)
             }
+            interface_properties = {}
+            if curr_key.endswith(constants.PUBLIC_IP_KEY):
+                interface_properties['primary'] = 'true'
+            else:
+                interface_properties['primary'] = 'false'
+            curr_interface['properties'] = interface_properties
             network_interfaces.append(curr_interface)
     ctx.logger.info("get_virtual_machine_params:{0} {1}".format(vm_name, json.dumps(vm_json)))
     return json.dumps(vm_json)

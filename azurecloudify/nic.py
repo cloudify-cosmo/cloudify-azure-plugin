@@ -56,15 +56,18 @@ def _get_nic_params(current_subnet_name, location, resource_group_name, subscrip
             ],
         }
     }
+    nic_properties = nic_json['properties']
+    properties_ip_configurations0 = nic_properties['ipConfigurations'][0]
+    ip_configurations_properties = properties_ip_configurations0['properties']
     if constants.PUBLIC_IP_KEY in ctx.instance.runtime_properties:
         public_ip_name = ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY]
-        nic_properties = nic_json['properties']
-        properties_ip_configurations0 = nic_properties['ipConfigurations'][0]
-        ip_configurations_properties = properties_ip_configurations0['properties']
         public_ip_address_json = {
             "id": network_str + "publicIPAddresses/" + public_ip_name
         }
         ip_configurations_properties['publicIPAddress'] = public_ip_address_json
+        nic_properties['enableIPForwarding'] = 'true'
+
+
     ctx.logger.info("nic_json : {}".format(nic_json))
     nic_params = json.dumps(nic_json)
     return network_str, nic_params
@@ -97,8 +100,8 @@ def create_nic(**_):
                 raise NonRecoverableError("The value of '{0}' in the input, is empty".format(constants.EXISTING_NIC_KEY))
         else:
             raise NonRecoverableError("'{0}' was specified, but '{1}' doesn't exist in the input".format(constants.USE_EXTERNAL_RESOURCE, constants.EXISTING_NIC_KEY))
-
-        ctx.instance.runtime_properties[constants.NIC_KEY+ctx.node.id+ctx.instance.id] = ctx.node.properties[constants.EXISTING_NIC_KEY]
+        curr_nic_key = _get_nic_key()
+        ctx.instance.runtime_properties[curr_nic_key] = ctx.node.properties[constants.EXISTING_NIC_KEY]
         return
 
     headers, location, subscription_id = auth.get_credentials()
@@ -111,7 +114,8 @@ def create_nic(**_):
     else:
         random_suffix_value = utils.random_suffix_generator()
         nic_name = constants.NIC_PREFIX+random_suffix_value
-        ctx.instance.runtime_properties[constants.NIC_KEY+ctx.node.id+ctx.instance.id] = nic_name
+        curr_nic_key = _get_nic_key()
+        ctx.instance.runtime_properties[curr_nic_key] = nic_name
 
     ctx.logger.info("Creating new network interface card: {0}".format(nic_name))
     network_str, nic_params = _get_nic_params(current_subnet_name, location, resource_group_name, subscription_id, vnet_name)
@@ -177,3 +181,10 @@ def _get_nic_name(nic_name):
         return True
     return False
 
+
+def _get_nic_key():
+    curr_nic_key = constants.NIC_KEY+ctx.node.id+ctx.instance.id
+    if constants.PUBLIC_IP_KEY in ctx.instance.runtime_properties:
+        curr_nic_key = "{0}{1}".format(curr_nic_key, constants.PUBLIC_IP_KEY)
+
+    return curr_nic_key
