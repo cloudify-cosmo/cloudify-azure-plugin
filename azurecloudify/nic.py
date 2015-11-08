@@ -43,6 +43,7 @@ def _get_nic_params(current_subnet_name, location, resource_group_name, subscrip
     nic_json = {
         "location": location,
         "properties": {
+            
             "ipConfigurations": [
                 {
                     "name": "{0}{1}".format(vnet_name, current_subnet_name),
