@@ -35,7 +35,7 @@ def creation_validation(**_):
 
 
 @operation
-def create_vnet(**_):
+def create_subnet(**_):
 
     curr_subnet_key = "{0}{1}{2}".format(constants.SUBNET_KEY, ctx.node.id, ctx.instance.id)
     if curr_subnet_key in ctx.instance.runtime_properties:
@@ -48,7 +48,7 @@ def create_vnet(**_):
 
 
 @operation
-def delete_vnet(**_):
+def delete_subnet(**_):
     utils.clear_runtime_properties()
 
 @operation

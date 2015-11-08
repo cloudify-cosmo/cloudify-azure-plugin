@@ -407,6 +407,53 @@ node_types:
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.vnet.creation_validation
 
+  cloudify.azure.nodes.Subnet:
+#   Later change to derived_from: cloudify.nodes.Subnet
+    derived_from: cloudify.nodes.Root
+    properties:
+      use_external_resource:
+        description: >
+         Indicates whether to use external resource or not. Default value is false
+        type: boolean
+        default: false
+      subscription_id:
+        description: >
+          Indicates the subscription id required to create virtual network.
+        type: string
+        default: ''
+      location:
+        description: >
+         location where VM will be provisioned
+        type: string
+        default: 'West US'
+      existing_vnet_name:
+        description: >
+         Indicates the name of exsisting virtual network
+        type: string
+        default: ''
+      client_id:
+        description: >
+          Indicates the user's client id
+        type: string
+        default: ''
+      tenant_id:
+        description: >
+          Indicates the user's tenant id
+        type: string
+        default: ''
+      aad_password:
+        description: >
+          Indicates the name of the virtual machine required to create network interface card
+        type: string
+        default: ''
+
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        configure: microsoft.azurecloudify.subnet.create_subnet
+        delete: microsoft.azurecloudify.subnet.delete_subnet
+      cloudify.interfaces.validation:
+        creation: microsoft.azurecloudify.subnet.creation_validation
+
   cloudify.azure.nodes.azure_token:
     derived_from: cloudify.nodes.Root
     properties:
@@ -446,6 +493,17 @@ relationships:
             azure_config:
               default: {}
 
+   cloudify.azure.relationships.subnet_contained_in_resource_group:
+    derived_from: cloudify.relationships.contained_in
+    source_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        preconfigure:
+          implementation: microsoft.azurecloudify.subnet.set_dependent_resources_names
+          inputs:
+            azure_config:
+              default: {}
+
+#  Remove this later - subnet_contained_in_resource_group can b used instead
    cloudify.azure.relationships.vnet_contained_in_resource_group:
     derived_from: cloudify.relationships.contained_in
     source_interfaces:
@@ -476,6 +534,7 @@ relationships:
             azure_config:
               default: {}
 
+
    cloudify.azure.relationships.vnet_connected_to_security_group:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
@@ -495,7 +554,16 @@ relationships:
           inputs:
             azure_config:
               default: {}
-              
+
+   cloudify.azure.relationships.vnet_connected_to_subnet:
+    derived_from: cloudify.relationships.connected_to
+    source_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        preconfigure:
+          implementation: microsoft.azurecloudify.vnet.set_dependent_resources_names
+          inputs:
+            azure_config:
+              default: {}
 
    cloudify.azure.relationships.public_ip_connected_to_vnet:
     derived_from: cloudify.relationships.connected_to
