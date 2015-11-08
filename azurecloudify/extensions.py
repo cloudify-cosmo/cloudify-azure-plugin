@@ -70,3 +70,14 @@ def delete_custom_script(**_):
     delete_url = 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/extensions/'+custom_script_name+'?api-version=2015-05-01-preview'
     response_as = requests.delete(url=delete_url, headers=headers)
     print(response_as.text)
+    
+    
+@operation
+def get_custom_script_info(**_):
+    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+    headers, location, subscription_id = auth.get_credentials()
+    custom_script_name = ''
+    vm_name = ''
+    get_info_url = 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/extensions/'+custom_script_name+'?api-version=2015-05-01-preview'
+    response_as = requests.get(url=get_info_url, headers=headers)
+    print(response_as.text)
