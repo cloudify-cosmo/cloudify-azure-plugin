@@ -99,6 +99,12 @@ def set_dependent_resources_names(azure_config, **kwargs):
     if constants.SECURITY_GROUP_KEY in ctx.target.instance.runtime_properties:
         ctx.source.instance.runtime_properties[constants.SECURITY_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
 
+    for curr_key in ctx.target.instance.runtime_properties:
+        if curr_key.startswith(constants.SUBNET_KEY):
+            ctx.source.instance.runtime_properties[curr_key] = ctx.target.instance.runtime_properties[curr_key]
+            ctx.logger.info("{0} is {1}".format(curr_key, ctx.target.instance.runtime_properties[curr_key]))
+
+
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
@@ -121,7 +127,7 @@ def _get_vnet_name(vnet_name):
         return False
 
 
-def _get_vnet_json(vnet_name, location, current_subnet_name, subscription_id, resource_group_name):
+def _get_vnet_json(vnet_name, location, subscription_id, resource_group_name):
     vnet_json = {
         "name": vnet_name,
         "location": location,
@@ -129,14 +135,7 @@ def _get_vnet_json(vnet_name, location, current_subnet_name, subscription_id, re
             "addressSpace": {
                 "addressPrefixes": constants.vnet_address_prefixes
             },
-            "subnets": [
-                {
-                    "name": current_subnet_name,
-                    "properties": {
-                        "addressPrefix": constants.address_prefix
-                    }
-                }
-            ]
+            "subnets": []
         }
     }
     _add_subnets(vnet_json, subscription_id, resource_group_name)
