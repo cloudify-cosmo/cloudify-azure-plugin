@@ -242,7 +242,7 @@ def get_virtual_machine_params(location, random_suffix_value, resource_group_nam
 
 
 def _get_vm_base_json(location, random_suffix_value, resource_group_name, storage_account_name, subscription_id,
-                      vm_name):
+                      vm_name,as_name):
     return {
         "id": "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Compute/virtualMachines/{2}".format(
             subscription_id, resource_group_name, vm_name),
@@ -250,6 +250,9 @@ def _get_vm_base_json(location, random_suffix_value, resource_group_name, storag
         "type": "Microsoft.Compute/virtualMachines",
         "location": location,
         "properties": {
+            "availabilitySet": { "id": "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Compute/availabilitySets/{2}".format(
+            subscription_id, resource_group_name, as_name)
+            },
             "hardwareProfile": {
                 "vmSize": ctx.node.properties['vm_size']
             },
