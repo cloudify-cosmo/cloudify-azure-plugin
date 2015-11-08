@@ -9,6 +9,9 @@ node_types:
   nodecellar.nodes.MonitoredServer:
     derived_from: cloudify.azure.nodes.Server
     properties:
+      cloudify_agent:
+        default:
+          user: { get_input: ssh_username }
       vm_prefix:
         default: { get_input: vm_prefix }
       image_reference_offer:
