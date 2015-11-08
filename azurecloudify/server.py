@@ -219,7 +219,7 @@ def _start_vm_call(headers, vm_name, subscription_id, resource_group_name):
 def get_virtual_machine_params(location, random_suffix_value, resource_group_name, storage_account_name,
                                subscription_id, vm_name):
     vm_json = _get_vm_base_json(location, random_suffix_value, resource_group_name, storage_account_name,
-                                subscription_id, vm_name, as_name)
+                                subscription_id, vm_name)
 
     vm_properties = vm_json['properties']
     network_profile = vm_properties['networkProfile']
@@ -249,10 +249,10 @@ def _get_vm_base_json(location, random_suffix_value, resource_group_name, storag
         "name": vm_name,
         "type": "Microsoft.Compute/virtualMachines",
         "location": location,
-        "properties": {
+        "properties": """{
             "availabilitySet": { "id": "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Compute/availabilitySets/{2}".format(
             subscription_id, resource_group_name, as_name)
-            },
+            }"""
             "hardwareProfile": {
                 "vmSize": ctx.node.properties['vm_size']
             },
