@@ -37,12 +37,15 @@ def creation_validation(**_):
         _validate_node_properties(property_key, ctx.node.properties)
 
 
-def _get_nic_params(current_subnet_name, location, resource_group_name, subscription_id, vnet_name):
+def _get_nic_params(current_subnet_name, location, resource_group_name, subscription_id, vnet_name,security_group_name):
     network_str = "/subscriptions/{}/resourceGroups/{}/providers/Microsoft.Network/".format(subscription_id,
                                                                                             resource_group_name)
     nic_json = {
         "location": location,
         "properties": {
+	          "networkSecurityGroup":{  
+                    "id":'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Network/networkSecurityGroups/'+security_group_name
+                      },
             
             "ipConfigurations": [
                 {
@@ -107,9 +110,10 @@ def create_nic(**_):
 
     headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-
+   
     vnet_name = ctx.instance.runtime_properties[constants.VNET_KEY]
     current_subnet_name = ctx.instance.runtime_properties[constants.SUBNET_KEY]
+    security_group_name = ctx.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
     if constants.NIC_KEY in ctx.instance.runtime_properties:
         nic_name = ctx.instance.runtime_properties[constants.NIC_KEY]
     else:
