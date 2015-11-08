@@ -66,6 +66,9 @@ VNET_KEY = 'vnet_key_name'
 VNET_PREFIX = 'vnet_'
 EXISTING_VNET_KEY = 'existing_vnet_name'
 
+AVAILABILITY_SET_KEY = 'availability_set_key_name'
+AVAILABILITY_SET_PREFIX = 'availability_set_'
+
 SUBNET_KEY = 'subnet_key_name'
 SUBNET_PREFIX = 'subvnet_'
 
