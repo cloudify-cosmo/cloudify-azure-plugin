@@ -14,9 +14,6 @@
 #    * limitations under the License.
 
 # Built-in Imports
-import requests
-from requests import Request,Session,Response
-import json
 import constants
 import sys
 import os
@@ -142,21 +139,34 @@ def _get_vnet_json(vnet_name, location, current_subnet_name, subscription_id, re
             ]
         }
     }
-
-    _add_security_group(vnet_json, subscription_id, resource_group_name)
+    _add_subnets(vnet_json, subscription_id, resource_group_name)
     return vnet_json
 
 
-def _add_security_group(vnet_json, subscription_id, resource_group_name):
+def _add_subnets(vnet_json, subscription_id, resource_group_name):
+    vnet_properties = vnet_json['properties']
+    vnet_subnets = vnet_properties['subnets']
+    for curr_key in ctx.instance.runtime_properties:
+        if curr_key.startswith(constants.SUBNET_KEY):
+            current_subnet_name = ctx.instance.runtime_properties[curr_key]
+            vnet_curr_subnet = {
+                "name": current_subnet_name,
+                "properties": {
+                    "addressPrefix": constants.address_prefix
+                }
+            }
+            vnet_curr_subnet = _add_security_group(vnet_curr_subnet, subscription_id, resource_group_name)
+            vnet_subnets.append(vnet_curr_subnet)
+    return vnet_json
+
+
+# Github issue #22 : Add support for security group per subnet (when there's more than one subnet)
+# Github issue #23 : Add support for more than one security group per subnet
+def _add_security_group(vnet_curr_subnet, subscription_id, resource_group_name):
     if constants.SECURITY_GROUP_KEY in ctx.instance.runtime_properties:
         security_group_name = ctx.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
-        vnet_properties = vnet_json['properties']
-        vnet_subnets = vnet_properties['subnets']
-        # Github issue #22 : Change the code to support security group per subnet (when there's more than one subnet)
-        # Github issue #23 : Change the code to support more than one security group per subnet
-        vnet_curr_subnet = vnet_subnets[0]
         curr_subnet_properties = vnet_curr_subnet['properties']
         curr_subnet_properties['networkSecurityGroup'] = {
             "id": "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Network/networkSecurityGroups/{2}".format(subscription_id, resource_group_name, security_group_name)
         }
-    return vnet_json
+    return vnet_curr_subnet
