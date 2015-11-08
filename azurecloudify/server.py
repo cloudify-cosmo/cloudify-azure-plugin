@@ -39,12 +39,13 @@ def create_vm(**_):
     ctx.logger.info("Creating new virtual machine: {0}".format(vm_name))
     storage_account_name = ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
     #availability_set_name = ctx.instance.runtime_properties[constants.AVAILABILITY_SET_KEY]
+    availability_set_name = "To be developed by Pranjali and Vaidehi"
     headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
 
     try:
         virtual_machine_params = get_virtual_machine_params(location, random_suffix_value, resource_group_name,
-                                                            storage_account_name, subscription_id, vm_name)
+                                                            storage_account_name, subscription_id, vm_name, availability_set_name)
         virtual_machine_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version
         response_vm = requests.put(url=virtual_machine_url, data=virtual_machine_params, headers=headers)
         if response_vm.text:
@@ -217,9 +218,9 @@ def _start_vm_call(headers, vm_name, subscription_id, resource_group_name):
 
 
 def get_virtual_machine_params(location, random_suffix_value, resource_group_name, storage_account_name,
-                               subscription_id, vm_name):
+                               subscription_id, vm_name, availability_set_name):
     vm_json = _get_vm_base_json(location, random_suffix_value, resource_group_name, storage_account_name,
-                                subscription_id, vm_name)
+                                subscription_id, vm_name, availability_set_name)
 
     vm_properties = vm_json['properties']
     network_profile = vm_properties['networkProfile']
@@ -242,17 +243,18 @@ def get_virtual_machine_params(location, random_suffix_value, resource_group_nam
 
 
 def _get_vm_base_json(location, random_suffix_value, resource_group_name, storage_account_name, subscription_id,
-                      vm_name):
+                      vm_name,availability_set_name):
     return {
         "id": "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Compute/virtualMachines/{2}".format(
             subscription_id, resource_group_name, vm_name),
         "name": vm_name,
         "type": "Microsoft.Compute/virtualMachines",
         "location": location,
-        "properties": """{
-            "availabilitySet": { "id": "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Compute/availabilitySets/{2}".format(
-            subscription_id, resource_group_name, as_name)
-            }"""
+        "properties": {
+# To be developed by Pranjali and Vaidehi
+#            "availabilitySet": {
+#                "id": "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Compute/availabilitySets/{2}".format(subscription_id, resource_group_name, availability_set_name)
+#            },
             "hardwareProfile": {
                 "vmSize": ctx.node.properties['vm_size']
             },

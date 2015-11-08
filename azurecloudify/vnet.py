@@ -34,6 +34,9 @@ def creation_validation(**_):
         _validate_node_properties(property_key, ctx.node.properties)
 
 
+
+
+
 @operation
 def create_vnet(**_):
 
@@ -45,7 +48,6 @@ def create_vnet(**_):
 
     headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-    security_group_name = ctx.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
     if constants.VNET_KEY in ctx.instance.runtime_properties:
         current_subnet_name = ctx.instance.runtime_properties[constants.SUBNET_KEY]
     else:
@@ -55,7 +57,8 @@ def create_vnet(**_):
 
     check_vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
     create_vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
-    vnet_params = json.dumps({"name": vnet_name, "location": location, "properties": {"addressSpace": {"addressPrefixes": constants.vnet_address_prefixes},"subnets": [{"name": current_subnet_name, "properties": {"addressPrefix": constants.address_prefix,"networkSecurityGroup":{"id":"/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Network/networkSecurityGroups/"+security_group_name}}]}})
+    vnet_json = _get_vnet_json(vnet_name, location, current_subnet_name,subscription_id, resource_group_name)
+    vnet_params = json.dumps(vnet_json)
     utils.check_or_create_resource(headers, vnet_name, vnet_params, check_vnet_url, create_vnet_url, 'VNET')
 
     ctx.logger.info("{0} is {1}".format(constants.VNET_KEY, vnet_name))
@@ -119,3 +122,39 @@ def _get_vnet_name(vnet_name):
     else:
         ctx.logger.info("Virtual Network {0} does not exist".format(vnet_name))
         return False
+
+
+def _get_vnet_json(vnet_name, location, current_subnet_name, subscription_id, resource_group_name):
+    vnet_json = {
+        "name": vnet_name,
+        "location": location,
+        "properties": {
+            "addressSpace": {
+                "addressPrefixes": constants.vnet_address_prefixes
+            },
+            "subnets": [
+                {
+                    "name": current_subnet_name,
+                    "properties": {
+                        "addressPrefix": constants.address_prefix
+                    }
+                }
+            ]
+        }
+    }
+
+    _add_security_group(vnet_json, subscription_id, resource_group_name)
+    return vnet_json
+
+
+def _add_security_group(vnet_json, subscription_id, resource_group_name):
+    if constants.SECURITY_GROUP_KEY in ctx.instance.runtime_properties:
+        security_group_name = ctx.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
+        vnet_properties = vnet_json['properties']
+        vnet_subnets = vnet_properties['subnets']
+        vnet_curr_subnet = vnet_subnets[0]
+        curr_subnet_properties = vnet_curr_subnet['properties']
+        curr_subnet_properties['networkSecurityGroup'] = {
+            "id": "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Network/networkSecurityGroups/{2}".format(subscription_id, resource_group_name, security_group_name)
+        }
+    return vnet_json
