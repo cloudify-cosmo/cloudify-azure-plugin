@@ -152,6 +152,8 @@ def _add_security_group(vnet_json, subscription_id, resource_group_name):
         security_group_name = ctx.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
         vnet_properties = vnet_json['properties']
         vnet_subnets = vnet_properties['subnets']
+        # Github issue #22 : Change the code to support security group per subnet (when there's more than one subnet)
+        # Github issue #23 : Change the code to support more than one security group per subnet
         vnet_curr_subnet = vnet_subnets[0]
         curr_subnet_properties = vnet_curr_subnet['properties']
         curr_subnet_properties['networkSecurityGroup'] = {
