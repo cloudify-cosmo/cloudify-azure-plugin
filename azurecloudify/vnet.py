@@ -45,7 +45,7 @@ def create_vnet(**_):
 
     headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-
+    security_group_name = ctx.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
     if constants.VNET_KEY in ctx.instance.runtime_properties:
         current_subnet_name = ctx.instance.runtime_properties[constants.SUBNET_KEY]
     else:
