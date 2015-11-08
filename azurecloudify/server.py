@@ -38,7 +38,7 @@ def create_vm(**_):
     vm_name = ctx.node.properties[constants.VM_PREFIX]+random_suffix_value
     ctx.logger.info("Creating new virtual machine: {0}".format(vm_name))
     storage_account_name = ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
-    availability_set_name = ctx.instance.runtime_properties[constants.AVAILABILITY_SET_KEY]
+    #availability_set_name = ctx.instance.runtime_properties[constants.AVAILABILITY_SET_KEY]
     headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
 
@@ -242,7 +242,7 @@ def get_virtual_machine_params(location, random_suffix_value, resource_group_nam
 
 
 def _get_vm_base_json(location, random_suffix_value, resource_group_name, storage_account_name, subscription_id,
-                      vm_name,as_name):
+                      vm_name):
     return {
         "id": "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Compute/virtualMachines/{2}".format(
             subscription_id, resource_group_name, vm_name),
