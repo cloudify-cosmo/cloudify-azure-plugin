@@ -70,7 +70,7 @@ AVAILABILITY_SET_KEY = 'availability_set_key_name'
 AVAILABILITY_SET_PREFIX = 'availability_set_'
 
 SUBNET_KEY = 'subnet_key_name'
-SUBNET_PREFIX = 'subvnet_'
+SUBNET_PREFIX = 'subnet_'
 
 VM_KEY = 'vm_key_name'
 VM_PREFIX = 'vm_prefix'

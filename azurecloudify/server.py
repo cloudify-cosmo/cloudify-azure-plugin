@@ -222,6 +222,12 @@ def get_virtual_machine_params(location, random_suffix_value, resource_group_nam
     vm_json = _get_vm_base_json(location, random_suffix_value, resource_group_name, storage_account_name,
                                 subscription_id, vm_name, availability_set_name)
 
+    _set_network_json(vm_json, subscription_id, resource_group_name)
+    ctx.logger.info("get_virtual_machine_params:{0} {1}".format(vm_name, json.dumps(vm_json)))
+    return json.dumps(vm_json)
+
+
+def _set_network_json(vm_json, subscription_id, resource_group_name):
     vm_properties = vm_json['properties']
     network_profile = vm_properties['networkProfile']
     network_interfaces = network_profile['networkInterfaces']
@@ -238,8 +244,6 @@ def get_virtual_machine_params(location, random_suffix_value, resource_group_nam
                 interface_properties['primary'] = 'false'
             curr_interface['properties'] = interface_properties
             network_interfaces.append(curr_interface)
-    ctx.logger.info("get_virtual_machine_params:{0} {1}".format(vm_name, json.dumps(vm_json)))
-    return json.dumps(vm_json)
 
 
 def _get_vm_base_json(location, random_suffix_value, resource_group_name, storage_account_name, subscription_id,
