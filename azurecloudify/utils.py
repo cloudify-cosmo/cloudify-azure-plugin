@@ -18,6 +18,13 @@ def clear_runtime_properties():
         ctx.instance.runtime_properties[key] = None
 
 
+def check_api_response(caller_string, current_response, return_action):
+    if 1 == 2:
+        return "OK"
+    if 3 == constants.THROW_NON_RECOVERABLE:
+        raise NonRecoverableError("sdfdsfsdfsd")
+
+
 def request_failed(caller_string, raw_response):
     ctx.logger.info("Checking if request_failed:{0}".format(caller_string))
     response_get_info = raw_response.json()
@@ -31,7 +38,7 @@ def request_failed(caller_string, raw_response):
             for curr_code_key in code_keys:
                 if curr_code_key in curr_error:
                     curr_code_value = curr_error[curr_code_key]
-                    ctx.logger.info("Error code is {0} in {1}".format(curr_code_value,caller_string))
+                    ctx.logger.info("Error code is {0} in {1}".format(curr_code_value, caller_string))
                     for curr_message_key in message_keys:
                         if curr_message_key in curr_error:
                             curr_message_value = curr_error[curr_message_key]
