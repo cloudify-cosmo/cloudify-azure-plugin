@@ -45,16 +45,12 @@ def create_vnet(**_):
 
     headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-    if constants.VNET_KEY in ctx.instance.runtime_properties:
-        current_subnet_name = ctx.instance.runtime_properties[constants.SUBNET_KEY]
-    else:
+    if constants.VNET_KEY not in ctx.instance.runtime_properties:
         ctx.instance.runtime_properties[constants.VNET_KEY] = vnet_name
-        current_subnet_name = constants.SUBNET_PREFIX+utils.random_suffix_generator()
-        ctx.instance.runtime_properties[constants.SUBNET_KEY] = current_subnet_name
 
     check_vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
     create_vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
-    vnet_json = _get_vnet_json(vnet_name, location, current_subnet_name,subscription_id, resource_group_name)
+    vnet_json = _get_vnet_json(vnet_name, location, subscription_id, resource_group_name)
     vnet_params = json.dumps(vnet_json)
     utils.check_or_create_resource(headers, vnet_name, vnet_params, check_vnet_url, create_vnet_url, 'VNET')
 
@@ -160,7 +156,6 @@ def _add_subnets(vnet_json, subscription_id, resource_group_name):
 
 
 # Github issue #22 : Add support for security group per subnet (when there's more than one subnet)
-# Github issue #23 : Add support for more than one security group per subnet
 def _add_security_group(vnet_curr_subnet, subscription_id, resource_group_name):
     if constants.SECURITY_GROUP_KEY in ctx.instance.runtime_properties:
         security_group_name = ctx.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
