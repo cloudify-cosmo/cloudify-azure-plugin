@@ -21,24 +21,15 @@ def creation_validation(**_):
 
 @operation
 def create_security_group(**_):
-    if constants.USE_EXTERNAL_RESOURCE in ctx.node.properties and ctx.node.properties[constants.USE_EXTERNAL_RESOURCE]:
-        if constants.EXISTING_SECURITY_GROUP_KEY in ctx.node.properties:
-            existing_security_group_name = ctx.node.properties[constants.EXISTING_SECURITY_GROUP_KEY]
-            if existing_security_group_name:
-                security_group_exists = _get_security_group_name(existing_security_group_name)
-                if not security_group_exists:
-                    raise NonRecoverableError("Security group {} doesn't exist your Azure account".format(existing_security_group_name))
-            else:
-                raise NonRecoverableError("The value of '{}' in the input, is empty".format(constants.EXISTING_SECURITY_GROUP_KEY))
-        else:
-            raise NonRecoverableError("'{}' was specified, but '{}' doesn't exist in the input".format('use_external_resource',constants.EXISTING_SECURITY_GROUP_KEY))
-
-        ctx.instance.runtime_properties[constants.SECURITY_GROUP_KEY] = ctx.node.properties[constants.EXISTING_SECURITY_GROUP_KEY]
+    security_group_name = utils.set_resource_name(_get_security_group_name, 'SECUIRTY_GROUP',
+                                             constants.SECURITY_GROUP_KEY, constants.EXISTING_SECURITY_GROUP_NAME,
+                                             constants.SECURITY_GROUP_PREFIX)
+    if security_group_name is None:
+        # Using an existing public ip, so don't create anything
         return
-    
+
     headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-
     if constants.SECURITY_GROUP_KEY in ctx.instance.runtime_properties:
         security_group_name = ctx.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
     else:
@@ -60,7 +51,7 @@ def create_security_group(**_):
                     "properties": {
                         "description": constants.NSG_RULES_DESCRIPTION,
                         "protocol": ctx.node.properties['security_group_protocol'],
-                        "sourcePortRange": ctx.node.properties['security_group_sourcePortRange'] ,
+                        "sourcePortRange": ctx.node.properties['security_group_sourcePortRange'],
                         "destinationPortRange": ctx.node.properties['security_group_destinationPortRange'],
                         "sourceAddressPrefix": ctx.node.properties['security_group_sourceAddressPrefix'],
                         "destinationAddressPrefix": ctx.node.properties['security_group_destinationAddressPrefix'],
