@@ -147,8 +147,6 @@ node_templates:
         type: cloudify.azure.relationships.server_connected_to_nic
       - target: manager_storage_account
         type: cloudify.azure.relationships.server_connected_to_storage_account
-      - target: manager_security_group
-        type: cloudify.azure.relationships.server_connected_to_security_group  
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
 
@@ -267,6 +265,8 @@ node_templates:
     relationships:
       - target: manager_public_ip
         type: cloudify.azure.relationships.nic_connected_to_public_ip
+      - target: manager_security_group
+        type: cloudify.azure.relationships.nic_connected_to_security_group
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
 
@@ -284,8 +284,6 @@ node_templates:
     relationships:
       - target: manager_resource_group
         type: cloudify.azure.relationships.vnet_contained_in_resource_group
-      - target: manager_security_group
-        type: cloudify.azure.relationships.vnet_connected_to_security_group
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
 
