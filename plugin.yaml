@@ -529,7 +529,7 @@ relationships:
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
         preconfigure:
-          implementation: microsoft.azurecloudify.vnet.set_dependent_resources_names
+          implementation: microsoft.azurecloudify.vnet.set_security_group_details
           inputs:
             azure_config:
               default: {}
@@ -539,7 +539,7 @@ relationships:
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
         preconfigure:
-          implementation: microsoft.azurecloudify.nic.set_dependent_resources_names
+          implementation: microsoft.azurecloudify.nic.set_security_group_details
           inputs:
             azure_config:
               default: {}
@@ -549,7 +549,7 @@ relationships:
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
         preconfigure:
-          implementation: microsoft.azurecloudify.vnet.set_dependent_resources_names
+          implementation: microsoft.azurecloudify.vnet.set_subnet_details
           inputs:
             azure_config:
               default: {}
@@ -570,7 +570,7 @@ relationships:
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
         preconfigure:
-          implementation: microsoft.azurecloudify.nic.set_dependent_resources_names
+          implementation: microsoft.azurecloudify.nic.set_public_ip_details
           inputs:
             azure_config:
               default: {}
@@ -580,7 +580,7 @@ relationships:
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
         preconfigure:
-          implementation: microsoft.azurecloudify.nic.set_dependent_resources_names
+          implementation: microsoft.azurecloudify.nic.set_vnet_details
           inputs:
             azure_config:
               default: {}
