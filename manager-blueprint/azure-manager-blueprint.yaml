@@ -175,7 +175,7 @@ node_templates:
       tenant_id: { get_input: tenant_id}
       aad_password: { get_input: aad_password}
       use_external_resource: { get_input: use_external_resource}
-      existing_security_group_name: { get_input: security_group_name}
+      existing_security_group_name: { get_input: existing_security_group_name}
       security_group_protocol: { get_input: security_group_protocol}
       security_group_access: { get_input: security_group_access}
       security_group_priority: { get_input: security_group_priority}
