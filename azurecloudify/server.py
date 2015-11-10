@@ -117,7 +117,7 @@ def delete_current_virtual_machine(**_):
 
 
 @operation
-def set_dependent_resources_names(azure_config, **kwargs):
+def set_storage_account_details(azure_config, **kwargs):
     if constants.STORAGE_ACCOUNT_KEY in ctx.target.instance.runtime_properties:
         ctx.source.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = ctx.target.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
         ctx.logger.info("{0} is {1}".format(constants.STORAGE_ACCOUNT_KEY, ctx.target.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]))
@@ -131,6 +131,20 @@ def set_dependent_resources_names(azure_config, **kwargs):
         ctx.source.instance.runtime_properties[constants.SECURITY_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
         ctx.logger.info("{0} is {1}".format(constants.SECURITY_GROUP_KEY, ctx.target.instance.runtime_properties[constants.SECURITY_GROUP_KEY]))
         
+    for curr_key in ctx.target.instance.runtime_properties:
+        if curr_key.startswith(constants.NIC_KEY):
+            ctx.source.instance.runtime_properties[curr_key] = ctx.target.instance.runtime_properties[curr_key]
+            ctx.logger.info("{0} is {1}".format(curr_key, ctx.target.instance.runtime_properties[curr_key]))
+
+
+@operation
+def set_nic_details(azure_config, **kwargs):
+    _set_ips_from_target()
+
+    if constants.SECURITY_GROUP_KEY in ctx.target.instance.runtime_properties:
+        ctx.source.instance.runtime_properties[constants.SECURITY_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
+        ctx.logger.info("{0} is {1}".format(constants.SECURITY_GROUP_KEY, ctx.target.instance.runtime_properties[constants.SECURITY_GROUP_KEY]))
+
     for curr_key in ctx.target.instance.runtime_properties:
         if curr_key.startswith(constants.NIC_KEY):
             ctx.source.instance.runtime_properties[curr_key] = ctx.target.instance.runtime_properties[curr_key]

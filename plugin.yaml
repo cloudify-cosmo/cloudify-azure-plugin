@@ -508,7 +508,7 @@ relationships:
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
         preconfigure:
-          implementation: microsoft.azurecloudify.server.set_dependent_resources_names
+          implementation: microsoft.azurecloudify.server.set_storage_account_details
           inputs:
             azure_config:
               default: {}
@@ -590,7 +590,7 @@ relationships:
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
         preconfigure:
-          implementation: microsoft.azurecloudify.server.set_dependent_resources_names
+          implementation: microsoft.azurecloudify.server.set_nic_details
           inputs:
             azure_config:
               default: {}
