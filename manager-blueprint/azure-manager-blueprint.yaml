@@ -289,7 +289,7 @@ node_templates:
         
         
   manager_subnet:
-    type: cloudify.azure.nodes.VNET
+    type: cloudify.azure.nodes.Subnet
     properties:
       location: { get_input: location}
       subscription_id: { get_input: subscription_id}
@@ -297,7 +297,8 @@ node_templates:
       tenant_id: { get_input: tenant_id}
       aad_password: { get_input: aad_password}
       use_external_resource: { get_input: use_external_resource}
-
+      existing_vnet_name: { get_input: existing_vnet_name}
+      
     relationships:
       - target: manager_resource_group
         type: cloudify.azure.relationships.subnet_contained_in_resource_group
