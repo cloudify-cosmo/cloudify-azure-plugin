@@ -22,7 +22,7 @@ def creation_validation(**_):
 @operation
 def create_security_group(**_):
     security_group_name = utils.set_resource_name(_get_security_group_name, 'SECUIRTY_GROUP',
-                                             constants.SECURITY_GROUP_KEY, constants.EXISTING_SECURITY_GROUP_NAME,
+                                             constants.SECURITY_GROUP_KEY, constants.EXISTING_SECURITY_GROUP_KEY,
                                              constants.SECURITY_GROUP_PREFIX)
     if security_group_name is None:
         # Using an existing public ip, so don't create anything
