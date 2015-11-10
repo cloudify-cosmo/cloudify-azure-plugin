@@ -156,22 +156,23 @@ def delete_current_nic(**_):
 
 
 @operation
-def set_dependent_resources_names(azure_config, **kwargs):
+def set_security_group_details(azure_config, **kwargs):
+    ctx.source.instance.runtime_properties[constants.SECURITY_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
+
+
+@operation
+def set_public_ip_details(azure_config, **kwargs):
+    ctx.logger.info("{0} is {1}".format(constants.PUBLIC_IP_KEY, ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]))
+    ctx.source.instance.runtime_properties[constants.PUBLIC_IP_KEY] = ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]
+
+
+@operation
+def set_vnet_details(azure_config, **kwargs):
     ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     ctx.source.instance.runtime_properties[constants.VNET_KEY] = ctx.target.instance.runtime_properties[constants.VNET_KEY]
     ctx.logger.info("{0} is {1}".format(constants.VNET_KEY, ctx.target.instance.runtime_properties[constants.VNET_KEY]))
     ctx.source.instance.runtime_properties[constants.SUBNET_KEY] = ctx.target.instance.runtime_properties[constants.SUBNET_KEY]
-
-    if constants.SECURITY_GROUP_KEY in ctx.target.instance.runtime_properties:
-        ctx.source.instance.runtime_properties[constants.SECURITY_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
-
-    if constants.PUBLIC_IP_KEY in ctx.target.instance.runtime_properties:
-        ctx.logger.info("{0} is {1}".format(constants.PUBLIC_IP_KEY, ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]))
-        ctx.source.instance.runtime_properties[constants.PUBLIC_IP_KEY] = ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]
-    else:
-        ctx.logger.info("{0} is NOT in runtime props ".format(constants.PUBLIC_IP_KEY))
-
-
+    ctx.logger.info("{0} is {1}".format(constants.SUBNET_KEY, ctx.target.instance.runtime_properties[constants.SUBNET_KEY]))
 
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:

@@ -88,12 +88,13 @@ def delete_current_vnet(**_):
 
 
 @operation
-def set_dependent_resources_names(azure_config, **kwargs):
-    if constants.RESOURCE_GROUP_KEY not in ctx.source.instance.runtime_properties:
-        ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+def set_security_group_details(azure_config, **kwargs):
+    ctx.source.instance.runtime_properties[constants.SECURITY_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
 
-    if constants.SECURITY_GROUP_KEY in ctx.target.instance.runtime_properties:
-        ctx.source.instance.runtime_properties[constants.SECURITY_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
+
+@operation
+def set_subnet_details(azure_config, **kwargs):
+    ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
 
     for curr_key in ctx.target.instance.runtime_properties:
         if curr_key.startswith(constants.SUBNET_KEY):
