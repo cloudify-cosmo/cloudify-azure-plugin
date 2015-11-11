@@ -32,6 +32,7 @@ def creating_reverse_zone():
 	zoneFile_content = open(reverse_zone_file_name, 'a')
 	zoneFile_content.write("\n \t IN \t NS \t %s   \n"% ("ns."+domain_name+"."))        
 	zoneFile_content.close()
+	print "\nThe reverse zone is created and is now ready to accept your records!\nYou can add reverse records any time!\n"
 
 
 def main():

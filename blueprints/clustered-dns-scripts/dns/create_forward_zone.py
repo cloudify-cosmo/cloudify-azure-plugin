@@ -35,6 +35,7 @@ def creating_for_zone():
 	zoneFile_content = open(new_zone_file, 'a')
 	zoneFile_content.write("\n \t IN \t NS \t %s   \n%s \t IN \t A \t %s  \n"% ("ns."+domain_name+".","ns."+domain_name+".", ipaddr_nameServer))        
 	zoneFile_content.close()
+	print "\nThe forward zone is created and is now ready to accept your records!\nYou can add forward records any time!\n"
 
 
 def main():
