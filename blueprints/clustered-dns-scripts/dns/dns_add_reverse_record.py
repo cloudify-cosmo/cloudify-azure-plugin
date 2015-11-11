@@ -3,6 +3,7 @@ from reverseZone_naming import reverseZone_name
 from netaddr import *
 curlybrace1="{"
 curlybrace2="}"
+zone_files_path="/etc/bind/zones"
 
 def add_reverse_record():
 	ip_address_to_be_added= sys.argv[1]
@@ -14,11 +15,13 @@ def add_reverse_record():
 	network_address=network_address_file.read()       
 	network_address_file.close()
 	ip = IPNetwork(network_address)
+	prefix_length=int(ip.prefixlen)
 	ip_address=IPAddress(ip_address_to_be_added)
+
 	if ip_address_to_be_added in IPNetwork(network_address):
 		ip_valid=1
 		reverse_zone_file_name,reverse_zone_name=reverseZone_name()
-		os.chdir("/etc/bind/zones")
+		os.chdir(zone_files_path)
 		readFiles = open(reverse_zone_file_name, 'r')
 		forward_zone_file_content = readFiles.read()
 		readFiles.close()
@@ -28,9 +31,9 @@ def add_reverse_record():
 			
 		if record_valid==1:
 			octate = str(ip_address).split(".")
-			if int(ip.prefixlen)<16:
+			if prefix_length<16:
 				reverse_record=octate[3]+"."+octate[2]+"."+octate[1]
-			if int(ip.prefixlen)>=16 and int(ip.prefixlen)<24:
+			elif prefix_length>=16 and prefix_length<24:
 				reverse_record=octate[3]+"."+octate[2]
 			else:
 				reverse_record=octate[3]
@@ -45,7 +48,7 @@ def add_reverse_record():
 	if ip_valid==1:
 		if record_valid==1:
 			reverse_zone_file_name,reverse_zone_name=reverseZone_name()
-			os.chdir("/etc/bind/zones")
+			os.chdir(zone_files_path)
 			reverse_zone_file_path=reverse_zone_file_name
 			reverse_zone_content = open(reverse_zone_file_path, 'a')
 			reverse_zone_content.write("\n%s \t IN \t PTR \t %s" % (reverse_record,host_name_to_be_added))       

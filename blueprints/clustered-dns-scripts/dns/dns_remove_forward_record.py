@@ -1,13 +1,14 @@
 import subprocess, os, sys
 from reverseZone_naming import reverseZone_name
 from netaddr import *
+zone_files_path="/etc/bind/zones"
 
 def remove_forward_record():
 	host_name_to_be_removed= sys.argv[1]
 	domain_name= sys.argv[2]
 
-	os.chdir("/etc/bind/zones")
-	forward_zone_file_name="db."+domain_name
+	os.chdir(zone_files_path)
+	forward_zone_file_name="{0}{1}".format("db.",domain_name)
 
 	readFiles = open(forward_zone_file_name,'r')
 	forward_zone_file_content = readFiles.read()

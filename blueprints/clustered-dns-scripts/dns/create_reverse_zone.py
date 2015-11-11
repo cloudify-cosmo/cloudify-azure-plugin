@@ -1,5 +1,6 @@
 import subprocess,os, sys
 from reverseZone_naming import reverseZone_name
+zone_files_path="/etc/bind/zones"
 
 def creating_reverse_zone():
 	domain_name= sys.argv[1]
@@ -12,7 +13,7 @@ def creating_reverse_zone():
 	text_modified=text_updated.replace("root.localhost.","admin."+domain_name+".")
 
 	reverse_zone_file_name,reverse_zone_name=reverseZone_name()
-	os.chdir("/etc/bind/zones")
+	os.chdir(zone_files_path)
 	new_zone_file_content=open(reverse_zone_file_name,'w')
 	new_zone_file_content.write(text_modified)
 	new_zone_file_content.close()

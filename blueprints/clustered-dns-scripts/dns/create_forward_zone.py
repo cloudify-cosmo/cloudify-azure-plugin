@@ -1,13 +1,13 @@
 import subprocess,os, sys
+zone_files_path="/etc/bind/zones"
 
 def creating_for_zone():
 	domain_name= sys.argv[1]
 	ipaddr_nameServer= sys.argv[2]
-	zoneFile_name="db."+domain_name
 
 	old_file="/etc/bind/db.local"
-	os.chdir("/etc/bind/zones")
-	new_zone_file="db."+domain_name
+	os.chdir(zone_files_path)
+	new_zone_file="{0}{1}".format("db.",domain_name)
 	subprocess.call("cp /etc/bind/db.local new_zone_file",shell=True)
 	
 	old_file_content=open(old_file,'r')

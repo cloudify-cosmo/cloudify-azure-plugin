@@ -2,6 +2,7 @@ import subprocess, os, sys
 
 curlybrace1="{"
 curlybrace2="}"
+zone_files_directory="/etc/bind/zones"
 
 def configure_ipv4_mode():
 	bind9_file="/etc/default/bind9"
@@ -19,8 +20,8 @@ def main():
 	ip_address_of_machine= sys.argv[1]
 	configure_ipv4_mode()
 	options_file_configure(ip_address_of_machine)
-	if (os.path.exists("/etc/bind/zones")):
-		subprocess.call('rm -r /etc/bind/zones', shell=True)
-	os.mkdir('/etc/bind/zones')
+	if (os.path.exists(zone_files_directory)):
+		subprocess.call('rm -rf /etc/bind/zones', shell=True)
+	os.mkdir(zone_files_directory)
 
 main()
