@@ -606,6 +606,24 @@ node_templates:
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
 
+  manager_subnet:
+    type: cloudify.azure.nodes.Subnet
+    properties:
+      location: { get_input: location}
+      subscription_id: { get_input: subscription_id}
+      client_id: { get_input: client_id}
+      tenant_id: { get_input: tenant_id}
+      aad_password: { get_input: aad_password}
+      use_external_resource: { get_input: use_external_resource}
+      existing_vnet_name: { get_input: existing_vnet_name}
+      
+    relationships:
+      - target: manager_resource_group
+        type: cloudify.azure.relationships.subnet_contained_in_resource_group
+      - target: manager_security_group
+        type: cloudify.azure.relationships.subnet_connected_to_security_group
+      - target: azure_token
+        type: cloudify.azure.relationships.resource_depends_on_azure_token
 
   manager_vnet:
     type: cloudify.azure.nodes.VNET
