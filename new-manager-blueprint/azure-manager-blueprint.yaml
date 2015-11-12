@@ -109,6 +109,10 @@ inputs:
     type: string
     default: '*'
     
+  security_group_access: 
+    type: string
+    default: 'Allow'
+    
   security_group_direction: 
     type: string
     default: 'Inbound'
