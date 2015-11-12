@@ -78,11 +78,20 @@ def delete_availability_set(**_):
     utils.clear_runtime_properties()
     
     
-@operation
-def delete_availability_set(**_):
-    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+
+def delete_current_availability_set(**_):
+    if constants.USE_EXTERNAL_RESOURCE in ctx.node.properties and ctx.node.properties[constants.USE_EXTERNAL_RESOURCE]:
+        ctx.logger.info("An existing availabilty set was used, so there's no need to delete")
+        return
+    
+    availabilty_set_name = ctx.instance.runtime_properties[constants.AVAILABILTY_SET_KEY]
     headers, location, subscription_id = auth.get_credentials()
-    availability_set_name = ''
-    delete_url = 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/availabilitySets/'+availability_set_name+'?api-version=2015-05-01-preview'
-    response_as = requests.delete(url=delete_url, headers=headers)
-    print(response_as.text)
+    try:
+        ctx.logger.info("Deleting Availabilty set: {0}".format(availabilty_set_name))
+        delete_url = 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/availabilitySets/'+availability_set_name+'?api-version=2015-05-01-preview'
+        response_as = requests.delete(url=delete_url, headers=headers)
+        print(response_as.text)
+    except:
+        ctx.logger.info("Availability set {0} could not be deleted.".format(availabilty_set_name))
+        
+    
