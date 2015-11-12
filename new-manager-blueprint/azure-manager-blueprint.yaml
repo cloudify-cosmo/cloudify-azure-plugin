@@ -669,9 +669,11 @@ node_templates:
       existing_vnet_name: { get_input: existing_vnet_name}
 
     relationships:
+      - target: manager_storage_account
+        type: cloudify.azure.relationships.vnet_connected_to_storage_account
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
-
+      
   azure_token:
     type: cloudify.azure.nodes.azure_token
     properties:
