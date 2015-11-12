@@ -105,6 +105,10 @@ inputs:
     type: string
     default: '100'
     
+  security_group_protocol: 
+    type: string
+    default: '*'
+    
   security_group_direction: 
     type: string
     default: 'Inbound'
