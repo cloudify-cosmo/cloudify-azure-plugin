@@ -69,7 +69,7 @@ def _get_nic_params(current_subnet_name, location, resource_group_name, subscrip
     if constants.SECURITY_GROUP_KEY in ctx.instance.runtime_properties:
         security_group_name = ctx.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
         security_group_json = {  
-            "id":'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Network/networkSecurityGroups/'+security_group_name
+            "id": '/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Network/networkSecurityGroups/'+security_group_name
         }
         security_group_properties['networkSecurityGroup'] = security_group_json
     ctx.logger.info("nic_json : {}".format(nic_json))
