@@ -50,17 +50,28 @@ def create_availability_set(**_):
     
     try:    
         ctx.logger.info("Creating new availability set: {0}".format(availability_set_name))
-    
-    availability_set_params = json.dumps({ 
-       "name": availability_set_name, 
-       "type": "Microsoft.Compute/availabilitySets", 
-       "location": location
-    }
+        availability_set_params = json.dumps({ 
+           "name": availability_set_name, 
+           "type": "Microsoft.Compute/availabilitySets", 
+           "location": location
+        }
     )
     response_as = requests.put(url=availability_set_url, data=availability_set_params, headers=headers) 
-    print response_as.text 
-    
-    
+    if response_as.text:
+        ctx.logger.info("create_availability_set {0} response_as.text is {1}".format(availability_set_name, response_as.text))
+        if utils.request_failed("{0}:{1}".format('create_availability_set', availabilty_set_name), response_as)
+            raise NonRecoverableError("create_availabilty_set {0} could not be created".format(availability_set_name))
+        ctx.instance.runtime_properties[constants.AVAILABILTY_SET_KEY] = availabilty_set_name
+    except:
+        ctx.logger.info("Availabilty set {0} could not be created".format(availabilty_set_name))
+        raise NonRecoverableError("Availabilty Set {} could not be created".format(availabilty_set_name))
+            
+           
+    @operation
+    def set_dependent_resources_names(azure_config, **kwargs):
+        ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] 
+        
+        
 @operation
 def delete_availability_set(**_):
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
