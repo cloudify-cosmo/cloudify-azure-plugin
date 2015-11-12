@@ -553,6 +553,16 @@ relationships:
           inputs:
             azure_config:
               default: {}
+              
+   cloudify.azure.relationships.vnet_connected_to_storage_account:
+    derived_from: cloudify.relationships.connected_to
+    source_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        preconfigure:
+          implementation: microsoft.azurecloudify.vnet.set_subnet_details
+          inputs:
+            azure_config:
+              default: {}
 
    cloudify.azure.relationships.public_ip_connected_to_vnet:
     derived_from: cloudify.relationships.connected_to
