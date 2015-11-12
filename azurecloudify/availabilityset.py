@@ -95,3 +95,11 @@ def delete_current_availability_set(**_):
         ctx.logger.info("Availability set {0} could not be deleted.".format(availabilty_set_name))
         
     
+def _validate_node_properties(key, ctx_node_properties):
+    if key not in ctx_node_properties:
+        raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
+        
+        
+        
+def _get_availabilty_set_name(availability_set_name):  
+    
