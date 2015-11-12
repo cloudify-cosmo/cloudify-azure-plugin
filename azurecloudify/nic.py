@@ -69,9 +69,9 @@ def _get_nic_params(current_subnet_name, location, resource_group_name, subscrip
         nic_properties['enableIPForwarding'] = 'true'
     if constants.SECURITY_GROUP_KEY in ctx.instance.runtime_properties:
         security_group_name = ctx.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
-        security_group_json = {
-         "id": '/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Network/networkSecurityGroups/'+security_group_name
-        }
+        security_group_json = {  
+                "id":"/subscriptions/{guid}/resourceGroups/{resourceGroupName}/providers/Microsoft.Network/networkSecurityGroups/myNSG1"
+          }
         security_group_properties['networkSecurityGroup'] = security_group_json
     ctx.logger.info("nic_json : {}".format(nic_json))
     nic_params = json.dumps(nic_json)
