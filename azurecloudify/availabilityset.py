@@ -35,9 +35,17 @@ def creation_validation(**_):
 @operation
 def create_availability_set(**_):
     availability_set_name = ''
+    if availability_set_name is None:
+        return
+    
     headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-
+    if constants.AVAILABILITY_SET_KEY in ctx.instance.runtime-properties:
+        availability_set_name = ctx.instance.runtime_properties[constants.AVAILABILITY_SET_KEY]
+    else:
+        random_suffix_value = utils.random_suffix_generator()
+        availability_set_name = constants.AVAILABILITY_SET_PREFIX+random_suffix_value
+        
     availability_set_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/availabilitySets/'+availability_set_name+'?api-version='
     availability_set_params = json.dumps({ 
        "name": availability_set_name, 
