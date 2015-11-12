@@ -37,7 +37,7 @@ def creation_validation(**_):
         _validate_node_properties(property_key, ctx.node.properties)
 
 
-def _get_nic_params(current_subnet_name, location, resource_group_name, subscription_id, vnet_name,security_group_name):
+def _get_nic_params(current_subnet_name, location, resource_group_name, subscription_id, vnet_name):
     network_str = "/subscriptions/{}/resourceGroups/{}/providers/Microsoft.Network/".format(subscription_id,
                                                                                             resource_group_name)
     nic_json = {
@@ -116,13 +116,6 @@ def create_nic(**_):
    
     vnet_name = ctx.instance.runtime_properties[constants.VNET_KEY]
     current_subnet_name = ctx.instance.runtime_properties[constants.SUBNET_KEY]
-    if constants.SECURITY_GROUP_KEY in ctx.instance.runtime_properties:
-        # Vaidehi should take care of this
-        security_group_name = ctx.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
-    else:
-        return 1
-        # Vaidehi should take care of this
-        #security_group_name = ""
     if constants.NIC_KEY in ctx.instance.runtime_properties:
         nic_name = ctx.instance.runtime_properties[constants.NIC_KEY]
     else:
