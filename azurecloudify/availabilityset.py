@@ -40,7 +40,7 @@ def create_availability_set(**_):
     
     headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-    if constants.AVAILABILITY_SET_KEY in ctx.instance.runtime-properties:
+    if constants.AVAILABILITY_SET_KEY in ctx.instance.runtime_properties:
         availability_set_name = ctx.instance.runtime_properties[constants.AVAILABILITY_SET_KEY]
     else:
         random_suffix_value = utils.random_suffix_generator()
