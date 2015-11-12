@@ -45,7 +45,7 @@ def create_security_group(**_):
             "key": "value"
         },
         "properties": {
-            "securityRules": [
+            "securityRules":[
                 {
                     "name": constants.nsg_rule_name,
                     "properties": {
