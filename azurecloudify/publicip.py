@@ -20,7 +20,6 @@ import json
 import constants
 import sys
 import os
-import auth
 import utils
 from resourcegroup import *
 from cloudify.exceptions import NonRecoverableError,RecoverableError
