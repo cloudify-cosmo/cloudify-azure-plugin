@@ -67,11 +67,17 @@ def create_availability_set(**_):
         raise NonRecoverableError("Availabilty Set {} could not be created".format(availabilty_set_name))
             
            
-    @operation
-    def set_dependent_resources_names(azure_config, **kwargs):
-        ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] 
+@operation
+def set_dependent_resources_names(azure_config, **kwargs):
+    ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] 
         
-        
+
+@operation
+def delete_availability_set(**_):
+    delete_current_availability_set()
+    utils.clear_runtime_properties()
+    
+    
 @operation
 def delete_availability_set(**_):
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
