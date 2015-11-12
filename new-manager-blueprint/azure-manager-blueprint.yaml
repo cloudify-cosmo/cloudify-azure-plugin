@@ -101,6 +101,30 @@ inputs:
     type: string
     default: 'azuretest'
     
+  security_group_priority: 
+    type: string
+    default: '100'
+    
+  security_group_direction: 
+    type: string
+    default: 'Inbound'
+    
+  security_group_sourcePortRange: 
+    type: string
+    default: '*'
+    
+  security_group_destinationPortRange: 
+    type: string
+    default: '*'
+    
+  security_group_sourceAddressPrefix: 
+    type: string
+    default: '*'
+    
+  security_group_destinationAddressPrefix: 
+    type: string
+    default: '*'
+    
   #############################
   # Security Settings
   #############################
