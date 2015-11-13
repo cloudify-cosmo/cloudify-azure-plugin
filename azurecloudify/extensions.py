@@ -33,7 +33,7 @@ def creation_validation(**_):
 
 @operation
 def create_custom_script(**_):
-    custom_script_name = ''
+    custom_script_name = constants.CUSTOM_SCRIPT_PREFIX+utils.random_suffix_generator()
     headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     command = ctx.node.properties['custom_script_command']
