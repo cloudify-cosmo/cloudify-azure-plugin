@@ -48,9 +48,9 @@ def create_security_group(**_):
             "securityRules":[
                 {
                     "name": constants.nsg_rule_name,
-                    "properties": {
+                    "properties":{
                         "description":constants.NSG_RULES_DESCRIPTION,
-                        "protocol":ctx.node.properties["security_group_protocol"],
+                        "protocol": ctx.node.properties["security_group_protocol"],
                         "sourcePortRange":ctx.node.properties["security_group_sourcePortRange"],
                         "destinationPortRange":ctx.node.properties["security_group_destinationPortRange"],
                         "sourceAddressPrefix":ctx.node.properties["security_group_sourceAddressPrefix"],
