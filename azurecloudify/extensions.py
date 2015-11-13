@@ -60,3 +60,6 @@ def create_custom_script(**_):
     response_as = requests.put(url=custom_script_url, data=custom_script_params, headers=headers) 
     print response_as.text 
     
+def _validate_node_properties(key, ctx_node_properties):
+    if key not in ctx_node_properties:
+        raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
