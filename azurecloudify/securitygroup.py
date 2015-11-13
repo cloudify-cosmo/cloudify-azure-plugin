@@ -41,9 +41,6 @@ def create_security_group(**_):
         ctx.logger.info("Creating a new security group: {0}".format(security_group_name))
         security_group_params = json.dumps({
         "location": location,
-        "tags": {
-            "key": "value"
-        },
         "properties": {
             "securityRules":[
                 {
