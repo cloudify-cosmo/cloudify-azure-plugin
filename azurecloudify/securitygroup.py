@@ -46,14 +46,14 @@ def create_security_group(**_):
                 {
                     "name":"myNsRule",
                     "properties":{ 
-                       "description":"description-of-this-rule",
+                       "description":"MyNSG",
                        "protocol": "Tcp",
-                       "sourcePortRange":"source-port-range",
-                       "destinationPortRange":"destination-port-range",
+                       "sourcePortRange":"*",
+                       "destinationPortRange":"*",
                        "sourceAddressPrefix":"*",
                        "destinationAddressPrefix":"*",
                        "access":"Allow",
-                       "priority":priority-of-the-rule,
+                       "priority":"100",
                        "direction":"Inbound"
 
                     }
