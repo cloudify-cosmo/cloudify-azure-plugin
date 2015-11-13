@@ -46,15 +46,15 @@ def create_security_group(**_):
                 {
                     "name":"myNsRule",
                     "properties":{ 
-                       "description":"MyNSG",
-                       "protocol": "Tcp",
-                       "sourcePortRange":"*",
-                       "destinationPortRange":"*",
-                       "sourceAddressPrefix":"*",
-                       "destinationAddressPrefix":"*",
-                       "access":"Allow",
-                       "priority":"100",
-                       "direction":"Inbound"
+                       "description":constants.NSG_RULES_DESCRIPTION,
+                       "protocol": ctx.node.properties['security_group_protocol'],
+                       "sourcePortRange":ctx.node.properties['security_group_sourcePortRange'],
+                       "destinationPortRange":ctx.node.properties['security_group_destinationPortRange'],
+                       "sourceAddressPrefix":ctx.node.properties['security_group_sourceAddressPrefix'],
+                       "destinationAddressPrefix":ctx.node.properties['security_group_destinationAddressPrefix'],
+                       "access":ctx.node.properties['security_group_access'],
+                       "priority":ctx.node.properties['security_group_priority'],
+                       "direction":ctx.node.properties['security_group_direction']
 
                     }
                 }
