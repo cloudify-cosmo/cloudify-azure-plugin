@@ -91,7 +91,7 @@ def delete_current_security_group(**_):
     headers, location, subscription_id = auth.get_credentials()
     try:
         ctx.logger.info("Deleting Security Group: {0}".format(security_group_name))
-        security_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+security_group_name+'/providers/microsoft.network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version
+        security_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+security_group_name+'/providers/microsoft.network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version_security_group
         response_nsg = requests.delete(url=security_group_url, headers=headers)
         print(response_nsg.text)
     except:
