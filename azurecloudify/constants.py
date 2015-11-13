@@ -22,6 +22,7 @@ COMMON_REQ_PROPERTIES = ['subscription_id','location']
 
 api_version = '2015-05-01-preview'
 api_version_resource_group = '2015-01-01'
+api_version_security_group = '2015-06-15'
 storage_account_type = 'Standard_LRS'
 
 vnet_address_prefixes = ["10.1.0.0/16", "10.2.0.0/16"]
