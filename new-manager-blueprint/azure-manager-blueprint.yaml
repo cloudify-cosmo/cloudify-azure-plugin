@@ -101,6 +101,14 @@ inputs:
     type: string
     default: 'azuretest'
     
+  custom_script_path:
+    type: string
+    default: ''
+    
+  custom_script_command:
+    type: string
+    default: ''
+    
   security_group_priority: 
     type: string
     default: '100'
@@ -568,6 +576,24 @@ node_templates:
     relationships:
       - target: manager_vnet
         type: cloudify.azure.relationships.public_ip_connected_to_vnet
+      - target: azure_token
+        type: cloudify.azure.relationships.resource_depends_on_azure_token
+        
+  manager_custom_script:
+    type: cloudify.azure.nodes.CustomScript
+    properties:
+      location: { get_input: location}
+      subscription_id: { get_input: subscription_id}
+      client_id: { get_input: client_id}
+      tenant_id: { get_input: tenant_id}
+      aad_password: { get_input: aad_password}
+      use_external_resource: { get_input: use_external_resource}
+      custom_script_path: { get_input: custom_script_path}
+      custom_script_command: { get_input: custom_script_command}
+
+    relationships:
+      - target: manager_host
+        type: cloudify.azure.relationships.custom_script_connected_to_server
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
 
