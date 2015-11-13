@@ -267,6 +267,56 @@ node_types:
         delete: microsoft.azurecloudify.publicip.delete_public_ip
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.publicip.creation_validation
+        
+  cloudify.azure.nodes.CustomScript:
+    derived_from: cloudify.nodes.Root
+    properties:
+      use_external_resource:
+        description: >
+         Indicates whether to use external resource or not. Default value is false
+        type: boolean
+        default: false
+      subscription_id:
+        description: >
+          Indicates the subscription id required to create public ip address.
+        type: string
+        default: ''
+      location:
+        description: >
+         location where VM will be provisioned
+        type: string
+        default: 'West US'
+      client_id:
+        description: >
+          Indicates the user's client id
+        type: string
+        default: ''
+      tenant_id:
+        description: >
+          Indicates the user's tenant id
+        type: string
+        default: ''
+      aad_password:
+        description: >
+          Indicates the name of the virtual machine required to create network interface card
+        type: string
+        default: ''
+      custom_script_path:
+        description: >
+          Indicates the url/path of the file to be run as the custom script on the vm
+        type: string
+        default: ''
+      custom_script_command:
+        description: >
+          Indicates the terminal command used to run the custom script
+        type: string
+        default: ''
+
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        configure: microsoft.azurecloudify.extensions.create_custom_script
+      cloudify.interfaces.validation:
+        creation: microsoft.azurecloudify.extensions.creation_validation
 
   cloudify.azure.nodes.StorageAccount:
     derived_from: cloudify.nodes.Root
@@ -604,6 +654,9 @@ relationships:
           inputs:
             azure_config:
               default: {}
+              
+   cloudify.azure.relationships.custom_script_connected_to_server:
+    derived_from: cloudify.relationships.connected_to
 
    cloudify.azure.relationships.resource_depends_on_azure_token:
     derived_from: cloudify.relationships.depends_on
