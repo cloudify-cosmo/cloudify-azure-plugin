@@ -36,7 +36,7 @@ def create_security_group(**_):
         random_suffix_value = utils.random_suffix_generator()
         security_group_name = constants.SECURITY_GROUP_PREFIX+random_suffix_value
 
-    security_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version
+    security_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version
     try:
         ctx.logger.info("Creating a new security group: {0}".format(security_group_name))
         security_group_params = json.dumps({
