@@ -55,7 +55,7 @@ def create_security_group(**_):
                 {
                     "name":"myNsRule",
                     "properties":{ 
-                       "description":constants.NSG_RULES_DESCRIPTION,
+                       "description": "desc",
                        "protocol": protocol,
                        "sourcePortRange": sourcePortRange,
                        "destinationPortRange": destinationPortRange,
