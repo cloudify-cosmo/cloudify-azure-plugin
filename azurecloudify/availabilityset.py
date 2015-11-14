@@ -102,4 +102,20 @@ def _validate_node_properties(key, ctx_node_properties):
         
         
 def _get_availabilty_set_name(availability_set_name):  
-    
+    ctx.logger.info("In _get_availability_set_name looking for {0} ".format(availability_set_name))
+    headers, location, subscription_id = auth.get_credentials()
+
+    if constants.RESOURCE_GROUP_KEY in ctx.instance.runtime_properties:
+        resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+    else:
+        raise RecoverableError("{} is not in availability set runtime_properties yet".format(constants.RESOURCE_GROUP_KEY))
+
+    url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/availabilitySets?api-version='+constants.api_version
+
+    response_list = requests.get(url, headers=headers)
+    ctx.logger.info("availability set response_list.text {0} ".format(response_list.text))
+    if availability_set_name in response_list.text:
+        return True
+    else:
+        ctx.logger.info("Availability Set {0} does not exist".format(availability_set_name))
+        return False
