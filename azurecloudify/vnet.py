@@ -19,6 +19,7 @@ import sys
 import os
 import auth
 from resourcegroup import *
+import subnet
 import utils
 from cloudify.exceptions import NonRecoverableError, RecoverableError
 from cloudify import ctx
@@ -95,11 +96,7 @@ def set_security_group_details(azure_config, **kwargs):
 @operation
 def set_subnet_details(azure_config, **kwargs):
     ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-
-    for curr_key in ctx.target.instance.runtime_properties:
-        if curr_key.startswith(constants.SUBNET_KEY):
-            ctx.source.instance.runtime_properties[curr_key] = ctx.target.instance.runtime_properties[curr_key]
-            ctx.logger.info("{0} is {1}".format(curr_key, ctx.target.instance.runtime_properties[curr_key]))
+    subnet.set_subnets_from_runtime("vnet.set_subnet_details", ctx.source.instance.runtime_properties, ctx.target.instance.runtime_properties, False)
 
 
 def _validate_node_properties(key, ctx_node_properties):

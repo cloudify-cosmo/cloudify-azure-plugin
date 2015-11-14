@@ -60,3 +60,13 @@ def set_dependent_resources_names(azure_config, **kwargs):
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
+
+
+def set_subnets_from_runtime(caller_string, source_runtime_properties, target_runtime_properties, use_only_first_subnet=True):
+    for curr_key in target_runtime_properties:
+        if curr_key.startswith(constants.SUBNET_KEY):
+            source_runtime_properties[curr_key] = target_runtime_properties[curr_key]
+            ctx.logger.info("{0}:{1} is {2}".format(caller_string, curr_key, source_runtime_properties[curr_key]))
+            if use_only_first_subnet:
+                return source_runtime_properties[curr_key]
+    return "OK"

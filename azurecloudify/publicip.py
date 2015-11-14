@@ -22,6 +22,7 @@ import sys
 import os
 import utils
 from resourcegroup import *
+import subnet
 from cloudify.exceptions import NonRecoverableError,RecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation
@@ -85,9 +86,8 @@ def delete_current_public_ip(**_):
 def set_dependent_resources_names(azure_config, **kwargs):
     ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     ctx.source.instance.runtime_properties[constants.VNET_KEY] = ctx.target.instance.runtime_properties[constants.VNET_KEY]
-    #ctx.source.instance.runtime_properties[constants.SUBNET_KEY] = ctx.target.instance.runtime_properties[constants.SUBNET_KEY]
     ctx.logger.info("{0} is {1}".format(constants.VNET_KEY, ctx.target.instance.runtime_properties[constants.VNET_KEY]))
-
+    subnet.set_subnets_from_runtime("public.set_dependent_resources_names", ctx.source.instance.runtime_properties, ctx.target.instance.runtime_properties)
 
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:

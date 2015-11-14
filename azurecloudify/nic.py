@@ -173,8 +173,8 @@ def set_vnet_details(azure_config, **kwargs):
     ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     ctx.source.instance.runtime_properties[constants.VNET_KEY] = ctx.target.instance.runtime_properties[constants.VNET_KEY]
     ctx.logger.info("{0} is {1}".format(constants.VNET_KEY, ctx.target.instance.runtime_properties[constants.VNET_KEY]))
-    ctx.source.instance.runtime_properties[constants.SUBNET_KEY] = ctx.target.instance.runtime_properties[constants.SUBNET_KEY]
-    ctx.logger.info("{0} is {1}".format(constants.SUBNET_KEY, ctx.target.instance.runtime_properties[constants.SUBNET_KEY]))
+    current_subnet_name = subnet.set_subnets_from_runtime("nic.set_vnet_details", ctx.source.instance.runtime_properties, ctx.target.instance.runtime_properties)
+    ctx.source.instance.runtime_properties[constants.SUBNET_KEY] = current_subnet_name
 
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
