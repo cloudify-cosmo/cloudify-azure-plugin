@@ -29,14 +29,6 @@ def create_security_group(**_):
         return
 
     headers, location, subscription_id = auth.get_credentials()
-    protocol =  ctx.node.properties['security_group_protocol']
-    sourcePortRange = ctx.node.properties['security_group_sourcePortRange']
-    destinationPortRange = ctx.node.properties['security_group_destinationPortRange']
-    sourceAddressPrefix = ctx.node.properties['security_group_sourceAddressPrefix']
-    destinationAddressPrefix = ctx.node.properties['security_group_destinationAddressPrefix']
-    access = ctx.node.properties['security_group_access']
-    priority = ctx.node.properties['security_group_priority']
-    direction = ctx.node.properties['security_group_direction']
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     if constants.SECURITY_GROUP_KEY in ctx.instance.runtime_properties:
         security_group_name = ctx.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
@@ -45,6 +37,15 @@ def create_security_group(**_):
         security_group_name = constants.SECURITY_GROUP_PREFIX+random_suffix_value
 
     security_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version
+    protocol =  ctx.node.properties['security_group_protocol']
+    sourcePortRange = ctx.node.properties['security_group_sourcePortRange']
+    destinationPortRange = ctx.node.properties['security_group_destinationPortRange']
+    sourceAddressPrefix = ctx.node.properties['security_group_sourceAddressPrefix']
+    destinationAddressPrefix = ctx.node.properties['security_group_destinationAddressPrefix']
+    access = ctx.node.properties['security_group_access']
+    priority = ctx.node.properties['security_group_priority']
+    direction = ctx.node.properties['security_group_direction']
+    
     try:
         ctx.logger.info("Creating a new security group: {0}".format(security_group_name))
         security_group_params = json.dumps({
