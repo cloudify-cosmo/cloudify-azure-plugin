@@ -51,10 +51,10 @@ def create_security_group(**_):
         security_group_params = json.dumps({
         "location": location,
         "properties": {
-            "securityRules":[
+            "securityRules": [
                 {
                     "name":"myNsRule",
-                    "properties":{ 
+                    "properties": { 
                        "description": "desc",
                        "protocol": protocol,
                        "sourcePortRange": sourcePortRange,
