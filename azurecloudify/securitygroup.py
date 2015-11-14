@@ -29,6 +29,14 @@ def create_security_group(**_):
         return
 
     headers, location, subscription_id = auth.get_credentials()
+    protocol =  ctx.node.properties['security_group_protocol']
+    sourcePortRange = ctx.node.properties['security_group_sourcePortRange']
+    destinationPortRange = ctx.node.properties['security_group_destinationPortRange']
+    sourceAddressPrefix = ctx.node.properties['security_group_sourceAddressPrefix']
+    destinationAddressPrefix = ctx.node.properties['security_group_destinationAddressPrefix']
+    access = ctx.node.properties['security_group_access']
+    priority = ctx.node.properties['security_group_priority']
+    direction = ctx.node.properties['security_group_direction']
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     if constants.SECURITY_GROUP_KEY in ctx.instance.runtime_properties:
         security_group_name = ctx.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
@@ -47,14 +55,14 @@ def create_security_group(**_):
                     "name":"myNsRule",
                     "properties":{ 
                        "description":constants.NSG_RULES_DESCRIPTION,
-                       "protocol": ctx.node.properties['security_group_protocol'],
-                       "sourcePortRange":ctx.node.properties['security_group_sourcePortRange'],
-                       "destinationPortRange":ctx.node.properties['security_group_destinationPortRange'],
-                       "sourceAddressPrefix":ctx.node.properties['security_group_sourceAddressPrefix'],
-                       "destinationAddressPrefix":ctx.node.properties['security_group_destinationAddressPrefix'],
-                       "access":ctx.node.properties['security_group_access'],
-                       "priority":ctx.node.properties['security_group_priority'],
-                       "direction":ctx.node.properties['security_group_direction']
+                       "protocol": protocol,
+                       "sourcePortRange": sourcePortRange,
+                       "destinationPortRange": destinationPortRange,
+                       "sourceAddressPrefix": sourceAddressPrefix,
+                       "destinationAddressPrefix": destinationAddressPrefix,
+                       "access": access,
+                       "priority": priority,
+                       "direction": direction
 
                     }
                 }
