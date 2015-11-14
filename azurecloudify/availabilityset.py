@@ -110,7 +110,7 @@ def _get_availabilty_set_name(availability_set_name):
     else:
         raise RecoverableError("{} is not in availability set runtime_properties yet".format(constants.RESOURCE_GROUP_KEY))
 
-    url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/availabilitySets?api-version='+constants.api_version
+    url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/availabilitySets?api-version='+constants.api_version
 
     response_list = requests.get(url, headers=headers)
     ctx.logger.info("availability set response_list.text {0} ".format(response_list.text))
