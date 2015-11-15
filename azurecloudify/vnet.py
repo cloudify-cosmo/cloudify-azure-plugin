@@ -50,13 +50,14 @@ def create_vnet(**_):
         vnet_name = ctx.instance.runtime_properties[constants.VNET_KEY]
      else:
         random_suffix_value = utils.random_suffix_generator()
-        vnet_name = constants.SECURITY_GROUP_PREFIX+random_suffix_value
-
-    check_vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
-    create_vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
-    vnet_json = _get_vnet_json(vnet_name, location, subscription_id, resource_group_name)
-    vnet_params = json.dumps(vnet_json)
-    utils.check_or_create_resource(headers, vnet_name, vnet_params, check_vnet_url, create_vnet_url, 'VNET')
+        vnet_name = constants.VNET_PREFIX+random_suffix_value
+    try:
+        ctx.logger.info("Creating a new vnet: {0}".format(vnet_name))
+        check_vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
+        create_vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
+        vnet_json = _get_vnet_json(vnet_name, location, subscription_id, resource_group_name)
+        vnet_params = json.dumps(vnet_json)
+        utils.check_or_create_resource(headers, vnet_name, vnet_params, check_vnet_url, create_vnet_url, 'VNET')
 
     ctx.logger.info("{0} is {1}".format(constants.VNET_KEY, vnet_name))
 
