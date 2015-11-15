@@ -22,7 +22,6 @@ COMMON_REQ_PROPERTIES = ['subscription_id','location']
 
 api_version = '2015-05-01-preview'
 api_version_resource_group = '2015-01-01'
-api_version_security_group = '2015-06-15'
 api_version_network = '2015-06-15'
 storage_account_type = 'Standard_LRS'
 
