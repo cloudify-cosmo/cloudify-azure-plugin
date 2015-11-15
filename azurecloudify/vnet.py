@@ -80,7 +80,7 @@ def delete_current_vnet(**_):
 
     try:
         ctx.logger.info("Deleting the virtual network: {0}".format(vnet_name))
-        vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
+        vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version_network
         response_vnet = requests.delete(url=vnet_url, headers=headers)
         if response_vnet.text:
             ctx.logger.info("Deleted VNET {0}, response is: {1}".format(vnet_name, response_vnet.text))
@@ -116,7 +116,7 @@ def _get_vnet_name(vnet_name):
     else:
         raise RecoverableError("{0} is not in vnet runtime_properties yet".format(constants.RESOURCE_GROUP_KEY))
     headers, location, subscription_id = auth.get_credentials()
-    url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualnetworks?api-version='+constants.api_version
+    url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualnetworks?api-version='+constants.api_version_network
     response_list = requests.get(url, headers=headers)
     ctx.logger.info("VNET response_list.text {0}".format(response_list.text))
     if vnet_name in response_list.text:
