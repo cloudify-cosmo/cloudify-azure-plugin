@@ -51,6 +51,7 @@ def create_vnet(**_):
      else:
         random_suffix_value = utils.random_suffix_generator()
         vnet_name = constants.VNET_PREFIX+random_suffix_value
+        
     try:
         ctx.logger.info("Creating a new vnet: {0}".format(vnet_name))
         check_vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version
