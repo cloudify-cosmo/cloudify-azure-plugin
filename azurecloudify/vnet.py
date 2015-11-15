@@ -58,9 +58,10 @@ def create_vnet(**_):
         create_vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version_network
         vnet_json = _get_vnet_json(vnet_name, location, subscription_id, resource_group_name)
         vnet_params = json.dumps(vnet_json)
+        response_vnet = requests.put(url=check_vnet_url, data=vnet_params, headers=headers)
         utils.check_or_create_resource(headers, vnet_name, vnet_params, check_vnet_url, create_vnet_url, 'VNET')
-        
-    ctx.logger.info("{0} is {1}".format(constants.VNET_KEY, vnet_name))
+    except:    
+        ctx.logger.info("{0} is {1}".format(constants.VNET_KEY, vnet_name))
 
 
 @operation
