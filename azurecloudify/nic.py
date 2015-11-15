@@ -126,8 +126,8 @@ def create_nic(**_):
 
     ctx.logger.info("Creating new network interface card: {0}".format(nic_name))
     network_str, nic_params = _get_nic_params(current_subnet_name, location, resource_group_name, subscription_id, vnet_name)
-    check_nic_url = constants.azure_url+network_str+"/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
-    create_nic_url = constants.azure_url+network_str+"/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
+    check_nic_url = constants.azure_url+network_str+"/networkInterfaces/"+nic_name+"?api-version="+constants.api_version_network
+    create_nic_url = constants.azure_url+network_str+"/networkInterfaces/"+nic_name+"?api-version="+constants.api_version_network
     utils.check_or_create_resource(headers, vnet_name, nic_params, check_nic_url, create_nic_url, 'NIC', True)
 
     set_nic_private_ip()
