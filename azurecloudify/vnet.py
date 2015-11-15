@@ -46,9 +46,9 @@ def create_vnet(**_):
 
     headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-    if constants.VNET_KEY in ctx.instance.runtime_properties:
-        vnet_name = ctx.instance.runtime_properties[constants.VNET_KEY]
-     else:
+    if constants.VNET_KEY not in ctx.instance.runtime_properties:
+        ctx.instance.runtime_properties[constants.VNET_KEY] = vnet_name 
+    else:
         random_suffix_value = utils.random_suffix_generator()
         vnet_name = constants.VNET_PREFIX+random_suffix_value
         
