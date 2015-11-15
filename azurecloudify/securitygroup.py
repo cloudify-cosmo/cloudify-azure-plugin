@@ -36,7 +36,7 @@ def create_security_group(**_):
         random_suffix_value = utils.random_suffix_generator()
         security_group_name = constants.SECURITY_GROUP_PREFIX+random_suffix_value
 
-    security_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version
+    security_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version_network
     protocol =  ctx.node.properties['security_group_protocol']
     sourcePortRange = ctx.node.properties['security_group_sourcePortRange']
     destinationPortRange = ctx.node.properties['security_group_destinationPortRange']
@@ -101,7 +101,7 @@ def delete_current_security_group(**_):
     headers, location, subscription_id = auth.get_credentials()
     try:
         ctx.logger.info("Deleting Security Group: {0}".format(security_group_name))
-        security_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+security_group_name+'/providers/microsoft.network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version_security_group
+        security_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+security_group_name+'/providers/microsoft.network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version_network
         response_nsg = requests.delete(url=security_group_url, headers=headers)
         print(response_nsg.text)
     except:
