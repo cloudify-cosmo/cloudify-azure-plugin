@@ -96,6 +96,7 @@ def delete_current_vnet(**_):
 
 @operation
 def set_security_group_details(azure_config, **kwargs):
+    ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     ctx.source.instance.runtime_properties[constants.SECURITY_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
 
 
