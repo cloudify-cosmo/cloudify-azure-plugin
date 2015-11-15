@@ -49,8 +49,8 @@ def create_public_ip(**_):
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY] = public_ip_name
 
-    check_public_ip_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
-    create_public_ip_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
+    check_public_ip_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version_network
+    create_public_ip_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version_network
     public_ip_params = _get_public_ip_params(location, public_ip_name)
     utils.check_or_create_resource(headers, public_ip_name, public_ip_params, check_public_ip_url, create_public_ip_url, 'public_ip')
 
@@ -74,7 +74,7 @@ def delete_current_public_ip(**_):
 
     try:
         ctx.logger.info("Deleting Public IP")
-        public_ip_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/ publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version
+        public_ip_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/ publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version_network
         response_pip = requests.delete(url=public_ip_url, headers=headers)
         print(response_pip.text)
 
@@ -100,7 +100,7 @@ def _get_public_ip_name(public_ip_name):
     else:
         raise RecoverableError("{0} is not in public ip runtime_properties yet.".format(constants.RESOURCE_GROUP_KEY))
     headers, location, subscription_id = auth.get_credentials()
-    pip_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses?api-version='+constants.api_version
+    pip_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses?api-version='+constants.api_version_network
     response_get_pip = requests.get(url=pip_url,headers=headers)
     if public_ip_name in response_get_pip.text:
         return True
