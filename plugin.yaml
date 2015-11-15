@@ -558,7 +558,7 @@ relationships:
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
         preconfigure:
-          implementation: microsoft.azurecloudify.vnet.set_dependent_resources_names
+          implementation: microsoft.azurecloudify.vnet.set_subnet_details
           inputs:
             azure_config:
               default: {}
