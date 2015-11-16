@@ -77,6 +77,9 @@ SUBNET_PREFIX = 'subnet_'
 CUSTOM_SCRIPT_KEY = 'custom_script_key_name'
 CUSTOM_SCRIPT_PREFIX = 'custom_script_'
 
+DATA_DISK_KEY = 'data_disk_key_name'
+DATA_DISK_PREFIX = 'data_disk_'
+
 VM_KEY = 'vm_key_name'
 VM_PREFIX = 'vm_prefix'
 
