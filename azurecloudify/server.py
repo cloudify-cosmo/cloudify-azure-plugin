@@ -241,6 +241,27 @@ def _set_network_json(vm_json, subscription_id, resource_group_name):
                 interface_properties['primary'] = 'false'
             curr_interface['properties'] = interface_properties
             network_interfaces.append(curr_interface)
+            
+def _set_data_disk_json(vm_json):
+    vm_properties = vm_json['properties']
+    storage_profile = vm_properties['storageProfile']
+    data_disks = storage_profile['dataDisks']
+    storage_account_name = ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
+    for curr_key in ctx.instance.runtime_properties:
+        if 1: #add condition
+            disk_name = constants.DATA_DISK_PREFIX+utils.random_suffix_generator()
+            vhd_uri = "https://"+storage_account_name+".blob.core.windows.net/vhds/"+disk_name+".vhd"
+            curr_disk = {
+                "lun": 0,
+                "name": disk_name,
+                "createOption": "Empty",
+                "vhd": {
+                    "uri": vhd_uri
+                    },
+                "caching": "None",
+                "diskSizeGB": 1023
+            }
+            data_disks.append(curr_disk)
 
 
 def _get_vm_base_json(location, random_suffix_value, resource_group_name, storage_account_name, subscription_id,
