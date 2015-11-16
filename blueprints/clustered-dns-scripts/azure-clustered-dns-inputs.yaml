@@ -1,0 +1,43 @@
+subscription_id: '6f680d2a-6047-4286-876f-c0ec0b1ff1d0'
+location: 'westus'
+vm_prefix_ubuntu: 'ubuntumdgiga'
+vm_prefix_centos: 'centosmdgiga'
+vm_size_ubuntu: 'Standard_A2'
+vm_size_centos: 'Standard_A2'
+image_reference_offer_ubuntu: 'UbuntuServer'
+image_reference_offer_centos: 'CentOS'
+image_reference_publisher_ubuntu: 'Canonical'
+image_reference_publisher_centos: 'OpenLogic'
+image_reference_sku_ubuntu: '12.04.2-LTS'
+image_reference_sku_ubuntu: '7.0'
+dns_server_domain_name: 'giga.org'
+dns_server_domain_netowork: '192.168.0.0./20'
+client_id: '4de44750-2c58-407e-8504-08d9c2e91254'
+use_external_resource: False
+tenant_id: 'e8f83ddf-4dee-4e1d-b77a-ff3ddaaf52d8'
+existing_resource_group_name: ''
+existing_storage_account_name: ''
+existing_vnet_name: ''
+existing_nic_name: ''
+existing_public_ip_name: ''
+security_group_protocol: ''
+security_group_access: ''
+security_group_priority: ''
+security_group_direction: ''
+security_group_sourcePortRange: ''
+security_group_destinationPortRange: ''
+security_group_sourceAddressPrefix: ''
+security_group_destinationAddressPrefix: ''
+ssh_username: 'azuretest'
+aad_password: 'Maryland123!'
+key_data:  |
+   ---- BEGIN SSH2 PUBLIC KEY ----
+   Comment: "rsa-key-20150804"
+
+   AAAAB3NzaC1yc2EAAAABJQAAAQEA0Y5tAjA2C9xPLRMMfU37J3kGUYQzRAbPu2gN
+   9HKKB+/bkzEE+W9zysYgL1vu3heqUewQlnMz2G6gfDca+6FmitMpZdz8E0ZYUy4M
+   CG+fWs/6xT92OsVLAi2VRgQlyGqOD+KJEZdMnIbbWyPzaLC0yaUDEUNWe2hRNkr0
+   daRY21UCCZG9+zZNR4ndJWxjJyF4Om1G4R5gruickOs5yECbgEMISpENWmXATc6U
+   UsVhRznp4u6iBusZO3ilH7B3YbDyGhXs4X/TcwBj6zuWaJsHXzorTL621g4Ppp4I
+   g6QVQSrBpNBe2JCjou6tlGSBFm7vApUwAYaMStDzaIcLck/nUQ==
+   ---- END SSH2 PUBLIC KEY ----
