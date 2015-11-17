@@ -38,7 +38,7 @@ def creation_validation(**_):
 
 
 def _get_nic_params(current_subnet_name, location, resource_group_name, subscription_id, vnet_name):
-    network_str = "/subscriptions/{}/resourceGroups/{}/providers/Microsoft.Network/".format(subscription_id,
+    network_str = "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Network/".format(subscription_id,
                                                                                             resource_group_name)
     nic_json = {
         "location": location,
@@ -75,7 +75,7 @@ def _get_nic_params(current_subnet_name, location, resource_group_name, subscrip
             "id": "/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/Microsoft.Network/networkSecurityGroups/"+security_group_name
         }
         security_group_properties['networkSecurityGroup'] = security_group_json
-    ctx.logger.info("nic_json : {}".format(nic_json))
+    ctx.logger.info("nic_json : {0}".format(nic_json))
     nic_params = json.dumps(nic_json)
     return network_str, nic_params
 
@@ -84,13 +84,13 @@ def set_nic_private_ip():
     if constants.CREATE_RESPONSE in ctx.instance.runtime_properties:
         response_nic_json = ctx.instance.runtime_properties[constants.CREATE_RESPONSE]
         nic_root_properties = response_nic_json[u'properties']
-        ctx.logger.info("nic_root_properties : {}".format(str(nic_root_properties)))
+        ctx.logger.info("nic_root_properties : {0}".format(str(nic_root_properties)))
         ip_configurations = nic_root_properties[u'ipConfigurations'][0]
-        ctx.logger.info("nic ip_configurations0 : {}".format(str(ip_configurations)))
+        ctx.logger.info("nic ip_configurations0 : {0}".format(str(ip_configurations)))
         curr_properties = ip_configurations[u'properties']
-        ctx.logger.info("nic curr_properties : {}".format(str(curr_properties)))
+        ctx.logger.info("nic curr_properties : {0}".format(str(curr_properties)))
         private_ip_address = curr_properties[u'privateIPAddress']
-        ctx.logger.info("nic private_ip_address : {}".format(str(private_ip_address)))
+        ctx.logger.info("nic private_ip_address : {0}".format(str(private_ip_address)))
         ctx.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY] = str(private_ip_address)
 
 
