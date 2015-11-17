@@ -619,6 +619,8 @@ node_templates:
     relationships:
       - target: manager_public_ip
         type: cloudify.azure.relationships.nic_connected_to_public_ip
+      - target: manager_security_group
+        type: cloudify.azure.relationships.nic_connected_to_security_group       
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
   
