@@ -1,10 +1,9 @@
-tosca_definitions_version: cloudify_dsl_1_1
+tosca_definitions_version: cloudify_dsl_1_2
 
 imports:
-  - http://www.getcloudify.org/spec/cloudify/3.2.1/types.yaml
+  - http://www.getcloudify.org/spec/cloudify/3.3m6/types.yaml
   - https://raw.githubusercontent.com/cloudify-cosmo/cloudify-azure-plugin/master/plugin.yaml
-  - http://www.getcloudify.org/spec/fabric-plugin/1.2.1/plugin.yaml
-  
+
 inputs:
   
   subscription_id:
@@ -62,10 +61,6 @@ inputs:
   dns_server_domain_network:
     description: The private network for your domain
     type: String
-
-  use_external_resource:
-    type: boolean
-    default: false
     
   existing_security_group_name:
     type: string
@@ -75,7 +70,11 @@ inputs:
     type: string
     default: ''
 
-  existing_vnet_name:
+  clustered_dns_vnet_name:
+    type: string
+    default: ''
+
+  clustered_dns_subnet_name:
     type: string
     default: ''
 
@@ -116,15 +115,14 @@ inputs:
     default: 'azuretest'
     
 
-node_types:
+node_templates:
 
-  Dns.azure.nodes.Server:
-    derived_from: cloudify.nodes.Compute
-    
+  dns_host:
+    type: cloudify.azure.nodes.Server    
     properties:
-      image_reference_offer_ubuntu: { get_input: image_reference_offer}
-      image_reference_publisher_ubuntu: { get_input: image_reference_publisher}
-      image_reference_sku_ubuntu: { get_input: image_reference_sku}
+      image_reference_offer: { get_input: image_reference_offer_ubuntu}
+      image_reference_publisher: { get_input: image_reference_publisher_ubuntu}
+      image_reference_sku: { get_input: image_reference_sku_ubuntu}
       vm_prefix_ubuntu: { get_input: vm_prefix}      
       vm_size_ubuntu: { get_input: vm_size}
       key_data: { get_input: key_data}
@@ -134,36 +132,42 @@ node_types:
       tenant_id: { get_input: tenant_id}
       ssh_username: { get_input: ssh_username}
       aad_password: { get_input: aad_password}
-      install_agent: false
+    instances: 2
+    relationships:
+      - target: dns_nic
+        type: cloudify.azure.relationships.server_connected_to_nic
+      - target: clustered_dns_storage_account
+        type: cloudify.azure.relationships.server_connected_to_storage_account
+      - target: azure_token
+        type: cloudify.azure.relationships.resource_depends_on_azure_token
+      - target: clustered_dns_resource_group        
+        type: cloudify.azure.relationships.resource_contained_in_resource_group
 
 
-    interfaces:
-      cloudify.interfaces.lifecycle:
-        configure: microsoft.blueprints.clustered-dns-scripts.dns_cloudify.
-        delete: microsoft.azurecloudify.securitygroup.delete_security_group
-      cloudify.interfaces.validation:
-        creation: microsoft.blueprints.clustered-dns-scripts.dns_cloudify.    
-
-
-  Pen.azure.nodes.Server:
-     derived_from: cloudify.nodes.Compute
-
-     properties:
-
-     interfaces:
-      cloudify.interfaces.lifecycle:
-        configure: microsoft.blueprints.clustered-dns-scripts.pen_cloudify.
-        delete: microsoft.azurecloudify.securitygroup.delete_security_group
-      cloudify.interfaces.validation:
-        creation: microsoft.blueprints.clustered-dns-scripts.pen_cloudify.    
-    
-
-  azure_configuration_node:
-    derived_from: cloudify.nodes.Root
+  pen_host:
+    type: cloudify.azure.nodes.Server
     properties:
-      azure_config: {}  
-
-node_templates:
+      image_reference_offer: { get_input: image_reference_offer_ubuntu}
+      image_reference_publisher: { get_input: image_reference_publisher_ubuntu}
+      image_reference_sku: { get_input: image_reference_sku_ubuntu}
+      vm_prefix_ubuntu: { get_input: vm_prefix}
+      vm_size_ubuntu: { get_input: vm_size}
+      key_data: { get_input: key_data}
+      subscription_id: { get_input: subscription_id}
+      location: { get_input: location }
+      client_id: { get_input: client_id}
+      tenant_id: { get_input: tenant_id}
+      ssh_username: { get_input: ssh_username}
+      aad_password: { get_input: aad_password}
+    relationships:
+      - target: pen_nic
+        type: cloudify.azure.relationships.server_connected_to_nic
+      - target: clustered_dns_storage_account
+        type: cloudify.azure.relationships.server_connected_to_storage_account
+      - target: azure_token
+        type: cloudify.azure.relationships.resource_depends_on_azure_token
+      - target: clustered_dns_resource_group
+        type: cloudify.azure.relationships.resource_contained_in_resource_group
 
   azure_token:
     type: cloudify.azure.nodes.azure_token
@@ -172,7 +176,7 @@ node_templates:
       tenant_id: { get_input: tenant_id }
       aad_password: { get_input: aad_password }
 
-    dns_vnet:
+  clustered_dns_vnet:
     type: cloudify.azure.nodes.VNET
     properties:
       location: { get_input: location}
@@ -180,33 +184,18 @@ node_templates:
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
       aad_password: { get_input: aad_password}
-      use_external_resource: { get_input: use_external_resource}
-      existing_vnet_name: { get_input: existing_vnet_name}
+      use_external_resource: true
+      clustered_dns_vnet: { get_input: clustered_dns_vnet_name}
+      subnet: { get_input: clustered_dns_subnet_name}
       
     relationships:
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
-      - target: nodecellar_resource_group
+      - target: clustered_dns_resource_group
         type: cloudify.azure.relationships.vnet_contained_in_resource_group
 
-    pen_vnet:
-    type: cloudify.azure.nodes.VNET
-    properties:
-      location: { get_input: location}
-      subscription_id: { get_input: subscription_id}
-      client_id: { get_input: client_id}
-      tenant_id: { get_input: tenant_id}
-      aad_password: { get_input: aad_password}
-      use_external_resource: { get_input: use_external_resource}
-      existing_vnet_name: { get_input: existing_vnet_name}
 
-     relationships:
-      - target: azure_token
-        type: cloudify.azure.relationships.resource_depends_on_azure_token
-      - target: nodecellar_resource_group
-        type: cloudify.azure.relationships.vnet_contained_in_resource_group
-
-    pen_nic:
+  pen_nic:
     type: cloudify.azure.nodes.NIC
     properties:
       location: { get_input: location}
@@ -222,7 +211,7 @@ node_templates:
         type: cloudify.azure.relationships.nic_connected_to_public_ip
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
-      - target: nodecellar_resource_group
+      - target: clustered_dns_resource_group
         type: cloudify.azure.relationships.resource_contained_in_resource_group
 
   dns_nic:
@@ -237,15 +226,15 @@ node_templates:
       existing_nic_name: { get_input: existing_nic_name}
       
     relationships:
-      - target: mongod_vnet
+      - target: clustered_dns_subnet
         type: cloudify.azure.relationships.nic_connected_to_vnet
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
-      - target: nodecellar_resource_group
+      - target: clustered_dns_resource_group
         type: cloudify.azure.relationships.resource_contained_in_resource_group
 
-   pen_public_ip:
-   type: cloudify.azure.nodes.PublicIP
+  pen_public_ip:
+    type: cloudify.azure.nodes.PublicIP
     properties:
       location: { get_input: location}
       subscription_id: { get_input: subscription_id}
@@ -254,16 +243,16 @@ node_templates:
       aad_password: { get_input: aad_password}
       use_external_resource: { get_input: use_external_resource}
       existing_public_ip_name: { get_input: existing_public_ip_name}
-      
+
     relationships:
-      - target: nodejs_vnet
+      - target: clustered_dns_subnet
         type: cloudify.azure.relationships.public_ip_connected_to_vnet
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
-      - target: nodecellar_resource_group
+      - target: clustered_dns_resource_group
         type: cloudify.azure.relationships.resource_contained_in_resource_group
 
-    clustered_dns_resource_group:
+  clustered_dns_resource_group:
     type: cloudify.azure.nodes.ResourceGroup
     properties:
       location: { get_input: location}
@@ -271,14 +260,14 @@ node_templates:
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
       aad_password: { get_input: aad_password}
-      use_external_resource: { get_input: use_external_resource}
+      use_external_resource: true
       existing_resource_group_name: { get_input: existing_resource_group_name}
-      
+
     relationships:
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
-     
-    clustered_dns_storage_account:
+
+  clustered_dns_storage_account:
     type: cloudify.azure.nodes.StorageAccount
     properties:
       location: { get_input: location}
@@ -286,82 +275,11 @@ node_templates:
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
       aad_password: { get_input: aad_password}
-      use_external_resource: { get_input: use_external_resource}
+      use_external_resource: true
       existing_storage_account_name: { get_input: existing_storage_account_name}
-      
+
     relationships:
-      - target: nodecellar_resource_group
+      - target: clustered_dns_resource_group
         type: cloudify.azure.relationships.storage_account_contained_in_resource_group
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
-
-  host_dns:
-    type: Dns.azure.nodes.Server
-    relationships:
-    - target: 
-        type: cloudify.azure.relationships.server_connected_to_nic
-      - target: 
-        type: cloudify.azure.relationships.server_connected_to_storage_account
-      - target: 
-        type: cloudify.azure.relationships.resource_depends_on_azure_token
-      - target: 
-        type: cloudify.azure.relationships.resource_contained_in_resource_group
-
-  host_pen:
-    type: Pen.azure.nodes.Server
-    relationships:
-      - target: 
-        type: cloudify.azure.relationships.server_connected_to_nic
-      - target: 
-        type: cloudify.azure.relationships.server_connected_to_storage_account
-      - target: 
-        type: cloudify.azure.relationships.resource_depends_on_azure_token
-      - target: 
-        type: cloudify.azure.relationships.resource_contained_in_resource_group
-
- 
-
-  dns_server:
-    type: cloudify.nodes.Root
-    properties:
-    interfaces:
-      cloudify.interfaces.lifecycle:
-    relationships:
-
-
-  pen_server:
-    type: cloudify.nodes.Root
-    properties:
-    relationships:
-
-
-  azure_configuration:
-    type: azure_configuration_node
-    properties:
-      azure_config:
-       subscription_id: { get_input: subscription_id }
-       location: { get_input: location }
-       vm_size: { get_input: vm_size }
-       vm_prefix: { get_input: vm_prefix }       
-       image_reference_offer: { get_input: image_reference_offer}
-       image_reference_publisher: { get_input: image_reference_publisher}
-       image_reference_sku: { get_input: image_reference_sku}
-       client_id: { get_input: client_id }
-       tenant_id: { get_input: tenant_id }
-       ssh_username: { get_input: ssh_username }
-       aad_password: { get_input: aad_password }
-       use_external_resource: { get_input: use_external_resource }
-       existing_resource_group_name: { get_input: existing_resource_group_name }
-       existing_security_group_name: { get_input: existing_security_group_name }
-       existing_storage_account_name: { get_input: existing_storage_account_name }
-       existing_vnet_name: { get_input: existing_vnet_name }
-       existing_nic_name: { get_input: existing_nic_name }
-       existing_public_ip_name: { get_input: existing_public_ip_name }
-
-
-
-plugins:
-    cli:
-      executor: central_deployment_agent
-      install: false
-
