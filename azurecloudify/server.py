@@ -26,6 +26,7 @@ from cloudify.exceptions import NonRecoverableError,RecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation
 
+
 @operation
 def creation_validation(**_):
     for property_key in constants.VM_REQUIRED_PROPERTIES:
@@ -163,6 +164,7 @@ def _set_private_ip(check_if_private_exists):
         ctx.source.instance.runtime_properties['host_ip'] = vm_private_ip
 
         ctx.logger.info("host_ip is {0}".format(vm_private_ip))
+
 
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
@@ -317,3 +319,9 @@ def _get_vm_base_json(location, random_suffix_value, resource_group_name, storag
             }
         }
     }
+
+
+def create_a_vm(**_):
+    create_vm()
+
+

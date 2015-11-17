@@ -201,3 +201,9 @@ def _get_nic_key():
         curr_nic_key = "{0}{1}".format(curr_nic_key, constants.PUBLIC_IP_KEY)
 
     return curr_nic_key
+
+
+def create_a_nic(**_):
+    create_nic()
+
+

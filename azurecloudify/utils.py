@@ -151,3 +151,11 @@ def set_resource_name(get_resource_func, resource_desc,
 
     ctx.logger.info("resource_name_to_be_used_or_created is:{0}, type is:{1}".format(resource_name_to_be_used_or_created, resource_desc))
     return resource_name_to_be_used_or_created
+
+
+def validate_node_properties(required_properties, ctx_node_properties):
+    for property_key in required_properties:
+        if property_key not in ctx_node_properties:
+            raise NonRecoverableError('{0} is a required input. Unable to create.'.format(property_key))
+
+
