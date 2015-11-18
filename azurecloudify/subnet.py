@@ -54,8 +54,8 @@ def delete_subnet(**_):
 
 @operation
 def set_security_group_details(azure_config, **kwargs):
-    if constants.SECURITY_GROUP_KEY in ctx.target.instance.runtime_properties:
-        ctx.source.instance.runtime_properties[constants.SECURITY_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
+    ctx.source.instance.runtime_properties[constants.SECURITY_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
+
 
 @operation
 def set_resource_group_details(azure_config, **kwargs):
