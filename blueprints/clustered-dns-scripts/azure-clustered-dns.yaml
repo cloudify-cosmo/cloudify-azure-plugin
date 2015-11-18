@@ -137,6 +137,19 @@ node_templates:
       ssh_username: { get_input: ssh_username}
       aad_password: { get_input: aad_password}
     instances: 2
+    interfaces:
+       cloudify.interfaces.lifecycle:
+         preconfigure: microsoft.blueprints.install.sh
+         configure: microsoft.blueprints.configure.py
+         postconfigure: microsoft.blueprints.creatingZones.py
+         start:
+         stop:
+         delete:
+       cloudify.interfaces.validation:
+         creation: microsoft.blueprints.check_to_accept_user_network
+           inputs: 
+
+
     relationships:
       - target: dns_nic
         type: cloudify.azure.relationships.server_connected_to_nic
