@@ -128,7 +128,7 @@ def create_nic(**_):
     network_str, nic_params = _get_nic_params(current_subnet_name, location, resource_group_name, subscription_id, vnet_name)
     check_nic_url = constants.azure_url+network_str+"/networkInterfaces/"+nic_name+"?api-version="+constants.api_version_network
     create_nic_url = constants.azure_url+network_str+"/networkInterfaces/"+nic_name+"?api-version="+constants.api_version_network
-    utils.check_or_create_resource(headers, vnet_name, nic_params, check_nic_url, create_nic_url, 'NIC', True)
+    utils.check_or_create_resource(headers, nic_name, nic_params, check_nic_url, create_nic_url, 'NIC', True)
 
     set_nic_private_ip()
 
