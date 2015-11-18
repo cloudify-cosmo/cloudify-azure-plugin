@@ -40,10 +40,11 @@ destinationPortRange = 60000
 priority = 100
 nsg_rule_name='my_ns_rules'
 resource = 'https://management.core.windows.net/'
+path_to_azure_conf_key = 'azure_conf_file_path'
 path_to_azure_conf = '~/azure_config.json'
 path_to_local_azure_token_file = '/tmp/azure_token_file.json'
 
-RESOURCE_GROUP_REQUIRED_PROPERTIES=['location', 'subscription_id']
+RESOURCE_GROUP_REQUIRED_PROPERTIES = ['location', 'subscription_id']
 STORAGE_ACCOUNT_REQUIRED_PROPERTIES = ['location', 'subscription_id']
 VNET_REQUIRED_PROPERTIES = ['location', 'subscription_id']
 VM_REQUIRED_PROPERTIES = ['vm_prefix', 'image_reference_offer', 'image_reference_publisher', 'image_reference_sku', 'vm_size', 'subscription_id', 'key_data', 'location']
