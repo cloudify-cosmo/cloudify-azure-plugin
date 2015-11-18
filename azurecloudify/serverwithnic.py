@@ -39,7 +39,7 @@ def create_vm_and_nic(**_):
             _set_runtime_properties()
             create_vm()
         else:
-            raise RecoverableError("serverWithNic:create_vm_and_nic: NIC could not be created")
+            raise RecoverableError("serverWithNic:create_vm_and_nic: NIC is not ready")
 
 
 def _set_runtime_properties():
