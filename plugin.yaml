@@ -179,7 +179,12 @@ node_types:
         description: >
           Version of operating system
         type: string
-        default: 'UbuntuServer'        
+        default: 'UbuntuServer'  
+      data_disk_size_GB:
+        description: >
+          Storage capacity of external disk (optional) in GBs
+        type: string
+        default: '0'          
       key_data:
         description: >
            Indicates the ssh public-key data of the user
@@ -219,6 +224,35 @@ node_types:
       cloudify.interfaces.validation:
         creation:
           implementation: microsoft.azurecloudify.server.creation_validation
+
+
+  cloudify.azure.nodes.ServerWithNic:
+    derived_from: cloudify.azure.nodes.Server
+    properties:
+      use_external_resource:
+        description: >
+         Indicates whether to use external resource or not. Default value is false
+        type: boolean
+        default: false
+      existing_nic_name:
+        description: >
+         Indicates the name of existing network interface card
+        type: string
+        default: ''
+
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        configure:
+          implementation: microsoft.azurecloudify.serverwithnic.create_vm_and_nic
+        start:
+          implementation: microsoft.azurecloudify.serverwithnic.start_vm
+        stop:
+          implementation: microsoft.azurecloudify.serverwithnic.stop_vm
+        delete:
+          implementation: microsoft.azurecloudify.serverwithnic.delete_vm_and_nic
+      cloudify.interfaces.validation:
+        creation:
+          implementation: microsoft.azurecloudify.serverwithnic.creation_validation
 
 
   cloudify.azure.nodes.PublicIP:
@@ -548,7 +582,7 @@ relationships:
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
         preconfigure:
-          implementation: microsoft.azurecloudify.subnet.set_dependent_resources_names
+          implementation: microsoft.azurecloudify.subnet.set_resource_group_details
           inputs:
             azure_config:
               default: {}
@@ -558,7 +592,7 @@ relationships:
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
         preconfigure:
-          implementation: microsoft.azurecloudify.vnet.set_subnet_details
+          implementation: microsoft.azurecloudify.vnet.set_resource_group_details
           inputs:
             azure_config:
               default: {}
@@ -589,7 +623,7 @@ relationships:
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
         preconfigure:
-          implementation: microsoft.azurecloudify.vnet.set_security_group_details
+          implementation: microsoft.azurecloudify.subnet.set_security_group_details
           inputs:
             azure_config:
               default: {}

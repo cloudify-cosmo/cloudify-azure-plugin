@@ -22,9 +22,7 @@ import sys
 import os
 import auth
 import utils
-from resourcegroup import *
-from publicip import *
-from vnet import *
+import subnet
 from cloudify.exceptions import NonRecoverableError,RecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation
@@ -128,7 +126,7 @@ def create_nic(**_):
     network_str, nic_params = _get_nic_params(current_subnet_name, location, resource_group_name, subscription_id, vnet_name)
     check_nic_url = constants.azure_url+network_str+"/networkInterfaces/"+nic_name+"?api-version="+constants.api_version_network
     create_nic_url = constants.azure_url+network_str+"/networkInterfaces/"+nic_name+"?api-version="+constants.api_version_network
-    utils.check_or_create_resource(headers, vnet_name, nic_params, check_nic_url, create_nic_url, 'NIC', True)
+    utils.check_or_create_resource(headers, nic_name, nic_params, check_nic_url, create_nic_url, 'NIC', True)
 
     set_nic_private_ip()
 
@@ -159,15 +157,20 @@ def delete_current_nic(**_):
 
 @operation
 def set_security_group_details(azure_config, **kwargs):
-    ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     ctx.source.instance.runtime_properties[constants.SECURITY_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
+
+
+def _set_security_group_details(azure_config, **kwargs):
+    if constants.SECURITY_GROUP_KEY in ctx.target.instance.runtime_properties:
+        if constants.SECURITY_GROUP_KEY not in ctx.source.instance.runtime_properties:
+            set_security_group_details(azure_config)
 
 
 @operation
 def set_public_ip_details(azure_config, **kwargs):
     ctx.logger.info("{0} is {1}".format(constants.PUBLIC_IP_KEY, ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]))
     ctx.source.instance.runtime_properties[constants.PUBLIC_IP_KEY] = ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]
-
+    _set_security_group_details(azure_config)
 
 @operation
 def set_vnet_details(azure_config, **kwargs):
@@ -176,6 +179,7 @@ def set_vnet_details(azure_config, **kwargs):
     ctx.logger.info("{0} is {1}".format(constants.VNET_KEY, ctx.target.instance.runtime_properties[constants.VNET_KEY]))
     current_subnet_name = subnet.set_subnets_from_runtime("nic.set_vnet_details", ctx.source.instance.runtime_properties, ctx.target.instance.runtime_properties)
     ctx.source.instance.runtime_properties[constants.SUBNET_KEY] = current_subnet_name
+    _set_security_group_details(azure_config)
 
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
@@ -206,4 +210,7 @@ def _get_nic_key():
 def create_a_nic(**_):
     create_nic()
 
+
+def delete_a_nic(**_):
+    delete_nic()
 

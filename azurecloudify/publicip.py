@@ -88,6 +88,13 @@ def set_dependent_resources_names(azure_config, **kwargs):
     ctx.source.instance.runtime_properties[constants.VNET_KEY] = ctx.target.instance.runtime_properties[constants.VNET_KEY]
     ctx.logger.info("{0} is {1}".format(constants.VNET_KEY, ctx.target.instance.runtime_properties[constants.VNET_KEY]))
     subnet.set_subnets_from_runtime("public.set_dependent_resources_names", ctx.source.instance.runtime_properties, ctx.target.instance.runtime_properties)
+    _set_security_group_details(azure_config)
+
+
+def _set_security_group_details(azure_config, **kwargs):
+    if constants.SECURITY_GROUP_KEY in ctx.target.instance.runtime_properties:
+        ctx.source.instance.runtime_properties[constants.SECURITY_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
+
 
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:

@@ -51,10 +51,15 @@ def create_subnet(**_):
 def delete_subnet(**_):
     utils.clear_runtime_properties()
 
+
 @operation
-def set_dependent_resources_names(azure_config, **kwargs):
-    if constants.RESOURCE_GROUP_KEY not in ctx.source.instance.runtime_properties:
-        ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+def set_security_group_details(azure_config, **kwargs):
+    ctx.source.instance.runtime_properties[constants.SECURITY_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
+
+
+@operation
+def set_resource_group_details(azure_config, **kwargs):
+    ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
 
 
 def _validate_node_properties(key, ctx_node_properties):

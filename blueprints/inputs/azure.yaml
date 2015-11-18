@@ -17,6 +17,7 @@ ssh_username: 'azuretest'
 aad_password: 'mypassword'
 custom_script_command: ''
 custom_script_path: ''
+data_disk_size_GB: ''
 key_data:  |
    ---- BEGIN SSH2 PUBLIC KEY ----
    Comment: "rsa-key-20150804"
