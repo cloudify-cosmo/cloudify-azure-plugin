@@ -61,6 +61,10 @@ inputs:
   dns_server_domain_network:
     description: The private network for your domain
     type: String
+
+  use_external_resource:
+    type: boolean
+    default: ''
     
   existing_security_group_name:
     type: string
