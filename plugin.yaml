@@ -221,6 +221,35 @@ node_types:
           implementation: microsoft.azurecloudify.server.creation_validation
 
 
+  cloudify.azure.nodes.ServerWithNic:
+    derived_from: cloudify.azure.nodes.Server
+    properties:
+      use_external_resource:
+        description: >
+         Indicates whether to use external resource or not. Default value is false
+        type: boolean
+        default: false
+      existing_nic_name:
+        description: >
+         Indicates the name of existing network interface card
+        type: string
+        default: ''
+
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        configure:
+          implementation: microsoft.azurecloudify.serverwithnic.create_vm_and_nic
+        start:
+          implementation: microsoft.azurecloudify.serverwithnic.start_vm
+        stop:
+          implementation: microsoft.azurecloudify.serverwithnic.stop_vm
+        delete:
+          implementation: microsoft.azurecloudify.serverwithnic.delete_vm_and_nic
+      cloudify.interfaces.validation:
+        creation:
+          implementation: microsoft.azurecloudify.serverwithnic.creation_validation
+
+
   cloudify.azure.nodes.PublicIP:
 #   Later change to derived_from: cloudify.nodes.VirtualIP
     derived_from: cloudify.nodes.Root
