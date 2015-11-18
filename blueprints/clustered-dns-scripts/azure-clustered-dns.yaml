@@ -123,8 +123,8 @@ node_templates:
       image_reference_offer: { get_input: image_reference_offer_ubuntu}
       image_reference_publisher: { get_input: image_reference_publisher_ubuntu}
       image_reference_sku: { get_input: image_reference_sku_ubuntu}
-      vm_prefix_ubuntu: { get_input: vm_prefix}      
-      vm_size_ubuntu: { get_input: vm_size}
+      vm_prefix: { get_input: vm_prefix_ubuntu}      
+      vm_size: { get_input: vm_size_ubuntu}
       key_data: { get_input: key_data}
       subscription_id: { get_input: subscription_id}
       location: { get_input: location }
@@ -147,11 +147,11 @@ node_templates:
   pen_host:
     type: cloudify.azure.nodes.Server
     properties:
-      image_reference_offer: { get_input: image_reference_offer_ubuntu}
-      image_reference_publisher: { get_input: image_reference_publisher_ubuntu}
-      image_reference_sku: { get_input: image_reference_sku_ubuntu}
-      vm_prefix_ubuntu: { get_input: vm_prefix}
-      vm_size_ubuntu: { get_input: vm_size}
+      image_reference_offer: { get_input: image_reference_offer_centos}
+      image_reference_publisher: { get_input: image_reference_publisher_centos}
+      image_reference_sku: { get_input: image_reference_sku_centos}
+      vm_prefix: { get_input: vm_prefix_centos}
+      vm_size: { get_input: vm_size_centos}
       key_data: { get_input: key_data}
       subscription_id: { get_input: subscription_id}
       location: { get_input: location }
@@ -194,7 +194,6 @@ node_templates:
       - target: clustered_dns_resource_group
         type: cloudify.azure.relationships.vnet_contained_in_resource_group
 
-
   pen_nic:
     type: cloudify.azure.nodes.NIC
     properties:
@@ -226,7 +225,7 @@ node_templates:
       existing_nic_name: { get_input: existing_nic_name}
       
     relationships:
-      - target: clustered_dns_subnet
+      - target: clustered_dns_vnet
         type: cloudify.azure.relationships.nic_connected_to_vnet
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
@@ -245,7 +244,7 @@ node_templates:
       existing_public_ip_name: { get_input: existing_public_ip_name}
 
     relationships:
-      - target: clustered_dns_subnet
+      - target: clustered_dns_vnet
         type: cloudify.azure.relationships.public_ip_connected_to_vnet
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
