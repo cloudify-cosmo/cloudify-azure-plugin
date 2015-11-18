@@ -15,7 +15,7 @@
 
 # Built-in Imports
 import constants
-from cloudify.exceptions import NonRecoverableError,RecoverableError
+from cloudify.exceptions import RecoverableError
 import utils
 import server
 import nic
@@ -36,44 +36,39 @@ def create_vm_and_nic(**_):
     else:
         nic.create_a_nic()
         if constants.CREATE_RESPONSE in ctx.instance.runtime_properties:
-            ctx.instance.runtime_properties[constants.NIC_CREATE_RESPONSE] = True
-            del ctx.instance.runtime_properties[constants.CREATE_RESPONSE]
+            _set_runtime_properties()
             create_vm()
         else:
-            raise RecoverableError("serverwithnic:create_vm_and_nic: NIC could not be created")
+            raise RecoverableError("serverWithNic:create_vm_and_nic: NIC could not be created")
+
+
+def _set_runtime_properties():
+    ctx.instance.runtime_properties[constants.NIC_CREATE_RESPONSE] = True
+    del ctx.instance.runtime_properties[constants.CREATE_RESPONSE]
+    if constants.REQUEST_ACCEPTED in ctx.instance.runtime_properties:
+        del ctx.instance.runtime_properties[constants.REQUEST_ACCEPTED]
 
 
 def create_vm(**_):
     server.create_a_vm()
     if constants.CREATE_RESPONSE not in ctx.instance.runtime_properties:
-        raise RecoverableError("serverwithnic:create_vm: Virtual Machine is not ready yet")
+        raise RecoverableError("serverWithNic:create_vm: Virtual Machine is not ready yet")
 
 
 @operation
 def start_vm(**_):
-    print "xxxxx"
+    server.start_a_vm()
 
 
 @operation
 def stop_vm(**_):
-    print "xxxxx"
+    server.stop_a_vm()
 
 
 @operation
 def delete_virtual_machine(**_):
-    print "xxxxx"
-    # delete the nic/s ....
-
-
-@operation
-def set_storage_account_details(azure_config, **kwargs):
-    print "xxxxx"
-
-
-@operation
-def set_nic_details(azure_config, **kwargs):
-    print "xxxxx"
-
+    server.delete_a_virtual_machine()
+    nic.delete_a_nic()
 
 
 

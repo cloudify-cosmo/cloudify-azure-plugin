@@ -211,3 +211,6 @@ def create_a_nic(**_):
     create_nic()
 
 
+def delete_a_nic(**_):
+    delete_nic()
+

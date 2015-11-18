@@ -325,3 +325,15 @@ def create_a_vm(**_):
     create_vm()
 
 
+def start_a_vm(**_):
+    start_vm()
+
+
+def stop_a_vm(**_):
+    stop_vm()
+
+
+def delete_a_virtual_machine(**_):
+    delete_virtual_machine()
+
+
