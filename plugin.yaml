@@ -603,6 +603,16 @@ relationships:
           inputs:
             azure_config:
               default: {}
+              
+   cloudify.azure.relationships.nic_contained_in_resource_group:
+    derived_from: cloudify.relationships.contained_in
+    source_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        preconfigure:
+          implementation: microsoft.azurecloudify.nic.set_security_group_details
+          inputs:
+            azure_config:
+              default: {}            
 
    cloudify.azure.relationships.vnet_connected_to_subnet:
     derived_from: cloudify.relationships.connected_to
