@@ -179,7 +179,12 @@ node_types:
         description: >
           Version of operating system
         type: string
-        default: 'UbuntuServer'        
+        default: 'UbuntuServer'  
+      data_disk_size_GB:
+        description: >
+          Storage capacity of external disk (optional) in GBs
+        type: string
+        default: '0'          
       key_data:
         description: >
            Indicates the ssh public-key data of the user
