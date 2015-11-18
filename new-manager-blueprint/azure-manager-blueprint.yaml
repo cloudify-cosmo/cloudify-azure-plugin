@@ -617,8 +617,6 @@ node_templates:
       existing_nic_name: { get_input: existing_nic_name}
 
     relationships:
-      - target: manager_resource_group
-        type: cloudify.azure.relationships.nic_contained_in_resource_group
       - target: manager_public_ip
         type: cloudify.azure.relationships.nic_connected_to_public_ip
       - target: manager_security_group
