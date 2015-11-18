@@ -589,7 +589,7 @@ relationships:
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
         preconfigure:
-          implementation: microsoft.azurecloudify.vnet.set_security_group_details
+          implementation: microsoft.azurecloudify.subnet.set_dependent_resources_names
           inputs:
             azure_config:
               default: {}
