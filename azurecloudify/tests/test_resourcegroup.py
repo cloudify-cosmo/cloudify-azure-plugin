@@ -107,7 +107,8 @@ class TestResourceGroup(testtools.TestCase):
 
         current_ctx.set(ctx=ctx)
         ctx.logger.info("2. Deleting a resource_group")
-        self.assertIn([constants.OK_STATUS_CODE, constants.ACCEPTED_STATUS_CODE], resourcegroup.delete_resource_group(ctx=ctx))
+        result = resourcegroup.delete_resource_group(ctx=ctx)
+        self.assertIn(result, [constants.OK_STATUS_CODE, constants.ACCEPTED_STATUS_CODE])
 
         try:
             ctx[constants.RESOURCE_GROUP_KEY] = current_resource_group_name
@@ -131,14 +132,13 @@ class TestResourceGroup(testtools.TestCase):
         current_ctx.set(ctx=ctx)
         self.assertEqual(constants.ACCEPTED_STATUS_CODE, resourcegroup.delete_resource_group(ctx=ctx))
 
-        ctx.logger.info("----------------------------------")
-        ctx.logger.info("5. Deleting a resource_group")
         ctx.logger.info("Set USE_EXTERNAL_RESOURCE properties to False")
         ctx[constants.RESOURCE_GROUP_KEY] = current_resource_group_name
         ctx.node.properties[constants.USE_EXTERNAL_RESOURCE] = False
         ctx[constants.USE_EXTERNAL_RESOURCE] = False
         current_ctx.set(ctx=ctx)
-        self.assertIn([constants.OK_STATUS_CODE,constants.ACCEPTED_STATUS_CODE], resourcegroup.delete_resource_group(ctx=ctx))
+        result = resourcegroup.delete_resource_group(ctx=ctx)
+        self.assertIn(result, [constants.OK_STATUS_CODE,constants.ACCEPTED_STATUS_CODE])
 
         try:
             ctx[constants.RESOURCE_GROUP_KEY] = current_resource_group_name
