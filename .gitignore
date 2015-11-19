@@ -57,3 +57,7 @@ docs/_build/
 target/
 
 .idea/
+
+myTestsFolder/
+azurecloudify/tests/test_conf.py
+
