@@ -126,6 +126,8 @@ TENANT_ID_KEY = 'tenant_id'
 LOCATION_KEY = 'location'
 SUCCEEDED = 'Succeeded'
 FAILED = 'Failed'
-TIME_DELAY = 10
+TIME_DELAY = 15
 
 RESOURCE_GROUP = "resourcegroup"
+
+

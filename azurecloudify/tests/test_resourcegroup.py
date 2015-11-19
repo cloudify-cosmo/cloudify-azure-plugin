@@ -93,7 +93,6 @@ class TestResourceGroup(testtools.TestCase):
         ctx.logger.info("END resource_group create test")
 
     def test_delete_resource_group(self):
-        return
         ctx = self.mock_ctx('testdeletegroup')
         current_ctx.set(ctx=ctx)
         ctx.logger.info("==================================")
@@ -155,7 +154,6 @@ class TestResourceGroup(testtools.TestCase):
         ctx.logger.info("==================================")
 
     def test_conflict_resource_group(self):
-        return
         ctx = self.mock_ctx('conflictgroup')
         current_ctx.set(ctx=ctx)
         ctx.logger.info("==================================")
