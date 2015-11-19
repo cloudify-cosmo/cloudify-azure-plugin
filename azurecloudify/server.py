@@ -75,7 +75,7 @@ def create_a_vm(**_):
 
 @operation
 def start_vm(**_):
-    start_vm()
+    start_a_vm()
 
 
 def start_a_vm(**_):
