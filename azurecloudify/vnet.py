@@ -101,7 +101,7 @@ def set_security_group_details(azure_config, **kwargs):
 
 def _set_security_group_details(azure_config, **kwargs):
     if constants.SECURITY_GROUP_KEY in ctx.target.instance.runtime_properties:
-        set_security_group_details(azure_config)
+        ctx.source.instance.runtime_properties[constants.SECURITY_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
 
 
 @operation
@@ -109,6 +109,7 @@ def set_subnet_details(azure_config, **kwargs):
     ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     subnet.set_subnets_from_runtime("vnet.set_subnet_details", ctx.source.instance.runtime_properties, ctx.target.instance.runtime_properties, False)
     _set_security_group_details(azure_config)
+
 
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
