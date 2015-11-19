@@ -103,7 +103,7 @@ def _get_storage_account_name(storage_account_name):
     if constants.RESOURCE_GROUP_KEY in ctx.instance.runtime_properties:
         resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     else:
-        raise RecoverableError("{} is not in storage acoount runtime_properties yet".format(constants.RESOURCE_GROUP_KEY))
+        raise RecoverableError("{} is not in storage account runtime_properties yet".format(constants.RESOURCE_GROUP_KEY))
 
     url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts?api-version='+constants.api_version
 

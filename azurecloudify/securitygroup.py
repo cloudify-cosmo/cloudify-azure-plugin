@@ -37,14 +37,14 @@ def create_security_group(**_):
         security_group_name = constants.SECURITY_GROUP_PREFIX+random_suffix_value
 
     security_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version_network
-    protocol =  ctx.node.properties['security_group_protocol']
-    sourcePortRange = ctx.node.properties['security_group_sourcePortRange']
-    destinationPortRange = ctx.node.properties['security_group_destinationPortRange']
-    sourceAddressPrefix = ctx.node.properties['security_group_sourceAddressPrefix']
-    destinationAddressPrefix = ctx.node.properties['security_group_destinationAddressPrefix']
-    access = ctx.node.properties['security_group_access']
-    priority = ctx.node.properties['security_group_priority']
-    direction = ctx.node.properties['security_group_direction']
+    protocol = ctx.node.properties['security_group_protocol']
+    source_port_range = ctx.node.properties['security_group_sourcePortRange']
+    destination_port_range = ctx.node.properties['security_group_destinationPortRange']
+    source_address_prefix = ctx.node.properties['security_group_sourceAddressPrefix']
+    destination_address_prefix = ctx.node.properties['security_group_destinationAddressPrefix']
+    access_security_group = ctx.node.properties['security_group_access']
+    security_group_priority = ctx.node.properties['security_group_priority']
+    security_group_direction = ctx.node.properties['security_group_direction']
     
     try:
         ctx.logger.info("Creating a new security group: {0}".format(security_group_name))
@@ -57,13 +57,13 @@ def create_security_group(**_):
                     "properties": { 
                        "description": "desc",
                        "protocol": protocol,
-                       "sourcePortRange": sourcePortRange,
-                       "destinationPortRange": destinationPortRange,
-                       "sourceAddressPrefix": sourceAddressPrefix,
-                       "destinationAddressPrefix": destinationAddressPrefix,
-                       "access": access,
-                       "priority": priority,
-                       "direction": direction
+                       "sourcePortRange": source_port_range,
+                       "destinationPortRange": destination_port_range,
+                       "sourceAddressPrefix": source_address_prefix,
+                       "destinationAddressPrefix": destination_address_prefix,
+                       "access": access_security_group,
+                       "priority": security_group_priority,
+                       "direction": security_group_direction
 
                     }
                 }
