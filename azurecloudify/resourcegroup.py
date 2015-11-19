@@ -38,7 +38,7 @@ def create_resource_group(**_):
                                                   constants.RESOURCE_GROUP_PREFIX)
     if resource_group_name is None:
         # Using an existing resource group, so don't create anything
-        return
+        return constants.ACCEPTED_STATUS_CODE
 
     headers, location, subscription_id = auth.get_credentials()
 
@@ -69,7 +69,7 @@ def delete_resource_group(**_):
 def delete_current_resource_group(**_):
     if constants.USE_EXTERNAL_RESOURCE in ctx.node.properties and ctx.node.properties[constants.USE_EXTERNAL_RESOURCE]:
         ctx.logger.info("An existing resource group was used, so there's no need to delete")
-        return
+        return constants.ACCEPTED_STATUS_CODE
 
     headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
@@ -112,6 +112,6 @@ def get_provisioning_state(**_):
     headers, location, subscription_id = auth.get_credentials()
 
     resource_group_url = "{0}/subscriptions/{1}/resourceGroups/{2}?api-version={3}".format(constants.azure_url, subscription_id, resource_group_name, constants.api_version_resource_group)
-    ctx.logger.info("resource_group_url: {0}".format(resource_group_url))
+    #ctx.logger.info("resource_group_url: {0}".format(resource_group_url))
 
     return azurerequests.get_provisioning_state(headers, resource_group_name, resource_group_url)
