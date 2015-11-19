@@ -44,23 +44,15 @@ def create_storage_account(**_):
 
     headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-
-    try:
-        ctx.logger.info("Creating new storage account: {0}".format(storage_account_name))
-        storage_account_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts/'+storage_account_name+'?api-version='+constants.api_version
-        storage_account_params = json.dumps({"properties": {"accountType": constants.storage_account_type, }, "location": location})
-        response_sa = requests.put(url=storage_account_url, data=storage_account_params, headers=headers)
-
-        if response_sa.text:
-            ctx.logger.info("create_storage_account:{0} response_sa.text is {1}".format(storage_account_name, response_sa.text))
-            if utils.request_failed("{0}:{1}".format('create_storage_account', storage_account_name), response_sa):
-                raise NonRecoverableError("Storage account {0} could not be created".format(storage_account_name))
-
+    if constants.STORAGE_ACCOUNT_KEY not in ctx.instance.runtime_properties:
         ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = storage_account_name
-    except:
-        ctx.logger.info("Storage Account {0} could not be created.".format(storage_account_name))
-        raise NonRecoverableError("Storage Account {0} could not be created.".format(storage_account_name))
 
+    ctx.logger.info("Creating a new storage account: {0}".format(storage_account_name))
+    storage_account_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts/'+storage_account_name+'?api-version='+constants.api_version
+    storage_account_params = json.dumps({"properties": {"accountType": constants.storage_account_type, }, "location":location})
+    utils.check_or_create_resource(headers, storage_account_name, storage_account_params, storage_account_url, storage_account_url, 'storage_account')
+
+    ctx.logger.info("{0} is {1}".format(constants.STORAGE_ACCOUNT_KEY, storage_account_name))
 
 @operation
 def delete_storage_account(**_):
