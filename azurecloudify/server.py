@@ -45,13 +45,19 @@ def create_a_vm(**_):
     storage_account_name = ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
     #availability_set_name = ctx.instance.runtime_properties[constants.AVAILABILITY_SET_KEY]
     availability_set_name = "To be developed by Pranjali and Vaidehi"
+    ctx.logger.info("create_a_vm b4 get_credentials")
     headers, location, subscription_id = auth.get_credentials()
+    ctx.logger.info("create_a_vm b4 RESOURCE_GROUP_KEY")
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
 
     try:
+        ctx.logger.info("create_a_vm b4 virtual_machine_params")
         virtual_machine_params = get_virtual_machine_params(location, random_suffix_value, resource_group_name,
                                                             storage_account_name, subscription_id, vm_name, availability_set_name)
+        ctx.logger.info("create_a_vm params {0}".format(str(virtual_machine_params)))
+        ctx.logger.info("create_a_vm b4 virtual_machine_url")
         virtual_machine_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version
+        ctx.logger.info("create_a_vm b4 requests.put")
         response_vm = requests.put(url=virtual_machine_url, data=virtual_machine_params, headers=headers)
         if response_vm.text:
             ctx.logger.info("create_vm:{0} response_vm.text is {1}".format(vm_name, response_vm.text))
