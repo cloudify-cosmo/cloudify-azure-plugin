@@ -170,6 +170,9 @@ def _set_security_group_details(azure_config, **kwargs):
 def set_public_ip_details(azure_config, **kwargs):
     ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     ctx.logger.info("{0} is {1}".format(constants.PUBLIC_IP_KEY, ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]))
+    ctx.source.instance.runtime_properties[constants.VNET_KEY] = ctx.target.instance.runtime_properties[constants.VNET_KEY]
+    current_subnet_name = subnet.set_subnets_from_runtime("nic.set_public_ip_details", ctx.source.instance.runtime_properties, ctx.target.instance.runtime_properties)
+    ctx.source.instance.runtime_properties[constants.SUBNET_KEY] = current_subnet_name
     ctx.source.instance.runtime_properties[constants.PUBLIC_IP_KEY] = ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]
     _set_security_group_details(azure_config)
 
