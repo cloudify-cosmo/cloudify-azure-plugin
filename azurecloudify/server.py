@@ -35,6 +35,10 @@ def creation_validation(**_):
 
 @operation
 def create_vm(**_):
+    create_a_vm()
+
+
+def create_a_vm(**_):
     random_suffix_value = utils.random_suffix_generator()
     vm_name = ctx.node.properties[constants.VM_PREFIX]+random_suffix_value
     ctx.logger.info("Creating new virtual machine: {0}".format(vm_name))
@@ -65,6 +69,10 @@ def create_vm(**_):
 
 @operation
 def start_vm(**_):
+    start_vm()
+
+
+def start_a_vm(**_):
     headers, location, subscription_id = auth.get_credentials()
     vm_name = ctx.instance.runtime_properties[constants.VM_KEY]
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
@@ -86,6 +94,10 @@ def start_vm(**_):
 
 @operation
 def stop_vm(**_):
+    stop_a_vm()
+
+
+def stop_a_vm(**_):
     headers, location, subscription_id = auth.get_credentials()
     vm_name = ctx.instance.runtime_properties[constants.VM_KEY]
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
@@ -98,6 +110,10 @@ def stop_vm(**_):
 def delete_virtual_machine(**_):
     delete_current_virtual_machine()
     utils.clear_runtime_properties()
+
+
+def delete_a_virtual_machine(**_):
+    delete_current_virtual_machine()
 
 
 def delete_current_virtual_machine(**_):
@@ -244,7 +260,8 @@ def _set_network_json(vm_json, subscription_id, resource_group_name):
                 interface_properties['primary'] = 'false'
             curr_interface['properties'] = interface_properties
             network_interfaces.append(curr_interface)
-            
+
+
 def _set_data_disk_json(vm_json, storage_account_name):
     vm_properties = vm_json['properties']
     storage_profile = vm_properties['storageProfile']
@@ -322,20 +339,5 @@ def _get_vm_base_json(location, random_suffix_value, resource_group_name, storag
         }
     }
 
-
-def create_a_vm(**_):
-    create_vm()
-
-
-def start_a_vm(**_):
-    start_vm()
-
-
-def stop_a_vm(**_):
-    stop_vm()
-
-
-def delete_a_virtual_machine(**_):
-    delete_virtual_machine()
 
 

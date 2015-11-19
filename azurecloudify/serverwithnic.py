@@ -69,6 +69,7 @@ def stop_vm(**_):
 def delete_vm_and_nic(**_):
     server.delete_a_virtual_machine()
     nic.delete_a_nic()
+    utils.clear_runtime_properties()
 
 
 

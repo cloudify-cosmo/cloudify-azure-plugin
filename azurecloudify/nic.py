@@ -94,6 +94,10 @@ def set_nic_private_ip():
 
 @operation
 def create_nic(**_):
+    create_a_nic()
+
+
+def create_a_nic(**_):
     if constants.USE_EXTERNAL_RESOURCE in ctx.node.properties and ctx.node.properties[constants.USE_EXTERNAL_RESOURCE]:
         if constants.EXISTING_NIC_KEY in ctx.node.properties:
             existing_nic_name = ctx.node.properties[constants.EXISTING_NIC_KEY]
@@ -133,8 +137,12 @@ def create_nic(**_):
 
 @operation
 def delete_nic(**_):
-    delete_current_nic()
+    delete_a_nic()
     utils.clear_runtime_properties()
+
+
+def delete_a_nic(**_):
+    delete_current_nic()
 
 
 def delete_current_nic(**_):
@@ -211,10 +219,4 @@ def _get_nic_key():
     return curr_nic_key
 
 
-def create_a_nic(**_):
-    create_nic()
-
-
-def delete_a_nic(**_):
-    delete_nic()
 
