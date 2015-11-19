@@ -85,7 +85,7 @@ class TestResourceGroup(testtools.TestCase):
         
         try:
             current_ctx.set(ctx=ctx)
-            test_utils.wait_status(ctx, constants.RESOURCE_GROUP, "Waiting for exception", timeout=600)
+            test_utils.wait_status(ctx, constants.RESOURCE_GROUP, constants.RESOURCE_NOT_FOUND, timeout=600)
             ctx.logger.info("----------------------------------")
         except test_utils.WindowsAzureError:
             pass
