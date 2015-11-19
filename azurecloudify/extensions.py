@@ -34,7 +34,7 @@ def creation_validation(**_):
 @operation
 def create_custom_script(**_):
     if 1 == 1:
-        return;
+        return
     custom_script_name = constants.CUSTOM_SCRIPT_PREFIX+utils.random_suffix_generator()
     headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
@@ -53,7 +53,7 @@ def create_custom_script(**_):
          "type": "CustomScriptForLinux",
          "typeHandlerVersion": "1.2",
          "settings": {
-           "fileUris": [ file_uri ],
+           "fileUris": [file_uri],
            "commandToExecute": command
          }
        }
@@ -61,7 +61,8 @@ def create_custom_script(**_):
     )
     response_as = requests.put(url=custom_script_url, data=custom_script_params, headers=headers) 
     print response_as.text 
-    
+
+
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
