@@ -163,7 +163,7 @@ def set_security_group_details(azure_config, **kwargs):
 def _set_security_group_details(azure_config, **kwargs):
     if constants.SECURITY_GROUP_KEY in ctx.target.instance.runtime_properties:
         if constants.SECURITY_GROUP_KEY not in ctx.source.instance.runtime_properties:
-            set_security_group_details(azure_config)
+            ctx.source.instance.runtime_properties[constants.SECURITY_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
 
 
 @operation
