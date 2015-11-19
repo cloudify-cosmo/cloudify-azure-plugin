@@ -483,6 +483,12 @@ node_types:
           Indicates the name of the virtual machine required to create network interface card
         type: string
         default: ''
+      subnet:
+        description: >
+         Indicates the name of exsisting virtual subnet
+        type: string
+        default: ''
+
 
     interfaces:
       cloudify.interfaces.lifecycle:
