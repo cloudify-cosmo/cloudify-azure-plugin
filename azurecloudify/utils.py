@@ -15,7 +15,7 @@ def random_suffix_generator(size=5, chars=string.ascii_lowercase + string.digits
 # Clean runtime_properties
 def clear_runtime_properties():
     for key in ctx.instance.runtime_properties:
-        ctx.instance.runtime_properties.pop(key)
+        ctx.instance.runtime_properties[key] = None
 
 
 def check_api_response(caller_string, current_response, return_action):

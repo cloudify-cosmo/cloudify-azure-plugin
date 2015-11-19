@@ -54,17 +54,17 @@ def create_availability_set(**_):
            "name": availability_set_name, 
            "type": "Microsoft.Compute/availabilitySets", 
            "location": location
-        }
-    )
-    response_as = requests.put(url=availability_set_url, data=availability_set_params, headers=headers) 
-    if response_as.text:
-        ctx.logger.info("create_availability_set {0} response_as.text is {1}".format(availability_set_name, response_as.text))
-        if utils.request_failed("{0}:{1}".format('create_availability_set', availabilty_set_name), response_as)
-            raise NonRecoverableError("create_availabilty_set {0} could not be created".format(availability_set_name))
-        ctx.instance.runtime_properties[constants.AVAILABILTY_SET_KEY] = availabilty_set_name
+        })
+
+        response_as = requests.put(url=availability_set_url, data=availability_set_params, headers=headers)
+        if response_as.text:
+            ctx.logger.info("create_availability_set {0} response_as.text is {1}".format(availability_set_name, response_as.text))
+            if utils.request_failed("{0}:{1}".format('create_availability_set', availability_set_name), response_as):
+                raise NonRecoverableError("create_availabilty_set {0} could not be created".format(availability_set_name))
+        ctx.instance.runtime_properties[constants.AVAILABILTY_SET_KEY] = availability_set_name
     except:
-        ctx.logger.info("Availabilty set {0} could not be created".format(availabilty_set_name))
-        raise NonRecoverableError("Availabilty Set {} could not be created".format(availabilty_set_name))
+        ctx.logger.info("Availabilty set {0} could not be created".format(availability_set_name))
+        raise NonRecoverableError("Availabilty Set {} could not be created".format(availability_set_name))
             
            
 @operation
@@ -84,15 +84,16 @@ def delete_current_availability_set(**_):
         ctx.logger.info("An existing availabilty set was used, so there's no need to delete")
         return
     
-    availabilty_set_name = ctx.instance.runtime_properties[constants.AVAILABILTY_SET_KEY]
+    availability_set_name = ctx.instance.runtime_properties[constants.AVAILABILTY_SET_KEY]
     headers, location, subscription_id = auth.get_credentials()
     try:
-        ctx.logger.info("Deleting Availabilty set: {0}".format(availabilty_set_name))
+        ctx.logger.info("Deleting Availabilty set: {0}".format(availability_set_name))
+        resource_group_name = "modify later"
         delete_url = 'https://management.azure.com/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/availabilitySets/'+availability_set_name+'?api-version=2015-05-01-preview'
         response_as = requests.delete(url=delete_url, headers=headers)
         print(response_as.text)
     except:
-        ctx.logger.info("Availability set {0} could not be deleted.".format(availabilty_set_name))
+        ctx.logger.info("Availability set {0} could not be deleted.".format(availability_set_name))
         
     
 def _validate_node_properties(key, ctx_node_properties):

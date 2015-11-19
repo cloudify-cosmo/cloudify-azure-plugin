@@ -22,6 +22,7 @@ from cloudify.exceptions import NonRecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation
 import auth
+import azurerequests
 
 
 @operation
@@ -56,12 +57,13 @@ def create_resource_group(**_):
     except:
         ctx.logger.info("Resource Group {0} could not be created".format(resource_group_name))
         raise NonRecoverableError("Resource Group {0} could not be created".format(resource_group_name))
-
+    return constants.OK_STATUS_CODE
 
 @operation
 def delete_resource_group(**_):
-    delete_current_resource_group()
+    status_code = delete_current_resource_group()
     utils.clear_runtime_properties()
+    return status_code
 
 
 def delete_current_resource_group(**_):
@@ -76,10 +78,11 @@ def delete_current_resource_group(**_):
         ctx.logger.info("Deleting Resource Group: {0}".format(resource_group_name))
         resource_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version_resource_group
         response_rg = requests.delete(url=resource_group_url, headers=headers)
-        print(response_rg.text)
+        return response_rg.status_code
+
     except:
         ctx.logger.info("Resource Group {0} could not be deleted.".format(resource_group_name))
-
+    return -1
 
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
@@ -99,3 +102,15 @@ def _get_resource_group_name(resource_group_name):
     else:
         return False
 
+
+def get_provisioning_state(**_):
+    utils.validate_node_properties(constants.RESOURCE_GROUP_REQUIRED_PROPERTIES, ctx.node.properties)
+
+    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+    ctx.logger.info("Searching for {0}".format(resource_group_name))
+    headers, location, subscription_id = auth.get_credentials()
+
+    resource_group_url = "{0}/subscriptions/{1}/resourceGroups/{2}?api-version={3}".format(constants.azure_url, subscription_id, resource_group_name, constants.api_version_resource_group)
+    ctx.logger.info("resource_group_url: {0}".format(resource_group_url))
+
+    return azurerequests.get_provisioning_state(headers, resource_group_name, resource_group_url)
