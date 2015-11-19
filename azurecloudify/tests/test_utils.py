@@ -20,7 +20,7 @@ from time import sleep
 from cloudify import ctx
 from cloudify.exceptions import NonRecoverableError
 
-from azurecloudify.tests import test_constants
+from azurecloudify import constants
 
 
 def validate_node_property(key, ctx_node_properties):
@@ -60,19 +60,6 @@ def unassign_runtime_property_from_resource(property_name, ctx_instance):
         'Unassigned {0} runtime property: {1}'.format(property_name, value))
 
 
-def get_instance_or_source_node_properties():
-        if ctx.type == test_constants.RELATIONSHIP_INSTANCE:
-            return ctx.source.node.properties
-        elif ctx.type == test_constants.NODE_INSTANCE:
-            return ctx.node.properties
-        else:
-            raise NonRecoverableError(
-                'Invalid use of ctx. '
-                'get_instance_or_source_node_properties '
-                'called in a context that is not {0} or {1}.'
-                .format(
-                    test_constants.RELATIONSHIP_INSTANCE,
-                    test_constants.NODE_INSTANCE))
 
 
 def get_target_property(ctx, relationship_name, property_name):
@@ -135,11 +122,7 @@ def get_targets_properties(ctx, relationship_name, properties_name):
         )
 
 
-
-def wait_status(ctx, resource,
-                expected_status=test_constants.SUCCEEDED,
-                timeout=600
-                ):
+def wait_status(ctx, resource, expected_status=constants.SUCCEEDED, timeout=600):
     """ A helper to send request to Azure. The operation status
     is check to monitor the request. Failures are managed too.
 
@@ -151,49 +134,26 @@ def wait_status(ctx, resource,
     module = importlib.import_module('azurecloudify.{}'.format(resource),
                                      package=None
                                      )
-    ctx.logger.debug('Waiting for status {} for {}...'.format(expected_status, resource)
-                    )
-    status = 'empty'
-    ttw=0
-    while ((status != expected_status) and (status != test_constants.FAILED) and
-           (ttw <= timeout)):
+    ctx.logger.debug('Waiting for status {} for {}...'.format(expected_status, resource))
+
+    waiting_time = 0
+    status = getattr(module, 'get_provisioning_state')(ctx=ctx)
+    ctx.logger.info('{} status is {}...'.format(resource, status))
+    while (status != expected_status) and (status != constants.FAILED) and (waiting_time <= timeout):
+        waiting_time += constants.TIME_DELAY
+        sleep(constants.TIME_DELAY)
         status = getattr(module, 'get_provisioning_state')(ctx=ctx)
-        ctx.logger.info('{} status is {}.'.format(resource, status))
-        ttw += test_constants.TIME_DELAY
-        sleep(test_constants.TIME_DELAY)
+        ctx.logger.info('{} status is {}...'.format(resource, status))
     
-    if status != expected_status :
-        if ttw >= timeout:
-            message = 'Timeout occurs while waiting status {} for {}.'.format(
-                                            expected_status, 
-                                            resource
-                                            )
+    if status != expected_status:
+        if waiting_time >= timeout:
+            message = 'Timeout occurs while waiting status {} for {}...'.format(expected_status,resource)
         else:
-            message = 'Failed waiting {} for {}: {}.'.format(expected_status,
-                                                             resource, 
-                                                             status)
+            message = '*** Failed waiting {} for {}: {} ***'.format(expected_status, resource, status)
         raise NonRecoverableError(message)
+    else:
+        ctx.logger.info("** {0}'s status ({1}) is as expected. **".format(resource, status))
 
-
-def get_azure_config(ctx):
-    """Get the azure_config dictionary.
-
-    :param ctx:  The Cloudify ctx context.
-    :return: the azure_config dictionary.
-    :rtype: dictionary
-    """
-    if ctx.type == 'node-instance':
-        if ctx.node.properties[test_constants.AZURE_CONFIG_KEY]:
-            return ctx.node.properties[test_constants.AZURE_CONFIG_KEY]
-        else:
-            return ctx.provider_context[test_constants.AZURE_CONFIG_KEY]
-    elif ctx.type == 'relationship-instance':
-        if ctx.source.node.properties[test_constants.AZURE_CONFIG_KEY]:
-            return ctx.source.node.properties[test_constants.AZURE_CONFIG_KEY]
-        else:
-            return ctx.provider_context[test_constants.AZURE_CONFIG_KEY]
-    elif ctx.type == 'deployment':
-        return ctx.node.properties[test_constants.AZURE_CONFIG_KEY]
 
 class WindowsAzureError(Exception):
     def __init__(self, code, message):

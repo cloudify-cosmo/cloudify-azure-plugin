@@ -113,3 +113,15 @@ RETURN_STATUS_CODE = "3"
 
 
 OK_STATUS_CODE = 200
+FAILED_404_STATUS_CODE = 404
+
+# For Tests
+PATH_TO_AZURE_CONF_KEY = "azure_conf_file_path"
+SUBSCRIPTION_KEY = 'subscription_id'
+CLIENT_ID_KEY = 'client_id'
+AAD_PASSWORD_KEY = 'aad_password'
+TENANT_ID_KEY = 'tenant_id'
+LOCATION_KEY = 'location'
+SUCCEEDED = 'Succeeded'
+FAILED = 'Failed'
+TIME_DELAY = 10

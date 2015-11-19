@@ -22,7 +22,7 @@ from cloudify.mocks import MockCloudifyContext
 
 from azurecloudify.tests import test_conf
 from azurecloudify import resourcegroup
-import test_constants
+from azurecloudify import constants
 import test_utils
 
 
@@ -45,14 +45,14 @@ class TestResourceGroup(testtools.TestCase):
         """
 
         test_properties = {
-            test_constants.SUBSCRIPTION_KEY: test_conf.SUBSCRIPTION_ID,
-            test_constants.LOCATION_KEY: test_conf.LOCATION,
-            test_constants.CLIENT_ID_KEY: test_conf.CLIENT_ID,
-            test_constants.AAD_PASSWORD_KEY: test_conf.AAD_PASSWORD,
-            test_constants.TENANT_ID_KEY: test_conf.TENANT_ID,
-            test_constants.PATH_TO_AZURE_CONF_KEY: test_conf.PATH_TO_AZURE_CONF,
-            test_constants.EXISTING_RESOURCE_GROUP_KEY: test_name + self.__random_id,
-            test_constants.USE_EXTERNAL_RESOURCE: False
+            constants.SUBSCRIPTION_KEY: test_conf.SUBSCRIPTION_ID,
+            constants.LOCATION_KEY: test_conf.LOCATION,
+            constants.CLIENT_ID_KEY: test_conf.CLIENT_ID,
+            constants.AAD_PASSWORD_KEY: test_conf.AAD_PASSWORD,
+            constants.TENANT_ID_KEY: test_conf.TENANT_ID,
+            constants.PATH_TO_AZURE_CONF_KEY: test_conf.PATH_TO_AZURE_CONF,
+            constants.EXISTING_RESOURCE_GROUP_KEY: test_name + self.__random_id,
+            constants.USE_EXTERNAL_RESOURCE: False
         }
 
         return MockCloudifyContext(node_id='test' + self.__random_id, properties=test_properties)
@@ -74,9 +74,9 @@ class TestResourceGroup(testtools.TestCase):
         ctx.logger.info("Creating a resource group ...")
         status_code = resourcegroup.create_resource_group(ctx=ctx)
         ctx.logger.debug("status_code = " + str(status_code) )
-        self.assertTrue(bool((status_code == test_constants.OK_STATUS_CODE) or (status_code == 201)))
+        self.assertTrue(bool((status_code == constants.OK_STATUS_CODE) or (status_code == 201)))
         current_ctx.set(ctx=ctx)
-        test_utils.wait_status(ctx, "resource_group", test_constants.SUCCEEDED, timeout=600)
+        test_utils.wait_status(ctx, "resource_group", constants.SUCCEEDED, timeout=600)
 
         current_ctx.set(ctx=ctx)
         ctx.logger.info("Deleting a resource group ... ")
@@ -99,9 +99,9 @@ class TestResourceGroup(testtools.TestCase):
         ctx.logger.info("create resource_group")
         status_code = resourcegroup.create_resource_group(ctx=ctx)
         ctx.logger.debug("status_code = " + str(status_code) )
-        self.assertTrue(bool((status_code == test_constants.OK_STATUS_CODE) or (status_code == 201)))
+        self.assertTrue(bool((status_code == constants.OK_STATUS_CODE) or (status_code == 201)))
         current_ctx.set(ctx=ctx)
-        test_utils.wait_status(ctx, "resourcegroup", test_constants.SUCCEEDED, timeout=600)
+        test_utils.wait_status(ctx, "resourcegroup", constants.SUCCEEDED, timeout=600)
 
         current_ctx.set(ctx=ctx)
         ctx.logger.info("delete resource_group")
@@ -115,12 +115,12 @@ class TestResourceGroup(testtools.TestCase):
 
 
         ctx.logger.info("create resource_group with USE_EXTERNAL_RESOURCE properties set to True")
-        ctx.node.properties[test_constants.USE_EXTERNAL_RESOURCE] = True
+        ctx.node.properties[constants.USE_EXTERNAL_RESOURCE] = True
         status_code = resourcegroup.create_resource_group(ctx=ctx)
         ctx.logger.debug("status_code = " + str(status_code) )
-        self.assertTrue(bool((status_code == test_constants.OK_STATUS_CODE) or (status_code == 201)))
+        self.assertTrue(bool((status_code == constants.OK_STATUS_CODE) or (status_code == 201)))
         current_ctx.set(ctx=ctx)
-        test_utils.wait_status(ctx, "resourcegroup", test_constants.SUCCEEDED, timeout=600)
+        test_utils.wait_status(ctx, "resourcegroup", constants.SUCCEEDED, timeout=600)
 
         ctx.logger.info("not delete resource_group")
         current_ctx.set(ctx=ctx)
@@ -129,7 +129,7 @@ class TestResourceGroup(testtools.TestCase):
         ctx.logger.info("delete resource_group")
         ctx.logger.info("Set USE_EXTERNAL_RESOURCE properties to False")
         current_ctx.set(ctx=ctx)
-        ctx.node.properties[test_constants.USE_EXTERNAL_RESOURCE] = False
+        ctx.node.properties[constants.USE_EXTERNAL_RESOURCE] = False
         self.assertEqual(202, resourcegroup.delete_resource_group(ctx=ctx))
 
         try:
@@ -147,18 +147,18 @@ class TestResourceGroup(testtools.TestCase):
         ctx.logger.info("BEGIN resource_group conflict test")
         ctx.logger.info("1. Creating a resource group ")
         status_code = resourcegroup.create_resource_group(ctx=ctx)
-        current_resource_group_name = ctx[test_constants.RESOURCE_GROUP_KEY]
+        current_resource_group_name = ctx[constants.RESOURCE_GROUP_KEY]
         ctx.logger.debug("create_resource_group #1 ({0}) status: {1}".format(current_resource_group_name, str(status_code)))
-        self.assertTrue(bool((status_code == test_constants.OK_STATUS_CODE) or (status_code == 201)))
+        self.assertTrue(bool((status_code == constants.OK_STATUS_CODE) or (status_code == 201)))
         current_ctx.set(ctx=ctx)
-        test_utils.wait_status(ctx, "resourcegroup", test_constants.SUCCEEDED, timeout=600)
+        test_utils.wait_status(ctx, "resourcegroup", constants.SUCCEEDED, timeout=600)
         ctx.logger.info("----------------------------------")
 
         ctx.logger.info("2. Conflict create resource group")
         status_code = resourcegroup.create_resource_group(ctx=ctx)
 
         ctx.logger.debug("create_resource_group #2 ({0}) status: {1}".format(current_resource_group_name, str(status_code)))
-        self.assertTrue(bool((status_code == test_constants.OK_STATUS_CODE)))
+        self.assertTrue(bool((status_code == constants.OK_STATUS_CODE)))
         ctx.logger.info("----------------------------------")
 
         ctx.logger.info("3. Deleting a resource group {0}".format(current_resource_group_name))
@@ -168,9 +168,9 @@ class TestResourceGroup(testtools.TestCase):
         self.assertEqual(202, result)
         
         try:
-            ctx[test_constants.RESOURCE_GROUP_KEY] = current_resource_group_name
+            ctx[constants.RESOURCE_GROUP_KEY] = current_resource_group_name
             current_ctx.set(ctx=ctx)
-            test_utils.wait_status(ctx, "resourcegroup", test_constants.FAILED_404_STATUS_CODE, timeout=600)
+            test_utils.wait_status(ctx, "resourcegroup", constants.FAILED_404_STATUS_CODE, timeout=600)
         except test_utils.WindowsAzureError:
             pass
 
