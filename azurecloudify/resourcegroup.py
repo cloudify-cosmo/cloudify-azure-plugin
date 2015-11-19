@@ -57,7 +57,7 @@ def create_resource_group(**_):
     except:
         ctx.logger.info("Resource Group {0} could not be created".format(resource_group_name))
         raise NonRecoverableError("Resource Group {0} could not be created".format(resource_group_name))
-    return constants.OK_STATUS_CODE
+    return response_rg.status_code
 
 @operation
 def delete_resource_group(**_):
@@ -83,6 +83,7 @@ def delete_current_resource_group(**_):
     except:
         ctx.logger.info("Resource Group {0} could not be deleted.".format(resource_group_name))
     return -1
+
 
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
