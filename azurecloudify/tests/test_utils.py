@@ -131,25 +131,27 @@ def wait_status(ctx, resource, expected_status=constants.SUCCEEDED, timeout=600)
     :param expected_status: The expected status for the operation.
     :param timeout: Maximum time to wait in seconds.
     """
-    module = importlib.import_module('azurecloudify.{}'.format(resource),
+    module = importlib.import_module('azurecloudify.{0}'.format(resource),
                                      package=None
                                      )
-    ctx.logger.debug('Waiting for status {} for {}...'.format(expected_status, resource))
+    ctx.logger.debug('Waiting for status {0} for {1}...'.format(expected_status, resource))
 
+    attempt_index = 1
     waiting_time = 0
     status = getattr(module, 'get_provisioning_state')(ctx=ctx)
-    ctx.logger.info('{} status is {}...'.format(resource, status))
+    ctx.logger.info('{0} status is {1}...'.format(resource, status))
     while (status != expected_status) and (status != constants.FAILED) and (waiting_time <= timeout):
         waiting_time += constants.TIME_DELAY
         sleep(constants.TIME_DELAY)
         status = getattr(module, 'get_provisioning_state')(ctx=ctx)
-        ctx.logger.info('{} status is {}...'.format(resource, status))
+        attempt_index += 1
+        ctx.logger.info('{0} status is {1} - attempt #{2}...'.format(resource, status, attempt_index))
     
     if status != expected_status:
         if waiting_time >= timeout:
-            message = 'Timeout occurs while waiting status {} for {}...'.format(expected_status,resource)
+            message = 'Timeout occurs while waiting status {0} for {1}...'.format(expected_status,resource)
         else:
-            message = '*** Failed waiting {} for {}: {} ***'.format(expected_status, resource, status)
+            message = '*** Failed waiting {0} for {1}: {2} ***'.format(expected_status, resource, status)
         raise NonRecoverableError(message)
     else:
         ctx.logger.info("** {0}'s status ({1}) is as expected. **".format(resource, status))
