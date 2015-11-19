@@ -45,10 +45,10 @@ PASSWORD_KEY = 'password'
 LOCATION_KEY = 'location'
 
 
-RESOURCE_GROUP_KEY = 'resource_group_name'
 
-
-
+EXISTING_RESOURCE_GROUP_KEY = 'existing_resource_group_name'
+RESOURCE_GROUP_KEY = 'resource_group_key_name'
+USE_EXTERNAL_RESOURCE = 'use_external_resource'
 PATH_TO_AZURE_CONF_KEY = "azure_conf_file_path"
 SUBSCRIPTION_KEY = 'subscription_id'
 CLIENT_ID_KEY = 'client_id'
@@ -56,3 +56,4 @@ AAD_PASSWORD_KEY = 'aad_password'
 TENANT_ID_KEY = 'tenant_id'
 
 OK_STATUS_CODE = 200
+FAILED_404_STATUS_CODE = 404

@@ -32,9 +32,10 @@ def get_provisioning_state(headers, resource_name, check_resource_url):
     elif 'error' in response_json:
         err_msg = response_json['error']['message']
         ctx.logger.info("In get_provisioning_state error message is \"{0}\"".format(err_msg))
-        return err_msg
     else:
         ctx.logger.info("In get_provisioning_state returning json {0}".format(str(response_json)))
-        return response_json
+
+    ctx.logger.info("In get_provisioning_state status code is {0}".format(check_resource_response.status_code))
+    return check_resource_response.status_code
 
 

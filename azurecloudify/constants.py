@@ -50,7 +50,7 @@ VNET_REQUIRED_PROPERTIES = ['location', 'subscription_id']
 VM_REQUIRED_PROPERTIES = ['vm_prefix', 'image_reference_offer', 'image_reference_publisher', 'image_reference_sku', 'vm_size', 'subscription_id', 'key_data', 'location']
 NIC_REQUIRED_PROPERTIES = ['location', 'subscription_id']
 PUBLIC_IP_REQUIRED_PROPERTIES = ['location', 'subscription_id']
-CUSTOM_SCRIPT_REQUIRED_PROPERTIES=['location', 'subscription_id', 'custom_script_command', 'custom_script_path']
+CUSTOM_SCRIPT_REQUIRED_PROPERTIES = ['location', 'subscription_id', 'custom_script_command', 'custom_script_path']
 
 RESOURCE_GROUP_KEY = 'resource_group_key_name'
 RESOURCE_GROUP_PREFIX = 'resource_group_'

@@ -45,19 +45,13 @@ class TestResourceGroup(testtools.TestCase):
         """
 
         test_properties = {
-            test_constants.AZURE_CONFIG_KEY: {
-                test_constants.SUBSCRIPTION_KEY: test_conf.SUBSCRIPTION_ID,
-                test_constants.PASSWORD_KEY: test_conf.AAD_PASSWORD,
-                test_constants.LOCATION_KEY: 'westus',
-                test_constants.RESOURCE_GROUP_KEY: test_name + self.__random_id,
-            },
             test_constants.SUBSCRIPTION_KEY: test_conf.SUBSCRIPTION_ID,
             test_constants.LOCATION_KEY: test_conf.LOCATION,
             test_constants.CLIENT_ID_KEY: test_conf.CLIENT_ID,
             test_constants.AAD_PASSWORD_KEY: test_conf.AAD_PASSWORD,
             test_constants.TENANT_ID_KEY: test_conf.TENANT_ID,
             test_constants.PATH_TO_AZURE_CONF_KEY: test_conf.PATH_TO_AZURE_CONF,
-            test_constants.RESOURCE_GROUP_KEY: test_name + self.__random_id,
+            test_constants.EXISTING_RESOURCE_GROUP_KEY: test_name + self.__random_id,
             test_constants.USE_EXTERNAL_RESOURCE: False
         }
 
@@ -149,28 +143,36 @@ class TestResourceGroup(testtools.TestCase):
     def test_conflict_resource_group(self):
         ctx = self.mock_ctx('conflictgroup')
         current_ctx.set(ctx=ctx)
+        ctx.logger.info("==================================")
         ctx.logger.info("BEGIN resource_group conflict test")
-        ctx.logger.info("create resource group")
+        ctx.logger.info("1. Creating a resource group ")
         status_code = resourcegroup.create_resource_group(ctx=ctx)
-        ctx.logger.debug("Status_code1 is {0}".format(str(status_code)))
+        current_resource_group_name = ctx[test_constants.RESOURCE_GROUP_KEY]
+        ctx.logger.debug("create_resource_group #1 ({0}) status: {1}".format(current_resource_group_name, str(status_code)))
         self.assertTrue(bool((status_code == test_constants.OK_STATUS_CODE) or (status_code == 201)))
         current_ctx.set(ctx=ctx)
         test_utils.wait_status(ctx, "resourcegroup", test_constants.SUCCEEDED, timeout=600)
+        ctx.logger.info("----------------------------------")
 
-        ctx.logger.info("Conflict create resource group")
+        ctx.logger.info("2. Conflict create resource group")
         status_code = resourcegroup.create_resource_group(ctx=ctx)
-        ctx.logger.debug("Status_code2 is {0}".format(str(status_code)))
-        self.assertTrue(bool((status_code == test_constants.OK_STATUS_CODE) or (status_code == 201)))
 
-        ctx.logger.info("Deleting a resource group...")
+        ctx.logger.debug("create_resource_group #2 ({0}) status: {1}".format(current_resource_group_name, str(status_code)))
+        self.assertTrue(bool((status_code == test_constants.OK_STATUS_CODE)))
+        ctx.logger.info("----------------------------------")
+
+        ctx.logger.info("3. Deleting a resource group {0}".format(current_resource_group_name))
         current_ctx.set(ctx=ctx)
-        expected_result = resourcegroup.delete_resource_group(ctx=ctx)
-        self.assertEqual(202, expected_result)
+        result = resourcegroup.delete_resource_group(ctx=ctx)
+        ctx.logger.info("Delete resource group {0} status is {1}".format(current_resource_group_name,result))
+        self.assertEqual(202, result)
         
         try:
+            ctx[test_constants.RESOURCE_GROUP_KEY] = current_resource_group_name
             current_ctx.set(ctx=ctx)
-            test_utils.wait_status(ctx, "resourcegroup", "waiting for exception", timeout=600)
+            test_utils.wait_status(ctx, "resourcegroup", test_constants.FAILED_404_STATUS_CODE, timeout=600)
         except test_utils.WindowsAzureError:
             pass
 
         ctx.logger.info("END resource_group conflict test")
+        ctx.logger.info("==================================")

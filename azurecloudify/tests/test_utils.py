@@ -151,7 +151,7 @@ def wait_status(ctx, resource,
     module = importlib.import_module('azurecloudify.{}'.format(resource),
                                      package=None
                                      )
-    ctx.logger.debug('Waiting state {} for {}...'.format(expected_status, resource)
+    ctx.logger.debug('Waiting for status {} for {}...'.format(expected_status, resource)
                     )
     status = 'empty'
     ttw=0
@@ -194,7 +194,6 @@ def get_azure_config(ctx):
             return ctx.provider_context[test_constants.AZURE_CONFIG_KEY]
     elif ctx.type == 'deployment':
         return ctx.node.properties[test_constants.AZURE_CONFIG_KEY]
-
 
 class WindowsAzureError(Exception):
     def __init__(self, code, message):
