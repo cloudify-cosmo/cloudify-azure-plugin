@@ -116,6 +116,5 @@ def get_provisioning_state(**_):
     ctx.logger.info("Searching for storage account {0} in resource group {1}".format(storage_account_name, resource_group_name))
     headers, location, subscription_id = auth.get_credentials()
 
-    storage_account_url = "{0}/subscriptions/{1}/resourceGroups/{2}/providers/Microsoft.Storage/storageAccounts/{4}?api-version={3}".format(constants.azure_url, subscription_id, resource_group_name, storage_account_name, constants.api_version_resource_group)
-
+    storage_account_url = "{0}/subscriptions/{1}/resourceGroups/{2}/providers/Microsoft.Storage/storageAccounts/{3}?api-version={4}".format(constants.azure_url, subscription_id, resource_group_name, storage_account_name, constants.api_version_resource_group)
     return azurerequests.get_provisioning_state(headers, storage_account_name, storage_account_url)
