@@ -20,28 +20,17 @@ import time
 import copy
 from contextlib import contextmanager
 
-from cinderclient.v1 import client as cinderclient
-import novaclient.v2.client as nvclient
-import neutronclient.v2_0.client as neclient
-from retrying import retry
-
 from cosmo_tester.framework.handlers import (
     BaseHandler,
     BaseCloudifyInputsConfigReader)
-from cosmo_tester.framework.util import get_actual_keypath
-
-logging.getLogger('neutronclient.client').setLevel(logging.INFO)
-logging.getLogger('novaclient.client').setLevel(logging.INFO)
-
-
-VOLUME_TERMINATION_TIMEOUT_SECS = 300
+    
 
 
 class AzureCleanupContext(BaseHandler.CleanupContext):
 
     def __init__(self, context_name, env):
         super(AzureCleanupContext, self).__init__(context_name, env)
-        self.before_run = self.env.handler.openstack_infra_state()
+        self.before_run = self.env.handler.azure_infra_state()
 
     def cleanup(self):
         """
@@ -85,9 +74,9 @@ class AzureCleanupContext(BaseHandler.CleanupContext):
 
     @classmethod
     def get_resources_to_teardown(cls, env, resources_to_keep=None):
-        all_existing_resources = env.handler.openstack_infra_state()
+        all_existing_resources = env.handler.azure_infra_state()
         if resources_to_keep:
-            return env.handler.openstack_infra_state_delta(
+            return env.handler.azure_infra_state_delta(
                 before=resources_to_keep, after=all_existing_resources)
         else:
             return all_existing_resources
@@ -123,93 +112,156 @@ class AzureCleanupContext(BaseHandler.CleanupContext):
 
 
 class CloudifyAzureInputsConfigReader(BaseCloudifyInputsConfigReader):
-
+"""
     def __init__(self, cloudify_config, manager_blueprint_path, **kwargs):
         super(CloudifyAzureInputsConfigReader, self).__init__(
             cloudify_config, manager_blueprint_path=manager_blueprint_path,
             **kwargs)
+"""
+    @property
+    def subscription_id(self):
+        return self.config['subscription_id']
 
     @property
-    def region(self):
-        return self.config['region']
+    def location(self):
+        return self.config['location']
 
     @property
-    def management_server_name(self):
-        return self.config['manager_server_name']
+    def vm_prefix(self):
+        return self.config['vm_prefix']
 
     @property
-    def agent_key_path(self):
-        return self.config['agent_private_key_path']
+    def vm_size(self):
+        return self.config['vm_size']
 
     @property
-    def management_user_name(self):
-        return self.config['ssh_user']
+    def image_reference_offer(self):
+        return self.config['image_reference_offer']
 
     @property
-    def management_key_path(self):
+    def image_reference_publisher(self):
+        return self.config['image_reference_publisher']
+        
+     @property
+    def image_reference_sku(self):
+        return self.config['image_reference_sku']
+
+
+    @property
+    def use_external_resource(self):
+        return self.config['use_external_resource']
+
+    @property
+    def existing_resource_group_name(self):
+        return self.config['existing_resource_group_name']
+
+    @property
+    def existing_storage_account_name(self):
+        return self.config['existing_storage_account_name']
+
+    @property
+    def existing_security_group_name(self):
+        return self.config['existing_security_group_name']
+
+    @property
+    def existing_vnet_name(self):
+        return self.config['existing_vnet_name']
+
+    @property
+    def existing_nic_name(self):
+        return self.config['existing_nic_name']
+
+    @property
+    def existing_public_ip_name(self):
+        return self.config['existing_public_ip_name']
+
+    @property
+    def key_data(self):
+        return self.config['key_data']
+
+    @property
+    def agent_remote_key_path(self):
+        return self.config.get('agent_remote_key_path')
+
+    @property
+    def agent_local_key_path(self):
+        return self.config['agent_local_key_path']
+
+    @property
+    def ssh_key_id(self):
+        return self.config['ssh_key_id']
+    
+    @property
+    def ssh_key_filename(self):
         return self.config['ssh_key_filename']
+        
+    @property
+    def client_id(self):
+        return self.config['client_id']  
+        
+    @property
+    def tenant_id(self):
+        return self.config['tenant_id'] 
+ 
+    @property
+    def aad_password(self):
+        return self.config['aad_password'] 
+ 
+    @property
+    def subnet(self):
+        return self.config['subnet'] 
 
     @property
-    def agent_keypair_name(self):
-        return self.config['agent_public_key_name']
+    def ssh_user(self):
+        return self.config['ssh_user'] 
+ 
+    @property
+    def custom_script_path(self):
+        return self.config['custom_script_path']  
+
 
     @property
-    def management_keypair_name(self):
-        return self.config['manager_public_key_name']
+    def custom_script_command(self):
+        return self.config['custom_script_command']  
+
 
     @property
-    def use_existing_agent_keypair(self):
-        return self.config['use_existing_agent_keypair']
+    def security_group_priority(self):
+        return self.config['security_group_priority']  
 
     @property
-    def use_existing_manager_keypair(self):
-        return self.config['use_existing_manager_keypair']
+    def security_group_protocol(self):
+        return self.config['security_group_protocol'] 
 
     @property
-    def external_network_name(self):
-        return self.config['external_network_name']
+    def security_group_access(self):
+        return self.config['security_group_access'] 
+
 
     @property
-    def keystone_username(self):
-        return self.config['keystone_username']
+    def security_group_direction(self):
+        return self.config['security_group_direction'] 
+        
+        
+    @property
+    def security_group_sourcePortRange(self):
+        return self.config['security_group_sourcePortRange']  
+
 
     @property
-    def keystone_password(self):
-        return self.config['keystone_password']
+    def security_group_destinationPortRange(self):
+        return self.config['security_group_destinationPortRange'] 
 
     @property
-    def keystone_tenant_name(self):
-        return self.config['keystone_tenant_name']
+    def security_group_sourceAddressPrefix(self):
+        return self.config['security_group_sourceAddressPrefix'] 
+
 
     @property
-    def keystone_url(self):
-        return self.config['keystone_url']
-
-    @property
-    def neutron_url(self):
-        return self.config.get('neutron_url', None)
-
-    @property
-    def management_network_name(self):
-        return self.config['management_network_name']
-
-    @property
-    def management_subnet_name(self):
-        return self.config['management_subnet_name']
-
-    @property
-    def management_router_name(self):
-        return self.config['management_router']
-
-    @property
-    def agents_security_group(self):
-        return self.config['agents_security_group_name']
-
-    @property
-    def management_security_group(self):
-        return self.config['manager_security_group_name']
-
-
+    def security_group_destinationAddressPrefix(self):
+        return self.config['security_group_destinationAddressPrefix'] 
+        
+        
 class AzureHandler(BaseHandler):
 
     CleanupContext = AzureCleanupContext
@@ -247,7 +299,7 @@ class AzureHandler(BaseHandler):
             if management_key_path:
                 os.remove(management_key_path)
 
-    def openstack_clients(self):
+    def azure_clients(self):
         creds = self._client_creds()
         return (nvclient.Client(**creds),
                 neclient.Client(username=creds['username'],
@@ -258,37 +310,37 @@ class AzureHandler(BaseHandler):
                 cinderclient.Client(**creds))
 
     @retry(stop_max_attempt_number=5, wait_fixed=20000)
-    def openstack_infra_state(self):
+    def azure_infra_state(self):
         """
         @retry decorator is used because this error sometimes occur:
         ConnectionFailed: Connection to neutron failed: Maximum
         attempts reached
         """
-        nova, neutron, cinder = self.openstack_clients()
+        azurecloudify = self.azure_clients()
         try:
             prefix = self.env.resources_prefix
         except (AttributeError, KeyError):
             prefix = ''
         return {
-            'networks': dict(self._networks(neutron, prefix)),
-            'subnets': dict(self._subnets(neutron, prefix)),
-            'routers': dict(self._routers(neutron, prefix)),
-            'security_groups': dict(self._security_groups(neutron, prefix)),
-            'servers': dict(self._servers(nova, prefix)),
-            'key_pairs': dict(self._key_pairs(nova, prefix)),
-            'floatingips': dict(self._floatingips(neutron, prefix)),
-            'ports': dict(self._ports(neutron, prefix)),
-            'volumes': dict(self._volumes(cinder, prefix))
+            'resourcegroups': dict(self._resourcegroups(azurecloudify)),
+            'subnets': dict(self._subnets(azurecloudify)),
+            'storageaccounts': dict(self._storageaccounts(azurecloudify)),
+            'securitygroups': dict(self._securitygroups(azurecloudify)),
+            'servers': dict(self._servers(azurecloudify)),
+            'publicips': dict(self._publicips(azurecloudify)),
+            'nics': dict(self._nics(azurecloudify)),
+            'availabilitysets': dict(self._availabilitysets(azurecloudify)),
+            'serverwithnics': dict(self._serverwithnics(azurecloudify))
         }
 
-    def openstack_infra_state_delta(self, before, after):
+    def azure_infra_state_delta(self, before, after):
         after = copy.deepcopy(after)
         return {
             prop: self._remove_keys(after[prop], before[prop].keys())
             for prop in before
         }
 
-    def remove_openstack_resources(self, resources_to_remove):
+    def remove_azure_resources(self, resources_to_remove):
         # basically sort of a workaround, but if we get the order wrong
         # the first time, there is a chance things would better next time
         # 3'rd time can't really hurt, can it?
@@ -302,7 +354,7 @@ class AzureHandler(BaseHandler):
             time.sleep(3)
         return resources_to_remove
 
-    def _remove_openstack_resources_impl(self, resources_to_remove):
+    def _remove_azure_resources_impl(self, resources_to_remove):
         nova, neutron, cinder = self.openstack_clients()
 
         servers = nova.servers.list()
@@ -317,14 +369,14 @@ class AzureHandler(BaseHandler):
 
         failed = {
             'servers': {},
-            'routers': {},
-            'ports': {},
-            'subnets': {},
-            'networks': {},
-            'key_pairs': {},
-            'floatingips': {},
-            'security_groups': {},
-            'volumes': {}
+            'storageaccounts': {},
+            'resourcegroups' {},
+            'publicips': {},  
+            'vnets': {},  
+            'nics': {},  
+            'availabilitysets': {},  
+            'serverwithnics': {},
+            'security_groups': {}
         }
 
         volumes_to_remove = []
