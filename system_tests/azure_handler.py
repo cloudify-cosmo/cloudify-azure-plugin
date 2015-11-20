@@ -23,6 +23,7 @@ from contextlib import contextmanager
 from cosmo_tester.framework.handlers import (
     BaseHandler,
     BaseCloudifyInputsConfigReader)
+    
 
 
 class AzureCleanupContext(BaseHandler.CleanupContext):
@@ -315,21 +316,21 @@ class AzureHandler(BaseHandler):
         ConnectionFailed: Connection to neutron failed: Maximum
         attempts reached
         """
-        nova, neutron, cinder = self.openstack_clients()
+        azurecloudify = self.azure_clients()
         try:
             prefix = self.env.resources_prefix
         except (AttributeError, KeyError):
             prefix = ''
         return {
-            'networks': dict(self._networks(neutron, prefix)),
-            'subnets': dict(self._subnets(neutron, prefix)),
-            'routers': dict(self._routers(neutron, prefix)),
-            'security_groups': dict(self._security_groups(neutron, prefix)),
-            'servers': dict(self._servers(nova, prefix)),
-            'key_pairs': dict(self._key_pairs(nova, prefix)),
-            'floatingips': dict(self._floatingips(neutron, prefix)),
-            'ports': dict(self._ports(neutron, prefix)),
-            'volumes': dict(self._volumes(cinder, prefix))
+            'resourcegroups': dict(self._resourcegroups(azurecloudify)),
+            'subnets': dict(self._subnets(azurecloudify)),
+            'storageaccounts': dict(self._storageaccounts(azurecloudify)),
+            'securitygroups': dict(self._securitygroups(azurecloudify)),
+            'servers': dict(self._servers(azurecloudify)),
+            'publicips': dict(self._publicips(azurecloudify)),
+            'nics': dict(self._nics(azurecloudify)),
+            'availabilitysets': dict(self._availabilitysets(azurecloudify)),
+            'serverwithnics': dict(self._serverwithnics(azurecloudify))
         }
 
     def azure_infra_state_delta(self, before, after):
