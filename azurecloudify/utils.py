@@ -50,7 +50,7 @@ def request_failed(caller_string, raw_response):
     return False
 
 
-def resource_provisioned(caller_string, resource_name, current_response,save_response=False):
+def resource_provisioned(caller_string, resource_name, current_response, save_response=False):
     if current_response.text:
         ctx.logger.info("{0}:resource_provisioned {1} resp is {2}".format(caller_string, resource_name, current_response.text))
         ctx.logger.info("{0}:resource_provisioned {1} status code is {2}".format(caller_string, resource_name, current_response.status_code))
@@ -87,12 +87,13 @@ def check_or_create_resource(headers, resource_name, resource_params, check_reso
     if constants.REQUEST_ACCEPTED in ctx.instance.runtime_properties:
         if resource_was_created(headers, resource_name, check_resource_url, save_response):
             ctx.logger.info("check_or_create_resource resource {0} ({1}) is ready ".format(resource_name,resource_type))
-            return
+            return constants.CREATED_STATUS_CODE
         else:
             raise RecoverableError("check_or_create_resource: resource {0} ({1}) is not ready yet".format(resource_name, resource_type))
     elif create_resource(headers, resource_name, resource_params, create_resource_url, resource_type):
         if resource_was_created(headers, resource_name, check_resource_url, save_response):
             ctx.logger.info("_create_resource resource {0} ({1}) is ready ".format(resource_name, resource_type))
+            return constants.CREATED_STATUS_CODE
         else:
             raise RecoverableError("check_or_create_resource: resource {0} ({1}) is not ready yet".format(resource_name, resource_type))
 
@@ -107,13 +108,7 @@ def create_resource(headers, resource_name, resource_params, create_resource_url
 
     if response_resource.status_code:
         ctx.logger.info("_create_resource:{0} ({1}) - Status code is {2}".format(resource_name, resource_type, response_resource.status_code))
-        if response_resource.status_code == 202:
-            ctx.instance.runtime_properties[constants.REQUEST_ACCEPTED] = True
-            return True
-        elif response_resource.status_code == 201:
-            ctx.instance.runtime_properties[constants.REQUEST_ACCEPTED] = True
-            return True
-        elif response_resource.status_code == 200:
+        if response_resource.status_code in [constants.OK_STATUS_CODE, constants.ACCEPTED_STATUS_CODE, constants.CREATED_STATUS_CODE]:
             ctx.instance.runtime_properties[constants.REQUEST_ACCEPTED] = True
             return True
         else:

@@ -40,7 +40,7 @@ def create_storage_account(**_):
                       constants.STORAGE_ACCOUNT_PREFIX)
     if storage_account_name is None:
         # Using an existing storage account, so don't create anything
-        return
+        return constants.ACCEPTED_STATUS_CODE
 
     headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
@@ -50,9 +50,9 @@ def create_storage_account(**_):
     ctx.logger.info("Creating a new storage account: {0}".format(storage_account_name))
     storage_account_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts/'+storage_account_name+'?api-version='+constants.api_version
     storage_account_params = json.dumps({"properties": {"accountType": constants.storage_account_type, }, "location":location})
-    utils.check_or_create_resource(headers, storage_account_name, storage_account_params, storage_account_url, storage_account_url, 'storage_account')
-
+    status_code = utils.check_or_create_resource(headers, storage_account_name, storage_account_params, storage_account_url, storage_account_url, 'storage_account')
     ctx.logger.info("{0} is {1}".format(constants.STORAGE_ACCOUNT_KEY, storage_account_name))
+    return status_code
 
 @operation
 def delete_storage_account(**_):
@@ -106,3 +106,16 @@ def _get_storage_account_name(storage_account_name):
     else:
         ctx.logger.info("Storage account {0} does not exist".format(storage_account_name))
         return False
+
+
+def get_provisioning_state(**_):
+    utils.validate_node_properties(constants.STORAGE_ACCOUNT_REQUIRED_PROPERTIES, ctx.node.properties)
+
+    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+    storage_account_name = ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
+    ctx.logger.info("Searching for storage account {0} in resource group {1}".format(storage_account_name, resource_group_name))
+    headers, location, subscription_id = auth.get_credentials()
+
+    storage_account_url = "{0}/subscriptions/{1}/resourceGroups/{2}/providers/Microsoft.Storage/storageAccounts/{4}?api-version={3}".format(constants.azure_url, subscription_id, resource_group_name, storage_account_name, constants.api_version_resource_group)
+
+    return azurerequests.get_provisioning_state(headers, storage_account_name, storage_account_url)
