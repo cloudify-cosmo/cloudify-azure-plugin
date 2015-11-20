@@ -140,6 +140,11 @@ class CloudifyAzureInputsConfigReader(BaseCloudifyInputsConfigReader):
     @property
     def image_reference_publisher(self):
         return self.config['image_reference_publisher']
+        
+     @property
+    def image_reference_sku(self):
+        return self.config['image_reference_sku']
+
 
     @property
     def use_external_resource(self):
@@ -184,20 +189,78 @@ class CloudifyAzureInputsConfigReader(BaseCloudifyInputsConfigReader):
     @property
     def ssh_key_id(self):
         return self.config['ssh_key_id']
+    
+    @property
+    def ssh_key_filename(self):
+        return self.config['ssh_key_filename']
+        
+    @property
+    def client_id(self):
+        return self.config['client_id']  
+        
+    @property
+    def tenant_id(self):
+        return self.config['tenant_id'] 
+ 
+    @property
+    def aad_password(self):
+        return self.config['aad_password'] 
+ 
+    @property
+    def subnet(self):
+        return self.config['subnet'] 
 
     @property
-    def management_router_name(self):
-        return self.config['management_router']
+    def ssh_user(self):
+        return self.config['ssh_user'] 
+ 
+    @property
+    def custom_script_path(self):
+        return self.config['custom_script_path']  
+
 
     @property
-    def agents_security_group(self):
-        return self.config['agents_security_group_name']
+    def custom_script_command(self):
+        return self.config['custom_script_command']  
+
 
     @property
-    def management_security_group(self):
-        return self.config['manager_security_group_name']
+    def security_group_priority(self):
+        return self.config['security_group_priority']  
+
+    @property
+    def security_group_protocol(self):
+        return self.config['security_group_protocol'] 
+
+    @property
+    def security_group_access(self):
+        return self.config['security_group_access'] 
 
 
+    @property
+    def security_group_direction(self):
+        return self.config['security_group_direction'] 
+        
+        
+    @property
+    def security_group_sourcePortRange(self):
+        return self.config['security_group_sourcePortRange']  
+
+
+    @property
+    def security_group_destinationPortRange(self):
+        return self.config['security_group_destinationPortRange'] 
+
+    @property
+    def security_group_sourceAddressPrefix(self):
+        return self.config['security_group_sourceAddressPrefix'] 
+
+
+    @property
+    def security_group_destinationAddressPrefix(self):
+        return self.config['security_group_destinationAddressPrefix'] 
+        
+        
 class AzureHandler(BaseHandler):
 
     CleanupContext = AzureCleanupContext
