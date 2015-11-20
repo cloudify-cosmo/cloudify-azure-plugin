@@ -118,72 +118,72 @@ class CloudifyAzureInputsConfigReader(BaseCloudifyInputsConfigReader):
             **kwargs)
 
     @property
-    def region(self):
-        return self.config['region']
+    def subscription_id(self):
+        return self.config['subscription_id']
 
     @property
-    def management_server_name(self):
-        return self.config['manager_server_name']
+    def location(self):
+        return self.config['location']
 
     @property
-    def agent_key_path(self):
-        return self.config['agent_private_key_path']
+    def vm_prefix(self):
+        return self.config['vm_prefix']
 
     @property
-    def management_user_name(self):
-        return self.config['ssh_user']
+    def vm_size(self):
+        return self.config['vm_size']
 
     @property
-    def management_key_path(self):
-        return self.config['ssh_key_filename']
+    def image_reference_offer(self):
+        return self.config['image_reference_offer']
 
     @property
-    def agent_keypair_name(self):
-        return self.config['agent_public_key_name']
+    def image_reference_publisher(self):
+        return self.config['image_reference_publisher']
 
     @property
-    def management_keypair_name(self):
-        return self.config['manager_public_key_name']
+    def use_external_resource(self):
+        return self.config['use_external_resource']
 
     @property
-    def use_existing_agent_keypair(self):
-        return self.config['use_existing_agent_keypair']
+    def existing_resource_group_name(self):
+        return self.config['existing_resource_group_name']
 
     @property
-    def use_existing_manager_keypair(self):
-        return self.config['use_existing_manager_keypair']
+    def existing_storage_account_name(self):
+        return self.config['existing_storage_account_name']
 
     @property
-    def external_network_name(self):
-        return self.config['external_network_name']
+    def existing_security_group_name(self):
+        return self.config['existing_security_group_name']
 
     @property
-    def keystone_username(self):
-        return self.config['keystone_username']
+    def existing_vnet_name(self):
+        return self.config['existing_vnet_name']
 
     @property
-    def keystone_password(self):
-        return self.config['keystone_password']
+    def existing_nic_name(self):
+        return self.config['existing_nic_name']
 
     @property
-    def keystone_tenant_name(self):
-        return self.config['keystone_tenant_name']
+    def existing_public_ip_name(self):
+        return self.config['existing_public_ip_name']
 
     @property
-    def keystone_url(self):
-        return self.config['keystone_url']
+    def key_data(self):
+        return self.config['key_data']
 
     @property
-    def neutron_url(self):
-        return self.config.get('neutron_url', None)
+    def agent_remote_key_path(self):
+        return self.config.get('agent_remote_key_path')
 
     @property
-    def management_network_name(self):
-        return self.config['management_network_name']
+    def agent_local_key_path(self):
+        return self.config['agent_local_key_path']
 
     @property
-    def management_subnet_name(self):
-        return self.config['management_subnet_name']
+    def ssh_key_id(self):
+        return self.config['ssh_key_id']
 
     @property
     def management_router_name(self):
