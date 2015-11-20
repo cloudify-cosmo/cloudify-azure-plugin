@@ -49,7 +49,7 @@ def create_a_vm(**_):
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
 
     try:
-        virtual_machine_params = get_virtual_machine_params(location, random_suffix_value, resource_group_name,
+        virtual_machine_params = _get_virtual_machine_params(location, random_suffix_value, resource_group_name,
                                                             storage_account_name, subscription_id, vm_name, availability_set_name)
         virtual_machine_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version
         response_vm = requests.put(url=virtual_machine_url, data=virtual_machine_params, headers=headers)
@@ -232,7 +232,7 @@ def _start_vm_call(headers, vm_name, subscription_id, resource_group_name):
     raise NonRecoverableError("_start_vm_call:{0} - No Status code for vm {1}".format(vm_name, response_start_vm.status_code))
 
 
-def get_virtual_machine_params(location, random_suffix_value, resource_group_name, storage_account_name,
+def _get_virtual_machine_params(location, random_suffix_value, resource_group_name, storage_account_name,
                                subscription_id, vm_name, availability_set_name):
     vm_json = _get_vm_base_json(location, random_suffix_value, resource_group_name, storage_account_name,
                                 subscription_id, vm_name, availability_set_name)

@@ -37,39 +37,11 @@ def create_security_group(**_):
         security_group_name = constants.SECURITY_GROUP_PREFIX+random_suffix_value
 
     security_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version_network
-    protocol = ctx.node.properties['security_group_protocol']
-    source_port_range = ctx.node.properties['security_group_sourcePortRange']
-    destination_port_range = ctx.node.properties['security_group_destinationPortRange']
-    source_address_prefix = ctx.node.properties['security_group_sourceAddressPrefix']
-    destination_address_prefix = ctx.node.properties['security_group_destinationAddressPrefix']
-    access_security_group = ctx.node.properties['security_group_access']
-    security_group_priority = ctx.node.properties['security_group_priority']
-    security_group_direction = ctx.node.properties['security_group_direction']
-    
+
     try:
         ctx.logger.info("Creating a new security group: {0}".format(security_group_name))
-        security_group_params = json.dumps({
-        "location": location,
-        "properties": {
-            "securityRules": [
-                {
-                    "name":"myNsRule",
-                    "properties": { 
-                       "description": "desc",
-                       "protocol": protocol,
-                       "sourcePortRange": source_port_range,
-                       "destinationPortRange": destination_port_range,
-                       "sourceAddressPrefix": source_address_prefix,
-                       "destinationAddressPrefix": destination_address_prefix,
-                       "access": access_security_group,
-                       "priority": security_group_priority,
-                       "direction": security_group_direction
-
-                    }
-                }
-             ]
-          }
-        })
+        security_group_json = _get_security_group_json(location)
+        security_group_params = _get_security_group_params(security_group_json)
         response_nsg = requests.put(url=security_group_url, data=security_group_params, headers=headers)
         if response_nsg.text:
             ctx.logger.info("create_security_group {0} response_nsg.text is {1}".format(security_group_name, response_nsg.text))
@@ -127,3 +99,52 @@ def _get_security_group_name(security_group_name):
     else:
         ctx.logger.info("Security group {} does not exist".format(security_group_name))
         return False
+
+
+def _get_security_group_json(location):
+    security_group_json = {
+        "location": location,
+        "properties": {
+            "securityRules": []
+        }
+    }
+    return security_group_json
+
+
+def _get_security_group_params(security_group_json):
+
+    # This should be in a loop (there may be more than one rule)
+    # Issue #29 :
+    # https://github.com/cloudify-cosmo/cloudify-azure-plugin/issues/29
+    # Issue #30 :
+    # https://github.com/cloudify-cosmo/cloudify-azure-plugin/issues/30
+    ######################################################################
+    protocol = ctx.node.properties['security_group_protocol']
+    source_port_range = ctx.node.properties['security_group_sourcePortRange']
+    destination_port_range = ctx.node.properties['security_group_destinationPortRange']
+    source_address_prefix = ctx.node.properties['security_group_sourceAddressPrefix']
+    destination_address_prefix = ctx.node.properties['security_group_destinationAddressPrefix']
+    access_security_group = ctx.node.properties['security_group_access']
+    security_group_priority = ctx.node.properties['security_group_priority']
+    security_group_direction = ctx.node.properties['security_group_direction']
+
+    current_rule = {
+        "name": "mySecGrpRule",
+        "properties": {
+            "description": "My Security Group Rule Description",
+            "protocol": protocol,
+            "sourcePortRange": source_port_range,
+            "destinationPortRange": destination_port_range,
+            "sourceAddressPrefix": source_address_prefix,
+            "destinationAddressPrefix": destination_address_prefix,
+            "access": access_security_group,
+            "priority": security_group_priority,
+            "direction": security_group_direction
+        }
+    }
+    security_group_json['properties']['securityRules'].append(current_rule)
+    # End of loop
+    ######################################################################
+
+    security_group_params = json.dumps(security_group_json)
+    return security_group_params
