@@ -73,9 +73,9 @@ class AzureCleanupContext(BaseHandler.CleanupContext):
 
     @classmethod
     def get_resources_to_teardown(cls, env, resources_to_keep=None):
-        all_existing_resources = env.handler.openstack_infra_state()
+        all_existing_resources = env.handler.azure_infra_state()
         if resources_to_keep:
-            return env.handler.openstack_infra_state_delta(
+            return env.handler.azure_infra_state_delta(
                 before=resources_to_keep, after=all_existing_resources)
         else:
             return all_existing_resources
@@ -111,12 +111,12 @@ class AzureCleanupContext(BaseHandler.CleanupContext):
 
 
 class CloudifyAzureInputsConfigReader(BaseCloudifyInputsConfigReader):
-
+"""
     def __init__(self, cloudify_config, manager_blueprint_path, **kwargs):
         super(CloudifyAzureInputsConfigReader, self).__init__(
             cloudify_config, manager_blueprint_path=manager_blueprint_path,
             **kwargs)
-
+"""
     @property
     def subscription_id(self):
         return self.config['subscription_id']
@@ -298,7 +298,7 @@ class AzureHandler(BaseHandler):
             if management_key_path:
                 os.remove(management_key_path)
 
-    def openstack_clients(self):
+    def azure_clients(self):
         creds = self._client_creds()
         return (nvclient.Client(**creds),
                 neclient.Client(username=creds['username'],
@@ -309,7 +309,7 @@ class AzureHandler(BaseHandler):
                 cinderclient.Client(**creds))
 
     @retry(stop_max_attempt_number=5, wait_fixed=20000)
-    def openstack_infra_state(self):
+    def azure_infra_state(self):
         """
         @retry decorator is used because this error sometimes occur:
         ConnectionFailed: Connection to neutron failed: Maximum
@@ -332,14 +332,14 @@ class AzureHandler(BaseHandler):
             'volumes': dict(self._volumes(cinder, prefix))
         }
 
-    def openstack_infra_state_delta(self, before, after):
+    def azure_infra_state_delta(self, before, after):
         after = copy.deepcopy(after)
         return {
             prop: self._remove_keys(after[prop], before[prop].keys())
             for prop in before
         }
 
-    def remove_openstack_resources(self, resources_to_remove):
+    def remove_azure_resources(self, resources_to_remove):
         # basically sort of a workaround, but if we get the order wrong
         # the first time, there is a chance things would better next time
         # 3'rd time can't really hurt, can it?
@@ -353,7 +353,7 @@ class AzureHandler(BaseHandler):
             time.sleep(3)
         return resources_to_remove
 
-    def _remove_openstack_resources_impl(self, resources_to_remove):
+    def _remove_azure_resources_impl(self, resources_to_remove):
         nova, neutron, cinder = self.openstack_clients()
 
         servers = nova.servers.list()
