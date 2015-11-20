@@ -305,14 +305,14 @@ class AzureHandler(BaseHandler):
 
         failed = {
             'servers': {},
-            'routers': {},
-            'ports': {},
-            'subnets': {},
-            'networks': {},
-            'key_pairs': {},
-            'floatingips': {},
-            'security_groups': {},
-            'volumes': {}
+            'storageaccounts': {},
+            'resourcegroups' {},
+            'publicips': {},  
+            'vnets': {},  
+            'nics': {},  
+            'availabilitysets': {},  
+            'serverwithnics': {},
+            'security_groups': {}
         }
 
         volumes_to_remove = []
