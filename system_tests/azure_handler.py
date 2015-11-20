@@ -20,28 +20,16 @@ import time
 import copy
 from contextlib import contextmanager
 
-from cinderclient.v1 import client as cinderclient
-import novaclient.v2.client as nvclient
-import neutronclient.v2_0.client as neclient
-from retrying import retry
-
 from cosmo_tester.framework.handlers import (
     BaseHandler,
     BaseCloudifyInputsConfigReader)
-from cosmo_tester.framework.util import get_actual_keypath
-
-logging.getLogger('neutronclient.client').setLevel(logging.INFO)
-logging.getLogger('novaclient.client').setLevel(logging.INFO)
-
-
-VOLUME_TERMINATION_TIMEOUT_SECS = 300
 
 
 class AzureCleanupContext(BaseHandler.CleanupContext):
 
     def __init__(self, context_name, env):
         super(AzureCleanupContext, self).__init__(context_name, env)
-        self.before_run = self.env.handler.openstack_infra_state()
+        self.before_run = self.env.handler.azure_infra_state()
 
     def cleanup(self):
         """
