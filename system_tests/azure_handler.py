@@ -557,6 +557,9 @@ class AzureHandler(BaseHandler):
         return [vnet_name
                 for vnet in vnet._get_vnet_name]
 
+    def _availability_sets(self, azure_client):
+        return [availability_set_name
+                for availabilty_set in availabilityset._get_availability_set_name]
 
     @contextmanager
     def _handled_exception(self, resource_id, failed, resource_group):
