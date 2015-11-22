@@ -549,11 +549,8 @@ class AzureHandler(BaseHandler):
 
     def _client_creds(self):
         return {
-            'username': self.env.keystone_username,
-            'api_key': self.env.keystone_password,
-            'auth_url': self.env.keystone_url,
-            'project_id': self.env.keystone_tenant_name,
-            'region_name': self.env.region
+            'subscription_id': self.env.subscription_id
+            'location': self.env.region
         }
 
     def _networks(self, neutron, prefix):
