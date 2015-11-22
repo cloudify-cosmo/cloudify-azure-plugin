@@ -418,25 +418,7 @@ class AzureHandler(BaseHandler):
                                              'networks'):
                     neutron.delete_network(network['id'])
 
-        # TODO: implement key-pair creation and cleanup per tenant
-        #
-        # IMPORTANT: Do not remove key-pairs, they might be used
-        # by another tenant (of the same user)
-        #
-        # for key_pair in keypairs:
-        #     if key_pair.name == self.env.agent_keypair_name and \
-        #             self.env.use_existing_agent_keypair:
-        #             # this is a pre-existing agent key-pair, do not remove
-        #             continue
-        #     elif key_pair.name == self.env.management_keypair_name and \
-        #             self.env.use_existing_manager_keypair:
-        #             # this is a pre-existing manager key-pair, do not remove
-        #             continue
-        #     elif key_pair.id in resources_to_remove['key_pairs']:
-        #         with self._handled_exception(key_pair.id, failed,
-        #           'key_pairs'):
-        #             nova.keypairs.delete(key_pair)
-
+        
         for floatingip in floatingips:
             if floatingip['id'] in resources_to_remove['floatingips']:
                 with self._handled_exception(floatingip['id'], failed,
