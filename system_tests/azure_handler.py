@@ -550,7 +550,7 @@ class AzureHandler(BaseHandler):
     def _client_creds(self):
         return {
             'subscription_id': self.env.subscription_id
-            'location': self.env.region
+            'location': self.env.location
         }
 
     def _networks(self, neutron, prefix):
