@@ -25,10 +25,6 @@ from azurecloudify import resourcegroup
 from azurecloudify import constants
 import test_utils
 
-
-TIME_DELAY = 20
-
-
 class TestResourceGroup(testtools.TestCase):
 
     __random_id = str(random.randrange(0, 1000, 2))
@@ -60,10 +56,9 @@ class TestResourceGroup(testtools.TestCase):
     def setUp(self):
         super(TestResourceGroup, self).setUp()
 
-
     def tearDown(self):
         super(TestResourceGroup, self).tearDown()
-        time.sleep(TIME_DELAY)
+        time.sleep(constants.WAITING_TIME)
 
     def test_create_resource_group(self):
         ctx = self.mock_ctx('testcreategroup')

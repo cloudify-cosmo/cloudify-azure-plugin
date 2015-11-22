@@ -54,16 +54,18 @@ def create_storage_account(**_):
     ctx.logger.info("{0} is {1}".format(constants.STORAGE_ACCOUNT_KEY, storage_account_name))
     return status_code
 
+
 @operation
 def delete_storage_account(**_):
-    delete_current_storage_account()
+    status_code = delete_current_storage_account()
     utils.clear_runtime_properties()
+    return status_code
 
 
 def delete_current_storage_account(**_):
     if constants.USE_EXTERNAL_RESOURCE in ctx.node.properties and ctx.node.properties[constants.USE_EXTERNAL_RESOURCE]:
         ctx.logger.info("An existing storage_account was used, so there's no need to delete")
-        return
+        return constants.ACCEPTED_STATUS_CODE
 
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     headers, location, subscription_id = auth.get_credentials()
@@ -72,10 +74,11 @@ def delete_current_storage_account(**_):
     try:
         storage_account_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts/'+storage_account_name+'?api-version='+constants.api_version
         response_sa = requests.delete(url=storage_account_url, headers=headers)
-        print response_sa.text
         ctx.logger.info("response_sa storage account : {0}".format(response_sa.text))
+        return response_sa.status_code
     except:
         ctx.logger.info("Storage Account {0} could not be deleted.".format(storage_account_name))
+    return constants.FAILURE_CODE
 
 
 @operation
@@ -118,3 +121,22 @@ def get_provisioning_state(**_):
 
     storage_account_url = "{0}/subscriptions/{1}/resourceGroups/{2}/providers/Microsoft.Storage/storageAccounts/{3}?api-version={4}".format(constants.azure_url, subscription_id, resource_group_name, storage_account_name, constants.api_version)
     return azurerequests.get_provisioning_state(headers, storage_account_name, storage_account_url)
+
+
+def get_storageaccount_access_keys(**_):
+
+    ctx.logger.info("In get_all_storageaccount_keys")
+    headers, location, subscription_id = auth.get_credentials()
+    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+    ctx.logger.info("In get_all_storageaccount_keys resource group is {0}".format(resource_group_name))
+    storage_account_name = ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
+
+    api_version = constants.api_version
+    keys_url = "{0}/subscriptions/{1}/resourceGroups/{2}/providers/Microsoft.Storage/" \
+                  "storageAccounts/{3}/listKeys?api-version={4}"\
+                    .format(constants.azure_url, subscription_id, resource_group_name,
+                    storage_account_name, api_version)
+
+    response = requests.post(url=keys_url, data="{}", headers=headers)
+    result = response.json()
+    return [result['key1'], result['key2']]

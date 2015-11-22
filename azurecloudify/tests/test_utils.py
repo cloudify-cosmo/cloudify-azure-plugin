@@ -141,8 +141,8 @@ def wait_status(ctx, resource, expected_status=constants.SUCCEEDED, timeout=600)
     status = getattr(module, 'get_provisioning_state')(ctx=ctx)
     ctx.logger.info('{0} status is {1}...'.format(resource, status))
     while (status != expected_status) and (status != constants.FAILED) and (waiting_time <= timeout):
-        waiting_time += constants.TIME_DELAY
-        sleep(constants.TIME_DELAY)
+        waiting_time += constants.WAITING_TIME
+        sleep(constants.WAITING_TIME)
         status = getattr(module, 'get_provisioning_state')(ctx=ctx)
         attempt_index += 1
         ctx.logger.info('{0} status is {1} - attempt #{2}...'.format(resource, status, attempt_index))

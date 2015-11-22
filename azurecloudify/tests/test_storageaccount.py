@@ -72,13 +72,14 @@ class TestStorage(testtools.TestCase):
 
         return MockCloudifyContext(node_id='test', properties=test_properties)
 
+
     def setUp(self):
         super(TestStorage, self).setUp()
 
 
     def tearDown(self):
         super(TestStorage, self).tearDown()
-        time.sleep(constants.TIME_DELAY)
+        time.sleep(constants.WAITING_TIME)
 
 
     def test_create_storage(self):
@@ -95,27 +96,32 @@ class TestStorage(testtools.TestCase):
             try:
                 status_code = storageaccount.create_storage_account(ctx=ctx)
                 ctx.logger.info("status_code {0} for rg:{1},sa:{2}".format(str(status_code), current_resource_group_name, storage_account_name))
-                sleep(constants.TIME_DELAY)
+                sleep(constants.WAITING_TIME)
             except RecoverableError:
                 pass
 
         self.assertIn(status_code,valid_status_codes)
         current_ctx.set(ctx=ctx)
         test_utils.wait_status(ctx, constants.STORAGE_ACCOUNT, constants.SUCCEEDED, timeout=600)
-        ctx.logger.info("Storage Account Created")
+        ctx.logger.info("Storage Account has been created")
 
-        keys = storageaccount.get_storage_keys(ctx)
+        ctx.logger.info("Retrieving storage account's access keys...")
+        keys = storageaccount.get_storageaccount_access_keys(ctx=ctx)
         self.assertIsNotNone(keys)
         self.assertEqual(len(keys), 2)
-        ctx.logger.info("Key 1: {}, key 2: {}".format(keys[0], keys[1]))
+        ctx.logger.info("KEY1 is {}".format(keys[0]))
+        ctx.logger.info("KEY2 is {}".format(keys[1]))
 
-        self.assertEqual(constants.ACCEPTED_STATUS_CODE, storageaccount.delete_storage_account(ctx=ctx))
+        result = storageaccount.delete_storage_account(ctx=ctx)
+        self.assertIn(result, [constants.OK_STATUS_CODE, constants.ACCEPTED_STATUS_CODE])
 
-        ctx.logger.info("Checking Storage Account deleted")
+        ctx.logger.info("Checking if the storage account has been deleted")
+
+        ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = current_resource_group_name
+        ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = storage_account_name
         current_ctx.set(ctx=ctx)
-        self.assertRaises(test_utils.WindowsAzureError, storageaccount.get_provisioning_state, ctx=ctx)
-        ctx.logger.info("Storage Account Deleted")
-
+        test_utils.wait_status(ctx, constants.STORAGE_ACCOUNT, constants.RESOURCE_NOT_FOUND, timeout=600)
+        ctx.logger.info("Storage account has been deleted")
         ctx.logger.info("END test create storage")
  
 

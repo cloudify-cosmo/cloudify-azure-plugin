@@ -82,7 +82,7 @@ def delete_current_resource_group(**_):
 
     except:
         ctx.logger.info("Resource Group {0} could not be deleted.".format(resource_group_name))
-    return -1
+    return constants.FAILURE_CODE
 
 
 def _validate_node_properties(key, ctx_node_properties):
