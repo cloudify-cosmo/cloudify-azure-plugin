@@ -132,4 +132,5 @@ WAITING_TIME = 20
 RESOURCE_GROUP = "resourcegroup"
 STORAGE_ACCOUNT = "storageaccount"
 
+valid_status_codes = [OK_STATUS_CODE, ACCEPTED_STATUS_CODE, CREATED_STATUS_CODE]
 

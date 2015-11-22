@@ -18,7 +18,7 @@ import importlib
 from time import sleep
 
 from cloudify import ctx
-from cloudify.exceptions import NonRecoverableError
+from cloudify.exceptions import NonRecoverableError, RecoverableError
 
 from azurecloudify import constants
 
@@ -122,6 +122,18 @@ def get_targets_properties(ctx, relationship_name, properties_name):
         )
 
 
+def wait_4_statuses(resource, curr_func_name, ctx):
+    status_code = -1
+    while status_code not in constants.valid_status_codes:
+        try:
+            module = importlib.import_module('azurecloudify.{0}'.format(resource), package=None)
+            status_code = getattr(module, curr_func_name)(ctx=ctx)
+            ctx.logger.info("status_code of {0}".format(str(status_code), resource))
+            sleep(constants.WAITING_TIME)
+        except RecoverableError:
+            pass
+    return status_code
+
 def wait_status(ctx, resource, expected_status=constants.SUCCEEDED, timeout=600):
     """ A helper to send request to Azure. The operation status
     is check to monitor the request. Failures are managed too.
@@ -164,3 +176,4 @@ class WindowsAzureError(Exception):
 
     def __str__(self):
         return 'Error {}: {}.'.format(self.code, self.message)
+

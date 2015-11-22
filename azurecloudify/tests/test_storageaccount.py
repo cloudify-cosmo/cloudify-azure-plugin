@@ -95,17 +95,8 @@ class TestStorage(testtools.TestCase):
         ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = current_resource_group_name
         current_ctx.set(ctx=ctx)
 
-        status_code = -1
-        valid_status_codes = [constants.OK_STATUS_CODE, constants.ACCEPTED_STATUS_CODE, constants.CREATED_STATUS_CODE]
-        while status_code not in valid_status_codes:
-            try:
-                status_code = storageaccount.create_storage_account(ctx=ctx)
-                ctx.logger.info("status_code {0} for rg:{1},sa:{2}".format(str(status_code), current_resource_group_name, storage_account_name))
-                sleep(constants.WAITING_TIME)
-            except RecoverableError:
-                pass
-
-        self.assertIn(status_code,valid_status_codes)
+        status_code = test_utils.wait_4_statuses(constants.STORAGE_ACCOUNT, 'create_storage_account', ctx)
+        self.assertIn(status_code, constants.valid_status_codes)
         current_ctx.set(ctx=ctx)
         test_utils.wait_status(ctx, constants.STORAGE_ACCOUNT, constants.SUCCEEDED, timeout=600)
         ctx.logger.info("Storage Account has been created")
@@ -131,60 +122,45 @@ class TestStorage(testtools.TestCase):
 
 
     def test_delete_storage(self):
-        return
         ctx = self.mock_ctx('testdeletestorage')
+        current_resource_group_name = ctx[constants.EXISTING_RESOURCE_GROUP_KEY]
+        storage_account_name = ctx[constants.EXISTING_STORAGE_ACCOUNT_KEY]
+        ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = current_resource_group_name
         current_ctx.set(ctx=ctx)
-        ctx.logger.info("BEGIN test delete storage")
+        ctx.logger.info("BEGIN test delete storage {0} in resource group {1}".format(storage_account_name, current_resource_group_name))
 
-        status_code = storageaccount.create(ctx=ctx)
-        ctx.logger.info("status_code : " + str(status_code))
-        self.assertTrue(bool((status_code == 200) | (status_code == 202)))
+        status_code = test_utils.wait_4_statuses(constants.STORAGE_ACCOUNT, 'create_storage_account', ctx)
+        self.assertIn(status_code, constants.valid_status_codes)
+        ctx.logger.info("Status_code {0}".format(str(status_code)))
+        self.assertIn(status_code, [constants.OK_STATUS_CODE, constants.CREATED_STATUS_CODE, constants.ACCEPTED_STATUS_CODE])
         current_ctx.set(ctx=ctx)
         test_utils.wait_status(ctx, constants.STORAGE_ACCOUNT, constants.SUCCEEDED, timeout=600)
 
         ctx.logger.info("----------------------------------")
-        ctx.logger.info("3. Creating a storage account with USE_EXTERNAL_RESOURCE property = True")
+        ctx.logger.info("Creating a storage account with USE_EXTERNAL_RESOURCE property set to True")
         ctx.node.properties[constants.USE_EXTERNAL_RESOURCE] = True
-        
-        ctx.logger.info("Do not delete storage acount")
-        self.assertEqual(0, storageaccount.delete(ctx=ctx))
-
-        ctx.logger.info("Set deletable propertie to True")
-        ctx.node.properties[constants.DELETABLE_KEY] = True
-
-        ctx.logger.info("Delete storage account")
-        self.assertEqual(200, storageaccount.delete(ctx=ctx))
-
-        ctx.logger.info("Checking Storage Account deleted")
+        ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = current_resource_group_name
+        ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = storage_account_name
         current_ctx.set(ctx=ctx)
-        self.assertRaises(test_utils.WindowsAzureError, storageaccount.get_provisioning_state, ctx=ctx
-        )
+        ctx.logger.info("Do not delete storage account {0}".format(storage_account_name))
+        status_code = storageaccount.delete_storage_account(ctx=ctx)
+        self.assertEqual(status_code, constants.ACCEPTED_STATUS_CODE)
+
+        ctx.logger.info("Setting USE_EXTERNAL_RESOURCE property to False")
+        ctx.node.properties[constants.USE_EXTERNAL_RESOURCE] = False
+        ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = current_resource_group_name
+        ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = storage_account_name
+        current_ctx.set(ctx=ctx)
+        ctx.logger.info("Deleting storage account")
+        status_code = storageaccount.delete_storage_account(ctx=ctx)
+        self.assertIn(status_code, [constants.ACCEPTED_STATUS_CODE, constants.OK_STATUS_CODE])
+
+        ctx.logger.info("Checking if storage account {0} has been deleted".format(storage_account_name))
+        ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = current_resource_group_name
+        ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = storage_account_name
+        current_ctx.set(ctx=ctx)
+        test_utils.wait_status(ctx, constants.STORAGE_ACCOUNT, constants.RESOURCE_NOT_FOUND, timeout=600)
         ctx.logger.info("Storage Account Deleted")
 
         ctx.logger.info("END test delete storage")
 
-
-    def test_conflict_storage(self):
-        return
-        ctx = self.mock_ctx('testconflictstorage')
-        current_ctx.set(ctx=ctx)
-        ctx.logger.info("BEGIN test conflict storage")
-
-        status_code = storageaccount.create(ctx=ctx)
-        ctx.logger.info("status_code : " + str(status_code))
-        self.assertTrue(bool((status_code == 200) | (status_code == 202)))
-        current_ctx.set(ctx=ctx)
-        test_utils.wait_status(ctx, constants.STORAGE_ACCOUNT, constants.SUCCEEDED, timeout=600)
-        ctx.logger.info("Storage Account Created")
-
-        ctx.logger.info("Conflict Creating Storage Account")
-        self.assertEqual(409, storageaccount.create_storage_accounte(ctx=ctx))
-
-        self.assertEqual(200, storageaccount.delete_storage_account(ctx=ctx))
-
-        ctx.logger.info("Check is Storage Account is release")
-        current_ctx.set(ctx=ctx)
-        self.assertRaises(test_utils.WindowsAzureError,storageaccount.get_provisioning_state, ctx=ctx)
-        ctx.logger.info("Storage Account Deleted")
-
-        ctx.logger.info("END test conflict storage")
