@@ -302,12 +302,9 @@ class AzureHandler(BaseHandler):
     def azure_clients(self):
         creds = self._client_creds()
         return (nvclient.Client(**creds),
-                neclient.Client(username=creds['username'],
-                                password=creds['api_key'],
-                                tenant_name=creds['project_id'],
-                                region_name=creds['region_name'],
-                                auth_url=creds['auth_url']),
-                cinderclient.Client(**creds))
+                neclient.Client(subscription_id=creds['subscription_id'],
+                                location=creds['location'],
+                client.Client(**creds))
 
     @retry(stop_max_attempt_number=5, wait_fixed=20000)
     def azure_infra_state(self):
