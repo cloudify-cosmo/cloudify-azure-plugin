@@ -613,6 +613,8 @@ node_templates:
       custom_script_command: { get_input: custom_script_command}
 
     relationships:
+      - target: manager_resource_group
+        type: cloudify.azure.relationships.custom_script_contained_in_resource_group
       - target: manager_host
         type: cloudify.azure.relationships.custom_script_connected_to_server
       - target: azure_token
