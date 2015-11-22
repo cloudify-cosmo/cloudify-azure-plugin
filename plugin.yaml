@@ -698,6 +698,16 @@ relationships:
               
    cloudify.azure.relationships.custom_script_connected_to_server:
     derived_from: cloudify.relationships.connected_to
+    
+   cloudify.azure.relationships.custom_script_contained_in_resource_group:
+    derived_from: cloudify.relationships.contained_in
+    source_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        preconfigure:
+          implementation: microsoft.azurecloudify.extensions.set_dependent_resources_names
+          inputs:
+            azure_config:
+              default: {}
 
    cloudify.azure.relationships.resource_depends_on_azure_token:
     derived_from: cloudify.relationships.depends_on
