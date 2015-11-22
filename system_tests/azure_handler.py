@@ -553,9 +553,9 @@ class AzureHandler(BaseHandler):
         return [nic_name
                 for nic in nic._get_nic_name]
 
-    def _vnets(self, azure_client):
-        return [vnet_name
-                for vnet in vnet._get_vnet_name]
+    def _servers(self, azure_client):
+        return [vm_name
+                for vnet in server._get_server_name]
 
     def _availability_sets(self, azure_client):
         return [availability_set_name
