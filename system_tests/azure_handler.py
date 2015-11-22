@@ -553,25 +553,22 @@ class AzureHandler(BaseHandler):
             'location': self.env.location
         }
 
-    def _networks(self, neutron, prefix):
-        return [(n['id'], n['name'])
-                for n in neutron.list_networks()['networks']
-                if self._check_prefix(n['name'], prefix)]
+    def _resourcegroups(self, azure_client):
+        return [(resource_group_name)
+                for resource_group in resoucegroup. _get_resource_group_name()]
+        
 
-    def _subnets(self, neutron, prefix):
-        return [(n['id'], n['name'])
-                for n in neutron.list_subnets()['subnets']
-                if self._check_prefix(n['name'], prefix)]
+    def _storageaccount(self, azure_client):
+        return [(storage_account_name]
+                for storageaccount in storageaccount. _get_storage_account_name()]
 
-    def _routers(self, neutron, prefix):
-        return [(n['id'], n['name'])
-                for n in neutron.list_routers()['routers']
-                if self._check_prefix(n['name'], prefix)]
+    def _securityaccount(self,azure_client):
+        return [(security_group_name)
+                for securitygroup in securitygroup._get_security_group_name()]
 
-    def _security_groups(self, neutron, prefix):
-        return [(n['id'], n['name'])
-                for n in neutron.list_security_groups()['security_groups']
-                if self._check_prefix(n['name'], prefix)]
+    def _vnet(self, azure_client):
+        return [vnet_name
+                for vnet_name in vnet._get_vnet_name()]
 
     def _servers(self, nova, prefix):
         return [(s.id, s.human_id)
