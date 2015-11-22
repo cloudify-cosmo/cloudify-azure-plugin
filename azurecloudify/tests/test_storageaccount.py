@@ -40,16 +40,21 @@ class TestStorage(testtools.TestCase):
         ctx.logger.info("CREATE storage_account\'s required resources")
         current_ctx.set(ctx=ctx)
         resourcegroup.create_resource_group(ctx=ctx)
-        current_resource_group_name = ctx[constants.RESOURCE_GROUP_KEY]
+        current_resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
         ctx.logger.info("In setUpClass resource group is {0}".format(current_resource_group_name))
         current_ctx.set(ctx=ctx)
+
 
     @classmethod
     def tearDownClass(self):
         ctx = self.mock_ctx('del')
-        ctx.logger.info("DELETE storage_account\'s required resources")
+        curr_resource_group = ctx[constants.EXISTING_RESOURCE_GROUP_KEY]
+        ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = curr_resource_group
+        ctx.logger.info("Delete the resource group {0}".format(curr_resource_group))
         current_ctx.set(ctx=ctx)
-        resourcegroup.delete_resource_group(ctx=ctx)
+        status_code = resourcegroup.delete_resource_group(ctx=ctx)
+        ctx.logger.info("Deleted the resource group {0}, status code is {1}".format(curr_resource_group, status_code))
+
 
     @classmethod
     def mock_ctx(self, test_name):
@@ -123,7 +128,7 @@ class TestStorage(testtools.TestCase):
         test_utils.wait_status(ctx, constants.STORAGE_ACCOUNT, constants.RESOURCE_NOT_FOUND, timeout=600)
         ctx.logger.info("Storage account has been deleted")
         ctx.logger.info("END test create storage")
- 
+
 
     def test_delete_storage(self):
         return

@@ -125,10 +125,10 @@ def get_provisioning_state(**_):
 
 def get_storageaccount_access_keys(**_):
 
-    ctx.logger.info("In get_all_storageaccount_keys")
+    ctx.logger.info("In get_storageaccount_access_keys")
     headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-    ctx.logger.info("In get_all_storageaccount_keys resource group is {0}".format(resource_group_name))
+    ctx.logger.info("In get_storageaccount_access_keys resource group is {0}".format(resource_group_name))
     storage_account_name = ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
 
     api_version = constants.api_version
