@@ -65,6 +65,7 @@ def create_custom_script(**_):
 @operation
 def set_dependent_resources_names(azure_config, **kwargs):
     ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+    ctx.source.instance.runtime_properties[constants.VM_KEY] = ctx.target.instance.runtime_properties[constants.VM_KEY]
 
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
