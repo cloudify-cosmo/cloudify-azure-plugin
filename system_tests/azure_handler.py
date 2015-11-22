@@ -301,8 +301,8 @@ class AzureHandler(BaseHandler):
 
     def azure_clients(self):
         creds = self._client_creds()
-        return (nvclient.Client(**creds),
-                neclient.Client(subscription_id=creds['subscription_id'],
+        return (client.Client(**creds),
+                client.Client(subscription_id=creds['subscription_id'],
                                 location=creds['location'],
                 client.Client(**creds))
 
