@@ -238,7 +238,7 @@ def _get_virtual_machine_params(location, random_suffix_value, resource_group_na
                                 subscription_id, vm_name, availability_set_name)
 
     _set_network_json(vm_json, subscription_id, resource_group_name)
-    _set_data_disk_json(vm_json, storage_account_name)
+    #_set_data_disk_json(vm_json, storage_account_name)
     ctx.logger.info("get_virtual_machine_params:{0} {1}".format(vm_name, json.dumps(vm_json)))
     return json.dumps(vm_json)
 
