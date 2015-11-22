@@ -557,23 +557,6 @@ class AzureHandler(BaseHandler):
         return [vnet_name
                 for vnet in vnet._get_vnet_name]
 
-    def _ports(self, neutron, prefix):
-        return [(p['id'], p['name'])
-                for p in neutron.list_ports()['ports']
-                if self._check_prefix(p['name'], prefix)]
-
-    def _volumes(self, cinder, prefix):
-        return [(v.id, v.display_name) for v in cinder.volumes.list()
-                if self._check_prefix(v.display_name, prefix)]
-
-    def _check_prefix(self, name, prefix):
-        return name.startswith(prefix)
-
-    def _remove_keys(self, dct, keys):
-        for key in keys:
-            if key in dct:
-                del dct[key]
-        return dct
 
     @contextmanager
     def _handled_exception(self, resource_id, failed, resource_group):
