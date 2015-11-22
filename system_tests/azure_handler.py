@@ -418,13 +418,6 @@ class AzureHandler(BaseHandler):
                                              'networks'):
                     neutron.delete_network(network['id'])
 
-        
-        for floatingip in floatingips:
-            if floatingip['id'] in resources_to_remove['floatingips']:
-                with self._handled_exception(floatingip['id'], failed,
-                                             'floatingips'):
-                    neutron.delete_floatingip(floatingip['id'])
-
         for security_group in security_groups:
             if security_group['name'] == 'default':
                 continue
