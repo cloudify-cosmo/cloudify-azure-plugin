@@ -555,34 +555,32 @@ class AzureHandler(BaseHandler):
 
     def _resourcegroups(self, azure_client):
         return [(resource_group_name)
-                for resource_group in resoucegroup. _get_resource_group_name()]
+                for resource_group in resoucegroup._get_resource_group_name()]
         
 
-    def _storageaccount(self, azure_client):
+    def _storageaccounts(self, azure_client):
         return [(storage_account_name]
-                for storageaccount in storageaccount. _get_storage_account_name()]
+                for storage_account in storageaccount._get_storage_account_name()]
 
-    def _securityaccount(self,azure_client):
+    def _securityaccounts(self,azure_client):
         return [(security_group_name)
-                for securitygroup in securitygroup._get_security_group_name()]
+                for security_group in securitygroup._get_security_group_name()]
 
-    def _vnet(self, azure_client):
+    def _vnets(self, azure_client):
         return [vnet_name
                 for vnet_name in vnet._get_vnet_name()]
 
-    def _servers(self, nova, prefix):
-        return [(s.id, s.human_id)
-                for s in nova.servers.list()
-                if self._check_prefix(s.human_id, prefix)]
+    def _publicips(self, azure_client):
+        return [public_ip_name
+                for public_ip in publicip._get_public_ip_name()]
 
-    def _key_pairs(self, nova, prefix):
-        return [(kp.id, kp.name)
-                for kp in nova.keypairs.list()
-                if self._check_prefix(kp.name, prefix)]
+    def _nics(self, azure_client):
+        return [nic_name
+                for nic in nic._get_nic_name]
 
-    def _floatingips(self, neutron, prefix):
-        return [(ip['id'], ip['floating_ip_address'])
-                for ip in neutron.list_floatingips()['floatingips']]
+    def _vnets(self, azure_client):
+        return [vnet_name
+                for vnet in vnet._get_vnet_name]
 
     def _ports(self, neutron, prefix):
         return [(p['id'], p['name'])
