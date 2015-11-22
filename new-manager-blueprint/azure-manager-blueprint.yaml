@@ -113,6 +113,10 @@ inputs:
     type: string
     default: ''
     
+  data_disk_size_GB:
+    type: string
+    default: '0'
+    
   security_group_priority: 
     type: string
     default: '100'
@@ -426,6 +430,9 @@ dsl_definitions:
     security_group_sourcePortRange: { get_input: security_group_sourcePortRange}
     security_group_destinationPortRange: { get_input: security_group_destinationPortRange}
     security_group_sourceAddressPrefix: { get_input: security_group_sourceAddressPrefix}
+    custom_script_command: { get_input: custom_script_command}
+    custom_script_path: { get_input: custom_script_path}
+    data_disk_size_GB: { get_input: data_disk_size_GB}
     security_group_destinationAddressPrefix: { get_input: security_group_destinationAddressPrefix}
     use_external_resource: { get_input: use_external_resource }
     existing_resource_group_name: { get_input: existing_resource_group_name }
@@ -532,6 +539,7 @@ node_templates:
       tenant_id: { get_input: tenant_id}
       ssh_username: { get_input: ssh_user}
       aad_password: { get_input: aad_password}
+      data_disk_size_GB: { get_input: data_disk_size_GB}      
       install_agent: false
     relationships:
       - target: manager_nic
