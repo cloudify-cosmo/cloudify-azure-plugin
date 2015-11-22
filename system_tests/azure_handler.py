@@ -60,7 +60,7 @@ class AzureCleanupContext(BaseHandler.CleanupContext):
     def _clean(cls, env, resources_to_teardown):
         cls.logger.info('Azure handler will try to remove these resources:'
                         ' {0}'.format(resources_to_teardown))
-        failed_to_remove = env.handler.remove_openstack_resources(
+        failed_to_remove = env.handler.remove_azure_resources(
             resources_to_teardown)
         if failed_to_remove:
             trimmed_failed_to_remove = {key: value for key, value in
@@ -84,7 +84,7 @@ class AzureCleanupContext(BaseHandler.CleanupContext):
     def update_server_id(self, server_name):
 
         # retrieve the id of the new server
-        nova, _, _ = self.env.handler.openstack_clients()
+        nova, _, _ = self.env.handler.azure_clients()
         servers = nova.servers.list(
             search_opts={'name': server_name})
         if len(servers) > 1:
