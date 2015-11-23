@@ -376,55 +376,46 @@ class AzureHandler(BaseHandler):
             'security_groups': {}
         }
 
-        volumes_to_remove = []
-        for volume in volumes:
-            if volume.id in resources_to_remove['volumes']:
-                volumes_to_remove.append(volume)
+        for vm_name in servers:
+            if vm_name in resources_to_remove['servers']:
+                with self._handled_exception(vm_name, failed, 'servers'):
+                azurecloudify.server.delete_vm(vm_name)
 
-        left_volumes = self._delete_volumes(nova, cinder, volumes_to_remove)
-        for volume_id, ex in left_volumes.iteritems():
-            failed['volumes'][volume_id] = ex
+        for nic_name in nics:
+            if nic_name in resources_to_remove['nics']:
+                with self._handled_exception(nic_name, failed, 'nics'):
+                    azurecloudify.nic.delete_nic(nic_name)
 
-        for server in servers:
-            if server.id in resources_to_remove['servers']:
-                with self._handled_exception(server.id, failed, 'servers'):
-                    nova.servers.delete(server)
+        for public_ip_name in publicips:
+            if public_ip_name in resources_to_remove['publicips']:
+                with self._handled_exception(public_ip_name, failed, 'publicips'):
+                    azurecloudify.publicip.delete_public_ip(public_ip_name)
+                    
+        for vnet_name in vnets:
+            if vnet_name in resources_to_remove['vnets']:
+                with self._handled_exception(vnet_name, failed, 'vnets'):
+                    azurecloudify.vnet.delete_vnet(vnet_name)
 
-        for router in routers:
-            if router['id'] in resources_to_remove['routers']:
-                with self._handled_exception(router['id'], failed, 'routers'):
-                    for p in neutron.list_ports(
-                            device_id=router['id'])['ports']:
-                        neutron.remove_interface_router(router['id'], {
-                            'port_id': p['id']
-                        })
-                    neutron.delete_router(router['id'])
 
-        for port in ports:
-            if port['id'] in resources_to_remove['ports']:
-                with self._handled_exception(port['id'], failed, 'ports'):
-                    neutron.delete_port(port['id'])
+        for subnet_name in subnets:
+            if subnet_name in resources_to_remove['subnets']:
+                with self._handled_exception(vnet_name, failed, 'subnets'):
+                    azurecloudify.subnet.delete_subnet(subnet_name)
 
-        for subnet in subnets:
-            if subnet['id'] in resources_to_remove['subnets']:
-                with self._handled_exception(subnet['id'], failed, 'subnets'):
-                    neutron.delete_subnet(subnet['id'])
+        for security_group_name in securitygroups:
+            if security_group_name in resources_to_remove['securitygroups']:
+                with self._handled_exception(security_group_name, failed, 'securitygroups'):
+                    azurecloudify.securitygroup.delete_security_group(security_group_name)
 
-        for network in networks:
-            if network['name'] == self.env.external_network_name:
-                continue
-            if network['id'] in resources_to_remove['networks']:
-                with self._handled_exception(network['id'], failed,
-                                             'networks'):
-                    neutron.delete_network(network['id'])
-
-        for security_group in security_groups:
-            if security_group['name'] == 'default':
-                continue
-            if security_group['id'] in resources_to_remove['security_groups']:
-                with self._handled_exception(security_group['id'],
-                                             failed, 'security_groups'):
-                    neutron.delete_security_group(security_group['id'])
+        for storage_account_name in storageaccounts:
+            if security_group_name in resources_to_remove['storageaccounts']:
+                with self._handled_exception(storage_account_name, failed, 'storageaccounts'):
+                    azurecloudify.storageaccount.delet_storage_account(storage_account_name)
+                    
+        for resource_group_name in resourcegroups:
+            if resource_group_name in resources_to_remove['resourcegroups']:
+                with self._handled_exception(resource_group_name, failed, 'resourcegroups'):
+                    azurecloudify.resourcegroup.delet_resource_group(resource_group_name)
 
         return failed
 
