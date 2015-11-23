@@ -354,15 +354,6 @@ class AzureHandler(BaseHandler):
     def _remove_azure_resources_impl(self, resources_to_remove):
         nova, neutron, cinder = self.openstack_clients()
 
-        servers = nova.servers.list()
-        ports = neutron.list_ports()['ports']
-        routers = neutron.list_routers()['routers']
-        subnets = neutron.list_subnets()['subnets']
-        networks = neutron.list_networks()['networks']
-        # keypairs = nova.keypairs.list()
-        floatingips = neutron.list_floatingips()['floatingips']
-        security_groups = neutron.list_security_groups()['security_groups']
-        volumes = cinder.volumes.list()
 
         failed = {
             'servers': {},
