@@ -353,8 +353,17 @@ class AzureHandler(BaseHandler):
 
     def _remove_azure_resources_impl(self, resources_to_remove):
         nova, neutron, cinder = self.openstack_clients()
-
-
+        
+        servers = azurecloudify.servers.list()
+        resourcegroups = azurecloudify._get_resource_group_name()['resource_group_name']
+        storageaccounts = azurecloudify._get_storage_account_name()['storage_account_name']
+        subnets = azurecloudify._get_subnet_name()['subnet_name']
+        publicips = azurecloudify._get_public_ip_name()['public_ip_name']
+        nics = azurecloudify._get_nic_name()['nic_name']
+        vnet = azurecloudify._get_vnet_name()['vnet_name']
+        availabilitysets = azurecloudify._get_availability_set_name()['availability_set_name']
+        securitygroups = azurecloudify._get_security_group_name()['security_groups_name']
+    
         failed = {
             'servers': {},
             'storageaccounts': {},
