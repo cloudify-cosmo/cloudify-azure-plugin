@@ -538,8 +538,7 @@ node_templates:
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
       ssh_username: { get_input: ssh_user}
-      aad_password: { get_input: aad_password}
-      data_disk_size_GB: { get_input: data_disk_size_GB}      
+      aad_password: { get_input: aad_password}    
       install_agent: false
     relationships:
       - target: manager_nic
