@@ -816,7 +816,7 @@ node_templates:
       tenant_id: { get_input: tenant_id}
       aad_password: { get_input: aad_password}
       use_external_resource: { get_input: use_external_resource}
-      existing_vnet_name: { get_input: existing_vnet_name}
+      subnet: { get_input: subnet}
       
     relationships:
       - target: manager_resource_group
@@ -836,7 +836,6 @@ node_templates:
       aad_password: { get_input: aad_password}
       use_external_resource: { get_input: use_external_resource}
       existing_vnet_name: { get_input: existing_vnet_name}
-      subnet: { get_input: subnet}
 
     relationships:
       - target: manager_resource_group

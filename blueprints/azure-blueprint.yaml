@@ -121,7 +121,6 @@ node_templates:
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
       - target: nodecellar_resource_group
-#       type: cloudify.relationships.connected_to
         type: cloudify.azure.relationships.resource_contained_in_resource_group
 
   nodejs_host:
@@ -134,7 +133,6 @@ node_templates:
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
       - target: nodecellar_resource_group
-#       type: cloudify.relationships.connected_to
         type: cloudify.azure.relationships.resource_contained_in_resource_group
 
   nodecellar_resource_group:
@@ -226,6 +224,24 @@ node_templates:
       - target: nodecellar_resource_group
         type: cloudify.azure.relationships.resource_contained_in_resource_group
 
+  nodecellar_subnet:
+    type: cloudify.azure.nodes.Subnet
+    properties:
+      location: { get_input: location}
+      subscription_id: { get_input: subscription_id}
+      client_id: { get_input: client_id}
+      tenant_id: { get_input: tenant_id}
+      aad_password: { get_input: aad_password}
+      use_external_resource: true
+      subnet: { get_input: subnet}
+      
+    relationships:
+      - target: nodecellar_resource_group
+        type: cloudify.azure.relationships.subnet_contained_in_resource_group
+      - target: azure_token
+        type: cloudify.azure.relationships.resource_depends_on_azure_token
+		
+		
   nodecellar_vnet:
     type: cloudify.azure.nodes.VNET
     properties:
@@ -236,11 +252,12 @@ node_templates:
       aad_password: { get_input: aad_password}
       use_external_resource: true
       existing_vnet_name: { get_input: existing_vnet_name}
-      subnet: { get_input: subnet}
-      
+
     relationships:
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
+      - target: nodecellar_subnet
+        type: cloudify.azure.relationships.vnet_connected_to_subnet
       - target: nodecellar_resource_group
         type: cloudify.azure.relationships.vnet_contained_in_resource_group
 

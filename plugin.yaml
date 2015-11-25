@@ -523,11 +523,6 @@ node_types:
           Indicates the name of the virtual machine required to create network interface card
         type: string
         default: ''
-      subnet:
-        description: >
-         Indicates the name of exsisting virtual subnet
-        type: string
-        default: ''
 
 
     interfaces:
@@ -556,9 +551,9 @@ node_types:
          location where VM will be provisioned
         type: string
         default: 'West US'
-      existing_vnet_name:
+      subnet:
         description: >
-         Indicates the name of exsisting virtual network
+         Indicates the name of exsisting virtual subnet
         type: string
         default: ''
       client_id:
