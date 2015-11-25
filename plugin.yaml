@@ -748,6 +748,13 @@ relationships:
               
    cloudify.azure.relationships.server_connected_to_datadisk:
     derived_from: cloudify.relationships.connected_to
+    source_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        preconfigure:
+          implementation: microsoft.azurecloudify.server.set_data_disks
+          inputs:
+            azure_config:
+              default: {}	
               
    cloudify.azure.relationships.datadisk_contained_in_storage_account:
     derived_from: cloudify.relationships.contained_in

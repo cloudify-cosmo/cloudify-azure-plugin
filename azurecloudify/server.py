@@ -151,6 +151,14 @@ def set_nic_details(azure_config, **kwargs):
             ctx.logger.info("{0} is {1}".format(curr_key, ctx.target.instance.runtime_properties[curr_key]))
 
 
+@operation
+def set_data_disks(azure_config, **kwargs):
+    for curr_key in ctx.target.instance.runtime_properties:
+        if curr_key.startswith(constants.DATA_DISK_KEY):
+            ctx.source.instance.runtime_properties[curr_key] = ctx.target.instance.runtime_properties[curr_key]
+            ctx.logger.info("{0} is {1}".format(curr_key, ctx.target.instance.runtime_properties[curr_key]))
+
+
 def _set_ips_from_target():
     if constants.PUBLIC_IP_KEY in ctx.target.instance.runtime_properties:
         ctx.logger.info("{0} is {1}".format(constants.PUBLIC_IP_KEY, ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]))
@@ -240,8 +248,8 @@ def _get_virtual_machine_params(location, random_suffix_value, resource_group_na
 
     ctx.logger.info("In _get_virtual_machine_params vm:{0} b4 _set_network_json".format(vm_name))
     _set_network_json(vm_json, subscription_id, resource_group_name)
-    # ctx.logger.info("In _get_virtual_machine_params vm:{0} b4 _set_data_disk_json".format(vm_name))
-    #_set_data_disk_json(vm_json, storage_account_name)
+    ctx.logger.info("In _get_virtual_machine_params vm:{0} b4 _set_data_disk_json".format(vm_name))
+    _set_data_disk_json(vm_json, storage_account_name)
     ctx.logger.info("get_virtual_machine_params:{0} {1}".format(vm_name, json.dumps(vm_json)))
     return json.dumps(vm_json)
 
@@ -268,13 +276,17 @@ def _set_network_json(vm_json, subscription_id, resource_group_name):
 def _set_data_disk_json(vm_json, storage_account_name):
     vm_properties = vm_json['properties']
     storage_profile = vm_properties['storageProfile']
-    data_disks = storage_profile['dataDisks']
-    storage_account_name = ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
+    if constants.DATA_DISKS in storage_profile:
+        return
+
+    storage_profile[constants.DATA_DISKS] = []
+    data_disks = storage_profile[constants.DATA_DISKS]
     lun = 0
     for curr_key in ctx.instance.runtime_properties:
         if curr_key.startswith(constants.DATA_DISK_KEY):
-            disk_name = constants.DATA_DISK_PREFIX+utils.random_suffix_generator()
-            vhd_uri = "https://"+storage_account_name+".blob.core.windows.net/vhds/"+disk_name+".vhd"
+            disk_name = ctx.instance.runtime_properties[curr_key]
+            vhd_uri = "https://{0}.blob.core.windows.net/vhds/{1}.vhd".format(storage_account_name, disk_name)
+            # Later make this property per disk issue
             disk_size = ctx.node.properties['data_disk_size_GB']
             curr_disk = {
                 "lun": lun,
@@ -282,7 +294,7 @@ def _set_data_disk_json(vm_json, storage_account_name):
                 "createOption": "Empty",
                 "vhd": {
                     "uri": vhd_uri
-                    },
+                },
                 "caching": "None",
                 "diskSizeGB": disk_size
             }
