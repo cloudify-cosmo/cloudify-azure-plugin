@@ -234,11 +234,14 @@ def _start_vm_call(headers, vm_name, subscription_id, resource_group_name):
 
 def _get_virtual_machine_params(location, random_suffix_value, resource_group_name, storage_account_name,
                                subscription_id, vm_name, availability_set_name):
+    ctx.logger.info("In _get_virtual_machine_params vm:{0} b4 _get_vm_base_json".format(vm_name))
     vm_json = _get_vm_base_json(location, random_suffix_value, resource_group_name, storage_account_name,
                                 subscription_id, vm_name, availability_set_name)
 
+    ctx.logger.info("In _get_virtual_machine_params vm:{0} b4 _set_network_json".format(vm_name))
     _set_network_json(vm_json, subscription_id, resource_group_name)
-    _set_data_disk_json(vm_json, storage_account_name)
+    # ctx.logger.info("In _get_virtual_machine_params vm:{0} b4 _set_data_disk_json".format(vm_name))
+    #_set_data_disk_json(vm_json, storage_account_name)
     ctx.logger.info("get_virtual_machine_params:{0} {1}".format(vm_name, json.dumps(vm_json)))
     return json.dumps(vm_json)
 
@@ -284,7 +287,7 @@ def _set_data_disk_json(vm_json, storage_account_name):
                 "diskSizeGB": disk_size
             }
             data_disks.append(curr_disk)
-            lun = lun+1
+            lun += 1
 
 
 def _get_vm_base_json(location, random_suffix_value, resource_group_name, storage_account_name, subscription_id,
