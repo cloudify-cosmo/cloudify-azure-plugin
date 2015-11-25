@@ -184,6 +184,7 @@ def set_public_ip_details(azure_config, **kwargs):
     ctx.source.instance.runtime_properties[constants.PUBLIC_IP_KEY] = ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]
     _set_security_group_details(azure_config)
 
+
 @operation
 def set_vnet_details(azure_config, **kwargs):
     ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]

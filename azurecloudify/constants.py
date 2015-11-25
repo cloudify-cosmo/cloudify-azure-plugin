@@ -75,6 +75,7 @@ AVAILABILITY_SET_PREFIX = 'availability_set_'
 
 SUBNET_KEY = 'subnet_key_name'
 SUBNET_PREFIX = 'subnet_'
+SUBNET_PROPERTY = 'subnet'
 
 CUSTOM_SCRIPT_KEY = 'custom_script_key_name'
 CUSTOM_SCRIPT_PREFIX = 'custom_script_'

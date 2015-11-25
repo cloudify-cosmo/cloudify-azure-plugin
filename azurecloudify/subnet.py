@@ -14,6 +14,7 @@
 #    * limitations under the License.
 
 # Built-in Imports
+from _ast import Raise
 import requests
 from requests import Request,Session,Response
 import json
@@ -42,7 +43,14 @@ def create_subnet(**_):
         ctx.logger.info("Using subnet {0}".format(ctx.instance.runtime_properties[curr_subnet_key]))
         return
 
-    current_subnet_name = constants.SUBNET_PREFIX+utils.random_suffix_generator()
+    if constants.USE_EXTERNAL_RESOURCE in ctx.node.properties and ctx.node.properties[constants.USE_EXTERNAL_RESOURCE]:
+        if constants.SUBNET_PROPERTY in ctx.node.properties and ctx.node.properties[constants.SUBNET_PROPERTY]:
+            current_subnet_name = ctx.node.properties[constants.SUBNET_PROPERTY]
+        else:
+            raise NonRecoverableError("Missing '{0}' input in node {1} instance {2}".format(constants.SUBNET_PROPERTY, ctx.node.id, ctx.instance.id))
+    else:
+        current_subnet_name = constants.SUBNET_PREFIX+utils.random_suffix_generator()
+
     ctx.instance.runtime_properties[curr_subnet_key] = current_subnet_name
     ctx.logger.info("{0} is {1}".format(curr_subnet_key, current_subnet_name))
 
@@ -68,10 +76,15 @@ def _validate_node_properties(key, ctx_node_properties):
 
 
 def set_subnets_from_runtime(caller_string, source_runtime_properties, target_runtime_properties, use_only_first_subnet=True):
+    key_index = 0
+    current_subnet_name = "No Subnet are defined"
     for curr_key in target_runtime_properties:
         if curr_key.startswith(constants.SUBNET_KEY):
             source_runtime_properties[curr_key] = target_runtime_properties[curr_key]
             ctx.logger.info("{0}:{1} is {2}".format(caller_string, curr_key, source_runtime_properties[curr_key]))
+            if key_index == 0:
+                current_subnet_name = source_runtime_properties[curr_key]
             if use_only_first_subnet:
-                return source_runtime_properties[curr_key]
-    return "OK"
+                return current_subnet_name
+            key_index += 1
+    return current_subnet_name
