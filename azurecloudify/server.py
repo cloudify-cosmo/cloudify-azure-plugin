@@ -158,6 +158,9 @@ def set_data_disks(azure_config, **kwargs):
             ctx.source.instance.runtime_properties[curr_key] = ctx.target.instance.runtime_properties[curr_key]
             ctx.logger.info("{0} is {1}".format(curr_key, ctx.target.instance.runtime_properties[curr_key]))
 
+    # This should be per disk issue #31
+    ctx.source.instance.runtime_properties[constants.DISK_SIZE_KEY] = ctx.target.instance.runtime_properties[constants.DISK_SIZE_KEY]
+
 
 def _set_ips_from_target():
     if constants.PUBLIC_IP_KEY in ctx.target.instance.runtime_properties:
@@ -286,8 +289,8 @@ def _set_data_disk_json(vm_json, storage_account_name):
         if curr_key.startswith(constants.DATA_DISK_KEY):
             disk_name = ctx.instance.runtime_properties[curr_key]
             vhd_uri = "https://{0}.blob.core.windows.net/vhds/{1}.vhd".format(storage_account_name, disk_name)
-            # Later make this property per disk issue
-            disk_size = ctx.node.properties['data_disk_size_GB']
+            # Later make this property per disk issue #31
+            disk_size = ctx.instance.runtime_properties[constants.DISK_SIZE_KEY]
             curr_disk = {
                 "lun": lun,
                 "name": disk_name,

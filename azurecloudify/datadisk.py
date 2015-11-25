@@ -45,6 +45,7 @@ def create_disk(**_):
     current_disk_name = constants.DATA_DISK_PREFIX+utils.random_suffix_generator()
     ctx.instance.runtime_properties[curr_disk_key] = current_disk_name
     ctx.logger.info("{0} is {1}".format(curr_disk_key, current_disk_name))
+    ctx.instance.runtime_properties[constants.DISK_SIZE_KEY] = ctx.node.properties[constants.DISK_SIZE_KEY]
 
 
 @operation
