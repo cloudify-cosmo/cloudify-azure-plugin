@@ -756,7 +756,7 @@ node_templates:
         type: cloudify.azure.relationships.nic_connected_to_public_ip
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
-  
+
   manager_security_group:
     type: cloudify.azure.nodes.SecurityGroup
     properties:
