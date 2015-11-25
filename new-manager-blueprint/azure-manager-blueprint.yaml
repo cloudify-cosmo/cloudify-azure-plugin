@@ -1,7 +1,7 @@
 tosca_definitions_version: cloudify_dsl_1_2
 
 imports:
-  - http://www.getcloudify.org/spec/cloudify/3.3m6/types.yaml
+  - http://www.getcloudify.org/spec/cloudify/3.3rc1/types.yaml
   - https://raw.githubusercontent.com/cloudify-cosmo/cloudify-azure-plugin/master/plugin.yaml
   - http://www.getcloudify.org/spec/fabric-plugin/1.3m6/plugin.yaml
   - types/manager-types.yaml
@@ -148,14 +148,20 @@ inputs:
   security_group_destinationAddressPrefix: 
     type: string
     default: '*'
-    
+
   #############################
   # Security Settings
   #############################
-  username:
+  security_enabled:
+    default: false
+
+  ssl_enabled:
+    default: false
+
+  admin_username:
     default: admin
 
-  password:
+  admin_password:
     default: admin
 
   #############################
@@ -168,34 +174,35 @@ inputs:
   # agent installer to identify it for your distro and release automatically.
   agent_package_urls:
     default:
-      ubuntu_trusty_agent: https://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.3.0/m6-RELEASE/Ubuntu-trusty-agent_3.3.0-m6-b276.tar.gz
-      ubuntu_precise_agent: https://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.3.0/m6-RELEASE/Ubuntu-precise-agent_3.3.0-m6-b276.tar.gz
-      centos_7x_agent: https://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.3.0/m6-RELEASE/centos-Core-agent_3.3.0-m6-b276.tar.gz
-      centos_6x_agent: https://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.3.0/m6-RELEASE/centos-Final-agent_3.3.0-m6-b276.tar.gz
-      cloudify_windows_agent: https://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.3.0/m6-RELEASE/cloudify-windows-agent_3.3.0-m6-b276.exe
+      ubuntu_trusty_agent: https://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.3.0/rc1-RELEASE/Ubuntu-trusty-agent_3.3.0-rc1-b278.tar.gz
+      ubuntu_precise_agent: https://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.3.0/rc1-RELEASE/Ubuntu-precise-agent_3.3.0-rc1-b278.tar.gz
+      centos_7x_agent: https://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.3.0/rc1-RELEASE/centos-Core-agent_3.3.0-rc1-b278.tar.gz
+      centos_6x_agent: https://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.3.0/rc1-RELEASE/centos-Final-agent_3.3.0-rc1-b278.tar.gz
+      redhat_7x_agent: https://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.3.0/rc1-RELEASE/redhat-Maipo-agent_3.3.0-rc1-b278.tar.gz
+      cloudify_windows_agent: https://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.3.0/rc1-RELEASE/cloudify-windows-agent_3.3.0-rc1-b278.exe
 
   #############################
   # Cloudify Modules
   #############################
   rest_service_rpm_source_url:
     type: string
-    default: https://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.3.0/m6-RELEASE/cloudify-rest-service-3.3.0-m6_b276.x86_64.rpm
+    default: https://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.3.0/rc1-RELEASE/cloudify-rest-service-3.3.0-rc1_b278.x86_64.rpm
 
   management_worker_rpm_source_url:
     type: string
-    default: https://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.3.0/m6-RELEASE/cloudify-management-worker-3.3.0-m6_b276.x86_64.rpm
+    default: https://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.3.0/rc1-RELEASE/cloudify-management-worker-3.3.0-rc1_b278.x86_64.rpm
 
   amqpinflux_rpm_source_url:
     type: string
-    default: https://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.3.0/m6-RELEASE/cloudify-amqp-influx-3.3.0-m6_b276.x86_64.rpm
+    default: https://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.3.0/rc1-RELEASE/cloudify-amqp-influx-3.3.0-rc1_b278.x86_64.rpm
 
   cloudify_resources_url:
     type: string
-    default: https://github.com/cloudify-cosmo/cloudify-manager/archive/3.3m6.tar.gz
+    default: https://github.com/cloudify-cosmo/cloudify-manager/archive/3.3rc1.tar.gz
 
   webui_source_url:
     type: string
-    default: https://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.3.0/m6-RELEASE/cloudify-ui-3.3.0-m6-b276.tgz
+    default: https://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.3.0/rc1-RELEASE/cloudify-ui-3.3.0-rc1-b278.tgz
 
   # This is a Cloudify specific redistribution of Grafana.
   grafana_source_url:
@@ -260,10 +267,22 @@ inputs:
   #############################
   # RabbitMQ Inputs
   #############################
+  rabbitmq_endpoint_ip:
+    description: >
+      Location of the rabbit server. If blank, the manager IP will be used.
+      Note that if this is set, the external rabbit service must already exist with the appropriate
+      credentials and configuration.
+      If this is set, rabbit will not be installed on the manager. This may have security implications
+      if you are using SSL for rabbit as some normally internal (to the manager) traffic is not currently
+      encrypted.
+    type: string
+    default: ''
+
   rabbitmq_events_queue_message_ttl:
     description: >
       Sets the number of milliseconds to wait before a message expires
       in the events queue.
+      Not used if an external endpoint is used.
     type: integer
     default: 60000
 
@@ -271,6 +290,7 @@ inputs:
     description: >
       Sets the number of milliseconds to wait before a message expires
       in the logs queue.
+      Not used if an external endpoint is used.
     type: integer
     default: 60000
 
@@ -278,8 +298,49 @@ inputs:
     description: >
       Sets the number of milliseconds to wait before a message expires
       in the metrics queues.
+      Not used if an external endpoint is used.
     type: integer
     default: 60000
+
+  rabbitmq_username:
+    description: >
+      Sets the username to use for clients such as celery to connect to the rabbitmq broker.
+      It is recommended that you set both the username and password to something reasonably secure.
+    type: string
+    default: cloudify
+
+  rabbitmq_password:
+    description: >
+      Sets the password to use for clients such as celery to connect to the rabbitmq broker.
+      It is recommended that you set both the username and password to something reasonably secure.
+    type: string
+    default: c10udify
+
+  rabbitmq_ssl_enabled:
+    description: >
+      Whether SSL should be enabled for RabbitMQ. If this is set to true then the public and private
+      certs must be supplied (rabbitmq_cert_private, rabbitmq_cert_public inputs).
+    type: boolean
+    default: false
+
+  rabbitmq_cert_private:
+    description: >
+      The private certificate for RabbitMQ to use for SSL. This must be PEM formatted.
+      It is expected to begin with a line containing 'PRIVATE KEY' in the middle.
+      Not used if an external endpoint is used.
+    type: string
+    default: ''
+
+  rabbitmq_cert_public:
+    description: >
+      The public certificate for RabbitMQ to use for SSL. This does not need to be signed by any CA,
+      as it will be deployed and explicitly used for all other components.
+      It may be self-signed. It must be PEM formatted.
+      It is expected to begin with a line of dashes with 'BEGIN CERTIFICATE' in the middle.
+      If an external endpoint is used, this must be the public certificate associated with the private
+      certificate that has already been configured for use by that rabbit endpoint.
+    type: string
+    default: ''
 
   # note that for each of the queue length limit properties, new messages
   # will be queued in RabbitMQ and old messages will be deleted once the
@@ -287,8 +348,9 @@ inputs:
   # https://www.rabbitmq.com/maxlength.html
   rabbitmq_events_queue_length_limit:
     description: >
-      Sets the number of messages the logs queue can hold.
+      Sets the number of messages the eventss queue can hold.
       Note this is NOT the message byte length!
+      Not used if an external endpoint is used.
     type: integer
     default: 1000000
 
@@ -296,6 +358,7 @@ inputs:
     description: >
       Sets the number of messages the logs queue can hold.
       Note this is NOT the message byte length!
+      Not used if an external endpoint is used.
     type: integer
     default: 1000000
 
@@ -305,12 +368,14 @@ inputs:
       This applies to both the queue that amqp-influx pulls from and
       the ones Riemann pulls from.
       Note this is NOT the message byte length!
+      Not used if an external endpoint is used.
     type: integer
     default: 1000000
 
   rabbitmq_fd_limit:
     description: >
       Sets the File Descriptor limit for the rabbitmq user.
+      Not used if an external endpoint is used.
     type: integer
     default: 102400
 
@@ -361,6 +426,32 @@ inputs:
     default: ''
 
   #############################
+  # Upload Resources Inputs
+  #############################
+  plugin_resources:
+    description: >
+      Holds any archives that should be uploaded to the manager.
+    default:
+#     - 'http://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.3.0/rc1-RELEASE/cloudify_azure_plugin-1.3rc1-py27-none-linux_x86_64-centos-Core.tar.gz'
+      - 'http://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.3.0/rc1-RELEASE/cloudify_fabric_plugin-1.3rc1-py27-none-linux_x86_64-centos-Core.tar.gz'
+      - 'http://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.3.0/rc1-RELEASE/cloudify_diamond_plugin-1.3rc1-py27-none-linux_x86_64-redhat-Maipo.tar.gz'
+      - 'http://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.3.0/rc1-RELEASE/cloudify_diamond_plugin-1.3rc1-py27-none-linux_x86_64-centos-Core.tar.gz'
+      - 'http://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.3.0/rc1-RELEASE/cloudify_diamond_plugin-1.3rc1-py26-none-linux_x86_64-centos-Final.tar.gz'
+      - 'http://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.3.0/rc1-RELEASE/cloudify_diamond_plugin-1.3rc1-py27-none-linux_x86_64-Ubuntu-precise.tar.gz'
+      - 'http://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.3.0/rc1-RELEASE/cloudify_diamond_plugin-1.3rc1-py27-none-linux_x86_64-Ubuntu-trusty.tar.gz'
+      - 'http://gigaspaces-repository-eu.s3.amazonaws.com/org/cloudify3/3.3.0/rc1-RELEASE/cloudify_diamond_plugin-1.3rc1-py27-none-win32-none-none.tar.gz'
+
+  dsl_resources:
+    description: >
+      Holds a set of dsl required resources
+    default:
+      - {'source_path': 'http://www.getcloudify.org/spec/openstack-plugin/1.3rc1/plugin.yaml', 'destination_path': '/spec/openstack-plugin/1.3rc1/plugin.yaml'}
+
+      - {'source_path': 'http://www.getcloudify.org/spec/fabric-plugin/1.3rc1/plugin.yaml', 'destination_path': '/spec/fabric-plugin/1.3rc1/plugin.yaml'}
+      - {'source_path': 'http://www.getcloudify.org/spec/diamond-plugin/1.3rc1/plugin.yaml', 'destination_path': '/spec/diamond-plugin/1.3rc1/plugin.yaml'}
+      - {'source_path': 'http://www.getcloudify.org/spec/cloudify/3.3rc1/types.yaml', 'destination_path': '/spec/cloudify/3.3rc1/types.yaml'}
+
+  #############################
   # Dev Inputs
   #############################
 
@@ -371,7 +462,7 @@ inputs:
   # below modules require compilation.
   install_python_compilers:
     type: string
-    default: 'true'
+    default: ''
 
   cli_source_url:
     type: string
@@ -467,7 +558,7 @@ node_templates:
         resources_prefix: { get_input: vm_prefix }
 
         transient_deployment_workers_mode:
-          enabled: false
+          enabled: true
           global_parallel_executions_limit: 50
 
         cloudify_agent:
@@ -475,6 +566,11 @@ node_templates:
           max_workers: 5
           remote_execution_port: 22
           user: { get_input: ssh_user }
+          broker_ip: { get_input: rabbitmq_endpoint_ip }
+          broker_user: { get_input: rabbitmq_username }
+          broker_pass: { get_input: rabbitmq_password }
+          broker_ssl_enabled: { get_input: rabbitmq_ssl_enabled }
+          broker_ssl_cert: { get_input: rabbitmq_cert_public }
           env:
             AZURE_CONFIG_PATH: { get_property: [SELF, cloudify, plugins, azure_config_path] }
 
@@ -485,16 +581,33 @@ node_templates:
         policy_engine:
           start_timeout: 30
 
+        # Declare rules for the default import resolver
+        # which enables using the manager in offline mode.
+        # The resolver replaces an import's http link with the local path
+        # on the manager according to the matching rule's value.
+        # If the resolver cannot read the import from the specified local path
+        # (e.g. when the manager is not in offline mode),
+        # it will fall back to the original http link.
+        import_resolver:
+          parameters:
+            rules:
+            - {'http://www.getcloudify.org/spec': 'http://localhost:53229/spec'}
+
+        upload_resources:
+          plugin_resources: { get_input: plugin_resources }
+          dsl_resources: { get_input: dsl_resources }
+
+
     interfaces:
       cloudify.interfaces.lifecycle:
         configure:
           implementation: fabric.fabric_plugin.tasks.run_task
           inputs:
-            tasks_file: components/manager/scripts/configure.py
+            tasks_file: components/manager/scripts/azure/configure.py
             task_name: configure
             task_properties:
               azure_config: *azure_configuration
-            fabric_env:
+            fabric_env: &manager_fabric_env
               user: { get_input: ssh_user }
               key_filename: { get_input: ssh_key_filename }
               host_string: { get_attribute: [manager_host, vm_public_ip] }
@@ -503,9 +616,7 @@ node_templates:
           inputs:
             script_path: components/manager/scripts/configure_manager.sh
             fabric_env:
-              user: { get_input: ssh_user }
-              key_filename: { get_input: ssh_key_filename }
-              host_string: { get_attribute: [manager_host, vm_public_ip] }
+              <<: *manager_fabric_env
               always_use_pty: true
 
     relationships:
@@ -514,15 +625,9 @@ node_templates:
         target_interfaces:
           cloudify.interfaces.relationship_lifecycle:
             postconfigure:
-             implementation: components/manager/scripts/set_manager_public_ip.sh
+             implementation: components/manager/scripts/set_manager_public_ip.py
              inputs:
               public_ip: { get_attribute: [manager_host, vm_public_ip] }
-      - type: cloudify.relationships.depends_on
-        target: nginx
-        target_interfaces:
-          cloudify.interfaces.relationship_lifecycle:
-            postconfigure: components/manager/scripts/set_manager_private_ip.sh
-
 
   manager_host:
     type: cloudify.azure.nodes.Server
@@ -790,9 +895,8 @@ node_templates:
     relationships:
       - type: cloudify.relationships.contained_in
         target: manager_host
-      # circular relationship
-      # - type: nginx_to_webui
-      #   target: webui
+      - type: nginx_to_manager_configuration
+        target: manager_configuration
 
   riemann:
     type: manager.nodes.Riemann
@@ -849,9 +953,8 @@ node_templates:
     relationships:
       - type: cloudify.relationships.contained_in
         target: manager_host
-      # circular relationship
-      # - type: webui_to_nginx
-      #   target: nginx
+      - type: webui_to_restservice
+        target: rest_service
       - type: webui_to_influxdb
         target: influxdb
 
