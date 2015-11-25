@@ -234,14 +234,14 @@ node_templates:
       aad_password: { get_input: aad_password}
       use_external_resource: true
       subnet: { get_input: subnet}
-      
+
     relationships:
       - target: nodecellar_resource_group
         type: cloudify.azure.relationships.subnet_contained_in_resource_group
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
-		
-		
+
+
   nodecellar_vnet:
     type: cloudify.azure.nodes.VNET
     properties:
