@@ -643,12 +643,13 @@ node_templates:
       client_id: { get_input: client_id}
       tenant_id: { get_input: tenant_id}
       ssh_username: { get_input: ssh_user}
-      aad_password: { get_input: aad_password}
-      data_disk_size_GB: { get_input: data_disk_size_GB}      
+      aad_password: { get_input: aad_password}    
       install_agent: false
     relationships:
       - target: manager_nic
         type: cloudify.azure.relationships.server_connected_to_nic
+      - target: manager_data_disk
+        type: cloudify.azure.relationships.server_connected_to_datadisk
       - target: manager_storage_account
         type: cloudify.azure.relationships.server_connected_to_storage_account
       - target: azure_token
@@ -685,6 +686,21 @@ node_templates:
     relationships:
       - target: manager_resource_group
         type: cloudify.azure.relationships.storage_account_contained_in_resource_group
+      - target: azure_token
+        type: cloudify.azure.relationships.resource_depends_on_azure_token
+        
+  manager_data_disk:
+    type: cloudify.azure.nodes.DataDisk
+    properties:
+      location: { get_input: location}
+      subscription_id: { get_input: subscription_id}
+      client_id: { get_input: client_id}
+      tenant_id: { get_input: tenant_id}
+      aad_password: { get_input: aad_password}
+
+    relationships:
+      - target: manager_storage_account
+        type: cloudify.azure.relationships.datadisk_contained_in_storage_account
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
 

@@ -12,6 +12,8 @@ image_reference_sku_ubuntu: '12.04.2-LTS'
 image_reference_sku_ubuntu: '7.0'
 dns_server_domain_name: 'giga.org'
 dns_server_domain_netowork: '192.168.0.0./20'
+clustered_dns_vnet_name:
+clustered_dns_subnet_name:
 client_id: '4de44750-2c58-407e-8504-08d9c2e91254'
 use_external_resource: False
 tenant_id: 'e8f83ddf-4dee-4e1d-b77a-ff3ddaaf52d8'
@@ -31,6 +33,7 @@ security_group_destinationAddressPrefix: ''
 ssh_username: 'azuretest'
 aad_password: 'Maryland123!'
 key_data:  |
+nic_name: ''
    ---- BEGIN SSH2 PUBLIC KEY ----
    Comment: "rsa-key-20150804"
 

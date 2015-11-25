@@ -5,7 +5,7 @@ from netaddr import *
 curlybrace1="{"
 curlybrace2="}"
 
-def add_forwd_record():
+def add_forward_record():
 	host_name_to_be_added= sys.argv[1]
 	ip_address_to_be_added= sys.argv[2]
 	domain_name= sys.argv[3]
@@ -43,8 +43,13 @@ def add_forwd_record():
 		print ("\nSorry, cannot accept this record! \nPlease enter an IP address within your entered zone! \nYour entered zone is: %s\n" % (IPNetwork(network_address))) 
 		
 
-def main():
-	add_forwd_record()
 
 
-main()
+
+
+
+
+add_forward_record()
+
+
+

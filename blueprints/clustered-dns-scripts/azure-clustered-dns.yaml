@@ -118,11 +118,14 @@ inputs:
     type: string
     default: 'azuretest'
     
+  nic_name:
+    type: string
+    default: ''  
 
 node_templates:
 
   dns_host:
-    type: cloudify.azure.nodes.Server    
+    type: cloudify.azure.nodes.ServerWithNic    
     properties:
       image_reference_offer: { get_input: image_reference_offer_ubuntu}
       image_reference_publisher: { get_input: image_reference_publisher_ubuntu}
@@ -136,19 +139,28 @@ node_templates:
       tenant_id: { get_input: tenant_id}
       ssh_username: { get_input: ssh_username}
       aad_password: { get_input: aad_password}
+      nic_name: { get_input: nic_name}
+
     instances: 2
     interfaces:
        cloudify.interfaces.lifecycle:
-         preconfigure: microsoft.blueprints.install.sh
-         configure: microsoft.blueprints.configure.py
-         postconfigure: microsoft.blueprints.creatingZones.py
-         start:
-         stop:
-         delete:
+         preconfigure: microsoft.blueprints.clustered-dns-scripts.install.sh
+         configure: microsoft.blueprints.clustered-dns-scripts.configure.py
+           inputs:
+             process:
+              args: [{get_input: dns_server_domain_name}]
+         postconfigure: microsoft.blueprints.clustered-dns-scripts.creatingZones.py
+           inputs:
+             process:
+              args: [{get_input: dns_server_domain_name}]
+         stop: microsoft.blueprints.clustered-dns-scripts.dns_stop.sh
+         delete: microsoft.blueprints.clustered-dns-scripts.dns_uninstall.sh
        cloudify.interfaces.validation:
-         creation: microsoft.blueprints.check_to_accept_user_network
+         creation: microsoft.blueprints.clustered-dns-scripts.check_to_accept_user_network.py
            inputs: 
-
+             process:
+                args: [{get_input: dns_server_domain_network}]
+             
 
     relationships:
       - target: dns_nic

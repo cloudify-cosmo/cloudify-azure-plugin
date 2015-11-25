@@ -238,7 +238,7 @@ def _get_virtual_machine_params(location, random_suffix_value, resource_group_na
                                 subscription_id, vm_name, availability_set_name)
 
     _set_network_json(vm_json, subscription_id, resource_group_name)
-    #_set_data_disk_json(vm_json, storage_account_name)
+    _set_data_disk_json(vm_json, storage_account_name)
     ctx.logger.info("get_virtual_machine_params:{0} {1}".format(vm_name, json.dumps(vm_json)))
     return json.dumps(vm_json)
 
@@ -267,13 +267,14 @@ def _set_data_disk_json(vm_json, storage_account_name):
     storage_profile = vm_properties['storageProfile']
     data_disks = storage_profile['dataDisks']
     storage_account_name = ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
+    lun = 0
     for curr_key in ctx.instance.runtime_properties:
-        if 1: #add condition
+        if curr_key.startswith(constants.DATA_DISK_KEY):
             disk_name = constants.DATA_DISK_PREFIX+utils.random_suffix_generator()
             vhd_uri = "https://"+storage_account_name+".blob.core.windows.net/vhds/"+disk_name+".vhd"
             disk_size = ctx.node.properties['data_disk_size_GB']
             curr_disk = {
-                "lun": 0,
+                "lun": lun,
                 "name": disk_name,
                 "createOption": "Empty",
                 "vhd": {
@@ -283,6 +284,7 @@ def _set_data_disk_json(vm_json, storage_account_name):
                 "diskSizeGB": disk_size
             }
             data_disks.append(curr_disk)
+            lun = lun+1
 
 
 def _get_vm_base_json(location, random_suffix_value, resource_group_name, storage_account_name, subscription_id,

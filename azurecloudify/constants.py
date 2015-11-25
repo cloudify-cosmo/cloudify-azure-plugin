@@ -49,6 +49,7 @@ STORAGE_ACCOUNT_REQUIRED_PROPERTIES = ['location', 'subscription_id']
 VNET_REQUIRED_PROPERTIES = ['location', 'subscription_id']
 VM_REQUIRED_PROPERTIES = ['vm_prefix', 'image_reference_offer', 'image_reference_publisher', 'image_reference_sku', 'vm_size', 'subscription_id', 'key_data', 'location']
 NIC_REQUIRED_PROPERTIES = ['location', 'subscription_id']
+DISK_REQUIRED_PROPERTIES = ['location', 'subscription_id', 'data_disk_size_GB']
 PUBLIC_IP_REQUIRED_PROPERTIES = ['location', 'subscription_id']
 CUSTOM_SCRIPT_REQUIRED_PROPERTIES = ['location', 'subscription_id', 'custom_script_command', 'custom_script_path']
 

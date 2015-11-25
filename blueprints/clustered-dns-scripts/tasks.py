@@ -1,14 +1,14 @@
 import subprocess, os, sys
 from reverseZone_naming import reverseZone_name
 from netaddr import *
-curlybrace1="{"
-curlybrace2="}"
-zone_files_path="/etc/bind/zones"
+from cloudify.exceptions import NonRecoverableError,RecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation
+zone_files_path="/etc/bind/zones"
+curlybrace1="{"
+curlybrace2="}"
 
-@operation
-def add_forwd_record():
+def add_forward_record():
 	host_name_to_be_added= sys.argv[1]
 	ip_address_to_be_added= sys.argv[2]
 	domain_name= sys.argv[3]
@@ -95,5 +95,54 @@ def add_reverse_record():
 			reverse_zone_content.close()
 			print "\nThe reverse record that you entered has been added!\n"
 			subprocess.call("service bind9 reload",shell=True)
+
+def remove_forward_record():
+	host_name_to_be_removed= sys.argv[1]
+	domain_name= sys.argv[2]
+
+	os.chdir(zone_files_path)
+	forward_zone_file_name="{0}{1}".format("db.",domain_name)
+
+	readFiles = open(forward_zone_file_name,'r')
+	forward_zone_file_content = readFiles.read()
+	readFiles.close()
+
+	readFiles = open(forward_zone_file_name,'r')
+	lines = readFiles.readlines()
+	readFiles.close()
+	
+	if host_name_to_be_removed in forward_zone_file_content:
+		file_content = open(forward_zone_file_name,'w')
+		for line in lines:
+			if not host_name_to_be_removed in line:
+				file_content.write(line)		
+		file_content.close()
+		print "\nThe forward record that you entered has been removed!\n"
+	else:
+		print "\nThe record you wanted to remove is already absent in the database!\n"		
+
+def remove_reverse_record():
+	host_name_to_be_removed= sys.argv[1]
+
+	reverse_zone_file_name,reverse_zone_name=reverseZone_name()
+	os.chdir(zone_files_path)
+	readFiles = open(reverse_zone_file_name,'r')
+	reverse_zone_file_content = readFiles.read()
+	readFiles.close()
+
+	readFiles = open(reverse_zone_file_name,'r')
+	lines = readFiles.readlines()
+	readFiles.close()
+	
+	if host_name_to_be_removed in reverse_zone_file_content:
+		file_content = open(reverse_zone_file_name,'w')
+		for line in lines:
+			if not host_name_to_be_removed in line:
+				file_content.write(line)		
+		file_content.close()
+		print "\nThe reverse record that you entered has been removed!\n"
+	else:
+		print "\nThe record you wanted to remove is already absent in the database!\n"
+
 
 
