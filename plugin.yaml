@@ -754,11 +754,11 @@ relationships:
           implementation: microsoft.azurecloudify.server.set_data_disks
           inputs:
             azure_config:
-              default: {}	
-              
+              default: {}
+
    cloudify.azure.relationships.datadisk_contained_in_storage_account:
     derived_from: cloudify.relationships.contained_in
-    
+
 
    cloudify.azure.relationships.resource_depends_on_azure_token:
     derived_from: cloudify.relationships.depends_on
