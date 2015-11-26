@@ -652,6 +652,8 @@ node_templates:
         type: cloudify.azure.relationships.server_connected_to_datadisk
       - target: manager_storage_account
         type: cloudify.azure.relationships.server_connected_to_storage_account
+      - target: manager_resource_group
+        type: cloudify.relationships.contained_in
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
 
@@ -719,9 +721,11 @@ node_templates:
     relationships:
       - target: manager_vnet
         type: cloudify.azure.relationships.public_ip_connected_to_vnet
+      - target: manager_resource_group
+        type: cloudify.relationships.contained_in
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
-        
+
   manager_custom_script:
     type: cloudify.azure.nodes.CustomScript
     properties:
@@ -754,6 +758,8 @@ node_templates:
     relationships:
       - target: manager_public_ip
         type: cloudify.azure.relationships.nic_connected_to_public_ip
+      - target: manager_resource_group
+        type: cloudify.relationships.contained_in
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
 
