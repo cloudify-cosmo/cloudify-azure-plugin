@@ -43,10 +43,10 @@ def _get_nic_params(current_subnet_name, location, resource_group_name, subscrip
         "properties": {
             "ipConfigurations": [
                 {
-                    "name": "{0}{1}".format(vnet_name, current_subnet_name),
+                    "name": current_subnet_name,
                     "properties": {
                         "subnet": {
-                            "id": network_str + "virtualNetworks/" + vnet_name + "/subnets/" + current_subnet_name
+                            "id": "{0}virtualNetworks/{1}/subnets/{2}".format(network_str, vnet_name, current_subnet_name)
                         },
                         "privateIPAllocationMethod": "Dynamic"
                     }

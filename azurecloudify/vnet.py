@@ -32,9 +32,6 @@ def creation_validation(**_):
         _validate_node_properties(property_key, ctx.node.properties)
 
 
-
-
-
 @operation
 def create_vnet(**_):
 
@@ -106,7 +103,6 @@ def _set_security_group_details(azure_config, **kwargs):
 
 @operation
 def set_subnet_details(azure_config, **kwargs):
-    ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     subnet.set_subnets_from_runtime("vnet.set_subnet_details", ctx.source.instance.runtime_properties, ctx.target.instance.runtime_properties, False)
     _set_security_group_details(azure_config)
 
@@ -144,16 +140,17 @@ def _get_vnet_json(vnet_name, location, subscription_id, resource_group_name):
             "subnets": []
         }
     }
-    _add_subnets(vnet_json, subscription_id, resource_group_name)
+    _add_subnets(vnet_name, vnet_json, subscription_id, resource_group_name)
     return vnet_json
 
 
-def _add_subnets(vnet_json, subscription_id, resource_group_name):
+def _add_subnets(vnet_name, vnet_json, subscription_id, resource_group_name):
     vnet_properties = vnet_json['properties']
     vnet_subnets = vnet_properties['subnets']
     for curr_key in ctx.instance.runtime_properties:
         if curr_key.startswith(constants.SUBNET_KEY):
             current_subnet_name = ctx.instance.runtime_properties[curr_key]
+            ctx.logger.info("Vnet {0} : adding subnet {1}".format(vnet_name, current_subnet_name))
             vnet_curr_subnet = {
                 "name": current_subnet_name,
                 "properties": {

@@ -144,7 +144,10 @@ def set_resource_name(get_resource_func, resource_desc,
         random_suffix_value = random_suffix_generator()
         resource_name_to_be_used_or_created = "{0}{1}".format(resource_key_prefix, random_suffix_value)
 
-    ctx.logger.info("resource_name_to_be_used_or_created is:{0}, type is:{1}".format(resource_name_to_be_used_or_created, resource_desc))
+    if resource_name_to_be_used_or_created is None:
+        ctx.logger.info("resource_name_to_be_used(already created):{0}, type is:{1}".format(ctx.instance.runtime_properties[runtime_resource_key], resource_desc))
+    else:
+        ctx.logger.info("resource_name_to_be_used_or_created is:{0}, type is:{1}".format(resource_name_to_be_used_or_created, resource_desc))
     return resource_name_to_be_used_or_created
 
 
