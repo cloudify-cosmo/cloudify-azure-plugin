@@ -194,6 +194,7 @@ def set_vnet_details(azure_config, **kwargs):
     ctx.source.instance.runtime_properties[constants.SUBNET_KEY] = current_subnet_name
     _set_security_group_details(azure_config)
 
+
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
