@@ -44,6 +44,7 @@ def create_subnet(**_):
         return
 
     if constants.USE_EXTERNAL_RESOURCE in ctx.node.properties and ctx.node.properties[constants.USE_EXTERNAL_RESOURCE]:
+        ctx.logger.info("In create_subnet: {0} ia set to {1}".format(constants.USE_EXTERNAL_RESOURCE, ctx.node.properties[constants.USE_EXTERNAL_RESOURCE]))
         if constants.SUBNET_PROPERTY in ctx.node.properties and ctx.node.properties[constants.SUBNET_PROPERTY]:
             current_subnet_name = ctx.node.properties[constants.SUBNET_PROPERTY]
             ctx.logger.info("Using an existing subnet {0}".format(current_subnet_name))
@@ -51,9 +52,10 @@ def create_subnet(**_):
             raise NonRecoverableError("Missing '{0}' input in node {1} instance {2}".format(constants.SUBNET_PROPERTY, ctx.node.id, ctx.instance.id))
     else:
         current_subnet_name = constants.SUBNET_PREFIX+utils.random_suffix_generator()
+        ctx.logger.info("Creating a new subnet {0}".format(current_subnet_name))
 
     ctx.instance.runtime_properties[curr_subnet_key] = current_subnet_name
-    ctx.logger.info("create_subnet: {0} is {1}".format(curr_subnet_key, current_subnet_name))
+    ctx.logger.info("In create_subnet: {0} is {1}".format(curr_subnet_key, current_subnet_name))
 
 
 @operation
