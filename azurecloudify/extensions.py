@@ -61,7 +61,8 @@ def create_custom_script(**_):
     )
     response_as = requests.put(url=custom_script_url, data=custom_script_params, headers=headers) 
     print response_as.text 
-    
+
+
 @operation
 def set_dependent_resources_names(azure_config, **kwargs):
     ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
