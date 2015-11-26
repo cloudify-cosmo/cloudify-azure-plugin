@@ -438,7 +438,7 @@ node_types:
         creation: microsoft.azurecloudify.storageaccount.creation_validation
 
   cloudify.azure.nodes.NIC:
-    derived_from: cloudify.nodes.Root
+    derived_from: cloudify.nodes.Port
     properties:
       use_external_resource:
         description: >
