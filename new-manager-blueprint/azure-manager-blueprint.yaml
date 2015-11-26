@@ -736,7 +736,7 @@ node_templates:
 
     relationships:
       - target: manager_host
-        type: cloudify.azure.relationships.custom_script_connected_to_server
+        type: cloudify.azure.relationships.custom_script_contained_in_server
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
 
