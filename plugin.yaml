@@ -251,8 +251,7 @@ node_types:
 
 
   cloudify.azure.nodes.PublicIP:
-#   Later change to derived_from: cloudify.nodes.VirtualIP
-    derived_from: cloudify.nodes.Root
+    derived_from: cloudify.nodes.VirtualIP
     properties:
       use_external_resource:
         description: >
@@ -485,8 +484,7 @@ node_types:
         creation: microsoft.azurecloudify.nic.creation_validation
 
   cloudify.azure.nodes.VNET:
-#   Later change to derived_from: cloudify.nodes.Network
-    derived_from: cloudify.nodes.Root
+    derived_from: cloudify.nodes.Network
     properties:
       use_external_resource:
         description: >
@@ -533,8 +531,7 @@ node_types:
         creation: microsoft.azurecloudify.vnet.creation_validation
 
   cloudify.azure.nodes.Subnet:
-#   Later change to derived_from: cloudify.nodes.Subnet
-    derived_from: cloudify.nodes.Root
+    derived_from: cloudify.nodes.Subnet
     properties:
       use_external_resource:
         description: >
@@ -731,8 +728,8 @@ relationships:
             azure_config:
               default: {}
               
-   cloudify.azure.relationships.custom_script_connected_to_server:
-    derived_from: cloudify.relationships.connected_to
+   cloudify.azure.relationships.custom_script_contained_in_server:
+    derived_from: cloudify.relationships.contained_in
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
         preconfigure:
