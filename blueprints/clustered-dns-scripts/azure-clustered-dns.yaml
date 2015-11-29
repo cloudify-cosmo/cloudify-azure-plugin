@@ -140,28 +140,7 @@ node_templates:
       ssh_username: { get_input: ssh_username}
       aad_password: { get_input: aad_password}
       nic_name: { get_input: nic_name}
-
     instances: 2
-    interfaces:
-       cloudify.interfaces.lifecycle:
-         preconfigure: microsoft.blueprints.clustered-dns-scripts.install.sh
-         configure: microsoft.blueprints.clustered-dns-scripts.configure.py
-           inputs:
-             process:
-              args: [{get_input: dns_server_domain_name}]
-         postconfigure: microsoft.blueprints.clustered-dns-scripts.creatingZones.py
-           inputs:
-             process:
-              args: [{get_input: dns_server_domain_name}]
-         stop: microsoft.blueprints.clustered-dns-scripts.dns_stop.sh
-         delete: microsoft.blueprints.clustered-dns-scripts.dns_uninstall.sh
-       cloudify.interfaces.validation:
-         creation: microsoft.blueprints.clustered-dns-scripts.check_to_accept_user_network.py
-           inputs: 
-             process:
-                args: [{get_input: dns_server_domain_network}]
-             
-
     relationships:
       - target: dns_nic
         type: cloudify.azure.relationships.server_connected_to_nic
@@ -172,6 +151,39 @@ node_templates:
       - target: clustered_dns_resource_group        
         type: cloudify.azure.relationships.resource_contained_in_resource_group
 
+  dns_app_server:
+    type: cloudify.azure.nodes.SoftwareComponent    
+    properties:
+      image_reference_offer: { get_input: image_reference_offer_ubuntu}
+      image_reference_publisher: { get_input: image_reference_publisher_ubuntu}
+      image_reference_sku: { get_input: image_reference_sku_ubuntu}
+      vm_prefix: { get_input: vm_prefix_ubuntu}      
+      vm_size: { get_input: vm_size_ubuntu}
+      key_data: { get_input: key_data}
+      subscription_id: { get_input: subscription_id}
+      location: { get_input: location }
+      client_id: { get_input: client_id}
+      tenant_id: { get_input: tenant_id}
+      ssh_username: { get_input: ssh_username}
+      aad_password: { get_input: aad_password}
+      nic_name: { get_input: nic_name}
+    interfaces:
+       cloudify.interfaces.lifecycle:
+         create: microsoft/blueprints/clustered-dns-scripts/cloudify_dns/install.sh
+         configure: microsoft/blueprints/clustered-dns-scripts/cloudify_dns/configure.py
+           inputs:
+             process:
+              args: [{get_input: dns_server_domain_name}, {get_attribute: [dns_host, ip]}]
+         stop: microsoft/blueprints/clustered-dns-scripts/cloudify_dns/dns_stop.sh
+         delete: microsoft/blueprints/clustered-dns-scripts/cloudify_dns/dns_uninstall.sh
+       cloudify.interfaces.validation:
+         creation: microsoft/blueprints/clustered-dns-scripts/cloudify_dns/check_to_accept_user_network.py
+           inputs: 
+             process:
+                args: [{get_input: dns_server_domain_network}]
+    relationships:
+       type: dns_app_server_contained_in_dns_host
+       target: dns_host
 
   pen_host:
     type: cloudify.azure.nodes.Server
@@ -197,6 +209,33 @@ node_templates:
         type: cloudify.azure.relationships.resource_depends_on_azure_token
       - target: clustered_dns_resource_group
         type: cloudify.azure.relationships.resource_contained_in_resource_group
+
+
+  pen_app_server:
+    type: cloudify.azure.nodes.SoftwareComponent    
+    properties:
+      image_reference_offer: { get_input: image_reference_offer_ubuntu}
+      image_reference_publisher: { get_input: image_reference_publisher_ubuntu}
+      image_reference_sku: { get_input: image_reference_sku_ubuntu}
+      vm_prefix: { get_input: vm_prefix_ubuntu}      
+      vm_size: { get_input: vm_size_ubuntu}
+      key_data: { get_input: key_data}
+      subscription_id: { get_input: subscription_id}
+      location: { get_input: location }
+      client_id: { get_input: client_id}
+      tenant_id: { get_input: tenant_id}
+      ssh_username: { get_input: ssh_username}
+      aad_password: { get_input: aad_password}
+      nic_name: { get_input: nic_name}
+    interfaces:
+       cloudify.interfaces.lifecycle:
+         create: microsoft/blueprints/clustered-dns-scripts/cloudify_pen/pen_install.sh
+         start: microsoft/blueprints/clustered-dns-scripts/cloudify_pen/pen_start.py
+         stop: microsoft/blueprints/clustered-dns-scripts/cloudify_pen/pen_stop.py
+         delete: microsoft/blueprints/clustered-dns-scripts/cloudify_pen/pen_uninstall.py
+    relationships:
+       type: pen_app_server_contained_in_pen_host
+       target: pen_host
 
   azure_token:
     type: cloudify.azure.nodes.azure_token
@@ -311,3 +350,14 @@ node_templates:
         type: cloudify.azure.relationships.storage_account_contained_in_resource_group
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
+
+relationships:
+
+    dns_app_server_contained_in_dns_host:
+      derived_from: cloudify_relationships_contained_in
+      source_interfaces:
+        cloudify.interfaces.relationship_lifecycle:
+           postconfigure: microsoft/blueprints/clustered-dns-scripts/cloudify_dns/creatingZones.py
+           inputs:
+             process:
+              args: [{get_input: dns_server_domain_name}, {get_attribute: [dns_host, ip]}]

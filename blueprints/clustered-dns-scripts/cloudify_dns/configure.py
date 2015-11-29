@@ -16,8 +16,8 @@ def configure_ipv4_mode():
 	bind9_file_content.write("# run resolvconf? \nRESOLVCONF=no \n \n# startup options bind9_filer the server \nOPTIONS=\"-4 -u bind\"")
 	bind9_file_content.close
 
-def options_file_configure(ctx.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY]):	
-	ip_address_of_server=ctx.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY]
+def options_file_configure(argv[2]):	
+	ip_address_of_server=argv[2]
 	options_file="/etc/bind/named.conf.options"
 	options_file_content=open(options_file,'w')
 	options_file_content.write("\noptions %s \n\t directory \"/var/cache/bind\"; \n\t recursion yes; \t \t # enables resursive queries \n\t allow-recursion %s any; %s; \t \t # allows recursive queries from \"any\" clients \n\t allow-recursion-on %s any; %s; \n\t listen-on %s %s; %s; \n\t allow-transfer %s none; %s; \t\t # disable zone transfers by default \n \n \t forwarders %s \n \t \t \t 8.8.8.8; \n \t \t \t 8.8.4.4;\n \t%s;\n%s;" % (curlybrace1, curlybrace1,curlybrace2,curlybrace1,curlybrace2,curlybrace1,ip_address_of_server, curlybrace2,curlybrace1,curlybrace2, curlybrace1,curlybrace2, curlybrace2))
@@ -37,5 +37,5 @@ def local_file_configure(argv[1]):
 
 
 configure_ipv4_mode()
-options_file_configure()
-local_file_configure()	
+options_file_configure(argv[2])
+local_file_configure(argv[1])	
