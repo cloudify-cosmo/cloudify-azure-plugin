@@ -43,4 +43,4 @@ def network_check(argv[1])
 		network_address_file.close()
 		network_valid=0
 
-network_check()
+network_check(argv[1])

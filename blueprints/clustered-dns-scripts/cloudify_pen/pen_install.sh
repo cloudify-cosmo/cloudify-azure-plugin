@@ -1,6 +1,6 @@
 #! /bin/bash
 
-echo "The script for installing and configurig PEN starts now!"
+ctx logger info "The script for installing and configurig PEN starts now!"
 
 yum install -y automake autoconf gcc git
 mkdir Git

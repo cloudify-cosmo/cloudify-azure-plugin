@@ -7,10 +7,9 @@ from cloudify.decorators import operation
 zone_files_path="/etc/bind/zones"
 
 
-def creating_forward_zone(argv[1], ctx.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY]):
+def creating_forward_zone(argv[1], argv[2]):
 	domain_name= argv[1]
-	ipaddr_nameServer= ctx.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY]
-
+	ipaddr_nameServer= argv[2]
 	old_file="/etc/bind/db.local"
 	os.chdir(zone_files_path)
 	new_zone_file="{0}{1}".format("db.",domain_name)
@@ -45,7 +44,7 @@ def creating_forward_zone(argv[1], ctx.instance.runtime_properties[constants.PRI
 
 
 def creating_reverse_zone(argv[1]):
-	domain_name= sys.argv[1]
+	domain_name= argv[1]
 	old_file="/etc/bind/db.127"
 	
 	old_file_content=open(old_file,'r')
@@ -78,6 +77,6 @@ def creating_reverse_zone(argv[1]):
 	print "\nThe reverse zone is created and is now ready to accept your records!\nYou can add reverse records any time!\n"
 
 
-creating_forward_zone()
-creating_reverse_zone()
+creating_forward_zone(argv[1],argv[2])
+creating_reverse_zone(argv[1])
 
