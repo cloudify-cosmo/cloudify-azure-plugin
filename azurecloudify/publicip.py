@@ -139,7 +139,7 @@ def _get_public_ip_params(location, public_ip_name):
 def get_provisioning_state(**_):
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
 
-    public_ip_name = ctx.instance.runtime_properties[constants.VNET_KEY]
+    public_ip_name = ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY]
 
     ctx.logger.info("Searching for public ip {0}".format(public_ip_name))
     headers, location, subscription_id = auth.get_credentials()

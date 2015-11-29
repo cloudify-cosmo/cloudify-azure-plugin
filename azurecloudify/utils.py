@@ -170,7 +170,7 @@ def write_target_runtime_properties_to_file(required_keys):
         with open(current_runtime_file_path, 'a') as f:
             for property_key in required_keys:
                 if property_key in ctx.target.instance.runtime_properties:
-                    current_line = "{0}={1}".format(property_key, ctx.target.instance.runtime_properties[property_key])
+                    current_line = "{0}={1}\n".format(property_key, ctx.target.instance.runtime_properties[property_key])
                     f.write(current_line)
         f.close()
     except:
