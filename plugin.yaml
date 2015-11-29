@@ -426,13 +426,6 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         configure: microsoft.azurecloudify.datadisk.create_disk
-        start:
-          implementation: microsoft.azurecloudify.datadisk.verify_provision
-          inputs:
-            start_retry_interval:
-              description: Polling interval in seconds until the datadisk is provisioned
-              type: integer
-              default: 30
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.datadisk.creation_validation
 
