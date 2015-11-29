@@ -93,6 +93,7 @@ def delete_current_public_ip(**_):
 
 @operation
 def set_dependent_resources_names(azure_config, **kwargs):
+    utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY, constants.VNET_KEY])
     ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     ctx.source.instance.runtime_properties[constants.VNET_KEY] = ctx.target.instance.runtime_properties[constants.VNET_KEY]
     ctx.logger.info("{0} is {1}".format(constants.VNET_KEY, ctx.target.instance.runtime_properties[constants.VNET_KEY]))
@@ -101,6 +102,7 @@ def set_dependent_resources_names(azure_config, **kwargs):
 
 
 def _set_security_group_details(azure_config, **kwargs):
+    utils.write_target_runtime_properties_to_file([constants.SECURITY_GROUP_KEY])
     if constants.SECURITY_GROUP_KEY in ctx.target.instance.runtime_properties:
         ctx.source.instance.runtime_properties[constants.SECURITY_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
 

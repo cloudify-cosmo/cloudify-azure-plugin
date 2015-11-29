@@ -78,6 +78,7 @@ def verify_provision(start_retry_interval, **kwargs):
 
 @operation
 def set_dependent_resources_names(azure_config, **kwargs):
+    utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY, constants.VM_KEY])
     ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     ctx.source.instance.runtime_properties[constants.VM_KEY] = ctx.target.instance.runtime_properties[constants.VM_KEY]
 

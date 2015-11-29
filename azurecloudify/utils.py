@@ -1,10 +1,11 @@
 import random
 import string
 from cloudify import ctx
+from cloudify.state import ctx_parameters as inputs
 import constants
 from cloudify.exceptions import NonRecoverableError,RecoverableError
 import requests
-from requests import Request,Session,Response
+from lockfile import LockFile
 import json
 
 
@@ -157,3 +158,24 @@ def validate_node_properties(required_properties, ctx_node_properties):
             raise NonRecoverableError('{0} is a required input. Unable to create.'.format(property_key))
 
 
+def write_target_runtime_properties_to_file(required_keys):
+    try:
+        current_runtime_folder = constants.default_path_to_runtime_folder
+        current_instance_key = ctx.source.node.id+ctx.source.instance.id
+        current_runtime_file_path = "{0}{1}.txt".format(current_runtime_folder, current_instance_key)
+        ctx.logger.info("In current_runtime_file_path is {0}".format(current_runtime_file_path))
+        lock = LockFile(current_runtime_file_path)
+        lock.acquire()
+        ctx.logger.info("{} is locked".format(lock.path))
+        with open(current_runtime_file_path, 'a') as f:
+            for property_key in required_keys:
+                if property_key in ctx.target.instance.runtime_properties:
+                    current_line = "{0}={1}".format(property_key, ctx.target.instance.runtime_properties[property_key])
+                    f.write(current_line)
+        f.close()
+    except:
+        lock.release()
+        raise NonRecoverableError("Failures while locking or using {}".format(current_runtime_file_path))
+
+    lock.release()
+    ctx.logger.info("{} is releases".format(current_runtime_file_path))

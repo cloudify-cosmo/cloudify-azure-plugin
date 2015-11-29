@@ -174,6 +174,7 @@ def delete_current_nic(**_):
 
 @operation
 def set_security_group_details(azure_config, **kwargs):
+    utils.write_target_runtime_properties_to_file([constants.SECURITY_GROUP_KEY])
     ctx.source.instance.runtime_properties[constants.SECURITY_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
 
 
@@ -185,22 +186,26 @@ def _set_security_group_details(azure_config, **kwargs):
 
 @operation
 def set_public_ip_details(azure_config, **kwargs):
+    utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY])
     ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     ctx.logger.info("{0} is {1}".format(constants.PUBLIC_IP_KEY, ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]))
     ctx.source.instance.runtime_properties[constants.VNET_KEY] = ctx.target.instance.runtime_properties[constants.VNET_KEY]
     current_subnet_name = subnet.set_subnets_from_runtime("nic.set_public_ip_details", ctx.source.instance.runtime_properties, ctx.target.instance.runtime_properties)
     ctx.source.instance.runtime_properties[constants.SUBNET_KEY] = current_subnet_name
     ctx.source.instance.runtime_properties[constants.PUBLIC_IP_KEY] = ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]
+    utils.write_target_runtime_properties_to_file([constants.SUBNET_KEY,constants.PUBLIC_IP_KEY])
     _set_security_group_details(azure_config)
 
 
 @operation
 def set_vnet_details(azure_config, **kwargs):
+    utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY, constants.VNET_KEY])
     ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     ctx.source.instance.runtime_properties[constants.VNET_KEY] = ctx.target.instance.runtime_properties[constants.VNET_KEY]
     ctx.logger.info("{0} is {1}".format(constants.VNET_KEY, ctx.target.instance.runtime_properties[constants.VNET_KEY]))
     current_subnet_name = subnet.set_subnets_from_runtime("nic.set_vnet_details", ctx.source.instance.runtime_properties, ctx.target.instance.runtime_properties)
     ctx.source.instance.runtime_properties[constants.SUBNET_KEY] = current_subnet_name
+    utils.write_target_runtime_properties_to_file([constants.SUBNET_KEY])
     _set_security_group_details(azure_config)
 
 
