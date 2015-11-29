@@ -59,6 +59,18 @@ def create_resource_group(**_):
         raise NonRecoverableError("Resource Group {0} could not be created".format(resource_group_name))
     return response_rg.status_code
 
+
+@operation
+def verify_provision(start_retry_interval, **kwargs):
+
+    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+    curr_status = get_provisioning_state()
+    if curr_status != constants.SUCCEEDED:
+        return ctx.operation.retry(
+            message='Waiting for the resource group ({0}) to be provisioned'.format(resource_group_name),
+            retry_after=start_retry_interval)
+
+
 @operation
 def delete_resource_group(**_):
     status_code = delete_current_resource_group()
@@ -105,13 +117,11 @@ def _get_resource_group_name(resource_group_name):
 
 
 def get_provisioning_state(**_):
-    utils.validate_node_properties(constants.RESOURCE_GROUP_REQUIRED_PROPERTIES, ctx.node.properties)
-
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-    ctx.logger.info("Searching for {0}".format(resource_group_name))
+    ctx.logger.info("Searching for resource group {0}".format(resource_group_name))
     headers, location, subscription_id = auth.get_credentials()
 
     resource_group_url = "{0}/subscriptions/{1}/resourceGroups/{2}?api-version={3}".format(constants.azure_url, subscription_id, resource_group_name, constants.api_version_resource_group)
-    #ctx.logger.info("resource_group_url: {0}".format(resource_group_url))
-
     return azurerequests.get_provisioning_state(headers, resource_group_name, resource_group_url)
+
+

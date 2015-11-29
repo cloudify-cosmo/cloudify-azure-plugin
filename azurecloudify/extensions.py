@@ -15,15 +15,17 @@
 
 # Built-in Imports
 import requests
-from requests import Request,Session,Response
 import json
 import constants
 import sys
 import os
-from resourcegroup import *
-from cloudify.exceptions import NonRecoverableError,RecoverableError
+from cloudify.exceptions import NonRecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation
+import utils
+import auth
+import azurerequests
+
 
 @operation
 def creation_validation(**_):
@@ -33,9 +35,8 @@ def creation_validation(**_):
 
 @operation
 def create_custom_script(**_):
-    #if 1 == 1:
-    #    return
     custom_script_name = constants.CUSTOM_SCRIPT_PREFIX+utils.random_suffix_generator()
+    ctx.instance.runtime_properties[constants.CUSTOM_SCRIPT_KEY] = custom_script_name
     headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     command = ctx.node.properties['custom_script_command']
@@ -64,10 +65,40 @@ def create_custom_script(**_):
 
 
 @operation
+def verify_provision(start_retry_interval, **kwargs):
+
+    custom_script_name = ctx.instance.runtime_properties[constants.CUSTOM_SCRIPT_KEY]
+    vm_name = ctx.instance.runtime_properties[constants.VM_KEY]
+    curr_status = get_provisioning_state()
+    if curr_status != constants.SUCCEEDED:
+        return ctx.operation.retry(
+            message='Waiting for the custom script ({0}), of VM {1} to be provisioned'.format(custom_script_name, vm_name),
+                retry_after=start_retry_interval)
+
+
+@operation
 def set_dependent_resources_names(azure_config, **kwargs):
     ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     ctx.source.instance.runtime_properties[constants.VM_KEY] = ctx.target.instance.runtime_properties[constants.VM_KEY]
 
+
 def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
+
+
+def get_provisioning_state(**_):
+    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+
+    vm_name = ctx.instance.runtime_properties[constants.VM_KEY]
+    custom_script_name = ctx.instance.runtime_properties[constants.CUSTOM_SCRIPT_KEY]
+
+    ctx.logger.info("Searching for custom script {0} for VM {1}".format(custom_script_name, vm_name))
+    headers, location, subscription_id = auth.get_credentials()
+
+    custom_script_url = "{0}/subscriptions/{1}/resourceGroups/{2}/providers/Microsoft.Compute/" \
+                          "virtualMachines/{3}/extensions/{4}?api-version={5}".format(constants.azure_url,
+                                subscription_id, resource_group_name, vm_name, custom_script_name,
+                                constants.api_version)
+
+    return azurerequests.get_provisioning_state(headers, resource_group_name, custom_script_url)

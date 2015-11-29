@@ -56,8 +56,8 @@ def create_vm(**_):
 
 
 @operation
-def start_vm(**_):
-    server.start_a_vm()
+def start_vm(start_retry_interval, **kwargs):
+    server.start_a_vm(start_retry_interval, **kwargs)
 
 
 @operation

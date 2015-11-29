@@ -60,8 +60,6 @@ def unassign_runtime_property_from_resource(property_name, ctx_instance):
         'Unassigned {0} runtime property: {1}'.format(property_name, value))
 
 
-
-
 def get_target_property(ctx, relationship_name, property_name):
     """Get a runtime_property from the target of a relationship.
 

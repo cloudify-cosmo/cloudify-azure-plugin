@@ -15,7 +15,6 @@
 
 # Built-in Imports
 import requests
-from requests import Request,Session,Response
 import json
 import constants
 import sys
@@ -25,7 +24,7 @@ import os
 from cloudify.exceptions import NonRecoverableError,RecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation
-
+import azurerequests
 
 @operation
 def creation_validation(**_):
@@ -68,28 +67,37 @@ def create_a_vm(**_):
 
 
 @operation
-def start_vm(**_):
-    start_a_vm()
+def start_vm(start_retry_interval, **kwargs):
+    start_a_vm(start_retry_interval, **kwargs)
 
 
-def start_a_vm(**_):
-    headers, location, subscription_id = auth.get_credentials()
-    vm_name = ctx.instance.runtime_properties[constants.VM_KEY]
+def start_a_vm(start_retry_interval, **kwargs):
+
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+    vm_name = ctx.instance.runtime_properties[constants.VM_KEY]
+
+    curr_status = get_provisioning_state()
+    if curr_status != constants.SUCCEEDED:
+        return ctx.operation.retry(
+            message='Waiting for the server ({0}) to be provisioned'.format(vm_name),
+            retry_after=start_retry_interval)
+
+    headers, location, subscription_id = auth.get_credentials()
+
 
     if constants.REQUEST_ACCEPTED in ctx.instance.runtime_properties:
         if _vm_is_started(headers, vm_name, subscription_id, resource_group_name):
             _set_public_ip(subscription_id, resource_group_name, headers)
         else:
-            raise RecoverableError("start_vm: request already accepted - Waiting for vm {0} to start...".format(vm_name))
+            raise RecoverableError("start_a_vm: request already accepted - Waiting for vm {0} to start...".format(vm_name))
     else:
         if _start_vm_call(headers, vm_name, subscription_id, resource_group_name):
             if _vm_is_started(headers, vm_name, subscription_id, resource_group_name):
                 _set_public_ip(subscription_id, resource_group_name, headers)
             else:
-                raise RecoverableError("start_vm: vm {0} is not ready yet ...".format(vm_name))
+                raise RecoverableError("start_a_vm: vm {0} is not ready yet ...".format(vm_name))
         else:
-            raise RecoverableError("start_vm: Failed to start {0} ".format(vm_name))
+            raise RecoverableError("start_a_vm: Failed to start {0} ".format(vm_name))
 
 
 @operation
@@ -360,4 +368,14 @@ def _get_vm_base_json(location, random_suffix_value, resource_group_name, storag
     }
 
 
+def get_provisioning_state(**_):
+    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+    vm_name = ctx.instance.runtime_properties[constants.VM_KEY]
 
+    ctx.logger.info("Searching for {0}".format(vm_name))
+    headers, location, subscription_id = auth.get_credentials()
+
+    virtual_machine_url = "{0}/subscriptions/{1}/resourceGroups/{2}/providers/Microsoft.Compute/" \
+                          "virtualMachines/{3}?validating=true&api-version={4}".format(constants.azure_url,
+                                subscription_id, resource_group_name, vm_name, constants.api_version)
+    return azurerequests.get_provisioning_state(headers, resource_group_name, virtual_machine_url)

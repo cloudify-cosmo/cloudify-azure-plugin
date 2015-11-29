@@ -50,6 +50,13 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         configure: microsoft.azurecloudify.resourcegroup.create_resource_group
+        start:
+          implementation: microsoft.azurecloudify.resourcegroup.verify_provision
+          inputs:
+            start_retry_interval:
+              description: Polling interval in seconds until the resource group is provisioned
+              type: integer
+              default: 30
         delete: microsoft.azurecloudify.resourcegroup.delete_resource_group
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.resourcegroup.creation_validation
@@ -140,6 +147,13 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         configure: microsoft.azurecloudify.securitygroup.create_security_group
+        start:          
+          implementation: microsoft.azurecloudify.securitygroup.verify_provision
+          inputs:
+            start_retry_interval:
+              description: Polling interval in seconds until the securitygroup is provisioned
+              type: integer
+              default: 30	
         delete: microsoft.azurecloudify.securitygroup.delete_security_group
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.securitygroup.creation_validation
@@ -209,9 +223,14 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         configure:
-          implementation: microsoft.azurecloudify.server.create_vm
-        start:
+          implementation: microsoft.azurecloudify.server.create_vm           
+        start:          
           implementation: microsoft.azurecloudify.server.start_vm
+          inputs:
+            start_retry_interval:
+              description: Polling interval in seconds until the server is provisioned
+              type: integer
+              default: 30
         stop:
           implementation: microsoft.azurecloudify.server.stop_vm
         delete:
@@ -240,7 +259,12 @@ node_types:
         configure:
           implementation: microsoft.azurecloudify.serverwithnic.create_vm_and_nic
         start:
-          implementation: microsoft.azurecloudify.serverwithnic.start_vm
+          implementation: microsoft.azurecloudify.serverwithnic.start_vm          
+          inputs:
+            start_retry_interval:
+              description: Polling interval in seconds until the serverwithnic is provisioned
+              type: integer
+              default: 30
         stop:
           implementation: microsoft.azurecloudify.serverwithnic.stop_vm
         delete:
@@ -292,6 +316,13 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         configure: microsoft.azurecloudify.publicip.create_public_ip
+        start:          
+          implementation: microsoft.azurecloudify.publicip.verify_provision
+          inputs:
+            start_retry_interval:
+              description: Polling interval in seconds until the publicip is provisioned
+              type: integer
+              default: 30
         delete: microsoft.azurecloudify.publicip.delete_public_ip
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.publicip.creation_validation
@@ -343,6 +374,13 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         configure: microsoft.azurecloudify.extensions.create_custom_script
+        start:          
+          implementation: microsoft.azurecloudify.extensions.verify_provision
+          inputs:
+            start_retry_interval:
+              description: Polling interval in seconds until the extension is provisioned
+              type: integer
+              default: 30
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.extensions.creation_validation
         
@@ -388,6 +426,13 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         configure: microsoft.azurecloudify.datadisk.create_disk
+        start:          
+          implementation: microsoft.azurecloudify.datadisk.verify_provision
+          inputs:
+            start_retry_interval:
+              description: Polling interval in seconds until the datadisk is provisioned
+              type: integer
+              default: 30	
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.datadisk.creation_validation
 
@@ -433,6 +478,13 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         configure: microsoft.azurecloudify.storageaccount.create_storage_account
+        start:          
+          implementation: microsoft.azurecloudify.storageaccount.verify_provision
+          inputs:
+            start_retry_interval:
+              description: Polling interval in seconds until the storageaccount is provisioned
+              type: integer
+              default: 30	
         delete: microsoft.azurecloudify.storageaccount.delete_storage_account
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.storageaccount.creation_validation
@@ -479,6 +531,13 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         configure: microsoft.azurecloudify.nic.create_nic
+        start:          
+          implementation: microsoft.azurecloudify.nic.verify_provision
+          inputs:
+            start_retry_interval:
+              description: Polling interval in seconds until the nic is provisioned
+              type: integer
+              default: 30
         delete: microsoft.azurecloudify.nic.delete_nic
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.nic.creation_validation
@@ -526,6 +585,13 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         configure: microsoft.azurecloudify.vnet.create_vnet
+        start:          
+          implementation: microsoft.azurecloudify.vnet.verify_provision
+          inputs:
+            start_retry_interval:
+              description: Polling interval in seconds until the vnet is provisioned
+              type: integer
+              default: 30
         delete: microsoft.azurecloudify.vnet.delete_vnet
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.vnet.creation_validation

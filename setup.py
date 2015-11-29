@@ -35,6 +35,7 @@ setup(
     install_requires=[
         'cloudify-plugins-common>=3.2',
         'azure',
-        'lockfile'
+        'lockfile',
+        'requests'
     ]
 )

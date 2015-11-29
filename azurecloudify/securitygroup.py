@@ -1,16 +1,14 @@
 import requests
-from requests import Request,Session,Response
 import json
 import constants
 import sys
 import os
 import auth
-from resourcegroup import *
-from storageaccount import *
 import utils
-from cloudify.exceptions import NonRecoverableError
+from cloudify.exceptions import NonRecoverableError, RecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation
+import azurerequests
 
 
 @operation
@@ -51,6 +49,16 @@ def create_security_group(**_):
     except:
         ctx.logger.info("Security Group {0} could not be created".format(security_group_name))
         raise NonRecoverableError("Security Group {} could not be created".format(security_group_name))
+
+
+@operation
+def verify_provision(start_retry_interval, **kwargs):
+    security_group_name = ctx.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
+    curr_status = get_provisioning_state()
+    if curr_status != constants.SUCCEEDED:
+        return ctx.operation.retry(
+            message='Waiting for the xxx ({0}) to be provisioned'.format(security_group_name),
+            retry_after=start_retry_interval)
 
 
 @operation
@@ -148,3 +156,20 @@ def _get_security_group_params(security_group_json):
 
     security_group_params = json.dumps(security_group_json)
     return security_group_params
+
+
+def get_provisioning_state(**_):
+    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+
+    security_group_name = ctx.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
+
+    ctx.logger.info("Searching for security group {0}".format(security_group_name))
+    headers, location, subscription_id = auth.get_credentials()
+
+    security_group_url = "{0}/subscriptions/{1}/resourceGroups/{2}/providers/Microsoft.network/" \
+                          "networkSecurityGroups/{3}?api-version={4}".format(constants.azure_url,
+                                subscription_id, resource_group_name, security_group_name,
+                                constants.api_version_network)
+
+    return azurerequests.get_provisioning_state(headers, resource_group_name, security_group_url)
+

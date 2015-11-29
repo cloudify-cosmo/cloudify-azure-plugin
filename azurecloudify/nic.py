@@ -15,7 +15,6 @@
 
 # Built-in Imports
 import requests
-from requests import Request,Session,Response
 import json
 import constants
 import sys
@@ -26,7 +25,7 @@ import subnet
 from cloudify.exceptions import NonRecoverableError,RecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation
- 
+import azurerequests
 
  
 @operation
@@ -136,6 +135,16 @@ def create_a_nic(**_):
 
 
 @operation
+def verify_provision(start_retry_interval, **kwargs):
+    curr_nic_key = _get_nic_key()
+    nic_name = ctx.instance.runtime_properties[curr_nic_key]
+    curr_status = get_provisioning_state()
+    if curr_status != constants.SUCCEEDED:
+        return ctx.operation.retry(
+            message='Waiting for the NIC ({0}) to be provisioned'.format(nic_name), retry_after=start_retry_interval)
+
+
+@operation
 def delete_nic(**_):
     delete_a_nic()
     utils.clear_runtime_properties()
@@ -221,4 +230,18 @@ def _get_nic_key():
     return curr_nic_key
 
 
+def get_provisioning_state(**_):
+    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+
+    nic_key = _get_nic_key()
+    nic_name = ctx.instance.runtime_properties[nic_key]
+
+    ctx.logger.info("Searching for NIC {0}".format(nic_name))
+    headers, location, subscription_id = auth.get_credentials()
+
+    network_str = "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Network/".format(subscription_id,
+                                                                                              resource_group_name)
+    check_nic_url = "{0}{1}/networkInterfaces/{2}?api-version={3}".format(constants.azure_url, network_str, nic_name,
+                                                                          constants.api_version_network)
+    return azurerequests.get_provisioning_state(headers, resource_group_name, check_nic_url)
 

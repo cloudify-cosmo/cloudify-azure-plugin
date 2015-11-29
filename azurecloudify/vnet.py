@@ -57,6 +57,15 @@ def create_vnet(**_):
 
 
 @operation
+def verify_provision(start_retry_interval, **kwargs):
+    vnet_name = ctx.instance.runtime_properties[constants.VNET_KEY]
+    curr_status = get_provisioning_state()
+    if curr_status != constants.SUCCEEDED:
+        return ctx.operation.retry(
+            message='Waiting for the VNET ({0}) to be provisioned'.format(vnet_name), retry_after=start_retry_interval)
+
+
+@operation
 def delete_vnet(**_):
     delete_current_vnet()
     utils.clear_runtime_properties()
@@ -171,3 +180,18 @@ def _add_security_group(vnet_curr_subnet, subscription_id, resource_group_name):
             "id": "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Network/networkSecurityGroups/{2}".format(subscription_id, resource_group_name, security_group_name)
         }
     return vnet_curr_subnet
+
+
+def get_provisioning_state(**_):
+    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+
+    vnet_name = ctx.instance.runtime_properties[constants.VNET_KEY]
+
+    ctx.logger.info("Searching for VNET {0}".format(vnet_name))
+    headers, location, subscription_id = auth.get_credentials()
+
+    check_vnet_url = "{0}/subscriptions/{1}/resourceGroups/{2}/providers/Microsoft.network/" \
+                          "virtualNetworks/{3}?api-version={4}".format(constants.azure_url,
+                                subscription_id, resource_group_name, vnet_name, constants.api_version_network)
+    return azurerequests.get_provisioning_state(headers, resource_group_name, check_vnet_url)
+

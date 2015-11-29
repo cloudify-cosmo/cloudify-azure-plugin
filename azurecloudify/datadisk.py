@@ -15,15 +15,13 @@
 
 # Built-in Imports
 import requests
-from requests import Request,Session,Response
 import json
 import constants
 import sys
 import os
 import auth
-from resourcegroup import *
 import utils
-from cloudify.exceptions import NonRecoverableError, RecoverableError
+from cloudify.exceptions import NonRecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation
 
@@ -71,3 +69,4 @@ def set_disks_from_runtime(caller_string, source_runtime_properties, target_runt
             if use_only_first_disk:
                 return source_runtime_properties[curr_key]
     return "OK"
+
