@@ -143,6 +143,7 @@ def delete_current_virtual_machine(**_):
 
 @operation
 def set_storage_account_details(azure_config, **kwargs):
+    utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY, constants.STORAGE_ACCOUNT_KEY], [])
     ctx.source.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = ctx.target.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
     ctx.logger.info("{0} is {1}".format(constants.STORAGE_ACCOUNT_KEY, ctx.target.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]))
     ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
@@ -151,6 +152,7 @@ def set_storage_account_details(azure_config, **kwargs):
 
 @operation
 def set_nic_details(azure_config, **kwargs):
+    utils.write_target_runtime_properties_to_file([constants.PUBLIC_IP_KEY,constants.PRIVATE_IP_ADDRESS_KEY], [constants.NIC_KEY])
     _set_ips_from_target()
 
     for curr_key in ctx.target.instance.runtime_properties:
@@ -161,6 +163,7 @@ def set_nic_details(azure_config, **kwargs):
 
 @operation
 def set_data_disks(azure_config, **kwargs):
+    utils.write_target_runtime_properties_to_file([constants.DISK_SIZE_KEY], [constants.DATA_DISKS])
     for curr_key in ctx.target.instance.runtime_properties:
         if curr_key.startswith(constants.DATA_DISK_KEY):
             ctx.source.instance.runtime_properties[curr_key] = ctx.target.instance.runtime_properties[curr_key]
