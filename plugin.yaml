@@ -153,7 +153,7 @@ node_types:
             start_retry_interval:
               description: Polling interval in seconds until the securitygroup is provisioned
               type: integer
-              default: 30	
+              default: 30
         delete: microsoft.azurecloudify.securitygroup.delete_security_group
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.securitygroup.creation_validation
@@ -426,13 +426,13 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         configure: microsoft.azurecloudify.datadisk.create_disk
-        start:          
+        start:
           implementation: microsoft.azurecloudify.datadisk.verify_provision
           inputs:
             start_retry_interval:
               description: Polling interval in seconds until the datadisk is provisioned
               type: integer
-              default: 30	
+              default: 30
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.datadisk.creation_validation
 
@@ -484,7 +484,7 @@ node_types:
             start_retry_interval:
               description: Polling interval in seconds until the storageaccount is provisioned
               type: integer
-              default: 30	
+              default: 30
         delete: microsoft.azurecloudify.storageaccount.delete_storage_account
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.storageaccount.creation_validation
