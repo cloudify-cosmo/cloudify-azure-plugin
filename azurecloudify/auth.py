@@ -17,14 +17,14 @@ def generate_token(use_client_file=True, **kwargs):
     #ctx.logger.debug("In generate_token: token_expires {}".format(token_expires))
     try:
         json_data = {}
-        with open(constants.path_to_local_azure_token_file, 'w') as f:
+        with open(constants.default_path_to_local_azure_token_file, 'w') as f:
             json_data["auth_token"] = token
             json_data["token_expires"] = token_expires
             f.seek(0)
             f.write(json.dumps(json_data))
             f.close()
     except:
-        raise NonRecoverableError("Failures while creating or using {}".format(constants.path_to_local_azure_token_file))
+        raise NonRecoverableError("Failures while creating or using {}".format(constants.default_path_to_local_azure_token_file))
 
     ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = token
     ctx.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY] = token_expires
@@ -51,9 +51,9 @@ def get_auth_token(use_client_file=True, **kwargs):
 
         # Check if token file exists on the client's VM. If so, take the value from it and set it in the runtime
         #ctx.logger.debug("In auth.get_auth_token checking local azure file path {}".format(constants.path_to_local_azure_token_file))
-        if os.path.isfile(constants.path_to_local_azure_token_file):
+        if os.path.isfile(constants.default_path_to_local_azure_token_file):
             # If you are here , it means that this is during bootstrap
-            ctx.logger.info("{} exists".format(constants.path_to_local_azure_token_file))
+            ctx.logger.info("{} exists".format(constants.default_path_to_local_azure_token_file))
             token, token_expires = get_token_from_client_file()
             ctx.logger.info("get_auth_token expiry is {} ".format(token_expires))
             ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = token
@@ -63,7 +63,7 @@ def get_auth_token(use_client_file=True, **kwargs):
 
     # From here, this is not during bootstrap, which also means that this code runs on the manager's VM.
     try:
-        config_path = ctx.node.properties.get(constants.path_to_azure_conf_key) or constants.path_to_azure_conf
+        config_path = ctx.node.properties.get(constants.path_to_azure_conf_key) or constants.default_path_to_azure_conf
         #ctx.logger.debug("In auth.get_auth_token b4 locking {}".format(config_path))
         lock = LockFile(config_path)
         lock.acquire()
@@ -124,7 +124,7 @@ def _get_payload_endpoints():
 
 
 def get_token_from_client_file():
-    with open(constants.path_to_local_azure_token_file, 'r') as f:
+    with open(constants.default_path_to_local_azure_token_file, 'r') as f:
         json_data = json.load(f)
         token_expires = json_data["token_expires"]
         token = json_data["auth_token"]

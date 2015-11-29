@@ -45,7 +45,7 @@ def _copy_azure_configuration_to_manager(azure_config):
     config_path = ctx.node.properties.get(
         'cloudify').get(
         'plugins').get(
-        'azure_config_path') or constants.path_to_azure_conf		
+        'azure_config_path') or constants.default_path_to_azure_conf
 
     fabric.api.sudo('mkdir -p {0}'.format(os.path.dirname(config_path)))
     fabric.api.put(tmp, '{0}'.format(config_path), use_sudo=True)

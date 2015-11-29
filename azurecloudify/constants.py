@@ -38,11 +38,11 @@ login_url = 'https://login.microsoftonline.com'
 sourcePortRange = 65000
 destinationPortRange = 60000
 priority = 100
-nsg_rule_name='my_ns_rules'
 resource = 'https://management.core.windows.net/'
+default_path_to_runtime_folder = "/tmp/"
 path_to_azure_conf_key = 'azure_conf_file_path'
-path_to_azure_conf = '~/azure_config.json'
-path_to_local_azure_token_file = '/tmp/azure_token_file.json'
+default_path_to_azure_conf = '~/azure_config.json'
+default_path_to_local_azure_token_file = '/tmp/azure_token_file.json'
 
 RESOURCE_GROUP_REQUIRED_PROPERTIES = ['location', 'subscription_id']
 STORAGE_ACCOUNT_REQUIRED_PROPERTIES = ['location', 'subscription_id']
