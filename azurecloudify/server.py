@@ -188,8 +188,8 @@ def _set_ips_from_target():
 #
 # A vm with a NIC which has only private ip, will set its private ip,
 # even if the private ip has already been set by another NIC.
-def _set_private_ip(check_if_private_exists):
-    if check_if_private_exists and constants.PRIVATE_IP_ADDRESS_KEY in ctx.source.instance.runtime_properties:
+def _set_private_ip(exit_if_private_already_exists):
+    if exit_if_private_already_exists and constants.PRIVATE_IP_ADDRESS_KEY in ctx.source.instance.runtime_properties:
         return
 
     if constants.PRIVATE_IP_ADDRESS_KEY in ctx.target.instance.runtime_properties:
@@ -229,7 +229,7 @@ def _vm_is_started(headers, vm_name, subscription_id, resource_group_name):
     ctx.logger.info("In _vm_is_started checking {0}".format(vm_name))
     check_vm_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?api-version='+constants.api_version
     check_vm_response = requests.get(check_vm_url, headers=headers)
-    return utils.resource_provisioned('_vm_is_started',vm_name, check_vm_response)
+    return utils.resource_provisioned('_vm_is_started', vm_name, check_vm_response)
 
 
 def _start_vm_call(headers, vm_name, subscription_id, resource_group_name):

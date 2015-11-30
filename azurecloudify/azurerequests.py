@@ -23,11 +23,14 @@ from requests import Request,Session,Response
 import json
 
 
-def get_provisioning_state(headers, resource_name, check_resource_url):
+def get_provisioning_state(headers, resource_name, check_resource_url, save_successful_response=True):
     ctx.logger.info("In get_provisioning_state checking {0}".format(resource_name))
     check_resource_response = requests.get(url=check_resource_url, headers=headers)
     response_json = check_resource_response.json()
     if 'properties' in response_json:
+        if save_successful_response:
+            # In order to save a redundant API call
+            ctx.instance.runtime_properties[constants.SUCCESSFUL_RESPONSE_JSON] = response_json
         return response_json['properties']['provisioningState']
     elif 'error' in response_json:
         err_msg = response_json['error']['message']

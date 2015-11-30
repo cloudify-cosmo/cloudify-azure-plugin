@@ -158,7 +158,7 @@ def validate_node_properties(required_properties, ctx_node_properties):
             raise NonRecoverableError('{0} is a required input. Unable to create.'.format(property_key))
 
 
-def write_target_runtime_properties_to_file(required_keys, prefixed_keys=None):
+def write_target_runtime_properties_to_file(required_keys, prefixed_keys=None, need_suffix=None):
     try:
         current_runtime_folder = constants.default_path_to_runtime_folder
         current_instance_key = ctx.source.node.id+ctx.source.instance.id
@@ -170,6 +170,8 @@ def write_target_runtime_properties_to_file(required_keys, prefixed_keys=None):
         with open(current_runtime_file_path, 'a') as f:
             for curr_runtime_property in ctx.target.instance.runtime_properties:
                 if required_keys and curr_runtime_property in required_keys:
+                    if need_suffix and curr_runtime_property in need_suffix:
+                        curr_runtime_property = "{0}{1}{2}".format(curr_runtime_property, ctx.source.node.id, ctx.source.instance.id)
                     current_line = "{0}={1}\n".format(curr_runtime_property, ctx.target.instance.runtime_properties[curr_runtime_property])
                     f.write(current_line)
                 else:

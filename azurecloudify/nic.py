@@ -78,8 +78,8 @@ def _get_nic_params(current_subnet_name, location, resource_group_name, subscrip
 
 
 def set_nic_private_ip():
-    if constants.CREATE_RESPONSE in ctx.instance.runtime_properties:
-        response_nic_json = ctx.instance.runtime_properties[constants.CREATE_RESPONSE]
+    if constants.SUCCESSFUL_RESPONSE_JSON in ctx.instance.runtime_properties:
+        response_nic_json = ctx.instance.runtime_properties[constants.SUCCESSFUL_RESPONSE_JSON]
         nic_root_properties = response_nic_json[u'properties']
         ctx.logger.info("nic_root_properties : {0}".format(str(nic_root_properties)))
         ip_configurations = nic_root_properties[u'ipConfigurations'][0]
@@ -88,7 +88,11 @@ def set_nic_private_ip():
         ctx.logger.info("nic curr_properties : {0}".format(str(curr_properties)))
         private_ip_address = curr_properties[u'privateIPAddress']
         ctx.logger.info("nic private_ip_address : {0}".format(str(private_ip_address)))
-        ctx.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY] = str(private_ip_address)
+
+        curr_private_ip_key = "{0}{1}{2}".format(constants.PRIVATE_IP_ADDRESS_KEY, ctx.node.id, ctx.instance.id)
+        private_ip_str = str(private_ip_address)
+        ctx.instance.runtime_properties[curr_private_ip_key] = private_ip_str
+        ctx.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY] = private_ip_str
 
 
 @operation
@@ -131,18 +135,17 @@ def create_a_nic(**_):
     create_nic_url = constants.azure_url+network_str+"/networkInterfaces/"+nic_name+"?api-version="+constants.api_version_network
     utils.check_or_create_resource(headers, nic_name, nic_params, check_nic_url, create_nic_url, 'NIC', True)
 
-    set_nic_private_ip()
-
 
 @operation
 def verify_provision(start_retry_interval, **kwargs):
     curr_nic_key = _get_nic_key()
     nic_name = ctx.instance.runtime_properties[curr_nic_key]
-    curr_status = get_provisioning_state()
+    curr_status = get_provisioning_state(True)
     if curr_status != constants.SUCCEEDED:
         return ctx.operation.retry(
             message='Waiting for the NIC ({0}) to be provisioned'.format(nic_name), retry_after=start_retry_interval)
 
+    set_nic_private_ip()
 
 @operation
 def delete_nic(**_):
@@ -186,7 +189,7 @@ def _set_security_group_details(azure_config, **kwargs):
 
 @operation
 def set_public_ip_details(azure_config, **kwargs):
-    utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY, constants.PUBLIC_IP_KEY, constants.VNET_KEY, constants.SECURITY_GROUP_KEY], [constants.SUBNET_KEY])
+    utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY, constants.PUBLIC_IP_KEY, constants.VNET_KEY, constants.SECURITY_GROUP_KEY], prefixed_keys=[constants.SUBNET_KEY], need_suffix=constants.PUBLIC_IP_KEY)
     ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     ctx.source.instance.runtime_properties[constants.VNET_KEY] = ctx.target.instance.runtime_properties[constants.VNET_KEY]
     current_subnet_name = subnet.set_subnets_from_runtime("nic.set_public_ip_details", ctx.source.instance.runtime_properties, ctx.target.instance.runtime_properties)
@@ -233,7 +236,7 @@ def _get_nic_key():
     return curr_nic_key
 
 
-def get_provisioning_state(**_):
+def get_provisioning_state(save_successful_response, **kwargs):
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
 
     nic_key = _get_nic_key()
@@ -246,5 +249,5 @@ def get_provisioning_state(**_):
                                                                                               resource_group_name)
     check_nic_url = "{0}{1}/networkInterfaces/{2}?api-version={3}".format(constants.azure_url, network_str, nic_name,
                                                                           constants.api_version_network)
-    return azurerequests.get_provisioning_state(headers, resource_group_name, check_nic_url)
+    return azurerequests.get_provisioning_state(headers, resource_group_name, check_nic_url, save_successful_response)
 
