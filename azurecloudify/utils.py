@@ -186,4 +186,20 @@ def write_target_runtime_properties_to_file(required_keys, prefixed_keys=None, n
         raise NonRecoverableError("Failures while locking or using {}".format(current_runtime_file_path))
 
     lock.release()
-    ctx.logger.info("{} is releases".format(current_runtime_file_path))
+    ctx.logger.info("{} is released".format(current_runtime_file_path))
+
+
+def set_runtime_properties_from_file():
+    try:
+        current_runtime_folder = constants.default_path_to_runtime_folder
+        current_runtime_file_path = "{0}{1}".format(current_runtime_folder, ctx.instance.id)
+        ctx.logger.info("current instance runtime file path is {0}".format(current_runtime_file_path))
+        with open(current_runtime_file_path, 'r') as f:
+            all_lines = f.read().splitlines()
+            for current_line in all_lines:
+                current_key, current_value = current_line.split("=")
+                ctx.instance.runtime_properties[current_key] = current_value
+        f.close()
+    except:
+        raise NonRecoverableError("Failures trying to use {}".format(current_runtime_file_path))
+
