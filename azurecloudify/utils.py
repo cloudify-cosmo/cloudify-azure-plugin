@@ -162,14 +162,14 @@ def write_target_runtime_properties_to_file(required_keys, prefixed_keys=None):
     try:
         current_runtime_folder = constants.default_path_to_runtime_folder
         current_instance_key = ctx.source.node.id+ctx.source.instance.id
-        current_runtime_file_path = "{0}{1}.txt".format(current_runtime_folder, current_instance_key)
-        ctx.logger.info("In current_runtime_file_path is {0}".format(current_runtime_file_path))
+        current_runtime_file_path = "{0}{1}".format(current_runtime_folder, current_instance_key)
+        ctx.logger.info("current_runtime_file_path is {0}".format(current_runtime_file_path))
         lock = LockFile(current_runtime_file_path)
         lock.acquire()
         ctx.logger.info("{} is locked".format(lock.path))
         with open(current_runtime_file_path, 'a') as f:
             for curr_runtime_property in ctx.target.instance.runtime_properties:
-                if curr_runtime_property in required_keys:
+                if required_keys and curr_runtime_property in required_keys:
                     current_line = "{0}={1}\n".format(curr_runtime_property, ctx.target.instance.runtime_properties[curr_runtime_property])
                     f.write(current_line)
                 else:

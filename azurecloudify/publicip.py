@@ -97,7 +97,7 @@ def set_dependent_resources_names(azure_config, **kwargs):
     ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     ctx.source.instance.runtime_properties[constants.VNET_KEY] = ctx.target.instance.runtime_properties[constants.VNET_KEY]
     ctx.logger.info("{0} is {1}".format(constants.VNET_KEY, ctx.target.instance.runtime_properties[constants.VNET_KEY]))
-    subnet.set_subnets_from_runtime("public.set_dependent_resources_names", ctx.source.instance.runtime_properties, ctx.target.instance.runtime_properties)
+    subnet.set_subnets_from_runtime("publicip.set_dependent_resources_names", ctx.source.instance.runtime_properties, ctx.target.instance.runtime_properties)
     _set_security_group_details(azure_config)
 
 
@@ -124,6 +124,7 @@ def _get_public_ip_name(public_ip_name):
         return True
     else:
         return False
+
 
 def _get_public_ip_params(location, public_ip_name):
     return json.dumps({
