@@ -42,6 +42,9 @@ def create_a_vm(**_):
     random_suffix_value = utils.random_suffix_generator()
     vm_name = ctx.node.properties[constants.VM_PREFIX]+random_suffix_value
     ctx.logger.info("Creating new virtual machine: {0}".format(vm_name))
+
+    _set_ip_addresses()
+
     storage_account_name = ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
     #availability_set_name = ctx.instance.runtime_properties[constants.AVAILABILITY_SET_KEY]
     availability_set_name = "To be developed by Pranjali and Vaidehi"
@@ -167,6 +170,28 @@ def _set_public_ip(subscription_id, resource_group_name, headers):
         ctx.logger.info("Current public IP address is {}".format(str(curr_ip_address)))
         ctx.instance.runtime_properties['vm_public_ip'] = curr_ip_address
         ctx.instance.runtime_properties['public_ip'] = curr_ip_address
+
+
+def _set_ip_addresses():
+    has_public_ip = False
+    public_ip_key = None
+    private_ip_keys = []
+    for current_key in ctx.instance.runtime_properties:
+        if current_key.startswith(constants.PUBLIC_IP_KEY):
+            has_public_ip = True
+            public_key_instance_id = current_key.split(constants.PUBLIC_IP_KEY)[1]
+            ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY] = ctx.instance.runtime_properties[current_key]
+        elif current_key.startswith(constants.PRIVATE_IP_ADDRESS_KEY):
+            private_ip_keys.append(current_key)
+            ctx.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY] = ctx.instance.runtime_properties[current_key]
+
+    if has_public_ip and len(private_ip_keys) > 1:
+        # There are two private IP addresses, so the one which doesn't correspond to the
+        # public IP address, will be used
+        for curr_private_ip_key in private_ip_keys:
+            private_key_instance_id = curr_private_ip_key.split(constants.PRIVATE_IP_ADDRESS_KEY)[1]
+            if private_key_instance_id != public_key_instance_id:
+                ctx.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY] = ctx.instance.runtime_properties[curr_private_ip_key]
 
 
 def _start_vm_call(headers, vm_name, subscription_id, resource_group_name):
