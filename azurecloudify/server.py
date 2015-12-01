@@ -48,23 +48,12 @@ def create_a_vm(**_):
     headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
 
-    try:
-        virtual_machine_params = _get_virtual_machine_params(location, random_suffix_value, resource_group_name,
-                                                            storage_account_name, subscription_id, vm_name, availability_set_name)
-        virtual_machine_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version
-        response_vm = requests.put(url=virtual_machine_url, data=virtual_machine_params, headers=headers)
-        if response_vm.text:
-            ctx.logger.info("create_vm:{0} response_vm.text is {1}".format(vm_name, response_vm.text))
-            if utils.request_failed("{0}:{1}".format('create_vm', vm_name), response_vm):
-                raise NonRecoverableError("Virtual Machine {0} could not be created".format(vm_name))
-        elif response_vm:
-            ctx.logger.info("create_vm:{0} response_vm is {1}".format(vm_name, response_vm))
-        else:
-            ctx.logger.info("create_vm:{0} response_vm is empty".format(vm_name))
-        ctx.instance.runtime_properties[constants.VM_KEY] = vm_name
-    except:
-        ctx.logger.info("Virtual Machine {0} could not be created".format(vm_name))
-        raise NonRecoverableError("Virtual Machine {0} could not be created".format(vm_name))
+    virtual_machine_params = _get_virtual_machine_params(location, random_suffix_value, resource_group_name,
+                                                        storage_account_name, subscription_id, vm_name, availability_set_name)
+    virtual_machine_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version
+    response_vm = requests.put(url=virtual_machine_url, data=virtual_machine_params, headers=headers)
+    ctx.instance.runtime_properties[constants.VM_KEY] = vm_name
+    return response_vm.status_code
 
 
 @operation

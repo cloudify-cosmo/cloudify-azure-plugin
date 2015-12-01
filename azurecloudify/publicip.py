@@ -49,12 +49,11 @@ def create_public_ip(**_):
     if constants.PUBLIC_IP_KEY not in ctx.instance.runtime_properties:
         ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY] = public_ip_name
 
-    check_public_ip_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version_network
     create_public_ip_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version_network
     public_ip_params = _get_public_ip_params(location, public_ip_name)
-    utils.check_or_create_resource(headers, public_ip_name, public_ip_params, check_public_ip_url, create_public_ip_url, 'public_ip')
-
+    status_code = utils.create_resource(headers, public_ip_name, public_ip_params, create_public_ip_url, 'public_ip')
     ctx.logger.info("{0} is {1}".format(constants.PUBLIC_IP_KEY, public_ip_name))
+    return status_code
 
 
 @operation

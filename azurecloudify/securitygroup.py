@@ -37,19 +37,12 @@ def create_security_group(**_):
 
     security_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version_network
 
-    try:
-        ctx.logger.info("Creating a new security group: {0}".format(security_group_name))
-        security_group_json = _get_security_group_json(location)
-        security_group_params = _get_security_group_params(security_group_json)
-        response_nsg = requests.put(url=security_group_url, data=security_group_params, headers=headers)
-        if response_nsg.text:
-            ctx.logger.info("create_security_group {0} response_nsg.text is {1}".format(security_group_name, response_nsg.text))
-            if utils.request_failed("{0}:{1}".format('create_security_group', security_group_name), response_nsg):
-                raise NonRecoverableError("create_security_group {0} could not be created".format(security_group_name))
-        ctx.instance.runtime_properties[constants.SECURITY_GROUP_KEY] = security_group_name
-    except:
-        ctx.logger.info("Security Group {0} could not be created".format(security_group_name))
-        raise NonRecoverableError("Security Group {} could not be created".format(security_group_name))
+    ctx.logger.info("Creating a new security group: {0}".format(security_group_name))
+    security_group_json = _get_security_group_json(location)
+    security_group_params = _get_security_group_params(security_group_json)
+    response_nsg = requests.put(url=security_group_url, data=security_group_params, headers=headers)
+    ctx.instance.runtime_properties[constants.SECURITY_GROUP_KEY] = security_group_name
+    return response_nsg.status_code
 
 
 @operation

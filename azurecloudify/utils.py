@@ -104,18 +104,12 @@ def create_resource(headers, resource_name, resource_params, create_resource_url
     response_resource = requests.put(url=create_resource_url, data=resource_params, headers=headers)
     if response_resource.text:
         ctx.logger.info("_create_resource {0} ({1}) response_resource.text is {2}".format(resource_name, resource_type, response_resource.text))
-        if request_failed("{0}:{1}".format('_create_resource', resource_name), response_resource):
-            raise NonRecoverableError("_create_resource resource {0} ({1}) could not be created".format(resource_name, resource_type))
 
-    if response_resource.status_code:
-        ctx.logger.info("_create_resource:{0} ({1}) - Status code is {2}".format(resource_name, resource_type, response_resource.status_code))
-        if response_resource.status_code in [constants.OK_STATUS_CODE, constants.ACCEPTED_STATUS_CODE, constants.CREATED_STATUS_CODE]:
-            ctx.instance.runtime_properties[constants.REQUEST_ACCEPTED] = True
-            return True
-        else:
-            raise NonRecoverableError("check_or_create_resource:{0} ({1}) - Status code for resource {2} is not 200 nor 202".format(resource_name, resource_type, response_resource.status_code))
+    ctx.logger.info("_create_resource:{0} ({1}) - Status code is {2}".format(resource_name, resource_type, response_resource.status_code))
+    if response_resource.status_code in [constants.OK_STATUS_CODE, constants.ACCEPTED_STATUS_CODE, constants.CREATED_STATUS_CODE]:
+        return response_resource.status_code
 
-    raise NonRecoverableError("check_or_create_resource:{0} ({1}) - No Status code for resource {2}".format(resource_name, resource_type, response_resource.status_code))
+    raise NonRecoverableError("create_resource:{0} ({1}) - Request failed for resource {2}".format(resource_name, resource_type, response_resource.status_code))
 
 
 def set_resource_name(get_resource_func, resource_desc,

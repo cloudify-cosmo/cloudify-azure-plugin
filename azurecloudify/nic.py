@@ -132,16 +132,15 @@ def create_a_nic(**_):
 
     ctx.logger.info("Creating new network interface card: {0}".format(nic_name))
     network_str, nic_params = _get_nic_params(current_subnet_name, location, resource_group_name, subscription_id, vnet_name)
-    check_nic_url = constants.azure_url+network_str+"/networkInterfaces/"+nic_name+"?api-version="+constants.api_version_network
     create_nic_url = constants.azure_url+network_str+"/networkInterfaces/"+nic_name+"?api-version="+constants.api_version_network
-    utils.check_or_create_resource(headers, nic_name, nic_params, check_nic_url, create_nic_url, 'NIC', True)
+    return utils.create_resource(headers, nic_name, nic_params, create_nic_url, 'NIC')
 
 
 @operation
 def verify_provision(start_retry_interval, **kwargs):
     curr_nic_key = _get_nic_key()
     nic_name = ctx.instance.runtime_properties[curr_nic_key]
-    curr_status = get_provisioning_state(True)
+    curr_status = get_provisioning_state()
     if curr_status != constants.SUCCEEDED:
         return ctx.operation.retry(
             message='Waiting for the NIC ({0}) to be provisioned'.format(nic_name), retry_after=start_retry_interval)
@@ -237,7 +236,7 @@ def _get_nic_key():
     return curr_nic_key
 
 
-def get_provisioning_state(save_successful_response, **kwargs):
+def get_provisioning_state(**_):
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
 
     nic_key = _get_nic_key()
@@ -250,5 +249,6 @@ def get_provisioning_state(save_successful_response, **kwargs):
                                                                                               resource_group_name)
     check_nic_url = "{0}{1}/networkInterfaces/{2}?api-version={3}".format(constants.azure_url, network_str, nic_name,
                                                                           constants.api_version_network)
-    return azurerequests.get_provisioning_state(headers, resource_group_name, check_nic_url, save_successful_response)
+    return azurerequests.get_provisioning_state(headers, resource_group_name, check_nic_url,
+                                                save_successful_response=True)
 
