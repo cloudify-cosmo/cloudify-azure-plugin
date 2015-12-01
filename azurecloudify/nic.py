@@ -92,7 +92,6 @@ def set_nic_private_ip():
         curr_private_ip_key = "{0}{1}{2}".format(constants.PRIVATE_IP_ADDRESS_KEY, ctx.node.id, ctx.instance.id)
         private_ip_str = str(private_ip_address)
         ctx.instance.runtime_properties[curr_private_ip_key] = private_ip_str
-        ctx.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY] = private_ip_str
 
 
 @operation
@@ -178,36 +177,16 @@ def delete_current_nic(**_):
 @operation
 def set_security_group_details(azure_config, **kwargs):
     utils.write_target_runtime_properties_to_file([constants.SECURITY_GROUP_KEY])
-    ctx.source.instance.runtime_properties[constants.SECURITY_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
-
-
-def _set_security_group_details(azure_config, **kwargs):
-    if constants.SECURITY_GROUP_KEY in ctx.target.instance.runtime_properties:
-        if constants.SECURITY_GROUP_KEY not in ctx.source.instance.runtime_properties:
-            ctx.source.instance.runtime_properties[constants.SECURITY_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
 
 
 @operation
 def set_public_ip_details(azure_config, **kwargs):
     utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY, constants.PUBLIC_IP_KEY, constants.VNET_KEY, constants.SECURITY_GROUP_KEY], prefixed_keys=[constants.SUBNET_KEY], need_suffix=constants.PUBLIC_IP_KEY)
-    ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-    ctx.source.instance.runtime_properties[constants.VNET_KEY] = ctx.target.instance.runtime_properties[constants.VNET_KEY]
-    current_subnet_name = subnet.set_subnets_from_runtime("nic.set_public_ip_details", ctx.source.instance.runtime_properties, ctx.target.instance.runtime_properties)
-    ctx.source.instance.runtime_properties[constants.SUBNET_KEY] = current_subnet_name
-    ctx.source.instance.runtime_properties[constants.PUBLIC_IP_KEY] = ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]
-    ctx.logger.info("{0} is {1}".format(constants.PUBLIC_IP_KEY, ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]))
-    _set_security_group_details(azure_config)
 
 
 @operation
 def set_vnet_details(azure_config, **kwargs):
     utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY, constants.VNET_KEY, constants.SECURITY_GROUP_KEY], [constants.SUBNET_KEY])
-    ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-    ctx.source.instance.runtime_properties[constants.VNET_KEY] = ctx.target.instance.runtime_properties[constants.VNET_KEY]
-    ctx.logger.info("{0} is {1}".format(constants.VNET_KEY, ctx.target.instance.runtime_properties[constants.VNET_KEY]))
-    current_subnet_name = subnet.set_subnets_from_runtime("nic.set_vnet_details", ctx.source.instance.runtime_properties, ctx.target.instance.runtime_properties)
-    ctx.source.instance.runtime_properties[constants.SUBNET_KEY] = current_subnet_name
-    _set_security_group_details(azure_config)
 
 
 def _validate_node_properties(key, ctx_node_properties):
@@ -229,7 +208,7 @@ def _get_nic_name(nic_name):
 
 
 def _get_nic_key():
-    curr_nic_key = constants.NIC_KEY+ctx.node.id+ctx.instance.id
+    curr_nic_key = "{0}{1}{2}".format(constants.NIC_KEY, ctx.node.id, ctx.instance.id)
     if constants.PUBLIC_IP_KEY in ctx.instance.runtime_properties:
         curr_nic_key = "{0}{1}".format(curr_nic_key, constants.PUBLIC_IP_KEY)
 

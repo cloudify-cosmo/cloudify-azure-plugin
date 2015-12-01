@@ -74,20 +74,16 @@ def start_a_vm(start_retry_interval, **kwargs):
 
     headers, location, subscription_id = auth.get_credentials()
 
+    _set_public_ip(subscription_id, resource_group_name, headers)
 
-    if constants.REQUEST_ACCEPTED in ctx.instance.runtime_properties:
-        if _vm_is_started(headers, vm_name, subscription_id, resource_group_name):
-            _set_public_ip(subscription_id, resource_group_name, headers)
-        else:
-            raise RecoverableError("start_a_vm: request already accepted - Waiting for vm {0} to start...".format(vm_name))
-    else:
-        if _start_vm_call(headers, vm_name, subscription_id, resource_group_name):
-            if _vm_is_started(headers, vm_name, subscription_id, resource_group_name):
-                _set_public_ip(subscription_id, resource_group_name, headers)
-            else:
-                raise RecoverableError("start_a_vm: vm {0} is not ready yet ...".format(vm_name))
-        else:
-            raise RecoverableError("start_a_vm: Failed to start {0} ".format(vm_name))
+    if constants.PRIVATE_IP_ADDRESS_KEY in ctx.target.instance.runtime_properties:
+        ctx.logger.info("Setting {0} private ip address".format(vm_name))
+        vm_private_ip = ctx.target.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY]
+        ctx.logger.info("vm_private_ip is {0}".format(vm_private_ip))
+
+        # Which one of the following two is required ?
+        ctx.source.instance.runtime_properties['ip'] = vm_private_ip
+        ctx.source.instance.runtime_properties['host_ip'] = vm_private_ip
 
 
 @operation
@@ -133,65 +129,17 @@ def delete_current_virtual_machine(**_):
 
 @operation
 def set_storage_account_details(azure_config, **kwargs):
-    utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY, constants.STORAGE_ACCOUNT_KEY], [])
-    ctx.source.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = ctx.target.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
-    ctx.logger.info("{0} is {1}".format(constants.STORAGE_ACCOUNT_KEY, ctx.target.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]))
-    ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-    ctx.logger.info("{0} is {1}".format(constants.RESOURCE_GROUP_KEY, ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]))
-
+    utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY, constants.STORAGE_ACCOUNT_KEY], None)
 
 @operation
 def set_nic_details(azure_config, **kwargs):
-    utils.write_target_runtime_properties_to_file([constants.PUBLIC_IP_KEY, constants.PRIVATE_IP_ADDRESS_KEY], [constants.NIC_KEY])
-    _set_ips_from_target()
-
-    for curr_key in ctx.target.instance.runtime_properties:
-        if curr_key.startswith(constants.NIC_KEY):
-            ctx.source.instance.runtime_properties[curr_key] = ctx.target.instance.runtime_properties[curr_key]
-            ctx.logger.info("{0} is {1}".format(curr_key, ctx.target.instance.runtime_properties[curr_key]))
+    utils.write_target_runtime_properties_to_file(None, [constants.PUBLIC_IP_KEY, constants.PRIVATE_IP_ADDRESS_KEY, constants.NIC_KEY])
 
 
 @operation
 def set_data_disks(azure_config, **kwargs):
-    utils.write_target_runtime_properties_to_file(None, [constants.DISK_SIZE_KEY, constants.DATA_DISKS])
-    for curr_key in ctx.target.instance.runtime_properties:
-        if curr_key.startswith(constants.DATA_DISK_KEY):
-            ctx.source.instance.runtime_properties[curr_key] = ctx.target.instance.runtime_properties[curr_key]
-            ctx.logger.info("{0} is {1}".format(curr_key, ctx.target.instance.runtime_properties[curr_key]))
-
     # This should be per disk issue #31
-    ctx.source.instance.runtime_properties[constants.DISK_SIZE_KEY] = ctx.target.instance.runtime_properties[constants.DISK_SIZE_KEY]
-
-
-def _set_ips_from_target():
-    if constants.PUBLIC_IP_KEY in ctx.target.instance.runtime_properties:
-        ctx.logger.info("{0} is {1}".format(constants.PUBLIC_IP_KEY, ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]))
-        ctx.source.instance.runtime_properties[constants.PUBLIC_IP_KEY] = ctx.target.instance.runtime_properties[constants.PUBLIC_IP_KEY]
-        _set_private_ip(True)
-    else:
-        ctx.logger.info("{0} is NOT in runtime props".format(constants.PUBLIC_IP_KEY))
-        _set_private_ip(False)
-
-
-# This will make sure that a vm with both public and private ip
-# will set its private ip, only if the private ip hasn't been set yet by another NIC
-#
-# A vm with a NIC which has only private ip, will set its private ip,
-# even if the private ip has already been set by another NIC.
-def _set_private_ip(exit_if_private_already_exists):
-    if exit_if_private_already_exists and constants.PRIVATE_IP_ADDRESS_KEY in ctx.source.instance.runtime_properties:
-        return
-
-    if constants.PRIVATE_IP_ADDRESS_KEY in ctx.target.instance.runtime_properties:
-        ctx.logger.info("Setting private ip")
-        vm_private_ip = ctx.target.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY]
-        ctx.logger.info("vm_private_ip is {0}".format(vm_private_ip))
-
-        # Which one of the following two is required ?
-        ctx.source.instance.runtime_properties['ip'] = vm_private_ip
-        ctx.source.instance.runtime_properties['host_ip'] = vm_private_ip
-
-        ctx.logger.info("host_ip is {0}".format(vm_private_ip))
+    utils.write_target_runtime_properties_to_file(None, [constants.DISK_SIZE_KEY, constants.DATA_DISKS])
 
 
 def _validate_node_properties(key, ctx_node_properties):
@@ -215,22 +163,10 @@ def _set_public_ip(subscription_id, resource_group_name, headers):
         ctx.instance.runtime_properties['public_ip'] = curr_ip_address
 
 
-def _vm_is_started(headers, vm_name, subscription_id, resource_group_name):
-    ctx.logger.info("In _vm_is_started checking {0}".format(vm_name))
-    check_vm_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?api-version='+constants.api_version
-    check_vm_response = requests.get(check_vm_url, headers=headers)
-    return utils.resource_provisioned('_vm_is_started', vm_name, check_vm_response)
-
-
 def _start_vm_call(headers, vm_name, subscription_id, resource_group_name):
-    ctx.logger.info("In _vm_is_started checking {0}".format(vm_name))
+    ctx.logger.info("In _start_vm_call starting {0}".format(vm_name))
     start_vm_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
     response_start_vm = requests.post(start_vm_url, headers=headers)
-    if response_start_vm.text:
-        ctx.logger.info("_start_vm_call {0} response_start_vm.text is {1}".format(vm_name, response_start_vm.text))
-        ctx.logger.info("_start_vm_call:{0} status code is {1}".format(vm_name, response_start_vm.status_code))
-        if utils.request_failed("{0}:{1}".format('_start_vm_call', vm_name), response_start_vm):
-            raise NonRecoverableError("Virtual Machine {0} could not be started".format(vm_name))
     if response_start_vm.status_code:
         ctx.logger.info("_start_vm_call:{0} - Status code is {1}".format(vm_name, response_start_vm.status_code))
         if response_start_vm.status_code == 202:

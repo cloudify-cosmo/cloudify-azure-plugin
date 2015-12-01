@@ -95,7 +95,6 @@ def delete_current_storage_account(**_):
 @operation
 def set_dependent_resources_names(azure_config, **kwargs):
     utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY])
-    ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
 
 
 def _validate_node_properties(key, ctx_node_properties):

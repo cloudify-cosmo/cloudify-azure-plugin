@@ -97,25 +97,16 @@ def delete_current_vnet(**_):
 @operation
 def set_resource_group_details(azure_config, **kwargs):
     utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY])
-    ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
 
 
 @operation
 def set_security_group_details(azure_config, **kwargs):
     utils.write_target_runtime_properties_to_file([constants.SECURITY_GROUP_KEY])
-    ctx.source.instance.runtime_properties[constants.SECURITY_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
-
-
-def _set_security_group_details(azure_config, **kwargs):
-    utils.write_target_runtime_properties_to_file([constants.SECURITY_GROUP_KEY])
-    if constants.SECURITY_GROUP_KEY in ctx.target.instance.runtime_properties:
-        ctx.source.instance.runtime_properties[constants.SECURITY_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
 
 
 @operation
 def set_subnet_details(azure_config, **kwargs):
-    subnet.set_subnets_from_runtime("vnet.set_subnet_details", ctx.source.instance.runtime_properties, ctx.target.instance.runtime_properties, False)
-    _set_security_group_details(azure_config)
+    utils.write_target_runtime_properties_to_file([constants.SECURITY_GROUP_KEY], [constants.SUBNET_KEY])
 
 
 def _validate_node_properties(key, ctx_node_properties):
