@@ -206,7 +206,7 @@ def _start_vm_call(headers, vm_name, subscription_id, resource_group_name):
     ctx.instance.runtime_properties[constants.SERVER_START_INVOKED] = True
     if response_start_vm.status_code:
         ctx.logger.info("_start_vm_call:{0} - Status code is {1}".format(vm_name, response_start_vm.status_code))
-        if response_start_vm.status_code == constants.OK_STATUS_CODE:
+        if response_start_vm.status_code in [constants.OK_STATUS_CODE , constants.ACCEPTED_STATUS_CODE]:
             return True
     return False
 
