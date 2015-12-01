@@ -101,6 +101,7 @@ def create_nic(**_):
 
 def create_a_nic(**_):
     utils.set_runtime_properties_from_file()
+    _set_nic_subnet()
     if constants.USE_EXTERNAL_RESOURCE in ctx.node.properties and ctx.node.properties[constants.USE_EXTERNAL_RESOURCE]:
         if constants.EXISTING_NIC_KEY in ctx.node.properties:
             existing_nic_name = ctx.node.properties[constants.EXISTING_NIC_KEY]
@@ -213,6 +214,12 @@ def _get_nic_key():
         curr_nic_key = "{0}{1}".format(curr_nic_key, constants.PUBLIC_IP_KEY)
 
     return curr_nic_key
+
+def _set_nic_subnet():
+    for current_key in ctx.instance.runtime_properties:
+        if current_key.startswith(constants.SUBNET_KEY):
+            ctx.instance.runtime_properties[constants.SUBNET_KEY] = ctx.instance.runtime_properties[current_key]
+            return
 
 
 def get_provisioning_state(**_):
