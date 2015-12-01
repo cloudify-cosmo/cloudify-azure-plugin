@@ -34,7 +34,7 @@ def creation_validation(**_):
 
 @operation
 def create_vnet(**_):
-
+    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     vnet_name = utils.set_resource_name(_get_vnet_name, 'VNET', constants.VNET_KEY, constants.EXISTING_VNET_KEY,
                                         constants.VNET_PREFIX)
     if vnet_name is None:
@@ -42,7 +42,7 @@ def create_vnet(**_):
         return
 
     headers, location, subscription_id = auth.get_credentials()
-    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+
     if constants.VNET_KEY not in ctx.instance.runtime_properties:
         ctx.instance.runtime_properties[constants.VNET_KEY] = vnet_name 
 
