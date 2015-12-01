@@ -66,24 +66,29 @@ def start_a_vm(start_retry_interval, **kwargs):
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     vm_name = ctx.instance.runtime_properties[constants.VM_KEY]
 
-    curr_status = get_provisioning_state()
-    if curr_status != constants.SUCCEEDED:
-        return ctx.operation.retry(
-            message='Waiting for the server ({0}) to be provisioned'.format(vm_name),
-            retry_after=start_retry_interval)
+    if constants.SERVER_START_INVOKED not in ctx.instance.runtime_properties:
+        curr_status = get_provisioning_state()
+        if curr_status != constants.SUCCEEDED:
+            return ctx.operation.retry(
+                message='Waiting for the server ({0}) to be provisioned'.format(vm_name),
+                retry_after=start_retry_interval)
 
     headers, location, subscription_id = auth.get_credentials()
 
-    _set_public_ip(subscription_id, resource_group_name, headers)
+    if _start_vm_call(headers, vm_name, subscription_id, resource_group_name):
+        _set_public_ip(subscription_id, resource_group_name, headers)
 
-    if constants.PRIVATE_IP_ADDRESS_KEY in ctx.target.instance.runtime_properties:
-        ctx.logger.info("Setting {0} private ip address".format(vm_name))
-        vm_private_ip = ctx.target.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY]
-        ctx.logger.info("vm_private_ip is {0}".format(vm_private_ip))
+        if constants.PRIVATE_IP_ADDRESS_KEY in ctx.target.instance.runtime_properties:
+            ctx.logger.info("Setting {0} private ip address".format(vm_name))
+            vm_private_ip = ctx.target.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY]
+            ctx.logger.info("vm_private_ip is {0}".format(vm_private_ip))
 
-        # Which one of the following two is required ?
-        ctx.source.instance.runtime_properties['ip'] = vm_private_ip
-        ctx.source.instance.runtime_properties['host_ip'] = vm_private_ip
+            # Which one of the following two is required ?
+            ctx.source.instance.runtime_properties['ip'] = vm_private_ip
+            ctx.source.instance.runtime_properties['host_ip'] = vm_private_ip
+    else:
+        return ctx.operation.retry(message='Waiting for the server ({0}) to be started'.format(vm_name),
+                                   retry_after=start_retry_interval)
 
 
 @operation
@@ -131,6 +136,7 @@ def delete_current_virtual_machine(**_):
 def set_storage_account_details(azure_config, **kwargs):
     utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY, constants.STORAGE_ACCOUNT_KEY], None)
 
+
 @operation
 def set_nic_details(azure_config, **kwargs):
     utils.write_target_runtime_properties_to_file(None, [constants.PUBLIC_IP_KEY, constants.PRIVATE_IP_ADDRESS_KEY, constants.NIC_KEY])
@@ -167,17 +173,12 @@ def _start_vm_call(headers, vm_name, subscription_id, resource_group_name):
     ctx.logger.info("In _start_vm_call starting {0}".format(vm_name))
     start_vm_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
     response_start_vm = requests.post(start_vm_url, headers=headers)
+    ctx.instance.runtime_properties[constants.SERVER_START_INVOKED] = True
     if response_start_vm.status_code:
         ctx.logger.info("_start_vm_call:{0} - Status code is {1}".format(vm_name, response_start_vm.status_code))
-        if response_start_vm.status_code == 202:
-            ctx.instance.runtime_properties[constants.REQUEST_ACCEPTED] = True
+        if response_start_vm.status_code == constants.OK_STATUS_CODE:
             return True
-        elif response_start_vm.status_code == 200:
-            ctx.instance.runtime_properties[constants.REQUEST_ACCEPTED] = True
-            return True
-        else:
-            return False
-    raise NonRecoverableError("_start_vm_call:{0} - No Status code for vm {1}".format(vm_name, response_start_vm.status_code))
+    return False
 
 
 def _get_virtual_machine_params(location, random_suffix_value, resource_group_name, storage_account_name,
