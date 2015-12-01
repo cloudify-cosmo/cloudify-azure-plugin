@@ -168,9 +168,10 @@ def write_target_runtime_properties_to_file(required_keys, prefixed_keys=None, n
                     ctx.logger.info("curr_runtime_property {0} in required_key".format(curr_runtime_property))
                     if need_suffix and (curr_runtime_property in need_suffix):
                         ctx.logger.info("curr_runtime_property {0} needs suffix".format(curr_runtime_property))
+                        orig_runtime_property = curr_runtime_property
                         curr_runtime_property = "{0}{1}{2}".format(curr_runtime_property, ctx.source.node.id, ctx.source.instance.id)
                         ctx.logger.info("curr_runtime_property is now {0}".format(curr_runtime_property))
-                    current_line = "{0}={1}\n".format(curr_runtime_property, ctx.target.instance.runtime_properties[curr_runtime_property])
+                    current_line = "{0}={1}\n".format(curr_runtime_property, ctx.target.instance.runtime_properties[orig_runtime_property])
                     ctx.logger.info("Writing1 {0}".format(current_line))
                     f.write(current_line)
                 else:
