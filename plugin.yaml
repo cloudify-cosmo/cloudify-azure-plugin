@@ -815,7 +815,7 @@ relationships:
           implementation: microsoft.azurecloudify.datadisk.set_storageaccount_details
           inputs:
             azure_config:
-              default: {}	
+              default: {}
 
 
    cloudify.azure.relationships.resource_depends_on_azure_token:
