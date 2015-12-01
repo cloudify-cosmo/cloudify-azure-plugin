@@ -35,6 +35,7 @@ def creation_validation(**_):
 
 @operation
 def create_storage_account(**_):
+    utils.set_runtime_properties_from_file()
     storage_account_name = utils.set_resource_name(_get_storage_account_name, 'Storage account',
                       constants.STORAGE_ACCOUNT_KEY, constants.EXISTING_STORAGE_ACCOUNT_KEY,
                       constants.STORAGE_ACCOUNT_PREFIX)

@@ -14,16 +14,13 @@
 #    * limitations under the License.
 
 # Built-in Imports
-from _ast import Raise
-import requests
-import json
+
 import constants
 import sys
 import os
-import auth
 from resourcegroup import *
 import utils
-from cloudify.exceptions import NonRecoverableError, RecoverableError
+from cloudify.exceptions import NonRecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation
 
