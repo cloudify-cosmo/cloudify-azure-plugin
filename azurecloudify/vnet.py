@@ -50,7 +50,7 @@ def create_vnet(**_):
     vnet_json = _get_vnet_json(vnet_name, location, subscription_id, resource_group_name)
     vnet_params = json.dumps(vnet_json)
     
-    status_code = utils.check_or_create_resource(headers, vnet_name, vnet_params, create_vnet_url, 'VNET')
+    status_code = utils.create_resource(headers, vnet_name, vnet_params, create_vnet_url, 'VNET')
     ctx.logger.info("{0} is {1}".format(constants.VNET_KEY, vnet_name))
     return status_code
 
