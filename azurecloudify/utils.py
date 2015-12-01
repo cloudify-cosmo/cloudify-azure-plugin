@@ -155,7 +155,7 @@ def validate_node_properties(required_properties, ctx_node_properties):
 def write_target_runtime_properties_to_file(required_keys, prefixed_keys=None, need_suffix=None):
     try:
         current_runtime_folder = constants.default_path_to_runtime_folder
-        current_instance_key = ctx.source.node.id+ctx.source.instance.id
+        current_instance_key = "{0}{1}".format(ctx.source.node.id, ctx.source.instance.id)
         current_runtime_file_path = "{0}{1}".format(current_runtime_folder, current_instance_key)
         ctx.logger.info("current_runtime_file_path is {0}".format(current_runtime_file_path))
         lock = LockFile(current_runtime_file_path)
@@ -187,7 +187,7 @@ def write_target_runtime_properties_to_file(required_keys, prefixed_keys=None, n
 def set_runtime_properties_from_file():
     try:
         current_runtime_folder = constants.default_path_to_runtime_folder
-        current_runtime_file_path = "{0}{1}".format(current_runtime_folder, ctx.instance.id)
+        current_runtime_file_path = "{0}{1}{2}".format(current_runtime_folder, ctx.node.id, ctx.instance.id)
         ctx.logger.info("current instance runtime file path is {0}".format(current_runtime_file_path))
         with open(current_runtime_file_path, 'r') as f:
             all_lines = f.read().splitlines()
