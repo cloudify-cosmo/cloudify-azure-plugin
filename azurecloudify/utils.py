@@ -182,6 +182,7 @@ def write_target_runtime_properties_to_file(required_keys, prefixed_keys=None, n
                                 f.write(current_line)
         f.close()
     except:
+        ctx.logger.info("Failures while locking or using {}".format(current_runtime_file_path))
         lock.release()
         raise NonRecoverableError("Failures while locking or using {}".format(current_runtime_file_path))
 

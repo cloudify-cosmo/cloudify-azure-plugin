@@ -38,6 +38,7 @@ def create_vm(**_):
 
 
 def create_a_vm(**_):
+    utils.set_runtime_properties_from_file()
     random_suffix_value = utils.random_suffix_generator()
     vm_name = ctx.node.properties[constants.VM_PREFIX]+random_suffix_value
     ctx.logger.info("Creating new virtual machine: {0}".format(vm_name))

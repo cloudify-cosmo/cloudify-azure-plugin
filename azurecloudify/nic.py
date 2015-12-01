@@ -101,6 +101,7 @@ def create_nic(**_):
 
 
 def create_a_nic(**_):
+    utils.set_runtime_properties_from_file()
     if constants.USE_EXTERNAL_RESOURCE in ctx.node.properties and ctx.node.properties[constants.USE_EXTERNAL_RESOURCE]:
         if constants.EXISTING_NIC_KEY in ctx.node.properties:
             existing_nic_name = ctx.node.properties[constants.EXISTING_NIC_KEY]

@@ -36,6 +36,7 @@ def creation_validation(**_):
 
 @operation
 def create_public_ip(**_):
+    utils.set_runtime_properties_from_file()
     public_ip_name = utils.set_resource_name(_get_public_ip_name, 'Public IP',
                                              constants.PUBLIC_IP_KEY, constants.EXISTING_PUBLIC_IP_NAME,
                                              constants.PUBLIC_IP_PREFIX)

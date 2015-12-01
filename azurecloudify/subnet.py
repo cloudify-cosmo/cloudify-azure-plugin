@@ -16,7 +16,6 @@
 # Built-in Imports
 from _ast import Raise
 import requests
-from requests import Request,Session,Response
 import json
 import constants
 import sys
@@ -37,12 +36,12 @@ def creation_validation(**_):
 
 @operation
 def create_subnet(**_):
-
     curr_subnet_key = "{0}{1}{2}".format(constants.SUBNET_KEY, ctx.node.id, ctx.instance.id)
     if curr_subnet_key in ctx.instance.runtime_properties:
         ctx.logger.info("create_subnet: Using subnet {0}".format(ctx.instance.runtime_properties[curr_subnet_key]))
         return
 
+    utils.set_runtime_properties_from_file()
     if constants.SUBNET_PROPERTY in ctx.node.properties and ctx.node.properties[constants.SUBNET_PROPERTY]:
         current_subnet_name = ctx.node.properties[constants.SUBNET_PROPERTY]
         ctx.logger.info("Using an existing subnet {0}".format(current_subnet_name))

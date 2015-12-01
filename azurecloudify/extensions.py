@@ -35,6 +35,7 @@ def creation_validation(**_):
 
 @operation
 def create_custom_script(**_):
+    utils.set_runtime_properties_from_file()
     custom_script_name = constants.CUSTOM_SCRIPT_PREFIX+utils.random_suffix_generator()
     ctx.instance.runtime_properties[constants.CUSTOM_SCRIPT_KEY] = custom_script_name
     headers, location, subscription_id = auth.get_credentials()

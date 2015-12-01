@@ -19,6 +19,7 @@ def creation_validation(**_):
 
 @operation
 def create_security_group(**_):
+    utils.set_runtime_properties_from_file()
     security_group_name = utils.set_resource_name(_get_security_group_name, 'SECUIRTY_GROUP',
                                              constants.SECURITY_GROUP_KEY, constants.EXISTING_SECURITY_GROUP_KEY,
                                              constants.SECURITY_GROUP_PREFIX)
