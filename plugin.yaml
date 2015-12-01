@@ -809,6 +809,13 @@ relationships:
 
    cloudify.azure.relationships.datadisk_contained_in_storage_account:
     derived_from: cloudify.relationships.contained_in
+    source_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        preconfigure:
+          implementation: microsoft.azurecloudify.datadisk.set_storageaccount_details
+          inputs:
+            azure_config:
+              default: {}	
 
 
    cloudify.azure.relationships.resource_depends_on_azure_token:
