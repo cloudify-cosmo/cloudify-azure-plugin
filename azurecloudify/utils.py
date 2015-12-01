@@ -163,16 +163,25 @@ def write_target_runtime_properties_to_file(required_keys, prefixed_keys=None, n
         ctx.logger.info("{} is locked".format(lock.path))
         with open(current_runtime_file_path, 'a') as f:
             for curr_runtime_property in ctx.target.instance.runtime_properties:
+                ctx.logger.info("curr_runtime_property is {0}".format(curr_runtime_property))
                 if required_keys and curr_runtime_property in required_keys:
-                    if need_suffix and curr_runtime_property in need_suffix:
+                    ctx.logger.info("curr_runtime_property {0} in required_key".format(curr_runtime_property))
+                    if need_suffix and (curr_runtime_property in need_suffix):
+                        ctx.logger.info("curr_runtime_property {0} needs suffix".format(curr_runtime_property))
                         curr_runtime_property = "{0}{1}{2}".format(curr_runtime_property, ctx.source.node.id, ctx.source.instance.id)
+                        ctx.logger.info("curr_runtime_property is now {0}".format(curr_runtime_property))
                     current_line = "{0}={1}\n".format(curr_runtime_property, ctx.target.instance.runtime_properties[curr_runtime_property])
+                    ctx.logger.info("Writing1 {0}".format(current_line))
                     f.write(current_line)
                 else:
                     if prefixed_keys is not None:
+                        ctx.logger.info("Prefixed keys is required")
                         for curr_prefixed_key in prefixed_keys:
+                            ctx.logger.info("curr_prefixed_key is {0}".format(curr_prefixed_key))
                             if curr_prefixed_key in curr_runtime_property:
+                                ctx.logger.info("curr_prefixed_key {0} is in {1}".format(curr_prefixed_key, curr_runtime_property))
                                 current_line = "{0}={1}\n".format(curr_runtime_property, ctx.target.instance.runtime_properties[curr_runtime_property])
+                                ctx.logger.info("Writing2 {0}".format(current_line))
                                 f.write(current_line)
         f.close()
     except:
