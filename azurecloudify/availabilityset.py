@@ -26,6 +26,7 @@ from cloudify.exceptions import NonRecoverableError,RecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation
 
+
 @operation
 def creation_validation(**_):
     for property_key in constants.STORAGE_ACCOUNT_REQUIRED_PROPERTIES:
@@ -34,6 +35,7 @@ def creation_validation(**_):
 
 @operation
 def create_availability_set(**_):
+    utils.set_runtime_properties_from_file()
     availability_set_name = ''
     if availability_set_name is None:
         return
@@ -69,6 +71,7 @@ def create_availability_set(**_):
            
 @operation
 def set_dependent_resources_names(azure_config, **kwargs):
+    utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY])
     ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] = ctx.target.instance.runtime_properties[constants.RESOURCE_GROUP_KEY] 
         
 
@@ -76,7 +79,6 @@ def set_dependent_resources_names(azure_config, **kwargs):
 def delete_availability_set(**_):
     delete_current_availability_set()
     utils.clear_runtime_properties()
-    
     
 
 def delete_current_availability_set(**_):
@@ -100,8 +102,7 @@ def _validate_node_properties(key, ctx_node_properties):
     if key not in ctx_node_properties:
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
         
-        
-        
+
 def _get_availabilty_set_name(availability_set_name):  
     ctx.logger.info("In _get_availability_set_name looking for {0} ".format(availability_set_name))
     headers, location, subscription_id = auth.get_credentials()
