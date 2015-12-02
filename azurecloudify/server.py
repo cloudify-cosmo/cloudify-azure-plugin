@@ -82,11 +82,11 @@ def check_if_vm_started(resource_group_name, vm_name, start_retry_interval, **kw
 
     headers, location, subscription_id = auth.get_credentials()
     start_vm_succeeded, status_code = _start_vm_call(headers, vm_name, subscription_id, resource_group_name)
-    ctx.logger.info("start_a_vm: start_vm_succeeded is {0}, status code is {1}".format(start_vm_succeeded, status_code))
+    ctx.logger.info("check_if_vm_started: start_vm_succeeded is {0}, status code is {1}".format(start_vm_succeeded, status_code))
     if start_vm_succeeded:
-        ctx.logger.info("start_a_vm: vm has started")
+        ctx.logger.info("check_if_vm_started: vm has started")
         response_start_vm = ctx.instance.runtime_properties[constants.START_RESPONSE]
-        ctx.logger.info("start_a_vm response_start_vm : {0}".format(response_start_vm.text))
+        ctx.logger.info("check_if_vm_started response_start_vm : {0}".format(response_start_vm.text))
         _set_public_ip(subscription_id, resource_group_name, headers)
         _set_private_ip(vm_name)
         return constants.OK_STATUS_CODE
