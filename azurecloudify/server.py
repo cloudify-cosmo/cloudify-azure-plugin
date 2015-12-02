@@ -75,25 +75,21 @@ def start_a_vm(start_retry_interval, **kwargs):
             return ctx.operation.retry(
                 message='Waiting for the server ({0}) to be provisioned'.format(vm_name),
                 retry_after=start_retry_interval*3)
+    return check_if_vm_started(resource_group_name, vm_name, start_retry_interval)
+
+
+def check_if_vm_started(resource_group_name, vm_name, start_retry_interval, **kwargs):
 
     headers, location, subscription_id = auth.get_credentials()
-
     start_vm_succeeded, status_code = _start_vm_call(headers, vm_name, subscription_id, resource_group_name)
     ctx.logger.info("start_a_vm: start_vm_succeeded is {0}, status code is {1}".format(start_vm_succeeded, status_code))
     if start_vm_succeeded:
         ctx.logger.info("start_a_vm: vm has started")
         response_start_vm = ctx.instance.runtime_properties[constants.START_RESPONSE]
-        ctx.logger.info("start_a_vm response_start_vm : {0}".format(str(response_start_vm)))
+        ctx.logger.info("start_a_vm response_start_vm : {0}".format(response_start_vm.text))
         _set_public_ip(subscription_id, resource_group_name, headers)
-
-        if constants.PRIVATE_IP_ADDRESS_KEY in ctx.target.instance.runtime_properties:
-            ctx.logger.info("Setting {0} private ip address".format(vm_name))
-            vm_private_ip = ctx.target.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY]
-            ctx.logger.info("vm_private_ip is {0}".format(vm_private_ip))
-
-            # Which one of the following two is required ?
-            ctx.source.instance.runtime_properties['ip'] = vm_private_ip
-            ctx.source.instance.runtime_properties['host_ip'] = vm_private_ip
+        _set_private_ip(vm_name)
+        return constants.OK_STATUS_CODE
     else:
         return ctx.operation.retry(message='Waiting for the server ({0}) to be started'.format(vm_name),
                                    retry_after=start_retry_interval*3)
@@ -161,6 +157,17 @@ def _validate_node_properties(key, ctx_node_properties):
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
 
 
+def _set_private_ip(vm_name):
+    if constants.PRIVATE_IP_ADDRESS_KEY in ctx.target.instance.runtime_properties:
+        ctx.logger.info("Setting {0} private ip address".format(vm_name))
+        vm_private_ip = ctx.target.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY]
+        ctx.logger.info("vm_private_ip is {0}".format(vm_private_ip))
+
+        # Which one of the following two is required ?
+        ctx.source.instance.runtime_properties['ip'] = vm_private_ip
+        ctx.source.instance.runtime_properties['host_ip'] = vm_private_ip
+
+
 def _set_public_ip(subscription_id, resource_group_name, headers):
     if constants.PUBLIC_IP_KEY in ctx.instance.runtime_properties:
         public_ip_name = ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY]
@@ -210,11 +217,13 @@ def _start_vm_call(headers, vm_name, subscription_id, resource_group_name):
     response_start_vm = requests.post(start_vm_url, headers=headers)
     ctx.instance.runtime_properties[constants.SERVER_START_INVOKED] = True
     if response_start_vm.status_code:
+        status_code = response_start_vm.status_code
         ctx.logger.info("_start_vm_call:{0} - Status code is {1}".format(vm_name, response_start_vm.status_code))
-        if response_start_vm.status_code == constants.OK_STATUS_CODE:
+        if response_start_vm.status_code in [constants.OK_STATUS_CODE, constants.ACCEPTED_STATUS_CODE]:
             ctx.logger.info("_start_vm_call: VM has started")
             ctx.instance.runtime_properties[constants.START_RESPONSE] = response_start_vm
-            return True, response_start_vm.status_code
+            ctx.logger.info("_start_vm_call: response_start_vm is {0}".format(response_start_vm.text))
+            return True, status_code
     return False, constants.NA_CODE
 
 
