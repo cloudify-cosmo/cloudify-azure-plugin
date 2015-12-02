@@ -57,9 +57,8 @@ def _get_nic_params(current_subnet_name, location, resource_group_name, subscrip
     security_group_properties = nic_json['properties']
     properties_ip_configurations0 = nic_properties['ipConfigurations'][0]
     ip_configurations_properties = properties_ip_configurations0['properties']
-    if constants.PUBLIC_IP_KEY in ctx.instance.runtime_properties:
-       
-        public_ip_name = ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY]
+    public_ip_name = utils.key_in_runtime(constants.PUBLIC_IP_KEY, ends_with_key=False, starts_with_key=True, return_value=True)
+    if public_ip_name:
         public_ip_address_json = {
             "id": network_str + "publicIPAddresses/" + public_ip_name
         }
