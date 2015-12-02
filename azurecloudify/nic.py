@@ -163,7 +163,7 @@ def delete_current_nic(**_):
 
     headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-    nic_name = ctx.instance.runtime_properties[constants.NIC_KEY]
+    nic_name = utils.key_in_runtime(constants.NIC_KEY, ends_with_key=False, starts_with_key=True, return_value=True)
 
     try:
         ctx.logger.info("Deleting NIC {0}".format(nic_name))
