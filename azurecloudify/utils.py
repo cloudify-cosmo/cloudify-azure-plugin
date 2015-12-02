@@ -210,3 +210,22 @@ def delete_runtime_properties_file():
     ctx.logger.info("Deleting {0}...".format(current_runtime_file_path))
     os.remove(current_runtime_file_path)
     ctx.logger.info("Deleted {0}".format(current_runtime_file_path))
+
+
+def key_in_runtime(current_key, ends_with_key=False, starts_with_key=False, return_value=False):
+    if ends_with_key or starts_with_key:
+        for key in ctx.instance.runtime_properties:
+            if ends_with_key and key.endswith(current_key) or starts_with_key and key.startswith(current_key):
+                return _get_key_or_value(key, return_value)
+    elif current_key in ctx.instance.runtime_properties:
+        return _get_key_or_value(current_key, return_value)
+
+    if return_value:
+        return None
+    return False
+
+
+def _get_key_or_value(current_key, return_value):
+    if return_value:
+        return ctx.instance.runtime_properties[current_key]
+    return True

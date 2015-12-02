@@ -122,9 +122,8 @@ def create_a_nic(**_):
    
     vnet_name = ctx.instance.runtime_properties[constants.VNET_KEY]
     current_subnet_name = ctx.instance.runtime_properties[constants.SUBNET_KEY]
-    if constants.NIC_KEY in ctx.instance.runtime_properties:
-        nic_name = ctx.instance.runtime_properties[constants.NIC_KEY]
-    else:
+    nic_name = utils.key_in_runtime(constants.NIC_KEY, ends_with_key=False, starts_with_key=True, return_value=True)
+    if not nic_name:
         random_suffix_value = utils.random_suffix_generator()
         nic_name = constants.NIC_PREFIX+random_suffix_value
         curr_nic_key = _get_nic_key()
@@ -210,7 +209,8 @@ def _get_nic_name(nic_name):
 
 def _get_nic_key():
     curr_nic_key = "{0}{1}{2}".format(constants.NIC_KEY, ctx.node.id, ctx.instance.id)
-    if constants.PUBLIC_IP_KEY in ctx.instance.runtime_properties:
+    nic_is_public = utils.key_in_runtime(constants.PUBLIC_IP_KEY, ends_with_key=False, starts_with_key=True, return_value=False)
+    if nic_is_public:
         curr_nic_key = "{0}{1}".format(curr_nic_key, constants.PUBLIC_IP_KEY)
 
     return curr_nic_key
