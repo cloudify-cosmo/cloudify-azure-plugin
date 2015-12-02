@@ -279,7 +279,7 @@ class AzureHandler(BaseHandler):
         }
 
 
-    def _remove_azure_resources(self, resources_to_remove):
+    def remove_azure_resources(self, resources_to_remove):
         
         
         servers = self.azurecloudify.servers.list()
@@ -347,99 +347,7 @@ class AzureHandler(BaseHandler):
 
         return failed
 
-    def _delete_volumes(self, nova, cinder, existing_volumes):
-        unremovables = {}
-        end_time = time.time() + VOLUME_TERMINATION_TIMEOUT_SECS
-
-        for volume in existing_volumes:
-            # detach the volume
-            if volume.status in ['available', 'error', 'in-use']:
-                try:
-                    self.logger.info('Detaching volume {0} ({1}), currently in'
-                                     ' status {2} ...'.
-                                     format(volume.display_name, volume.id,
-                                            volume.status))
-                    for attachment in volume.attachments:
-                        nova.volumes.delete_server_volume(
-                            server_id=attachment['server_id'],
-                            attachment_id=attachment['id'])
-                except Exception as e:
-                    self.logger.warning('Attempt to detach volume {0} ({1})'
-                                        ' yielded exception: "{2}"'.
-                                        format(volume.display_name, volume.id,
-                                               e))
-                    unremovables[volume.id] = e
-                    existing_volumes.remove(volume)
-
-        time.sleep(3)
-        for volume in existing_volumes:
-            # delete the volume
-            if volume.status in ['available', 'error', 'in-use']:
-                try:
-                    self.logger.info('Deleting volume {0} ({1}), currently in'
-                                     ' status {2} ...'.
-                                     format(volume.display_name, volume.id,
-                                            volume.status))
-                    cinder.volumes.delete(volume)
-                except Exception as e:
-                    self.logger.warning('Attempt to delete volume {0} ({1})'
-                                        ' yielded exception: "{2}"'.
-                                        format(volume.display_name, volume.id,
-                                               e))
-                    unremovables[volume.id] = e
-                    existing_volumes.remove(volume)
-
-        # wait for all volumes deletion until completed or timeout is reached
-        while existing_volumes and time.time() < end_time:
-            time.sleep(3)
-            for volume in existing_volumes:
-                volume_id = volume.id
-                volume_name = volume.display_name
-                try:
-                    vol = cinder.volumes.get(volume_id)
-                    if vol.status == 'deleting':
-                        self.logger.debug('volume {0} ({1}) is being '
-                                          'deleted...'.format(volume_name,
-                                                              volume_id))
-                    else:
-                        self.logger.warning('volume {0} ({1}) is in '
-                                            'unexpected status: {2}'.
-                                            format(volume_name, volume_id,
-                                                   vol.status))
-                except Exception as e:
-                    # the volume wasn't found, it was deleted
-                    if hasattr(e, 'code') and e.code == 404:
-                        self.logger.info('deleted volume {0} ({1})'.
-                                         format(volume_name, volume_id))
-                        existing_volumes.remove(volume)
-                    else:
-                        self.logger.warning('failed to remove volume {0} '
-                                            '({1}), exception: {2}'.
-                                            format(volume_name,
-                                                   volume_id, e))
-                        unremovables[volume_id] = e
-                        existing_volumes.remove(volume)
-
-        if existing_volumes:
-            for volume in existing_volumes:
-                # try to get the volume's status
-                try:
-                    vol = cinder.volumes.get(volume.id)
-                    vol_status = vol.status
-                except:
-                    # failed to get volume... status is unknown
-                    vol_status = 'unknown'
-
-                unremovables[volume.id] = 'timed out while removing volume {0}' \
-                                          ' ({1}), current volume status is ' \
-                                          '{2}'.format(volume.display_name,
-                                                       volume.id, vol_status)
-
-        if unremovables:
-            self.logger.warning('failed to remove volumes: {0}'.format(
-                unremovables))
-
-        return unremovables
+    
 
     def _client_creds(self):
         return {
