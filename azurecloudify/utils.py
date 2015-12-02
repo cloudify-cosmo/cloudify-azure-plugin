@@ -6,7 +6,7 @@ import constants
 from cloudify.exceptions import NonRecoverableError,RecoverableError
 import requests
 from lockfile import LockFile
-import json
+import os
 
 
 def random_suffix_generator(size=5, chars=string.ascii_lowercase + string.digits):
@@ -14,9 +14,12 @@ def random_suffix_generator(size=5, chars=string.ascii_lowercase + string.digits
 
 
 # Clean runtime_properties
-def clear_runtime_properties():
+def clear_runtime_properties(delete_instance_file=True):
     for key in ctx.instance.runtime_properties:
         ctx.instance.runtime_properties[key] = None
+
+    if delete_instance_file:
+        delete_runtime_properties_file()
 
 
 def check_api_response(caller_string, current_response, return_action):
@@ -199,3 +202,10 @@ def set_runtime_properties_from_file():
     except:
         raise NonRecoverableError("Failures trying to use {}".format(current_runtime_file_path))
 
+
+def delete_runtime_properties_file():
+    current_runtime_folder = constants.default_path_to_runtime_folder
+    current_runtime_file_path = "{0}{1}{2}".format(current_runtime_folder, ctx.node.id, ctx.instance.id)
+    ctx.logger.info("Deleting {0}...".format(current_runtime_file_path))
+    os.remove(current_runtime_file_path)
+    ctx.logger.info("Deleted {0}".format(current_runtime_file_path))
