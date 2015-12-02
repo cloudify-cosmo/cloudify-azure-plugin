@@ -54,14 +54,43 @@ class AzureCleanupContext(BaseHandler.CleanupContext):
     
     @classmethod
     def clean_all(cls, env):
-        """
-        Cleans *all* resources, including resources that were not
-        created by the test
-        """
-        super(AzureCleanupContext, cls).clean_all(env)
-        resources_to_teardown = cls.get_resources_to_teardown(env)
-        cls._clean(env, resources_to_teardown)
-
+        resources_to_be_removed = env.handler.azure_infra_state()
+        cls.logger.info(
+            "Current resources in account:"
+            " {0}".format(resources_to_be_removed))
+        if env.use_external_resource:
+            resources_to_be_removed['resource_group_name'].pop(
+                env.existing_resource_group_name, None)
+        if env.use_external_resource:
+            resources_to_be_removed['security_group_name'].pop(env.existing_security_group_name,
+                                                     None)
+        if env.use_external_resource:
+            resources_to_be_removed['storage_account_name'].pop(env.existing_storage_account_name,
+                                                     None)
+        if env.use_external_resource:
+            resources_to_be_removed['vnet_name'].pop(env.existing_vnet_name,
+                                                     None)
+        if env.use_external_resource:
+            resources_to_be_removed['public_ip_name'].pop(env.existing_public_ip_name,
+                                                     None)
+        if env.use_external_resource:
+            resources_to_be_removed['nic_name'].pop(env.existing_nic_name,
+                                                     None)
+        
+        cls.logger.info(
+            "resources_to_be_removed: {0}".format(resources_to_be_removed))
+        failed = env.handler.remove_ec2_resources(resources_to_be_removed)
+        errorflag = not (
+            (len(failed['instances']) == 0) and
+            (len(failed['key_pairs']) == 0) and
+            (len(failed['elasticips']) == 0) and
+            # This is the default security group which cannot
+            # be removed by a user.
+            (len(failed['security_groups']) == 1))
+        if errorflag:
+            raise Exception(
+                "Unable to clean up Environment, "
+                "resources remaining: {0}".format(failed))
     @classmethod
     def _clean(cls, env, resources_to_teardown):
         cls.logger.info('Azure handler will try to remove these resources:'
