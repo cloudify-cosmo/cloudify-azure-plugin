@@ -168,14 +168,6 @@ node_templates:
       aad_password: { get_input: aad_password}    
       install_agent: false
     relationships:
-      - target: simple_nic
-        type: cloudify.azure.relationships.server_connected_to_nic
-      - target: simple_data_disk
-        type: cloudify.azure.relationships.server_connected_to_datadisk
-      - target: simple_storage_account
-        type: cloudify.azure.relationships.server_connected_to_storage_account
-      - target: simple_resource_group
-        type: cloudify.relationships.contained_in
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
 
@@ -208,8 +200,6 @@ node_templates:
       existing_storage_account_name: { get_input: existing_storage_account_name}
 
     relationships:
-      - target: simple_resource_group
-        type: cloudify.azure.relationships.storage_account_contained_in_resource_group
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
         
@@ -224,8 +214,6 @@ node_templates:
       data_disk_size_GB: { get_input: data_disk_size_GB}
 
     relationships:
-      - target: simple_storage_account
-        type: cloudify.azure.relationships.datadisk_contained_in_storage_account
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
 
@@ -241,10 +229,6 @@ node_templates:
       existing_public_ip_name: { get_input: existing_public_ip_name}
 
     relationships:
-      - target: simple_vnet
-        type: cloudify.azure.relationships.public_ip_connected_to_vnet
-      - target: simple_resource_group
-        type: cloudify.relationships.contained_in
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
 
@@ -261,8 +245,6 @@ node_templates:
       custom_script_command: { get_input: custom_script_command}
 
     relationships:
-      - target: simple_host
-        type: cloudify.azure.relationships.custom_script_contained_in_server
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
 
@@ -278,10 +260,6 @@ node_templates:
       existing_nic_name: { get_input: existing_nic_name}
 
     relationships:
-      - target: simple_public_ip
-        type: cloudify.azure.relationships.nic_connected_to_public_ip
-      - target: simple_resource_group
-        type: cloudify.relationships.contained_in
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
 
@@ -330,8 +308,6 @@ node_templates:
           cidr_ip: 0.0.0.0/32
 
     relationships:
-      - target: simple_resource_group
-        type: cloudify.azure.relationships.security_group_contained_in_resource_group
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
 
@@ -347,10 +323,6 @@ node_templates:
       subnet: { get_input: subnet}
       
     relationships:
-      - target: simple_resource_group
-        type: cloudify.azure.relationships.subnet_contained_in_resource_group
-      - target: simple_security_group
-        type: cloudify.azure.relationships.subnet_connected_to_security_group
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
 
@@ -366,10 +338,6 @@ node_templates:
       existing_vnet_name: { get_input: existing_vnet_name}
 
     relationships:
-      - target: simple_resource_group
-        type: cloudify.azure.relationships.vnet_contained_in_resource_group
-      - target: simple_subnet
-        type: cloudify.azure.relationships.vnet_connected_to_subnet
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
       
