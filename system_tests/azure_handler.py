@@ -45,7 +45,13 @@ class AzureCleanupContext(BaseHandler.CleanupContext):
                              .format(self.context_name, resources_to_teardown))
         else:
             self._clean(self.env, resources_to_teardown)
-
+    
+    def get_resources_to_teardown(self):
+        current_state = self.env.handler.azure_infra_state()
+        return self.env.handler.azure_infra_state_delta(
+            before=self.before_run, after=current_state)
+    
+    
     @classmethod
     def clean_all(cls, env):
         """
