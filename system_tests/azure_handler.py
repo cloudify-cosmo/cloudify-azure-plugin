@@ -61,9 +61,7 @@ class AzureCleanupContext(BaseHandler.CleanupContext):
         if env.use_external_resource:
             resources_to_be_removed['resource_group_name'].pop(
                 env.existing_resource_group_name, None)
-        if env.use_external_resource:
-            resources_to_be_removed['security_group_name'].pop(env.existing_security_group_name,
-                                                     None)
+       
         if env.use_external_resource:
             resources_to_be_removed['storage_account_name'].pop(env.existing_storage_account_name,
                                                      None)
@@ -79,80 +77,25 @@ class AzureCleanupContext(BaseHandler.CleanupContext):
         
         cls.logger.info(
             "resources_to_be_removed: {0}".format(resources_to_be_removed))
-        failed = env.handler.remove_ec2_resources(resources_to_be_removed)
+        failed = env.handler.remove_azure_resources(resources_to_be_removed)
         errorflag = not (
-            (len(failed['instances']) == 0) and
-            (len(failed['key_pairs']) == 0) and
-            (len(failed['elasticips']) == 0) and
+            (len(failed['resourcegroups']) == 0) and
+            (len(failed['storageaccounts']) == 0) and
+            (len(failed['vnets']) == 0) and
+            (len(failed['nics']) == 0) and
+            (len(failed['publicips']) == 0) and
+            (len(failed['subnets']) == 0)
             # This is the default security group which cannot
             # be removed by a user.
-            (len(failed['security_groups']) == 1))
+            (len(failed['securitygroups']) == 1))
         if errorflag:
             raise Exception(
                 "Unable to clean up Environment, "
                 "resources remaining: {0}".format(failed))
-    @classmethod
-    def _clean(cls, env, resources_to_teardown):
-        cls.logger.info('Azure handler will try to remove these resources:'
-                        ' {0}'.format(resources_to_teardown))
-        failed_to_remove = env.handler.remove_azure_resources(
-            resources_to_teardown)
-        if failed_to_remove:
-            trimmed_failed_to_remove = {key: value for key, value in
-                                        failed_to_remove.iteritems()
-                                        if value}
-            if len(trimmed_failed_to_remove) > 0:
-                msg = 'Azure handler failed to remove some resources:' \
-                      ' {0}'.format(trimmed_failed_to_remove)
-                cls.logger.error(msg)
-                raise RuntimeError(msg)
-
-    @classmethod
-    def get_resources_to_teardown(cls, env, resources_to_keep=None):
-        all_existing_resources = env.handler.azure_infra_state()
-        if resources_to_keep:
-            return env.handler.azure_infra_state_delta(
-                before=resources_to_keep, after=all_existing_resources)
-        else:
-            return all_existing_resources
-
-    def update_server_id(self, server_name):
-
-        # retrieve the id of the new server
-        nova, _, _ = self.env.handler.azure_clients()
-        servers = nova.servers.list(
-            search_opts={'name': server_name})
-        if len(servers) > 1:
-            raise RuntimeError(
-                'Expected 1 server with name {0}, but found {1}'
-                .format(server_name, len(servers)))
-
-        new_server_id = servers[0].id
-
-        # retrieve the id of the old server
-        old_server_id = None
-        servers = self.before_run['servers']
-        for server_id, name in servers.iteritems():
-            if server_name == name:
-                old_server_id = server_id
-                break
-        if old_server_id is None:
-            raise RuntimeError(
-                'Could not find a server with name {0} '
-                'in the internal cleanup context state'
-                .format(server_name))
-
-        # replace the id in the internal state
-        servers[new_server_id] = servers.pop(old_server_id)
-
-
+                
+   
 class CloudifyAzureInputsConfigReader(BaseCloudifyInputsConfigReader):
-"""
-    def __init__(self, cloudify_config, manager_blueprint_path, **kwargs):
-        super(CloudifyAzureInputsConfigReader, self).__init__(
-            cloudify_config, manager_blueprint_path=manager_blueprint_path,
-            **kwargs)
-"""
+
     @property
     def subscription_id(self):
         return self.config['subscription_id']
@@ -302,38 +245,6 @@ class AzureHandler(BaseHandler):
     CleanupContext = AzureCleanupContext
     CloudifyConfigReader = CloudifyAzureInputsConfigReader
 
-    def before_bootstrap(self):
-        super(AzureHandler, self).before_bootstrap()
-        with self.update_cloudify_config() as patch:
-            suffix = '-%06x' % random.randrange(16 ** 6)
-            server_name_prop_path = 'manager_server_name'
-            patch.append_value(server_name_prop_path, suffix)
-
-    def after_bootstrap(self, provider_context):
-        super(AzureHandler, self).after_bootstrap(provider_context)
-        resources = provider_context['resources']
-        agent_keypair = resources['agents_keypair']
-        management_keypair = resources['management_keypair']
-        self.remove_agent_keypair = agent_keypair['external_resource'] is False
-        self.remove_management_keypair = \
-            management_keypair['external_resource'] is False
-
-    def after_teardown(self):
-        super(AzureHandler, self).after_teardown()
-        if self.remove_agent_keypair:
-            agent_key_path = get_actual_keypath(self.env,
-                                                self.env.agent_key_path,
-                                                raise_on_missing=False)
-            if agent_key_path:
-                os.remove(agent_key_path)
-        if self.remove_management_keypair:
-            management_key_path = get_actual_keypath(
-                self.env,
-                self.env.management_key_path,
-                raise_on_missing=False)
-            if management_key_path:
-                os.remove(management_key_path)
-
     def azure_clients(self):
         creds = self._client_creds()
         return (client.Client(**creds),
@@ -341,13 +252,8 @@ class AzureHandler(BaseHandler):
                                 location=creds['location'],
                 client.Client(**creds))
 
-    @retry(stop_max_attempt_number=5, wait_fixed=20000)
     def azure_infra_state(self):
-        """
-        @retry decorator is used because this error sometimes occur:
-        ConnectionFailed: Connection to neutron failed: Maximum
-        attempts reached
-        """
+       
         azurecloudify = self.azure_clients()
         try:
             prefix = self.env.resources_prefix
@@ -372,32 +278,19 @@ class AzureHandler(BaseHandler):
             for prop in before
         }
 
-    def remove_azure_resources(self, resources_to_remove):
-        # basically sort of a workaround, but if we get the order wrong
-        # the first time, there is a chance things would better next time
-        # 3'rd time can't really hurt, can it?
-        # 3 is a charm
-        for _ in range(3):
-            resources_to_remove = self._remove_openstack_resources_impl(
-                resources_to_remove)
-            if all([len(g) == 0 for g in resources_to_remove.values()]):
-                break
-            # give openstack some time to update its data structures
-            time.sleep(3)
-        return resources_to_remove
 
-    def _remove_azure_resources_impl(self, resources_to_remove):
-        nova, neutron, cinder = self.openstack_clients()
+    def _remove_azure_resources(self, resources_to_remove):
         
-        servers = azurecloudify.servers.list()
-        resourcegroups = azurecloudify._get_resource_group_name()['resource_group_name']
-        storageaccounts = azurecloudify._get_storage_account_name()['storage_account_name']
-        subnets = azurecloudify._get_subnet_name()['subnet_name']
-        publicips = azurecloudify._get_public_ip_name()['public_ip_name']
-        nics = azurecloudify._get_nic_name()['nic_name']
-        vnet = azurecloudify._get_vnet_name()['vnet_name']
-        availabilitysets = azurecloudify._get_availability_set_name()['availability_set_name']
-        securitygroups = azurecloudify._get_security_group_name()['security_groups_name']
+        
+        servers = self.azurecloudify.servers.list()
+        resourcegroups = self.azurecloudify._get_resource_group_name()['resource_group_name']
+        storageaccounts = self.azurecloudify._get_storage_account_name()['storage_account_name']
+        subnets = self.azurecloudify._get_subnet_name()['subnet_name']
+        publicips = self.azurecloudify._get_public_ip_name()['public_ip_name']
+        nics = self.azurecloudify._get_nic_name()['nic_name']
+        vnet = self.azurecloudify._get_vnet_name()['vnet_name']
+        availabilitysets = self.azurecloudify._get_availability_set_name()['availability_set_name']
+        securitygroups = self.azurecloudify._get_security_group_name()['security_groups_name']
     
         failed = {
             'servers': {},
