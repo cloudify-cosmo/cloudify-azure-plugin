@@ -74,7 +74,7 @@ def start_a_vm(start_retry_interval, **kwargs):
         if curr_status != constants.SUCCEEDED:
             return ctx.operation.retry(
                 message='Waiting for the server ({0}) to be provisioned'.format(vm_name),
-                retry_after=start_retry_interval*3)
+                retry_after=start_retry_interval)
     return check_if_vm_started(resource_group_name, vm_name, start_retry_interval)
 
 
@@ -92,7 +92,7 @@ def check_if_vm_started(resource_group_name, vm_name, start_retry_interval, **kw
         return constants.OK_STATUS_CODE
     else:
         return ctx.operation.retry(message='Waiting for the server ({0}) to be started'.format(vm_name),
-                                   retry_after=start_retry_interval*3)
+                                   retry_after=start_retry_interval)
 
 
 @operation

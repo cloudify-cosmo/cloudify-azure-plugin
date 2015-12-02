@@ -63,7 +63,7 @@ def verify_provision(start_retry_interval, **kwargs):
     if curr_status != constants.SUCCEEDED:
         return ctx.operation.retry(
             message='Waiting for the storage_account ({0}) to be provisioned'.format(storage_account_name),
-            retry_after=start_retry_interval*3)
+            retry_after=start_retry_interval)
 
 
 @operation
