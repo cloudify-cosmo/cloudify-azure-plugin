@@ -228,7 +228,7 @@ node_types:
           implementation: microsoft.azurecloudify.server.start_vm
           inputs:
             start_retry_interval:
-              description: Polling interval in seconds until the server is provisioned
+              description: Polling interval in seconds until the server is started
               type: integer
               default: 30
         stop:
