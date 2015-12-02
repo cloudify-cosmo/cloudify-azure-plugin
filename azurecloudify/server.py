@@ -61,7 +61,7 @@ def create_a_vm(**_):
 
 @operation
 def start_vm(start_retry_interval, **kwargs):
-    start_a_vm(start_retry_interval, **kwargs)
+    return start_a_vm(start_retry_interval, **kwargs)
 
 
 def start_a_vm(start_retry_interval, **kwargs):
@@ -86,7 +86,8 @@ def check_if_vm_started(resource_group_name, vm_name, start_retry_interval, **kw
     if start_vm_succeeded:
         ctx.logger.info("check_if_vm_started: vm has started")
         response_start_vm = ctx.instance.runtime_properties[constants.START_RESPONSE]
-        ctx.logger.info("check_if_vm_started response_start_vm : {0}".format(response_start_vm.text))
+        if response_start_vm.text:
+            ctx.logger.info("check_if_vm_started response_start_vm : {0}".format(response_start_vm.text))
         _set_public_ip(subscription_id, resource_group_name, headers)
         _set_private_ip(vm_name)
         return constants.OK_STATUS_CODE
@@ -223,7 +224,9 @@ def _start_vm_call(headers, vm_name, subscription_id, resource_group_name):
         if response_start_vm.status_code in [constants.OK_STATUS_CODE, constants.ACCEPTED_STATUS_CODE]:
             ctx.logger.info("_start_vm_call: VM has started")
             ctx.instance.runtime_properties[constants.START_RESPONSE] = response_start_vm
-            ctx.logger.info("_start_vm_call: response_start_vm is {0}".format(response_start_vm.text))
+            if response_start_vm.text:
+                ctx.logger.info("_start_vm_call: response_start_vm is {0}".format(response_start_vm.text))
+
             return True, status_code
     return False, constants.NA_CODE
 
