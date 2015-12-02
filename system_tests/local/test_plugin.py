@@ -14,18 +14,22 @@
 #    * limitations under the License.
 
 # Third Party
-from boto.exception import EC2ResponseError
+from azurecloudify import azureclient
 
 # Cloudify Imports
-from ec2 import (
+from azurecloudify import (
+    resourcegroup,
     securitygroup,
-    keypair,
-    elasticip,
+    storageaccount,
+    vnet,
+    subnet,
+    nic,
+    publicip,
     instance
 )
 from cloudify.state import current_ctx
 from cloudify.exceptions import NonRecoverableError
-from ec2_test_utils import (
+m ecport (
     EC2LocalTestUtils,
     EXTERNAL_RESOURCE_ID,
     SIMPLE_IP, SIMPLE_SG, SIMPLE_KP, SIMPLE_VM,
