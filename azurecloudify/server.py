@@ -158,10 +158,10 @@ def _validate_node_properties(key, ctx_node_properties):
 
 
 def _set_private_ip(vm_name):
-    if utils.key_in_runtime(constants.PRIVATE_IP_ADDRESS_KEY, ends_with_key=False,
-                            starts_with_key=True, return_value=False):
+    vm_private_ip = utils.key_in_runtime(constants.PRIVATE_IP_ADDRESS_KEY, ends_with_key=False,
+                                         starts_with_key=True, return_value=True)
+    if vm_private_ip:
         ctx.logger.info("Setting {0} private ip address".format(vm_name))
-        vm_private_ip = ctx.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY]
         ctx.logger.info("vm_private_ip is {0}".format(vm_private_ip))
 
         # Which one of the following two is required ?
