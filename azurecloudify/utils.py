@@ -176,7 +176,7 @@ def write_target_runtime_properties_to_file(required_keys, prefixed_keys=None, n
                 else:
                     if prefixed_keys is not None:
                         for curr_prefixed_key in prefixed_keys:
-                            if curr_prefixed_key in curr_runtime_property:
+                            if curr_runtime_property.startswith(curr_prefixed_key):
                                 current_line = "{0}={1}\n".format(curr_runtime_property, ctx.target.instance.runtime_properties[curr_runtime_property])
                                 f.write(current_line)
         f.close()

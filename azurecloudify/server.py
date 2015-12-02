@@ -138,18 +138,18 @@ def delete_current_virtual_machine(**_):
 
 @operation
 def set_storage_account_details(azure_config, **kwargs):
-    utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY, constants.STORAGE_ACCOUNT_KEY], None)
+    utils.write_target_runtime_properties_to_file(required_keys=[constants.RESOURCE_GROUP_KEY, constants.STORAGE_ACCOUNT_KEY])
 
 
 @operation
 def set_nic_details(azure_config, **kwargs):
-    utils.write_target_runtime_properties_to_file(None, [constants.PUBLIC_IP_KEY, constants.PRIVATE_IP_ADDRESS_KEY, constants.NIC_KEY])
+    utils.write_target_runtime_properties_to_file(required_keys=None, prefixed_keys=[constants.PUBLIC_IP_KEY, constants.PRIVATE_IP_ADDRESS_KEY, constants.NIC_KEY], need_suffix=None)
 
 
 @operation
 def set_data_disks(azure_config, **kwargs):
     # This should be per disk issue #31
-    utils.write_target_runtime_properties_to_file(None, [constants.DISK_SIZE_KEY, constants.DATA_DISKS])
+    utils.write_target_runtime_properties_to_file(required_keys=None, prefixed_keys=[constants.DISK_SIZE_KEY, constants.DATA_DISKS], need_suffix=None)
 
 
 def _validate_node_properties(key, ctx_node_properties):
@@ -158,14 +158,15 @@ def _validate_node_properties(key, ctx_node_properties):
 
 
 def _set_private_ip(vm_name):
-    if constants.PRIVATE_IP_ADDRESS_KEY in ctx.target.instance.runtime_properties:
+    if utils.key_in_runtime(constants.PRIVATE_IP_ADDRESS_KEY, ends_with_key=False,
+                            starts_with_key=True, return_value=False):
         ctx.logger.info("Setting {0} private ip address".format(vm_name))
-        vm_private_ip = ctx.target.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY]
+        vm_private_ip = ctx.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY]
         ctx.logger.info("vm_private_ip is {0}".format(vm_private_ip))
 
         # Which one of the following two is required ?
-        ctx.source.instance.runtime_properties['ip'] = vm_private_ip
-        ctx.source.instance.runtime_properties['host_ip'] = vm_private_ip
+        ctx.instance.runtime_properties['ip'] = vm_private_ip
+        ctx.instance.runtime_properties['host_ip'] = vm_private_ip
 
 
 def _set_public_ip(subscription_id, resource_group_name, headers):
