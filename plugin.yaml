@@ -792,7 +792,7 @@ relationships:
             start_retry_interval:
               description: Polling interval in seconds until the server is started
               type: integer
-              default: 30		  
+              default: 30
 
    cloudify.azure.relationships.custom_script_contained_in_server:
     derived_from: cloudify.relationships.contained_in
