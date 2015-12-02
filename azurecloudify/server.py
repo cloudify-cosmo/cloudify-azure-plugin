@@ -78,12 +78,12 @@ def start_a_vm(start_retry_interval, **kwargs):
 
     headers, location, subscription_id = auth.get_credentials()
 
-    start_vm_succeeded = _start_vm_call(headers, vm_name, subscription_id, resource_group_name)
-    ctx.logger.info("start_a_vm: start_vm_succeeded is {0}".format(start_vm_succeeded))
-    response_start_vm = ctx.instance.runtime_properties[constants.START_RESPONSE]
-    ctx.logger.info("start_a_vm response_start_vm : {0}".format(str(response_start_vm)))
+    start_vm_succeeded, status_code = _start_vm_call(headers, vm_name, subscription_id, resource_group_name)
+    ctx.logger.info("start_a_vm: start_vm_succeeded is {0}, status code is {1}".format(start_vm_succeeded, status_code))
     if start_vm_succeeded:
         ctx.logger.info("start_a_vm: vm has started")
+        response_start_vm = ctx.instance.runtime_properties[constants.START_RESPONSE]
+        ctx.logger.info("start_a_vm response_start_vm : {0}".format(str(response_start_vm)))
         _set_public_ip(subscription_id, resource_group_name, headers)
 
         if constants.PRIVATE_IP_ADDRESS_KEY in ctx.target.instance.runtime_properties:
@@ -208,13 +208,14 @@ def _start_vm_call(headers, vm_name, subscription_id, resource_group_name):
     ctx.logger.info("In _start_vm_call starting {0}".format(vm_name))
     start_vm_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
     response_start_vm = requests.post(start_vm_url, headers=headers)
-    ctx.instance.runtime_properties[constants.START_RESPONSE] = response_start_vm
     ctx.instance.runtime_properties[constants.SERVER_START_INVOKED] = True
     if response_start_vm.status_code:
         ctx.logger.info("_start_vm_call:{0} - Status code is {1}".format(vm_name, response_start_vm.status_code))
         if response_start_vm.status_code == constants.OK_STATUS_CODE:
-            return True
-    return False
+            ctx.logger.info("_start_vm_call: VM has started")
+            ctx.instance.runtime_properties[constants.START_RESPONSE] = response_start_vm
+            return True, response_start_vm.status_code
+    return False, constants.NA_CODE
 
 
 def _get_virtual_machine_params(location, random_suffix_value, resource_group_name, storage_account_name,
