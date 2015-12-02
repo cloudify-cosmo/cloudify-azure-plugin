@@ -69,32 +69,47 @@ def start_a_vm(start_retry_interval, **kwargs):
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     vm_name = ctx.instance.runtime_properties[constants.VM_KEY]
 
-    if constants.SERVER_START_INVOKED not in ctx.instance.runtime_properties:
-        curr_status = get_provisioning_state()
-        if curr_status != constants.SUCCEEDED:
-            return ctx.operation.retry(
-                message='Waiting for the server ({0}) to be provisioned'.format(vm_name),
-                retry_after=start_retry_interval)
-    return check_if_vm_started(resource_group_name, vm_name, start_retry_interval)
-
-
-def check_if_vm_started(resource_group_name, vm_name, start_retry_interval, **kwargs):
+    curr_status = get_provisioning_state()
+    if curr_status != constants.SUCCEEDED:
+        return ctx.operation.retry(
+            message='Waiting for the server ({0}) to be provisioned'.format(vm_name),
+            retry_after=start_retry_interval)
 
     headers, location, subscription_id = auth.get_credentials()
     start_vm_succeeded, status_code = _start_vm_call(headers, vm_name, subscription_id, resource_group_name)
-    ctx.logger.info("check_if_vm_started: start_vm_succeeded is {0}, status code is {1}".format(start_vm_succeeded, status_code))
-    if start_vm_succeeded:
-        ctx.logger.info("check_if_vm_started: vm has started")
-        response_start_vm = ctx.instance.runtime_properties[constants.START_RESPONSE]
-        if response_start_vm.text:
-            ctx.logger.info("check_if_vm_started response_start_vm : {0}".format(response_start_vm.text))
-        _set_public_ip(subscription_id, resource_group_name, headers)
-        _set_private_ip(vm_name)
-        return constants.OK_STATUS_CODE
-    else:
-        return ctx.operation.retry(message='Waiting for the server ({0}) to be started'.format(vm_name),
-                                   retry_after=start_retry_interval)
+    ctx.logger.info("start_a_vm: start_vm_succeeded is {0}, status code is {1}".format(start_vm_succeeded, status_code))
+    ctx.instance.runtime_properties[constants.SERVER_STARTED] = start_vm_succeeded
+    return constants.OK_STATUS_CODE
 
+
+@operation
+def set_ips(start_retry_interval, **kwargs):
+    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+    vm_name = ctx.instance.runtime_properties[constants.VM_KEY]
+
+    start_vm_succeeded = ctx.instance.runtime_properties[constants.SERVER_STARTED]
+    headers, location, subscription_id = auth.get_credentials()
+    if not start_vm_succeeded:
+        start_vm_succeeded, status_code = _start_vm_call(headers, vm_name, subscription_id, resource_group_name)
+        ctx.logger.info("set_ips: start_vm_succeeded is {0}, status code is {1}".format(start_vm_succeeded, status_code))
+        if start_vm_succeeded:
+            ctx.instance.runtime_properties[constants.SERVER_STARTED] = True
+            return _set_ip_addresses(vm_name, headers, subscription_id, resource_group_name)
+        else:
+            return ctx.operation.retry(message='Waiting for the server ({0}) to be started'.format(vm_name),
+                                   retry_after=start_retry_interval)
+    else:
+        return _set_ip_addresses(vm_name, headers, subscription_id, resource_group_name)
+
+
+def _set_ip_addresses(vm_name, headers, subscription_id, resource_group_name):
+    ctx.logger.info("_set_ip_addresses: vm has started")
+    response_start_vm = ctx.instance.runtime_properties[constants.START_RESPONSE]
+    if response_start_vm.text:
+        ctx.logger.info("set_ips response_start_vm : {0}".format(response_start_vm.text))
+    _set_public_ip(subscription_id, resource_group_name, headers)
+    _set_private_ip(vm_name)
+    return constants.OK_STATUS_CODE
 
 @operation
 def stop_vm(**_):
