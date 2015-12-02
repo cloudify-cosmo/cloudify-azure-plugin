@@ -29,19 +29,13 @@ from azurecloudify import (
 )
 from cloudify.state import current_ctx
 from cloudify.exceptions import NonRecoverableError
-m ecport (
-    EC2LocalTestUtils,
-    EXTERNAL_RESOURCE_ID,
-    SIMPLE_IP, SIMPLE_SG, SIMPLE_KP, SIMPLE_VM,
-    PAIR_A_IP, PAIR_A_VM,
-    PAIR_B_SG, PAIR_B_VM
-)
 
 
-class TestWorkflowClean(EC2LocalTestUtils):
+
+class TestWorkflowClean(AzureLocalTestUtils):
 
     def test_simple_resources(self):
-        client = self._get_ec2_client()
+        client = self._get_azure_client()
 
         test_name = 'test_simple_resources'
 
@@ -59,7 +53,7 @@ class TestWorkflowClean(EC2LocalTestUtils):
             self.assertIn(EXTERNAL_RESOURCE_ID,
                           node_instance.runtime_properties)
 
-        elastic_ip_node = \
+        resource_group_node = \
             self._get_instance_node(
                 SIMPLE_IP, self.localenv.storage)
         elastic_ip_address = \
@@ -95,20 +89,21 @@ class TestWorkflowClean(EC2LocalTestUtils):
 
         self.localenv.execute('uninstall', task_retries=10)
 
-        with self.assertRaises(EC2ResponseError):
-            client.get_all_addresses(addresses=elastic_ip_address)
-        with self.assertRaises(EC2ResponseError):
-            client.get_all_security_groups(group_ids=security_group_id)
-        with self.assertRaises(EC2ResponseError):
-            client.get_all_key_pairs(keynames=key_pair_name)
-
+        with self.assertRaises(AzureResponseError):
+            client._get_public_ip_name(addresses=public_ip_address)
+        with self.assertRaises(AzureResponseError):
+            client._gesecurity_group_name(group_names=security_group_name)
+        with self.assertRaises(AzureResponseError):
+            client._get_all_resource_groups(group_names=resource_group_name)
+         with self.assertRaises(AzureResponseError):
+            client._get_resource_groups(group_names=resource_group_name)
         client.get_all_reservations(instance_ids=instance_id)
         instance_state = reservation_list[0].instances[0].update()
         self.assertIn('terminated', instance_state)
 
     def test_simple_relationships(self):
 
-        client = self._get_ec2_client()
+        client = self._get_azure_client()
 
         test_name = 'test_simple_relationships'
 
@@ -179,7 +174,7 @@ class TestWorkflowClean(EC2LocalTestUtils):
         self.assertIn('terminated', instance_state)
 
 
-class EC2SecurityGroupUnitTests(EC2LocalTestUtils):
+class AzureSecurityGroupUnitTests(AzureLocalTestUtils):
 
     def test_get_all_security_groups(self):
 
@@ -358,7 +353,7 @@ class EC2SecurityGroupUnitTests(EC2LocalTestUtils):
             securitygroup._delete_security_group('sg-73cd3f1e')
 
 
-class EC2KeyPairUnitTests(EC2LocalTestUtils):
+class AzureKeyPairUnitTests(AzureLocalTestUtils):
 
     def test_get_key_pair_by_id(self):
 
@@ -374,7 +369,7 @@ class EC2KeyPairUnitTests(EC2LocalTestUtils):
         self.assertEqual(kp.name, output.name)
 
 
-class EC2ElasticIPUnitTests(EC2LocalTestUtils):
+class AzureElasticIPUnitTests(EC2LocalTestUtils):
 
     def test_get_address_object_by_id(self):
 
@@ -500,7 +495,7 @@ class EC2ElasticIPUnitTests(EC2LocalTestUtils):
             elasticip._allocate_external_elasticip()
 
 
-class EC2InstanceUnitTests(EC2LocalTestUtils):
+class AzureInstanceUnitTests(AzureLocalTestUtils):
 
     def test_instance_invalid_ami(self):
         ctx = self.mock_cloudify_context(
