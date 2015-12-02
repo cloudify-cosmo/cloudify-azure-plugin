@@ -170,6 +170,7 @@ def write_target_runtime_properties_to_file(required_keys, prefixed_keys=None, n
                 if required_keys and curr_runtime_property in required_keys:
                     if need_suffix and (curr_runtime_property in need_suffix):
                         curr_runtime_property = "{0}{1}{2}".format(curr_runtime_property, ctx.source.node.id, ctx.source.instance.id)
+                        ctx.logger.info("curr_runtime_property is {0}".format(curr_runtime_property))
                     current_line = "{0}={1}\n".format(curr_runtime_property, ctx.target.instance.runtime_properties[orig_runtime_property])
                     f.write(current_line)
                 else:
