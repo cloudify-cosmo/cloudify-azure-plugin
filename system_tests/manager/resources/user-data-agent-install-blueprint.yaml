@@ -1,0 +1,45 @@
+# DSL version, should appear in the main blueprint.yaml
+# and may appear in other imports. In such case, the versions must match
+tosca_definitions_version: cloudify_dsl_1_2
+
+imports:
+  - http://www.getcloudify.org/spec/cloudify/3.3/types.yaml
+  - https://raw.githubusercontent.com/cloudify-cosmo/cloudify-azure-plugin/master/plugin.yaml
+
+inputs:
+
+  image:
+    type: string
+
+  size:
+    type: string
+
+node_templates:
+
+  user_data_agent_compute_node:
+    type: cloudify.azure.nodes.Server
+    properties:
+      image_reference_offer: { get_input: image_reference_offer}
+      image_reference_publisher: { get_input: image_reference_publisher}
+      image_reference_sku: { get_input: image_reference_sku}
+      vm_prefix: { get_input: vm_prefix}      
+      vm_size: { get_input: vm_size}
+      key_data: { get_input: key_data}
+      subscription_id: { get_input: subscription_id}
+      location: { get_input: location }
+      client_id: { get_input: client_id}
+      tenant_id: { get_input: tenant_id}
+      ssh_username: { get_input: ssh_user}
+      aad_password: { get_input: aad_password} 
+      agent_config:
+        user: centos
+        install_method: init_script
+
+  test_user_data_script:
+    type: cloudify.nodes.Root
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        start: scripts/test_user_data.sh
+    relationships:
+      - type: cloudify.relationships.contained_in
+        target: user_data_agent_compute_node
