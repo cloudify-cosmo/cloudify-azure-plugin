@@ -787,7 +787,7 @@ relationships:
             azure_config:
               default: {}
         postconfigure:
-         implementation: microsoft.azurecloudify.server.start_vm
+          implementation: microsoft.azurecloudify.server.start_vm
           inputs:
             start_retry_interval:
               description: Polling interval in seconds until the server is started
