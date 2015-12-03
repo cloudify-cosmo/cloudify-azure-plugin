@@ -71,13 +71,14 @@ def delete_current_security_group(**_):
         ctx.logger.info("An existing security group was used, so there's no need to delete")
         return
 
+    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     security_group_name = ctx.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
     headers, location, subscription_id = auth.get_credentials()
     try:
         ctx.logger.info("Deleting Security Group: {0}".format(security_group_name))
-        security_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+security_group_name+'/providers/microsoft.network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version_network
+        security_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version_network
         response_nsg = requests.delete(url=security_group_url, headers=headers)
-        print(response_nsg.text)
+        ctx.logger.info("Deleted Security Group: {0}".format(security_group_name))
     except:
         ctx.logger.info("Security Group {0} could not be deleted.".format(security_group_name))
         

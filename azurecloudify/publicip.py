@@ -83,7 +83,7 @@ def delete_current_public_ip(**_):
 
     try:
         ctx.logger.info("Deleting Public IP")
-        public_ip_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/ publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version_network
+        public_ip_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version_network
         response_pip = requests.delete(url=public_ip_url, headers=headers)
         print(response_pip.text)
 
