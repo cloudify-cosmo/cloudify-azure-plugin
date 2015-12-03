@@ -225,7 +225,7 @@ node_types:
         configure:
           implementation: microsoft.azurecloudify.server.create_vm           
         start:          
-          implementation: microsoft.azurecloudify.server.set_ips
+          implementation: microsoft.azurecloudify.server.check_if_vm_started
           inputs:
             start_retry_interval:
               description: Polling interval in seconds until the server ips are ready

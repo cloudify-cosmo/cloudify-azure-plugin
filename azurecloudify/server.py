@@ -43,7 +43,7 @@ def create_a_vm(**_):
     vm_name = ctx.node.properties[constants.VM_PREFIX]+random_suffix_value
     ctx.logger.info("Creating new virtual machine: {0}".format(vm_name))
 
-    _set_ip_addresses_keys()
+    _set_ip_addresses_keys(vm_name)
 
     storage_account_name = ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
     #availability_set_name = ctx.instance.runtime_properties[constants.AVAILABILITY_SET_KEY]
@@ -83,7 +83,7 @@ def start_a_vm(start_retry_interval, **kwargs):
 
 
 @operation
-def set_ips(start_retry_interval, **kwargs):
+def check_if_vm_started(start_retry_interval, **kwargs):
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     vm_name = ctx.instance.runtime_properties[constants.VM_KEY]
 
@@ -94,22 +94,16 @@ def set_ips(start_retry_interval, **kwargs):
         ctx.logger.info("set_ips: start_vm_succeeded is {0}, status code is {1}".format(start_vm_succeeded, status_code))
         if start_vm_succeeded:
             ctx.instance.runtime_properties[constants.SERVER_STARTED] = True
-            return _set_ip_addresses(vm_name, headers, subscription_id, resource_group_name)
+            ctx.logger.info("set_ips: vm has started")
         else:
             return ctx.operation.retry(message='Waiting for the server ({0}) to be started'.format(vm_name),
                                    retry_after=start_retry_interval)
     else:
-        return _set_ip_addresses(vm_name, headers, subscription_id, resource_group_name)
+        ctx.logger.info("set_ips: vm has already started")
 
-
-def _set_ip_addresses(vm_name, headers, subscription_id, resource_group_name):
-    ctx.logger.info("_set_ip_addresses: vm has started")
-    response_start_vm = ctx.instance.runtime_properties[constants.START_RESPONSE]
-    if response_start_vm.text:
-        ctx.logger.info("set_ips response_start_vm : {0}".format(response_start_vm.text))
     _set_public_ip(subscription_id, resource_group_name, headers)
-    _set_private_ip(vm_name)
     return constants.OK_STATUS_CODE
+
 
 @operation
 def stop_vm(**_):
@@ -200,7 +194,7 @@ def _set_public_ip(subscription_id, resource_group_name, headers):
         ctx.instance.runtime_properties['public_ip'] = curr_ip_address
 
 
-def _set_ip_addresses_keys():
+def _set_ip_addresses_keys(vm_name):
     current_public_ip_name = None
     current_private_ip_key = None
     private_ip_keys = []
@@ -223,14 +217,12 @@ def _set_ip_addresses_keys():
             if private_key_instance_id != public_key_instance_id:
                 ctx.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY] = \
                     ctx.instance.runtime_properties[current_key]
-                ctx.logger.info("_set_ip_addresses_keys1 private ip addr is {0}".
-                    format(ctx.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY]))
+                _set_private_ip(vm_name)
                 return
     else:
         ctx.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY] = \
             ctx.instance.runtime_properties[current_private_ip_key]
-        ctx.logger.info("_set_ip_addresses_keys: private ip address is {0}".
-            format(ctx.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY]))
+        _set_private_ip(vm_name)
 
 
 def _start_vm_call(headers, vm_name, subscription_id, resource_group_name):
@@ -242,11 +234,8 @@ def _start_vm_call(headers, vm_name, subscription_id, resource_group_name):
         ctx.logger.info("_start_vm_call:{0} - Status code is {1}".format(vm_name, response_start_vm.status_code))
         if response_start_vm.status_code in [constants.OK_STATUS_CODE, constants.ACCEPTED_STATUS_CODE]:
             ctx.logger.info("_start_vm_call: VM has started")
-            current_instance = utils.get_instance_or_source_instance()
-            current_instance.runtime_properties[constants.START_RESPONSE] = response_start_vm
             if response_start_vm.text:
                 ctx.logger.info("_start_vm_call: response_start_vm is {0}".format(response_start_vm.text))
-
             return True, status_code
     return False, constants.NA_CODE
 
