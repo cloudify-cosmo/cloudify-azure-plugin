@@ -89,8 +89,7 @@ def get_auth_token(use_client_file=True, **kwargs):
 @operation
 def set_auth_token(azure_config, **kwargs):
     # This method invoked only during bootstrap (it's a relationship interface)
-    ctx.source.instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = ctx.target.instance.runtime_properties[constants.AUTH_TOKEN_VALUE]
-    ctx.source.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY] = ctx.target.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY]
+    utils.write_target_runtime_properties_to_file([constants.AUTH_TOKEN_VALUE, constants.AUTH_TOKEN_EXPIRY], prefixed_keys=None, need_suffix=None)
 
 
 def _get_payload_endpoints():

@@ -833,7 +833,7 @@ relationships:
     derived_from: cloudify.relationships.depends_on
     target_interfaces:
       cloudify.interfaces.relationship_lifecycle:
-        postconfigure:
+        preconfigure:
           implementation: microsoft.azurecloudify.auth.set_auth_token
           inputs:
             azure_config:
