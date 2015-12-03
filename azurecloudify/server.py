@@ -43,7 +43,7 @@ def create_a_vm(**_):
     vm_name = ctx.node.properties[constants.VM_PREFIX]+random_suffix_value
     ctx.logger.info("Creating new virtual machine: {0}".format(vm_name))
 
-    _set_ip_addresses()
+    _set_ip_addresses_keys()
 
     storage_account_name = ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
     #availability_set_name = ctx.instance.runtime_properties[constants.AVAILABILITY_SET_KEY]
@@ -66,8 +66,8 @@ def start_vm(start_retry_interval, **kwargs):
 
 def start_a_vm(start_retry_interval, **kwargs):
 
-    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-    vm_name = ctx.instance.runtime_properties[constants.VM_KEY]
+    resource_group_name = ctx.source.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+    vm_name = ctx.source.instance.runtime_properties[constants.VM_KEY]
 
     curr_status = get_provisioning_state()
     if curr_status != constants.SUCCEEDED:
@@ -78,7 +78,7 @@ def start_a_vm(start_retry_interval, **kwargs):
     headers, location, subscription_id = auth.get_credentials()
     start_vm_succeeded, status_code = _start_vm_call(headers, vm_name, subscription_id, resource_group_name)
     ctx.logger.info("start_a_vm: start_vm_succeeded is {0}, status code is {1}".format(start_vm_succeeded, status_code))
-    ctx.instance.runtime_properties[constants.SERVER_STARTED] = start_vm_succeeded
+    ctx.source.instance.runtime_properties[constants.SERVER_STARTED] = start_vm_succeeded
     return constants.OK_STATUS_CODE
 
 
@@ -174,8 +174,7 @@ def _validate_node_properties(key, ctx_node_properties):
 
 
 def _set_private_ip(vm_name):
-    vm_private_ip = utils.key_in_runtime(constants.PRIVATE_IP_ADDRESS_KEY, ends_with_key=False,
-                                         starts_with_key=True, return_value=True)
+    vm_private_ip = ctx.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY]
     if vm_private_ip:
         ctx.logger.info("Setting {0} private ip address".format(vm_name))
         ctx.logger.info("vm_private_ip is {0}".format(vm_private_ip))
@@ -201,20 +200,20 @@ def _set_public_ip(subscription_id, resource_group_name, headers):
         ctx.instance.runtime_properties['public_ip'] = curr_ip_address
 
 
-def _set_ip_addresses():
-    current_public_ip_key = None
+def _set_ip_addresses_keys():
+    current_public_ip_name = None
     current_private_ip_key = None
     private_ip_keys = []
     for current_key in ctx.instance.runtime_properties:
         if current_key.startswith(constants.PUBLIC_IP_KEY):
             public_key_instance_id = current_key.split(constants.PUBLIC_IP_KEY)[1]
-            current_public_ip_key = ctx.instance.runtime_properties[current_key]
+            current_public_ip_name = ctx.instance.runtime_properties[current_key]
         elif current_key.startswith(constants.PRIVATE_IP_ADDRESS_KEY):
             private_ip_keys.append(current_key)
             current_private_ip_key = current_key
 
-    if current_public_ip_key is not None:
-        ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY] = current_public_ip_key
+    if current_public_ip_name is not None:
+        ctx.instance.runtime_properties[constants.PUBLIC_IP_KEY] = current_public_ip_name
 
     if len(private_ip_keys) > 1:
         # There are two private IP addresses, so the one which doesn't correspond to the
@@ -222,23 +221,29 @@ def _set_ip_addresses():
         for current_key in private_ip_keys:
             private_key_instance_id = current_key.split(constants.PRIVATE_IP_ADDRESS_KEY)[1]
             if private_key_instance_id != public_key_instance_id:
-                ctx.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY] = ctx.instance.runtime_properties[current_key]
+                ctx.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY] = \
+                    ctx.instance.runtime_properties[current_key]
+                ctx.logger.info("_set_ip_addresses_keys1 private ip addr is {0}".
+                    format(ctx.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY]))
                 return
     else:
-        ctx.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY] = current_private_ip_key
+        ctx.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY] = \
+            ctx.instance.runtime_properties[current_private_ip_key]
+        ctx.logger.info("_set_ip_addresses_keys: private ip address is {0}".
+            format(ctx.instance.runtime_properties[constants.PRIVATE_IP_ADDRESS_KEY]))
 
 
 def _start_vm_call(headers, vm_name, subscription_id, resource_group_name):
     ctx.logger.info("In _start_vm_call starting {0}".format(vm_name))
     start_vm_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'/start?api-version='+constants.api_version
     response_start_vm = requests.post(start_vm_url, headers=headers)
-    ctx.instance.runtime_properties[constants.SERVER_START_INVOKED] = True
     if response_start_vm.status_code:
         status_code = response_start_vm.status_code
         ctx.logger.info("_start_vm_call:{0} - Status code is {1}".format(vm_name, response_start_vm.status_code))
         if response_start_vm.status_code in [constants.OK_STATUS_CODE, constants.ACCEPTED_STATUS_CODE]:
             ctx.logger.info("_start_vm_call: VM has started")
-            ctx.instance.runtime_properties[constants.START_RESPONSE] = response_start_vm
+            current_instance = utils.get_instance_or_source_instance()
+            current_instance.runtime_properties[constants.START_RESPONSE] = response_start_vm
             if response_start_vm.text:
                 ctx.logger.info("_start_vm_call: response_start_vm is {0}".format(response_start_vm.text))
 
@@ -364,8 +369,9 @@ def _get_vm_base_json(location, random_suffix_value, resource_group_name, storag
 
 
 def get_provisioning_state(**_):
-    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
-    vm_name = ctx.instance.runtime_properties[constants.VM_KEY]
+    current_instance = utils.get_instance_or_source_instance()
+    resource_group_name = current_instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+    vm_name = current_instance.runtime_properties[constants.VM_KEY]
 
     ctx.logger.info("Searching for {0}".format(vm_name))
     headers, location, subscription_id = auth.get_credentials()

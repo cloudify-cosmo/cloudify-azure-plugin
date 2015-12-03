@@ -13,14 +13,11 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 
-import random
-import string
+
+import utils
 from cloudify import ctx
 import constants
-from cloudify.exceptions import NonRecoverableError,RecoverableError
 import requests
-from requests import Request,Session,Response
-import json
 
 
 def get_provisioning_state(headers, resource_name, check_resource_url, save_successful_response=True):
@@ -30,7 +27,8 @@ def get_provisioning_state(headers, resource_name, check_resource_url, save_succ
     if 'properties' in response_json:
         if save_successful_response:
             # In order to save a redundant API call
-            ctx.instance.runtime_properties[constants.SUCCESSFUL_RESPONSE_JSON] = response_json
+            current_instance = utils.get_instance_or_source_instance()
+            current_instance.runtime_properties[constants.SUCCESSFUL_RESPONSE_JSON] = response_json
         return response_json['properties']['provisioningState']
     elif 'error' in response_json:
         err_msg = response_json['error']['message']
