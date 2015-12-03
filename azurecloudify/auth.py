@@ -12,10 +12,14 @@ import utils
 
 
 @operation
-def generate_token(use_client_file=True, **kwargs):
+def generate_token(use_client_file=True, start_retry_interval=30, **kwargs):
     endpoints, payload = _get_payload_endpoints()
-    token, token_expires = _get_token_value_expiry(endpoints, payload)
-    #ctx.logger.debug("In generate_token: token_expires {}".format(token_expires))
+    try:
+        token, token_expires = _get_token_value_expiry(endpoints, payload)
+    except:
+        return ctx.operation.retry(
+            message='Waiting for the token to be generated', retry_after=start_retry_interval)
+
     try:
         json_data = {}
         with open(constants.default_path_to_local_azure_token_file, 'w') as f:

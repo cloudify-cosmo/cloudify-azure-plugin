@@ -661,6 +661,10 @@ node_types:
           inputs:
             use_client_file:
               default: True
+            start_retry_interval:
+              description: Polling interval in seconds until the server is started
+              type: integer
+              default: 30
 
 relationships:
 

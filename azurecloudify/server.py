@@ -277,17 +277,22 @@ def _set_data_disk_json(vm_json, storage_account_name):
     vm_properties = vm_json['properties']
     storage_profile = vm_properties['storageProfile']
     if constants.DATA_DISKS in storage_profile:
+        ctx.logger.info("{0} is already in storage_profile".format(constants.DATA_DISKS))
         return
 
     storage_profile[constants.DATA_DISKS] = []
     data_disks = storage_profile[constants.DATA_DISKS]
     lun = 0
     for curr_key in ctx.instance.runtime_properties:
+        ctx.logger.info("_set_data_disk_json : curr_key is {0}".format(curr_key))
         if curr_key.startswith(constants.DATA_DISK_KEY):
+            ctx.logger.info("_set_data_disk_json : disk key is {0}".format(curr_key))
             disk_name = ctx.instance.runtime_properties[curr_key]
+            ctx.logger.info("_set_data_disk_json : disk_name is {0}".format(disk_name))
             vhd_uri = "https://{0}.blob.core.windows.net/vhds/{1}.vhd".format(storage_account_name, disk_name)
             # Later make this property per disk issue #31
             disk_size = ctx.instance.runtime_properties[constants.DISK_SIZE_KEY]
+            ctx.logger.info("_set_data_disk_json : disk_size is {0}".format(disk_size))
             curr_disk = {
                 "lun": lun,
                 "name": disk_name,
