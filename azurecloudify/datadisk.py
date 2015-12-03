@@ -43,8 +43,10 @@ def create_disk(**_):
     utils.set_runtime_properties_from_file()
     current_disk_name = constants.DATA_DISK_PREFIX+utils.random_suffix_generator()
     ctx.instance.runtime_properties[curr_disk_key] = current_disk_name
-    ctx.logger.info("{0} is {1}".format(curr_disk_key, current_disk_name))
-    ctx.instance.runtime_properties[constants.DISK_SIZE_KEY] = ctx.node.properties[constants.DISK_SIZE_KEY]
+    ctx.logger.info("create_disk: {0} is {1}".format(curr_disk_key, current_disk_name))
+    ctx.instance.runtime_properties[constants.DATA_DISK_SIZE_KEY] = ctx.node.properties[constants.DATA_DISK_SIZE_KEY]
+    ctx.logger.info("create_disk: {0} is {1}".format(current_disk_name,
+                                                     ctx.instance.runtime_properties[constants.DATA_DISK_SIZE_KEY]))
 
 
 @operation
@@ -62,12 +64,4 @@ def _validate_node_properties(key, ctx_node_properties):
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
 
 
-def set_disks_from_runtime(caller_string, source_runtime_properties, target_runtime_properties, use_only_first_disk=True):
-    for curr_key in target_runtime_properties:
-        if curr_key.startswith(constants.DATA_DISK_KEY):
-            source_runtime_properties[curr_key] = target_runtime_properties[curr_key]
-            ctx.logger.info("{0}:{1} is {2}".format(caller_string, curr_key, source_runtime_properties[curr_key]))
-            if use_only_first_disk:
-                return source_runtime_properties[curr_key]
-    return "OK"
 

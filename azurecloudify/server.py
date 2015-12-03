@@ -159,7 +159,7 @@ def set_nic_details(azure_config, **kwargs):
 @operation
 def set_data_disks(azure_config, **kwargs):
     # This should be per disk issue #31
-    utils.write_target_runtime_properties_to_file(required_keys=None, prefixed_keys=[constants.DISK_SIZE_KEY, constants.DATA_DISKS], need_suffix=None)
+    utils.write_target_runtime_properties_to_file(required_keys=None, prefixed_keys=[constants.DATA_DISK_SIZE_KEY, constants.DATA_DISK_KEY], need_suffix=None)
 
 
 def _validate_node_properties(key, ctx_node_properties):
@@ -291,7 +291,7 @@ def _set_data_disk_json(vm_json, storage_account_name):
             ctx.logger.info("_set_data_disk_json : disk_name is {0}".format(disk_name))
             vhd_uri = "https://{0}.blob.core.windows.net/vhds/{1}.vhd".format(storage_account_name, disk_name)
             # Later make this property per disk issue #31
-            disk_size = ctx.instance.runtime_properties[constants.DISK_SIZE_KEY]
+            disk_size = ctx.instance.runtime_properties[constants.DATA_DISK_SIZE_KEY]
             ctx.logger.info("_set_data_disk_json : disk_size is {0}".format(disk_size))
             curr_disk = {
                 "lun": lun,
@@ -303,7 +303,7 @@ def _set_data_disk_json(vm_json, storage_account_name):
                 "caching": "None",
                 "diskSizeGB": disk_size
             }
-            data_disks.append(curr_disk)
+            storage_profile[constants.DATA_DISKS].append(curr_disk)
             lun += 1
 
 
