@@ -36,69 +36,53 @@ def _get_token_value_expiry(endpoints, payload):
     response = requests.post(endpoints, data=payload).json()
     token = response['access_token']
     token_expires = response['expires_on']
-    #ctx.logger.debug("_get_token_value_expiry token is {} ".format(token))
     return token, token_expires
 
 
-# If client file is used (use_client_file==True), it means that this is during bootstrap
-def get_auth_token(use_client_file=True, **kwargs):
-    #ctx.logger.debug("In auth.get_auth_token")
-    current_instance = utils.get_instance_or_source_instance()
-    if use_client_file:
-        if constants.AUTH_TOKEN_VALUE in current_instance.runtime_properties:
-            return current_instance.runtime_properties[constants.AUTH_TOKEN_VALUE]
-
-        # Check if token file exists on the client's VM. If so, take the value from it and set it in the runtime
-        #ctx.logger.debug("In auth.get_auth_token checking local azure file path {}".format(constants.path_to_local_azure_token_file))
-        if os.path.isfile(constants.default_path_to_local_azure_token_file):
-            # If you are here , it means that this is during bootstrap
-            ctx.logger.info("{} exists".format(constants.default_path_to_local_azure_token_file))
-            token, token_expires = get_token_from_client_file()
-            ctx.logger.info("get_auth_token expiry is {} ".format(token_expires))
-            current_instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = token
-            current_instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY] = token_expires
-            ctx.logger.info("get_auth_token token1 is {} ".format(token))
-            return token
-
-    # From here, this is not during bootstrap, which also means that this code runs on the manager's VM.
-    try:
-        current_node = utils.get_node_or_source_node()
-        config_path = current_node.properties.get(constants.path_to_azure_conf_key) or constants.default_path_to_azure_conf
-        #ctx.logger.debug("In auth.get_auth_token b4 locking {}".format(config_path))
-        lock = LockFile(config_path)
-        lock.acquire()
-        #ctx.logger.debug("{} is locked".format(lock.path))
-        with open(config_path, 'r') as f:
-            json_data = json.load(f)
-            token_expires = json_data["token_expires"]
-            token = json_data["auth_token"]
-            #ctx.logger.debug("get_auth_token token2 is {} ".format(token))
-    except:
-        lock.release()
-        raise NonRecoverableError("Failures while locking or using {}".format(config_path))
-
-    #ctx.logger.debug("In auth.get_auth_token b4 timestamp")
+def _generate_token_if_expired(config_path, token, token_expires):
     timestamp = int(time.time())
-    #ctx.logger.debug("In auth.get_auth_token timestamp is {}".format(timestamp))
-    #ctx.logger.debug("In auth.get_auth_token token_expires1 is {}".format(token_expires))
     token_expires = int(token_expires)
-    #ctx.logger.debug("In auth.get_auth_token token_expires2 is {}".format(token_expires))
-    if token_expires-timestamp <= 600 or token_expires == 0 or token is None or token == "":
-        #ctx.logger.debug("In auth.get_auth_token token_expires-timestamp {}".format(token_expires-timestamp))
+    if token_expires - timestamp <= 600 or token_expires == 0 or token is None or token == "":
+        ctx.logger.debug("Token expired: token_expires - timestamp={0}".format(token_expires-timestamp))
         endpoints, payload = _get_payload_endpoints()
         token, token_expires = _get_token_value_expiry(endpoints, payload)
-        #ctx.logger.debug("get_auth_token token3 is {} ".format(token))
-        #ctx.logger.debug("In auth.get_auth_token b4 opening {}".format(config_path))
         with open(config_path, 'r+') as f:
             json_data = json.load(f)
             json_data["auth_token"] = token
             json_data["token_expires"] = token_expires
             f.seek(0)
+            ctx.logger.debug("Writing token         to {0}\n {1}".format(config_path, token))
+            ctx.logger.debug("Writing token_expires to {0}\n {1}".format(config_path, token_expires))
             f.write(json.dumps(json_data))
             f.close()
+    return token
+
+
+def get_auth_token(use_client_file=True, **kwargs):
+
+    current_node = utils.get_node_or_source_node()
+    if use_client_file:
+        current_instance = utils.get_instance_or_source_instance()
+        if constants.AUTH_TOKEN_VALUE in current_instance.runtime_properties:
+            return current_instance.runtime_properties[constants.AUTH_TOKEN_VALUE]
+
+        if os.path.isfile(constants.default_path_to_local_azure_token_file):
+            token = _set_token_from_local_file(current_instance)
+            return token
+
+    try:
+        config_path = current_node.properties.get(constants.path_to_azure_conf_key) or constants.default_path_to_azure_conf
+        lock = LockFile(config_path)
+        lock.acquire()
+        token, token_expires = _get_token_from_file(config_path)
+    except:
+        err_message = "Failures while locking or using {}".format(config_path)
+        ctx.logger.debug(err_message)
+        lock.release()
+        raise NonRecoverableError(err_message)
+
+    token = _generate_token_if_expired(config_path, token, token_expires)
     lock.release()
-    #ctx.logger.debug("{} is released".format(lock.path))
-    #ctx.logger.debug("get_auth_token token4 is {} ".format(token))
     return token
 
 
@@ -124,14 +108,12 @@ def _get_payload_endpoints():
     return endpoints, payload
 
 
-def get_token_from_client_file():
-    with open(constants.default_path_to_local_azure_token_file, 'r') as f:
+def _get_token_from_file(file_path):
+    with open(file_path, 'r') as f:
         json_data = json.load(f)
         token_expires = json_data["token_expires"]
         token = json_data["auth_token"]
         f.close()
-
-    #ctx.logger.debug("get_token_from_client_file expiry is {} ".format(token_expires))
     return token, token_expires
 
 
@@ -142,3 +124,14 @@ def get_credentials():
     credentials = 'Bearer ' + get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     return headers, location, subscription_id
+
+
+def _set_token_from_local_file(current_instance):
+    ctx.logger.info("{} exists".format(constants.default_path_to_local_azure_token_file))
+    token, token_expires = _get_token_from_file(constants.default_path_to_local_azure_token_file)
+    ctx.logger.info("get_auth_token expiry is {} ".format(token_expires))
+    current_instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = token
+    current_instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY] = token_expires
+    ctx.logger.info("get_auth_token token1 is {} ".format(token))
+    return token
+
