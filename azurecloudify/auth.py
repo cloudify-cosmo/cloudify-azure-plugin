@@ -15,7 +15,7 @@ import utils
 def generate_token(use_client_file=True, start_retry_interval=30, **kwargs):
     endpoints, payload = _get_payload_endpoints()
     token, token_expires = _get_token_value_expiry(endpoints, payload)
-    
+
     try:
         json_data = {}
         with open(constants.default_path_to_local_azure_token_file, 'w') as f:
