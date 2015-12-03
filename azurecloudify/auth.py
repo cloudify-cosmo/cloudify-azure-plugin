@@ -8,6 +8,7 @@ from cloudify import ctx, context
 import constants
 from cloudify.decorators import operation
 import os.path
+import utils
 
 
 @operation
@@ -42,12 +43,10 @@ def _get_token_value_expiry(endpoints, payload):
 # If client file is used (use_client_file==True), it means that this is during bootstrap
 def get_auth_token(use_client_file=True, **kwargs):
     #ctx.logger.debug("In auth.get_auth_token")
+    current_instance = utils.get_instance_or_source_instance()
     if use_client_file:
-        if constants.AUTH_TOKEN_VALUE in ctx.instance.runtime_properties:
-            # If you are here , it means that this is during bootstrap
-            #ctx.logger.debug("In auth.get_auth_token returning token from runtime props")
-            #ctx.logger.info("In auth.get_auth_token token from runtime props is:{}".format(ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE]))
-            return ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE]
+        if constants.AUTH_TOKEN_VALUE in current_instance.runtime_properties:
+            return current_instance.runtime_properties[constants.AUTH_TOKEN_VALUE]
 
         # Check if token file exists on the client's VM. If so, take the value from it and set it in the runtime
         #ctx.logger.debug("In auth.get_auth_token checking local azure file path {}".format(constants.path_to_local_azure_token_file))
@@ -56,14 +55,15 @@ def get_auth_token(use_client_file=True, **kwargs):
             ctx.logger.info("{} exists".format(constants.default_path_to_local_azure_token_file))
             token, token_expires = get_token_from_client_file()
             ctx.logger.info("get_auth_token expiry is {} ".format(token_expires))
-            ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = token
-            ctx.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY] = token_expires
+            current_instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = token
+            current_instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY] = token_expires
             ctx.logger.info("get_auth_token token1 is {} ".format(token))
             return token
 
     # From here, this is not during bootstrap, which also means that this code runs on the manager's VM.
     try:
-        config_path = ctx.node.properties.get(constants.path_to_azure_conf_key) or constants.default_path_to_azure_conf
+        current_node = utils.get_node_or_source_node()
+        config_path = current_node.properties.get(constants.path_to_azure_conf_key) or constants.default_path_to_azure_conf
         #ctx.logger.debug("In auth.get_auth_token b4 locking {}".format(config_path))
         lock = LockFile(config_path)
         lock.acquire()
@@ -110,9 +110,10 @@ def set_auth_token(azure_config, **kwargs):
 
 
 def _get_payload_endpoints():
-    client_id = ctx.node.properties['client_id']
-    aad_password = ctx.node.properties['aad_password']
-    tenant_id = ctx.node.properties['tenant_id']
+    current_node = utils.get_node_or_source_node()
+    client_id = current_node.properties['client_id']
+    aad_password = current_node.properties['aad_password']
+    tenant_id = current_node.properties['tenant_id']
     endpoints = constants.login_url+'/'+tenant_id+'/oauth2/token'
     payload = {
         'grant_type': 'client_credentials',
@@ -135,8 +136,9 @@ def get_token_from_client_file():
 
 
 def get_credentials():
-    subscription_id = ctx.node.properties['subscription_id']
-    location = ctx.node.properties['location']
+    current_node = utils.get_node_or_source_node()
+    subscription_id = current_node.properties['subscription_id']
+    location = current_node.properties['location']
     credentials = 'Bearer ' + get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     return headers, location, subscription_id

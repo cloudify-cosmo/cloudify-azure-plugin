@@ -240,3 +240,12 @@ def get_instance_or_source_instance():
         raise NonRecoverableError("ctx type is neither {0} nor {1}".format(constants.RELATIONSHIP_INSTANCE,
                                                                                constants.NODE_INSTANCE))
 
+
+def get_node_or_source_node():
+    if ctx.type == constants.RELATIONSHIP_INSTANCE:
+        return ctx.source.node
+    elif ctx.type == constants.NODE_INSTANCE:
+        return ctx.node
+    else:
+        raise NonRecoverableError("ctx type is neither {0} nor {1}".format(constants.RELATIONSHIP_INSTANCE,
+                                                                               constants.NODE_INSTANCE))

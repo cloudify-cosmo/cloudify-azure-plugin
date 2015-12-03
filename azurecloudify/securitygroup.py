@@ -51,7 +51,7 @@ def verify_provision(start_retry_interval, **kwargs):
     curr_status = get_provisioning_state()
     if curr_status != constants.SUCCEEDED:
         return ctx.operation.retry(
-            message='Waiting for the xxx ({0}) to be provisioned'.format(security_group_name),
+            message='Waiting for the security group ({0}) to be provisioned'.format(security_group_name),
             retry_after=start_retry_interval)
 
 
