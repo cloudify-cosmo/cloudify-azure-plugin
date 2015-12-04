@@ -77,7 +77,16 @@ class TestWorkflowClean(AzureLocalTestUtils):
         storage_account_object_list = \
             client.get_all_key_pairs(keynames=storage_account_id)
         self.assertEqual(1, len(storage_account_object_list))
+        
+        nic_node = \
+            self._get_instance_node(SIMPLE_NIC, self.localenv.storage)
+        nic_name = \
+            nic_node.runtime_properties[EXTERNAL_RESOURCE_ID]
+        nic_object_list = \
+            client.get_all_key_pairs(keynames=nic_id)
+        self.assertEqual(1, len(nic_object_list))
 
+        
         server_node = \
             self._get_instance_node(SIMPLE_VM, self.localenv.storage)
         server_id = \
