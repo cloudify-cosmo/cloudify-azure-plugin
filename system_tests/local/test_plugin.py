@@ -95,6 +95,16 @@ class TestWorkflowClean(AzureLocalTestUtils):
             client.get_all_public_ip(group_ids=public_ip_id)
         self.assertEqual(1, len(public_ip_object_list))
     
+    
+        subnet_node = \
+            self._get_instance_node(SIMPLE_SUBNET, self.localenv.storage)
+        subnet_id = \
+            public_ip_node.runtime_properties[EXTERNAL_RESOURCE_ID]
+        subnet_object_list = \
+            client.get_all_subnet(group_ids=subnet_id)
+        self.assertEqual(1, len(subnet_object_list))
+        
+        
         server_node = \
             self._get_instance_node(SIMPLE_VM, self.localenv.storage)
         server_id = \
