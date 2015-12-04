@@ -75,10 +75,12 @@ class AzureLocalTestUtils(TestCase):
             ignored_modules=IGNORED_LOCAL_WORKFLOW_MODULES)
 
     def _get_inputs(self,
-                    resource_name_rg='', resource_name_sa='',
-                    resource_name_sg='', resource_name_subnet='',
-                    resource_name_vnet='', resource_name_pip='',
-                    resource_name_nic='', resource_name_server='',
+                    subscription_id='', location='',
+                    client_id='', tenant_id='',
+                    vm_prefix='', vm_size='',
+                    image_reference_offer='', image_reference_sku='',
+                    image_reference_publisher='',ssh_username=''
+                    aad_password='',
                     use_external_resource=False,
                     test_name='vanilla_test'):
 
