@@ -55,7 +55,7 @@ def _generate_token_if_expired(config_path, token, token_expires):
             ctx.logger.debug("Writing token_expires to {0}\n {1}".format(config_path, token_expires))
             f.write(json.dumps(json_data))
             f.close()
-    return token
+    return token, token_expires
 
 
 def get_auth_token(use_client_file=True, **kwargs):
@@ -89,7 +89,7 @@ def get_auth_token(use_client_file=True, **kwargs):
         lock.release()
         raise NonRecoverableError(err_message)
 
-    token = _generate_token_if_expired(config_path, token, token_expires)
+    token, token_expires = _generate_token_if_expired(config_path, token, token_expires)
     lock.release()
     return token
 
