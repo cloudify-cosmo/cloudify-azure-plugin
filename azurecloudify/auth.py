@@ -64,10 +64,18 @@ def get_auth_token(use_client_file=True, **kwargs):
     if use_client_file:
         current_instance = utils.get_instance_or_source_instance()
         if constants.AUTH_TOKEN_VALUE in current_instance.runtime_properties:
-            return current_instance.runtime_properties[constants.AUTH_TOKEN_VALUE]
+            token = current_instance.runtime_properties[constants.AUTH_TOKEN_VALUE]
+            if constants.AUTH_TOKEN_EXPIRY in current_instance.runtime_properties:
+                token_expires = current_instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY]
+            else:
+                token_expires = 0
+        else:
+            token = None
+            token_expires = 0
 
         if os.path.isfile(constants.default_path_to_local_azure_token_file):
-            token = _set_token_from_local_file(current_instance)
+            token, token_expires = _generate_token_if_expired(constants.default_path_to_local_azure_token_file,
+                                                              token, token_expires)
             return token
 
     try:
