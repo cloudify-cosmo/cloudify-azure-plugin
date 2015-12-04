@@ -86,6 +86,14 @@ class TestWorkflowClean(AzureLocalTestUtils):
             client.get_all_key_pairs(keynames=nic_id)
         self.assertEqual(1, len(nic_object_list))
 
+
+        public_ip_node = \
+            self._get_instance_node(SIMPLE_PIP, self.localenv.storage)
+        public_ip_id = \
+            public_ip_node.runtime_properties[EXTERNAL_RESOURCE_ID]
+        public_ip_object_list = \
+            client.get_all_public_ip(group_ids=public_ip_id)
+        self.assertEqual(1, len(public_ip_object_list))
     
         server_node = \
             self._get_instance_node(SIMPLE_VM, self.localenv.storage)
