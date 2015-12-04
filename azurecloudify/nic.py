@@ -161,6 +161,7 @@ def delete_current_nic(start_retry_interval=30, **kwargs):
         ctx.logger.info("An existing NIC was used, so there's no need to delete")
         return
 
+    ctx.instance.runtime_properties[constants.RESOURCE_NOT_DELETED] = True
     headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     nic_name = utils.key_in_runtime(constants.NIC_KEY, ends_with_key=False, starts_with_key=True, return_value=True)

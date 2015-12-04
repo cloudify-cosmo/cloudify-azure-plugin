@@ -71,6 +71,7 @@ def delete_current_security_group(start_retry_interval=30, **kwargs):
         ctx.logger.info("An existing security group was used, so there's no need to delete")
         return
 
+    ctx.instance.runtime_properties[constants.RESOURCE_NOT_DELETED] = True
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     security_group_name = ctx.instance.runtime_properties[constants.SECURITY_GROUP_KEY]
     headers, location, subscription_id = auth.get_credentials()

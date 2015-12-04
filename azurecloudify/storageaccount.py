@@ -78,6 +78,7 @@ def delete_current_storage_account(start_retry_interval=30, **kwargs):
         ctx.logger.info("An existing storage_account was used, so there's no need to delete")
         return constants.ACCEPTED_STATUS_CODE
 
+    ctx.instance.runtime_properties[constants.RESOURCE_NOT_DELETED] = True
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     headers, location, subscription_id = auth.get_credentials()
     storage_account_name = ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]

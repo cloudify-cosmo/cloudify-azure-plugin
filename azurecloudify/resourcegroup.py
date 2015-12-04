@@ -74,6 +74,7 @@ def delete_current_resource_group(start_retry_interval=30, **kwargs):
         ctx.logger.info("An existing resource group was used, so there's no need to delete")
         return constants.ACCEPTED_STATUS_CODE
 
+    ctx.instance.runtime_properties[constants.RESOURCE_NOT_DELETED] = True
     headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
 

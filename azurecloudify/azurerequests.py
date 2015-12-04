@@ -46,6 +46,7 @@ def check_delete_response(curr_response, start_retry_interval, caller_string, re
 
     if curr_response.status_code in [constants.OK_STATUS_CODE, constants.ACCEPTED_STATUS_CODE]:
         ctx.logger.info("{0} status code is {1}".format(caller_string, curr_response.status_code))
+        ctx.instance.runtime_properties[constants.RESOURCE_NOT_DELETED] = None
         return curr_response.status_code
     else:
         return ctx.operation.retry(message='Waiting for the {0} ({1}) to be deleted'.

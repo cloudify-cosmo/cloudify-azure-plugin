@@ -133,6 +133,7 @@ def delete_current_virtual_machine(start_retry_interval=30, **kwargs):
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     headers, location, subscription_id = auth.get_credentials()
     vm_name = ctx.instance.runtime_properties[constants.VM_KEY]
+    ctx.instance.runtime_properties[constants.RESOURCE_NOT_DELETED] = True
 
     try:
         ctx.logger.info("Deleting the virtual machine: {0}".format(vm_name))
