@@ -60,7 +60,7 @@ class TestWorkflowClean(AzureLocalTestUtils):
             elastic_ip_node.runtime_properties[EXTERNAL_RESOURCE_ID]
         elastic_ip_object_list = \
             client.get_all_addresses(addresses=elastic_ip_address)
-        self.assertEqual(1, len(elastic_ip_object_list))
+        self.assertEqual(1, len(resource_group_object_list))
 
         security_group_node = \
             self._get_instance_node(SIMPLE_SG, self.localenv.storage)
@@ -70,12 +70,12 @@ class TestWorkflowClean(AzureLocalTestUtils):
             client.get_all_security_groups(group_ids=security_group_id)
         self.assertEqual(1, len(security_group_object_list))
 
-        key_pair_node = \
-            self._get_instance_node(SIMPLE_KP, self.localenv.storage)
+        storage_account_node = \
+            self._get_instance_node(SIMPLE_SA, self.localenv.storage)
         key_pair_name = \
             key_pair_node.runtime_properties[EXTERNAL_RESOURCE_ID]
         key_pair_object_list = \
-            client.get_all_key_pairs(keynames=key_pair_name)
+            client.get_all_key_pairs(keynames=storage_account_id)
         self.assertEqual(1, len(key_pair_object_list))
 
         instance_node = \
