@@ -17,12 +17,8 @@
 import os
 import tempfile
 
-# Third party Imports
-from boto.ec2 import get_region
-from boto.ec2 import EC2Connection
-
 # Cloudify Imports
-from ec2 import constants
+from azurecloudify import constants
 from cloudify.workflows import local
 from cloudify.mocks import MockContext
 from cloudify.mocks import MockCloudifyContext
@@ -36,24 +32,24 @@ IGNORED_LOCAL_WORKFLOW_MODULES = (
 INSTANCE_TO_IP = 'instance_connected_to_elastic_ip'
 INSTANCE_TO_SG = 'instance_connected_to_security_group'
 EXTERNAL_RESOURCE_ID = 'aws_resource_id'
-SIMPLE_IP = 'simple_elastic_ip'
+SIMPLE_RG = 'simple_resource_group'
+SIMPLE_SA = 'simple_storage_account'
 SIMPLE_SG = 'simple_security_group'
-SIMPLE_KP = 'simple_key_pair'
-SIMPLE_VM = 'simple_instance'
-PAIR_A_IP = 'pair_a_connected_elastic_ip'
+SIMPLE_VM = 'simple_server'
+PAIR_A_PIP = 'pair_a_connected_elastic_ip'
 PAIR_A_VM = 'pair_a_connected_instance'
 PAIR_B_SG = 'pair_b_connected_security_group'
 PAIR_B_VM = 'pair_b_connected_instance'
 
 
-class EC2LocalTestUtils(TestCase):
+class AzureLocalTestUtils(TestCase):
 
     def setUp(self):
-        super(EC2LocalTestUtils, self).setUp()
+        super(AzureLocalTestUtils, self).setUp()
         self._set_up()
 
     def tearDown(self):
-        super(EC2LocalTestUtils, self).tearDown()
+        super(AzureLocalTestUtils, self).tearDown()
 
     def _set_up(self,
                 inputs=None,
@@ -75,10 +71,11 @@ class EC2LocalTestUtils(TestCase):
             ignored_modules=IGNORED_LOCAL_WORKFLOW_MODULES)
 
     def _get_inputs(self,
-                    resource_id_ip='', resource_id_kp='',
-                    resource_id_sg='', resource_id_vm='',
-                    external_ip=False, external_kp=False,
-                    external_sg=False, external_vm=False,
+                    resource_name_rg='', resource_name_sa='',
+                    resource_name_sg='', resource_name_subnet='',
+                    resource_name_vnet='', resource_name_pip='',
+                    resource_name_nic='', resource_name_server='',
+                    use_external_resource=False,
                     test_name='vanilla_test'):
 
         private_key_path = tempfile.mkdtemp()
@@ -89,16 +86,16 @@ class EC2LocalTestUtils(TestCase):
             'key_path': '{0}/{1}.pem'.format(
                 private_key_path,
                 test_name),
-            'resource_id_ip': resource_id_ip,
-            'resource_id_kp': resource_id_kp,
-            'resource_id_sg': resource_id_sg,
-            'resource_id_vm': resource_id_vm,
-            'external_ip': external_ip,
-            'external_kp': external_kp,
-            'external_sg': external_sg,
-            'external_vm': external_vm,
-            constants.AWS_CONFIG_PROPERTY: 
-                self._get_aws_config()
+            'resource_name_rg': resource_name_rg,
+            'resource_name_sa': resource_name_sa,
+            'resource_name_sg': resource_name_sg,
+            'resource_name_subnet': resource_name_subnet,
+            'resource_name_vnet': resource_name_vnet,
+            'resource_name_pip': resource_name_pip,
+            'resource_name_nic': resource_name_nic,
+            'resource_name_server': resource_name_server,
+            constants.AZURE_CONFIG_PROPERTY: 
+                self._get_azure_config()
         }
 
     def mock_cloudify_context(self, test_name, external_vm=False,
@@ -191,7 +188,7 @@ class EC2LocalTestUtils(TestCase):
         instance_node = self._get_instance_node(node_name, storage)
         return instance_node.node_id
 
-    def _get_aws_config(self):
+    def _get_azure_config(self):
 
         region = get_region(self.env.ec2_region_name)
 
@@ -201,25 +198,41 @@ class EC2LocalTestUtils(TestCase):
             'region': region
         }
 
-    def _get_ec2_client(self):
-        aws_config = self._get_aws_config()
+    def _get_azure_client(self):
+        azure_config = self._get_azure_config()
         return EC2Connection(**aws_config)
 
-    def _create_elastic_ip(self, ec2_client):
-        new_address = ec2_client.allocate_address(domain=None)
+    def _create_resource_group(self, azure_client):
+        new_address = azure_client.allocate_address(domain=None)
         return new_address
 
-    def _create_key_pair(self, ec2_client, name):
+    def _create_storage_account(self, azure_client, name):
         private_key_path = tempfile.mkdtemp()
         new_key_pair = ec2_client.create_key_pair(name)
         new_key_pair.save(private_key_path)
         return new_key_pair
 
-    def _create_security_group(self, ec2_client, name, description):
+    def _create_security_group(self, azure_client, name, description):
         new_group = ec2_client.create_security_group(name, description)
         return new_group
+        
+    def _create_vnet(self, azure_client):
+        new_address = azure_client.allocate_address(domain=None)
+        return new_address
+        
+    def _create_subnet(self, azure_client):
+        new_address = azure_client.allocate_address(domain=None)
+        return new_address
+        
+    def _create_public_ip(self, azure_client):
+        new_address = azure_client.allocate_address(domain=None)
+        return new_address
+        
+    def _create_nic(self, azure_client):
+        new_address = azure_client.allocate_address(domain=None)
+        return new_address
 
-    def _create_instance(self, ec2_client):
+    def _create_server(self, azure_client):
         new_reservation = ec2_client.run_instances(
             image_id=self.env.ubuntu_trusty_image_id,
             instance_type=self.env.micro_instance_type)
