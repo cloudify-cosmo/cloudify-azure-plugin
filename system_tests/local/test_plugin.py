@@ -78,6 +78,15 @@ class TestWorkflowClean(AzureLocalTestUtils):
             client.get_all_key_pairs(keynames=storage_account_id)
         self.assertEqual(1, len(storage_account_object_list))
         
+        vnet_node = \
+            self._get_instance_node(SIMPLE_VNET, self.localenv.storage)
+        vnet_name = \
+            key_pair_node.runtime_properties[EXTERNAL_RESOURCE_ID]
+        vnet_object_list = \
+            client.get_all_key_pairs(keynames=vnet_id)
+        self.assertEqual(1, len(vnet_object_list))
+        
+        
         nic_node = \
             self._get_instance_node(SIMPLE_NIC, self.localenv.storage)
         nic_name = \
@@ -114,13 +123,7 @@ class TestWorkflowClean(AzureLocalTestUtils):
         instance_list = reservation_list[0].instances
         self.assertEqual(1, len(instance_list))
         
-        vnet_node = \
-            self._get_instance_node(SIMPLE_VNET, self.localenv.storage)
-        vnet_name = \
-            key_pair_node.runtime_properties[EXTERNAL_RESOURCE_ID]
-        vnet_object_list = \
-            client.get_all_key_pairs(keynames=vnet_id)
-        self.assertEqual(1, len(vnet_object_list))
+        
 
         self.localenv.execute('uninstall', task_retries=10)
 
