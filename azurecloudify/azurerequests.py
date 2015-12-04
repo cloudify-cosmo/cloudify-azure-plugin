@@ -40,3 +40,14 @@ def get_provisioning_state(headers, resource_name, check_resource_url, save_succ
     return check_resource_response.status_code
 
 
+def check_delete_response(curr_response, start_retry_interval, caller_string, resource_name, resource_type):
+    if curr_response.text:
+        ctx.logger.info("{0} response is {1}".format(caller_string, curr_response.text))
+
+    if curr_response.status_code in [constants.OK_STATUS_CODE, constants.ACCEPTED_STATUS_CODE]:
+        ctx.logger.info("{0} status code is {1}".format(caller_string, curr_response.status_code))
+        return curr_response.status_code
+    else:
+        return ctx.operation.retry(message='Waiting for the {0} ({1}) to be deleted'.
+            format(resource_type, resource_name), retry_after=start_retry_interval)
+

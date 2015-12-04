@@ -120,16 +120,16 @@ def stop_a_vm(**_):
 
 
 @operation
-def delete_virtual_machine(**_):
-    delete_current_virtual_machine()
+def delete_virtual_machine(start_retry_interval=30, **kwargs):
+    delete_current_virtual_machine(start_retry_interval, **kwargs)
     utils.clear_runtime_properties()
 
 
-def delete_a_virtual_machine(**_):
-    delete_current_virtual_machine()
+def delete_a_virtual_machine(start_retry_interval=30, **kwargs):
+    delete_current_virtual_machine(start_retry_interval, **kwargs)
 
 
-def delete_current_virtual_machine(**_):
+def delete_current_virtual_machine(start_retry_interval=30, **kwargs):
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     headers, location, subscription_id = auth.get_credentials()
     vm_name = ctx.instance.runtime_properties[constants.VM_KEY]
@@ -138,10 +138,8 @@ def delete_current_virtual_machine(**_):
         ctx.logger.info("Deleting the virtual machine: {0}".format(vm_name))
         vm_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/virtualMachines/'+vm_name+'?validating=true&api-version='+constants.api_version
         response_vm = requests.delete(url=vm_url, headers=headers)
-        if response_vm.text:
-            ctx.logger.info("delete_current_virtual_machine response is {0}".format(response_vm.text))
-        else:
-            ctx.logger.info("delete_current_virtual_machine status code is {0}".format(response_vm.status_code))
+        return azurerequests.check_delete_response(response_vm, start_retry_interval,
+                                                   'delete_current_virtual_machine', vm_name, 'VM')
     except:
         ctx.logger.info("Virtual Machine {0} could not be deleted".format(vm_name))
 

@@ -67,12 +67,12 @@ def verify_provision(start_retry_interval, **kwargs):
 
 
 @operation
-def delete_public_ip(**_):
-    delete_current_public_ip()
+def delete_public_ip(start_retry_interval=30, **kwargs):
+    delete_current_public_ip(start_retry_interval, **kwargs)
     utils.clear_runtime_properties()
 
 
-def delete_current_public_ip(**_):
+def delete_current_public_ip(start_retry_interval=30, **kwargs):
     if constants.USE_EXTERNAL_RESOURCE in ctx.node.properties and ctx.node.properties[constants.USE_EXTERNAL_RESOURCE]:
         ctx.logger.info("An existing Public IP was used, so there's no need to delete")
         return
@@ -85,7 +85,8 @@ def delete_current_public_ip(**_):
         ctx.logger.info("Deleting Public IP")
         public_ip_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/publicIPAddresses/'+public_ip_name+'?api-version='+constants.api_version_network
         response_pip = requests.delete(url=public_ip_url, headers=headers)
-        print(response_pip.text)
+        return azurerequests.check_delete_response(response_pip, start_retry_interval,
+                                                   'delete_current_public_ip', public_ip_name, 'public_ip')
 
     except:
         ctx.logger.info("Public IP {0} could not be deleted.".format(public_ip_name))

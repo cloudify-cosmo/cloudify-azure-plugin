@@ -61,12 +61,12 @@ def set_dependent_resources_names(azure_config, **kwargs):
 
 
 @operation
-def delete_security_group(**_):
-    delete_current_security_group()
+def delete_security_group(start_retry_interval=30, **kwargs):
+    delete_current_security_group(start_retry_interval, **kwargs)
     utils.clear_runtime_properties()
 
 
-def delete_current_security_group(**_):
+def delete_current_security_group(start_retry_interval=30, **kwargs):
     if constants.USE_EXTERNAL_RESOURCE in ctx.node.properties and ctx.node.properties[constants.USE_EXTERNAL_RESOURCE]:
         ctx.logger.info("An existing security group was used, so there's no need to delete")
         return
@@ -78,7 +78,9 @@ def delete_current_security_group(**_):
         ctx.logger.info("Deleting Security Group: {0}".format(security_group_name))
         security_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkSecurityGroups/'+security_group_name+'?api-version='+constants.api_version_network
         response_nsg = requests.delete(url=security_group_url, headers=headers)
-        ctx.logger.info("Deleted Security Group: {0}".format(security_group_name))
+        return azurerequests.check_delete_response(response_nsg, start_retry_interval,
+                                                   'delete_current_security_group', security_group_name,
+                                                   'security_group')
     except:
         ctx.logger.info("Security Group {0} could not be deleted.".format(security_group_name))
         

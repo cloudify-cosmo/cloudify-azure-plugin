@@ -67,13 +67,13 @@ def verify_provision(start_retry_interval, **kwargs):
 
 
 @operation
-def delete_storage_account(**_):
-    status_code = delete_current_storage_account()
+def delete_storage_account(start_retry_interval=30, **kwargs):
+    status_code = delete_current_storage_account(start_retry_interval, **kwargs)
     utils.clear_runtime_properties()
     return status_code
 
 
-def delete_current_storage_account(**_):
+def delete_current_storage_account(start_retry_interval=30, **kwargs):
     if constants.USE_EXTERNAL_RESOURCE in ctx.node.properties and ctx.node.properties[constants.USE_EXTERNAL_RESOURCE]:
         ctx.logger.info("An existing storage_account was used, so there's no need to delete")
         return constants.ACCEPTED_STATUS_CODE
@@ -85,8 +85,9 @@ def delete_current_storage_account(**_):
     try:
         storage_account_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Storage/storageAccounts/'+storage_account_name+'?api-version='+constants.api_version
         response_sa = requests.delete(url=storage_account_url, headers=headers)
-        ctx.logger.info("response_sa storage account : {0}".format(response_sa.text))
-        return response_sa.status_code
+        return azurerequests.check_delete_response(response_sa, start_retry_interval,
+                                                   'delete_current_storage_account', storage_account_name,
+                                                   'storage_account')
     except:
         ctx.logger.info("Storage Account {0} could not be deleted.".format(storage_account_name))
     return constants.FAILURE_CODE

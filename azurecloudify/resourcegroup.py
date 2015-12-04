@@ -63,13 +63,13 @@ def verify_provision(start_retry_interval, **kwargs):
 
 
 @operation
-def delete_resource_group(**_):
-    status_code = delete_current_resource_group()
+def delete_resource_group(start_retry_interval=30, **kwargs):
+    status_code = delete_current_resource_group(start_retry_interval, **kwargs)
     utils.clear_runtime_properties()
     return status_code
 
 
-def delete_current_resource_group(**_):
+def delete_current_resource_group(start_retry_interval=30, **kwargs):
     if constants.USE_EXTERNAL_RESOURCE in ctx.node.properties and ctx.node.properties[constants.USE_EXTERNAL_RESOURCE]:
         ctx.logger.info("An existing resource group was used, so there's no need to delete")
         return constants.ACCEPTED_STATUS_CODE
@@ -81,7 +81,9 @@ def delete_current_resource_group(**_):
         ctx.logger.info("Deleting Resource Group: {0}".format(resource_group_name))
         resource_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'?api-version='+constants.api_version_resource_group
         response_rg = requests.delete(url=resource_group_url, headers=headers)
-        return response_rg.status_code
+        return azurerequests.check_delete_response(response_rg, start_retry_interval,
+                                                   'delete_current_resource_group', resource_group_name,
+                                                   'resource_group_name')
 
     except:
         ctx.logger.info("Resource Group {0} could not be deleted.".format(resource_group_name))

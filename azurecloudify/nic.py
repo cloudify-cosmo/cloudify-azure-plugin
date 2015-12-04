@@ -145,17 +145,18 @@ def verify_provision(start_retry_interval, **kwargs):
 
     set_nic_private_ip()
 
+
 @operation
-def delete_nic(**_):
-    delete_a_nic()
+def delete_nic(start_retry_interval=30, **kwargs):
+    delete_a_nic(start_retry_interval, **kwargs)
     utils.clear_runtime_properties()
 
 
-def delete_a_nic(**_):
-    delete_current_nic()
+def delete_a_nic(start_retry_interval=30, **kwargs):
+    delete_current_nic(start_retry_interval)
 
 
-def delete_current_nic(**_):
+def delete_current_nic(start_retry_interval=30, **kwargs):
     if constants.USE_EXTERNAL_RESOURCE in ctx.node.properties and ctx.node.properties[constants.USE_EXTERNAL_RESOURCE]:
         ctx.logger.info("An existing NIC was used, so there's no need to delete")
         return
@@ -168,7 +169,8 @@ def delete_current_nic(**_):
         ctx.logger.info("Deleting NIC {0}".format(nic_name))
         nic_url = constants.azure_url+"/subscriptions/"+subscription_id+"/resourceGroups/"+resource_group_name+"/providers/microsoft.network/networkInterfaces/"+nic_name+"?api-version="+constants.api_version
         response_nic = requests.delete(url=nic_url, headers=headers)
-        print(response_nic.text)
+        return azurerequests.check_delete_response(response_nic, start_retry_interval, 'delete_current_nic',
+                                                   nic_name, 'NIC')
     except:
         ctx.logger.info("Network Interface Card {0} could not be deleted.".format(nic_name))
 

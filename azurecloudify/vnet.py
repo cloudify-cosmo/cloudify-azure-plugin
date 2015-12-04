@@ -65,12 +65,12 @@ def verify_provision(start_retry_interval, **kwargs):
 
 
 @operation
-def delete_vnet(**_):
-    delete_current_vnet()
+def delete_vnet(start_retry_interval=30, **kwargs):
+    delete_current_vnet(start_retry_interval, **kwargs)
     utils.clear_runtime_properties()
 
 
-def delete_current_vnet(**_):
+def delete_current_vnet(start_retry_interval=30, **kwargs):
     if constants.USE_EXTERNAL_RESOURCE in ctx.node.properties and ctx.node.properties[constants.USE_EXTERNAL_RESOURCE]:
         ctx.logger.info("An existing VNET was used, so there's no need to delete")
         return
@@ -83,12 +83,8 @@ def delete_current_vnet(**_):
         ctx.logger.info("Deleting the virtual network: {0}".format(vnet_name))
         vnet_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/virtualNetworks/'+vnet_name+'?api-version='+constants.api_version_network
         response_vnet = requests.delete(url=vnet_url, headers=headers)
-        if response_vnet.text:
-            ctx.logger.info("Deleted VNET {0}, response is: {1}".format(vnet_name, response_vnet.text))
-        elif response_vnet.status_code:
-            ctx.logger.info("Deleted VNET {0}, status code is: {1}".format(vnet_name, response_vnet.status_code))
-        else:
-            ctx.logger.info("Deleted VNET {0}, there is status code".format(vnet_name))
+        return azurerequests.check_delete_response(response_vnet, start_retry_interval,
+                                                   'delete_current_vnet', vnet_name, 'VNET')
     except:
         ctx.logger.info("Virtual Network {0} could not be deleted.".format(vnet_name))
         raise NonRecoverableError("Virtual Network {0} could not be created.".format(vnet_name))
