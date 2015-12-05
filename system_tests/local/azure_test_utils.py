@@ -192,17 +192,17 @@ class AzureLocalTestUtils(TestCase):
 
     def _get_azure_config(self):
 
-        region = get_region(self.env.ec2_region_name)
+        region = get_region(self.azurecloudify_region_name)
 
         return {
-            'aws_access_key_id': self.env.aws_access_key_id,
-            'aws_secret_access_key': self.env.aws_secret_access_key,
-            'region': region
+            'azure_access_key_id': self.azurecloudify_access_key_id,
+            'azure_secret_access_key': self.azurecloudify_secret_access_key,
+            'location': location
         }
 
     def _get_azure_client(self):
         azure_config = self._get_azure_config()
-        return EC2Connection(**aws_config)
+        return cloudifyazure(**azure_config)
 
     def _create_resource_group(self, azure_client):
         new_address = azure_client.allocate_address(domain=None)
