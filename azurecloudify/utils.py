@@ -173,6 +173,7 @@ def write_target_runtime_properties_to_file(required_keys, prefixed_keys=None, n
         with open(current_runtime_file_path, 'a') as f:
             for curr_runtime_property in ctx.target.instance.runtime_properties:
                 orig_runtime_property = curr_runtime_property
+                ctx.logger.info("orig_runtime_property is {0}".format(orig_runtime_property))
                 if required_keys and curr_runtime_property in required_keys:
                     if need_suffix and (curr_runtime_property in need_suffix):
                         curr_runtime_property = "{0}{1}{2}".format(curr_runtime_property, ctx.source.node.id, ctx.source.instance.id)
