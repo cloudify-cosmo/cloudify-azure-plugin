@@ -13,6 +13,11 @@ node_types:
     properties:
       azure_config:
         default: {}
+      use_external_resource:
+        description: >
+          Indicates whether to use external resource or not. Default value is false
+        type: boolean
+        default: false
       existing_resource_group_name:
         description: >
          Indicates the name of existing resource group
@@ -346,7 +351,7 @@ node_types:
     derived_from: cloudify.nodes.Network
     properties:
       azure_config:
-        default: {}	
+        default: {}
       use_external_resource:
         description: >
          Indicates whether to use external resource or not. Default value is false
