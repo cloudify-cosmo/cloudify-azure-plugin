@@ -12,6 +12,9 @@ import utils
 
 
 @operation
+def initialize(use_client_file=True, start_retry_interval=30, **kwargs):
+    generate_token(use_client_file=True, start_retry_interval=30, **kwargs)
+
 def generate_token(use_client_file=True, start_retry_interval=30, **kwargs):
     endpoints, payload = _get_payload_endpoints()
     token, token_expires = _get_token_value_expiry(endpoints, payload)

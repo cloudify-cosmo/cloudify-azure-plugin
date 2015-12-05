@@ -147,3 +147,6 @@ RELATIONSHIP_INSTANCE = 'relationship-instance'
 
 RESOURCE_NOT_DELETED = "RESOURCE_NOT_DELETED"
 
+REQUIRED_CONFIG_INPUTS = ["client_id" , "aad_password", "tenant_id" ,
+                          "location" , "grant_type", "subscription_id", "application_id"]
+
