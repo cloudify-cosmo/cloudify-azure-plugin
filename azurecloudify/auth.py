@@ -13,6 +13,10 @@ import utils
 
 @operation
 def initialize(use_client_file=True, start_retry_interval=30, **kwargs):
+    subscription_id = utils.get_value_from_node('subscription_id', True)
+    ctx.logger.info("initialize: {0} is {1}".format('subscription_id', subscription_id))
+    location = utils.get_value_from_node('location', True)
+    ctx.logger.info("initialize: {0} is {1}".format('location', location))
     generate_token(use_client_file=True, start_retry_interval=30, **kwargs)
 
 
