@@ -649,8 +649,6 @@ node_templates:
         type: cloudify.azure.relationships.server_connected_to_storage_account
       - target: manager_resource_group
         type: cloudify.relationships.contained_in
-      - target: azure_token
-        type: cloudify.azure.relationships.resource_depends_on_azure_token
 
 
   manager_resource_group:
@@ -673,8 +671,6 @@ node_templates:
     relationships:
       - target: manager_resource_group
         type: cloudify.azure.relationships.storage_account_contained_in_resource_group
-      - target: azure_token
-        type: cloudify.azure.relationships.resource_depends_on_azure_token
         
   manager_data_disk:
     type: cloudify.azure.nodes.DataDisk
@@ -684,8 +680,6 @@ node_templates:
     relationships:
       - target: manager_storage_account
         type: cloudify.azure.relationships.datadisk_contained_in_storage_account
-      - target: azure_token
-        type: cloudify.azure.relationships.resource_depends_on_azure_token
 
   manager_public_ip:
     type: cloudify.azure.nodes.PublicIP
@@ -698,8 +692,6 @@ node_templates:
         type: cloudify.azure.relationships.public_ip_connected_to_vnet
       - target: manager_resource_group
         type: cloudify.relationships.contained_in
-      - target: azure_token
-        type: cloudify.azure.relationships.resource_depends_on_azure_token
 
   manager_custom_script:
     type: cloudify.azure.nodes.CustomScript
@@ -711,8 +703,6 @@ node_templates:
     relationships:
       - target: manager_host
         type: cloudify.azure.relationships.custom_script_contained_in_server
-      - target: azure_token
-        type: cloudify.azure.relationships.resource_depends_on_azure_token
 
   manager_nic:
     type: cloudify.azure.nodes.NIC
@@ -725,8 +715,6 @@ node_templates:
         type: cloudify.azure.relationships.nic_connected_to_public_ip
       - target: manager_resource_group
         type: cloudify.relationships.contained_in
-      - target: azure_token
-        type: cloudify.azure.relationships.resource_depends_on_azure_token
 
   manager_security_group:
     type: cloudify.azure.nodes.SecurityGroup
@@ -770,8 +758,6 @@ node_templates:
     relationships:
       - target: manager_resource_group
         type: cloudify.azure.relationships.security_group_contained_in_resource_group
-      - target: azure_token
-        type: cloudify.azure.relationships.resource_depends_on_azure_token
 
   manager_subnet:
     type: cloudify.azure.nodes.Subnet
@@ -784,8 +770,6 @@ node_templates:
         type: cloudify.azure.relationships.subnet_contained_in_resource_group
       - target: manager_security_group
         type: cloudify.azure.relationships.subnet_connected_to_security_group
-      - target: azure_token
-        type: cloudify.azure.relationships.resource_depends_on_azure_token
 
   manager_vnet:
     type: cloudify.azure.nodes.VNET
@@ -798,8 +782,6 @@ node_templates:
         type: cloudify.azure.relationships.vnet_contained_in_resource_group
       - target: manager_subnet
         type: cloudify.azure.relationships.vnet_connected_to_subnet
-      - target: azure_token
-        type: cloudify.azure.relationships.resource_depends_on_azure_token
       
   azure_token:
     type: cloudify.azure.nodes.azure_token
