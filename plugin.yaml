@@ -638,7 +638,7 @@ node_types:
   cloudify.azure.nodes.azure_token:
     derived_from: cloudify.nodes.Root
     properties:
-     subscription_id:
+      subscription_id:
         description: >
           Indicates the subscription id required to create virtual network.
         type: string
@@ -647,7 +647,7 @@ node_types:
         description: >
          location where VM will be provisioned
         type: string
-        default: 'West US'	
+        default: 'West US'
       client_id:
         description: >
           Indicates the user's client id
@@ -668,11 +668,21 @@ node_types:
           Indicates the name of Azure application id
         type: string
         default: ''
+      username:
+        description: >
+          Indicates the Azure account username
+        type: string
+        default: ''
+      password:
+        description: >
+          Indicates the Azure account password
+        type: string
+        default: ''
       grant_type:
         description: >
-          Indicates the grant_type: client_credentials (with aad_password) or password (with aaplication id)
+          Indicates the grant_type: 'client_credentials' (with aad_password) or 'password' (with aaplication_id)
         type: string
-        default: 'client_credentials'			
+        default: 'client_credentials'
 
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -854,7 +864,7 @@ relationships:
     target_interfaces:
       cloudify.interfaces.relationship_lifecycle:
         preconfigure:
-          implementation: microsoft.azurecloudify.auth.set_auth_token
+          implementation: microsoft.azurecloudify.auth.set_azure_config
           inputs:
             azure_config:
               default: {}

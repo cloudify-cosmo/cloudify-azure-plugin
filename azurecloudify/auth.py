@@ -98,23 +98,38 @@ def get_auth_token(use_client_file=True, **kwargs):
 
 
 @operation
-def set_auth_token(azure_config, **kwargs):
-    # This method invoked only during bootstrap (it's a relationship interface)
-    utils.write_target_runtime_properties_to_file([constants.AUTH_TOKEN_VALUE, constants.AUTH_TOKEN_EXPIRY], prefixed_keys=None, need_suffix=None)
+def set_azure_config(azure_config, **kwargs):
+    utils.write_target_runtime_properties_to_file(constants.REQUIRED_CONFIG_DATA, prefixed_keys=None, need_suffix=None)
 
 
 def _get_payload_endpoints():
-    current_node = utils.get_node_or_source_node()
-    client_id = current_node.properties['client_id']
-    aad_password = current_node.properties['aad_password']
-    tenant_id = current_node.properties['tenant_id']
-    endpoints = constants.login_url+'/'+tenant_id+'/oauth2/token'
+
+    tenant_id = utils.get_value_from_node['tenant_id']
+
+    client_id = utils.get_value_from_node['client_id']
+    aad_password = utils.get_value_from_node['aad_password']
+
+    grant_type = utils.get_value_from_node['grant_type']
+
+    application_id = utils.get_value_from_node['application_id']
+    username = utils.get_value_from_node['username']
+    password = utils.get_value_from_node['password']
+
+    endpoints = "{0}/{1}/oauth2/token".format(constants.login_url, tenant_id)
+
     payload = {
-        'grant_type': 'client_credentials',
-        'client_id': client_id,
-        'client_secret': aad_password,
+        'grant_type': grant_type,
         'resource': constants.resource,
     }
+
+    if grant_type == constants.CLIENT_CRED_GRANT_TYPE:
+        payload['client_id'] = client_id
+        payload['client_secret'] = aad_password
+    else:
+        payload['client_id'] = application_id
+        payload['username'] = username
+        payload['password'] = password
+
     return endpoints, payload
 
 

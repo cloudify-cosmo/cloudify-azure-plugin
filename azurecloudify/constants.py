@@ -147,6 +147,9 @@ RELATIONSHIP_INSTANCE = 'relationship-instance'
 
 RESOURCE_NOT_DELETED = "RESOURCE_NOT_DELETED"
 
-REQUIRED_CONFIG_INPUTS = ["client_id" , "aad_password", "tenant_id" ,
+REQUIRED_CONFIG_DATA = [AUTH_TOKEN_VALUE, AUTH_TOKEN_EXPIRY, "client_id" , "aad_password", "tenant_id" ,
                           "location" , "grant_type", "subscription_id", "application_id"]
+
+CLIENT_CRED_GRANT_TYPE = 'client_credentials'
+PASSWORD_GRANT_TYPE = 'password'
 

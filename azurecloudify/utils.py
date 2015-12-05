@@ -253,3 +253,17 @@ def get_node_or_source_node():
     else:
         raise NonRecoverableError("ctx type is neither {0} nor {1}".format(constants.RELATIONSHIP_INSTANCE,
                                                                                constants.NODE_INSTANCE))
+
+def get_value_from_node(current_key):
+    current_node = get_node_or_source_node()
+    if 'azure_config' in current_node.properties:
+        current_azure_config = current_node.propertie['azure_config']
+        if current_key in current_azure_config:
+            return current_azure_config[current_key]
+
+    current_instance = get_instance_or_source_instance()
+    if current_key in current_instance.runtime_properties:
+            return current_instance.runtime_properties[current_key]
+
+    return None
+
