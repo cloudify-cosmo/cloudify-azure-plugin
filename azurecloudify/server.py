@@ -278,7 +278,6 @@ def _set_data_disk_json(vm_json, storage_account_name):
     data_disks = storage_profile[constants.DATA_DISKS]
     lun = 0
     for curr_key in ctx.instance.runtime_properties:
-        ctx.logger.info("_set_data_disk_json : curr_key is {0}".format(curr_key))
         if curr_key.startswith(constants.DATA_DISK_KEY):
             ctx.logger.info("_set_data_disk_json : disk key is {0}".format(curr_key))
             disk_name = ctx.instance.runtime_properties[curr_key]
