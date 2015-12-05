@@ -524,6 +524,53 @@ class StorageAccountUnitTests(AzureLocalTestUtils):
             
 class SubnetUnitTests(AzureLocalTestUtils):
 
+    def test_get_subnet_name(self):
+
+        ctx = self.mock_relationship_context(
+            'test_get_subnet')
+        current_ctx.set(ctx=ctx)
+
+        client = self._get_azure_client()
+        subnet_name = \
+            subnet.get_subnet_name()
+        self.addCleanup()
+        self.assertEqual(
+            )
+
+    def test_create_subnet(self):
+
+        ctx = self.mock_relationship_context(
+            'test_create_subnet')
+        current_ctx.set(ctx=ctx)
+
+        client = self._get_azure_client()
+        address_object = client.allocate_address()
+        self.addCleanup(address_object.delete)
+        address = storageaccount.create_storage_account()
+        "" What to write here""
+        self.assertEqual(address, address_object.public_ip)                      
+
+    def test_delete_storage_account(self):
+
+        ctx = self.mock_relationship_context(
+            'test_delete_storage_account')
+        current_ctx.set(ctx=ctx)
+        ctx.source.node.properties['use_external_resource'] = True
+        ctx.target.node.properties['use_external_resource'] = True
+        ctx.source.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = \
+            'storage_account_'
+
+        output = \
+            storageaccount.delete_storage_account()
+
+        self.assertEqual(True, output)
+        self.assertNotIn(
+            'storage_account_name',
+            ctx.source.instance.runtime_properties)
+
+
+class VnetUnitTests(AzureLocalTestUtils):
+
     def test_get_storage_account(self):
 
         ctx = self.mock_relationship_context(
@@ -568,7 +615,55 @@ class SubnetUnitTests(AzureLocalTestUtils):
             'storage_account_name',
             ctx.source.instance.runtime_properties)
 
-class VnetUnitTests(AzureLocalTestUtils):
+
+class PublicIPUnitTests(AzureLocalTestUtils):
+
+    def test_get_storage_account(self):
+
+        ctx = self.mock_relationship_context(
+            'test_get_storage_account')
+        current_ctx.set(ctx=ctx)
+
+        client = self._get_azure_client()
+        storage_account_name = \
+            storageaccount.get_storage_accounts()
+        self.addCleanup(address_object.delete)
+        self.assertEqual(
+            )
+
+    def test_create_storage_account(self):
+
+        ctx = self.mock_relationship_context(
+            'test_create_storage_account')
+        current_ctx.set(ctx=ctx)
+
+        client = self._get_azure_client()
+        address_object = client.allocate_address()
+        self.addCleanup(address_object.delete)
+        address = storageaccount.create_storage_account()
+        "" What to write here""
+        self.assertEqual(address, address_object.public_ip)                      
+
+    def test_delete_storage_account(self):
+
+        ctx = self.mock_relationship_context(
+            'test_delete_storage_account')
+        current_ctx.set(ctx=ctx)
+        ctx.source.node.properties['use_external_resource'] = True
+        ctx.target.node.properties['use_external_resource'] = True
+        ctx.source.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = \
+            'storage_account_'
+
+        output = \
+            storageaccount.delete_storage_account()
+
+        self.assertEqual(True, output)
+        self.assertNotIn(
+            'storage_account_name',
+            ctx.source.instance.runtime_properties)
+
+
+class NICUnitTests(AzureLocalTestUtils):
 
     def test_get_storage_account(self):
 
