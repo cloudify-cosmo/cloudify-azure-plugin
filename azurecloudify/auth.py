@@ -17,7 +17,7 @@ def initialize(use_client_file=True, start_retry_interval=30, **kwargs):
 
 
 def generate_token(use_client_file=True, start_retry_interval=30, **kwargs):
-    endpoints, payload = _get_payload_endpoints()
+    endpoints, payload = _get_payload_endpoints(True)
     token, token_expires = _get_token_value_expiry(endpoints, payload)
 
     try:
@@ -103,24 +103,24 @@ def set_azure_config(azure_config, **kwargs):
     utils.write_target_runtime_properties_to_file(constants.REQUIRED_CONFIG_DATA, prefixed_keys=None, need_suffix=None)
 
 
-def _get_payload_endpoints():
+def _get_payload_endpoints(store_in_runtime=False):
 
-    tenant_id = utils.get_value_from_node('tenant_id')
+    tenant_id = utils.get_value_from_node('tenant_id', store_in_runtime)
     ctx.logger.info("_get_payload_endpoints: {0} is {1}".format('tenant_id', tenant_id))
 
-    client_id = utils.get_value_from_node('client_id')
+    client_id = utils.get_value_from_node('client_id', store_in_runtime)
     ctx.logger.info("_get_payload_endpoints: {0} is {1}".format('client_id', client_id))
 
-    aad_password = utils.get_value_from_node('aad_password')
+    aad_password = utils.get_value_from_node('aad_password', store_in_runtime)
     ctx.logger.info("_get_payload_endpoints: {0} is {1}".format('aad_password', aad_password))
 
-    grant_type = utils.get_value_from_node('grant_type')
+    grant_type = utils.get_value_from_node('grant_type', store_in_runtime)
     ctx.logger.info("_get_payload_endpoints: {0} is {1}".format('grant_type', grant_type))
 
-    username = utils.get_value_from_node('username')
+    username = utils.get_value_from_node('username', store_in_runtime)
     ctx.logger.info("_get_payload_endpoints: {0} is {1}".format('username', username))
 
-    password = utils.get_value_from_node('password')
+    password = utils.get_value_from_node('password', store_in_runtime)
     ctx.logger.info("_get_payload_endpoints: {0} is {1}".format('password', password))
 
 
