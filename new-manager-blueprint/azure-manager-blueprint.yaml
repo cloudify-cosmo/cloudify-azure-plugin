@@ -638,12 +638,7 @@ node_templates:
       vm_prefix: { get_input: vm_prefix}      
       vm_size: { get_input: vm_size}
       key_data: { get_input: key_data}
-      subscription_id: { get_input: subscription_id}
-      location: { get_input: location }
-      client_id: { get_input: client_id}
-      tenant_id: { get_input: tenant_id}
       ssh_username: { get_input: ssh_user}
-      aad_password: { get_input: aad_password}    
       install_agent: false
     relationships:
       - target: manager_nic
@@ -661,11 +656,6 @@ node_templates:
   manager_resource_group:
     type: cloudify.azure.nodes.ResourceGroup
     properties:
-      location: { get_input: location}
-      subscription_id: { get_input: subscription_id}
-      client_id: { get_input: client_id}
-      tenant_id: { get_input: tenant_id}
-      aad_password: { get_input: aad_password}
       use_external_resource: { get_input: use_external_resource}
       existing_resource_group_name: { get_input: existing_resource_group_name}
 
@@ -677,11 +667,6 @@ node_templates:
   manager_storage_account:
     type: cloudify.azure.nodes.StorageAccount
     properties:
-      location: { get_input: location}
-      subscription_id: { get_input: subscription_id}
-      client_id: { get_input: client_id}
-      tenant_id: { get_input: tenant_id}
-      aad_password: { get_input: aad_password}
       use_external_resource: { get_input: use_external_resource}
       existing_storage_account_name: { get_input: existing_storage_account_name}
 
@@ -694,11 +679,6 @@ node_templates:
   manager_data_disk:
     type: cloudify.azure.nodes.DataDisk
     properties:
-      location: { get_input: location}
-      subscription_id: { get_input: subscription_id}
-      client_id: { get_input: client_id}
-      tenant_id: { get_input: tenant_id}
-      aad_password: { get_input: aad_password}
       data_disk_size_GB: { get_input: data_disk_size_GB}
 
     relationships:
@@ -710,11 +690,6 @@ node_templates:
   manager_public_ip:
     type: cloudify.azure.nodes.PublicIP
     properties:
-      location: { get_input: location}
-      subscription_id: { get_input: subscription_id}
-      client_id: { get_input: client_id}
-      tenant_id: { get_input: tenant_id}
-      aad_password: { get_input: aad_password}
       use_external_resource: { get_input: use_external_resource}
       existing_public_ip_name: { get_input: existing_public_ip_name}
 
@@ -729,11 +704,6 @@ node_templates:
   manager_custom_script:
     type: cloudify.azure.nodes.CustomScript
     properties:
-      location: { get_input: location}
-      subscription_id: { get_input: subscription_id}
-      client_id: { get_input: client_id}
-      tenant_id: { get_input: tenant_id}
-      aad_password: { get_input: aad_password}
       use_external_resource: { get_input: use_external_resource}
       custom_script_path: { get_input: custom_script_path}
       custom_script_command: { get_input: custom_script_command}
@@ -747,11 +717,6 @@ node_templates:
   manager_nic:
     type: cloudify.azure.nodes.NIC
     properties:
-      location: { get_input: location}
-      subscription_id: { get_input: subscription_id}
-      client_id: { get_input: client_id}
-      tenant_id: { get_input: tenant_id}
-      aad_password: { get_input: aad_password}
       use_external_resource: { get_input: use_external_resource}
       existing_nic_name: { get_input: existing_nic_name}
 
@@ -766,11 +731,6 @@ node_templates:
   manager_security_group:
     type: cloudify.azure.nodes.SecurityGroup
     properties:
-      location: { get_input: location}
-      subscription_id: { get_input: subscription_id}
-      client_id: { get_input: client_id}
-      tenant_id: { get_input: tenant_id}
-      aad_password: { get_input: aad_password}
       use_external_resource: { get_input: use_external_resource}
       existing_security_group_name: { get_input: existing_security_group_name}
       security_group_protocol: { get_input: security_group_protocol}
@@ -816,11 +776,6 @@ node_templates:
   manager_subnet:
     type: cloudify.azure.nodes.Subnet
     properties:
-      location: { get_input: location}
-      subscription_id: { get_input: subscription_id}
-      client_id: { get_input: client_id}
-      tenant_id: { get_input: tenant_id}
-      aad_password: { get_input: aad_password}
       use_external_resource: { get_input: use_external_resource}
       subnet: { get_input: subnet}
       
@@ -835,11 +790,6 @@ node_templates:
   manager_vnet:
     type: cloudify.azure.nodes.VNET
     properties:
-      location: { get_input: location}
-      subscription_id: { get_input: subscription_id}
-      client_id: { get_input: client_id}
-      tenant_id: { get_input: tenant_id}
-      aad_password: { get_input: aad_password}
       use_external_resource: { get_input: use_external_resource}
       existing_vnet_name: { get_input: existing_vnet_name}
 
@@ -857,6 +807,8 @@ node_templates:
       client_id: { get_input: client_id }
       tenant_id: { get_input: tenant_id }
       aad_password: { get_input: aad_password }
+      subscription_id: { get_input: subscription_id}
+      location: { get_input: location }
 
   # #####################################################################
   # The Python and Java nodes are used to provide runtime environments
