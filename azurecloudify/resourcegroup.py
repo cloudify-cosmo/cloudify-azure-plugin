@@ -28,7 +28,7 @@ import azurerequests
 @operation
 def creation_validation(**_):
     for property_key in constants.RESOURCE_GROUP_REQUIRED_PROPERTIES:
-        _validate_node_properties(property_key, ctx.node.properties)
+        utils.validate_node_properties(property_key, ctx.node.properties)
 
 
 @operation
@@ -90,11 +90,6 @@ def delete_current_resource_group(start_retry_interval=30, **kwargs):
         ctx.logger.info("Resource Group {0} could not be deleted.".format(resource_group_name))
     return constants.FAILURE_CODE
 
-
-def _validate_node_properties(key, ctx_node_properties):
-    if key not in ctx_node_properties:
-        raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
-        
 
 def _get_resource_group_name(resource_group_name):
     ctx.logger.info("In _get_resource_group_name looking for {0}".format(resource_group_name))

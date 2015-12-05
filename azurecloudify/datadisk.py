@@ -29,7 +29,7 @@ from cloudify.decorators import operation
 @operation
 def creation_validation(**_):
     for property_key in constants.DISK_REQUIRED_PROPERTIES:
-        _validate_node_properties(property_key, ctx.node.properties)
+        utils.validate_node_properties(property_key, ctx.node.properties)
 
 
 @operation
@@ -57,11 +57,6 @@ def delete_disk(**_):
 @operation
 def set_storageaccount_details(azure_config, **kwargs):
     utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY, constants.STORAGE_ACCOUNT_KEY])
-
-
-def _validate_node_properties(key, ctx_node_properties):
-    if key not in ctx_node_properties:
-        raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
 
 
 

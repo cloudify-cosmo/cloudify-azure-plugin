@@ -18,8 +18,6 @@ import constants
 import sys
 import os
 import auth
-from resourcegroup import *
-import subnet
 import utils
 from cloudify.exceptions import NonRecoverableError, RecoverableError
 from cloudify import ctx
@@ -29,7 +27,7 @@ from cloudify.decorators import operation
 @operation
 def creation_validation(**_):
     for property_key in constants.VNET_REQUIRED_PROPERTIES:
-        _validate_node_properties(property_key, ctx.node.properties)
+        utils.validate_node_properties(property_key, ctx.node.properties)
 
 
 @operation
@@ -104,11 +102,6 @@ def set_security_group_details(azure_config, **kwargs):
 @operation
 def set_subnet_details(azure_config, **kwargs):
     utils.write_target_runtime_properties_to_file([constants.SECURITY_GROUP_KEY], [constants.SUBNET_KEY])
-
-
-def _validate_node_properties(key, ctx_node_properties):
-    if key not in ctx_node_properties:
-        raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
 
 
 def _get_vnet_name(vnet_name):

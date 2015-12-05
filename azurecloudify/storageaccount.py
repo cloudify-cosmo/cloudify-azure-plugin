@@ -19,7 +19,7 @@ import json
 import constants
 import sys
 import os
-from cloudify.exceptions import NonRecoverableError, RecoverableError
+from cloudify.exceptions import RecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation
 import utils
@@ -30,7 +30,7 @@ import azurerequests
 @operation
 def creation_validation(**_):
     for property_key in constants.STORAGE_ACCOUNT_REQUIRED_PROPERTIES:
-        _validate_node_properties(property_key, ctx.node.properties)
+        utils.validate_node_properties(property_key, ctx.node.properties)
 
 
 @operation
@@ -97,13 +97,6 @@ def delete_current_storage_account(start_retry_interval=30, **kwargs):
 @operation
 def set_dependent_resources_names(azure_config, **kwargs):
     utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY])
-
-
-def _validate_node_properties(key, ctx_node_properties):
-    if True:
-        return
-    if key not in ctx_node_properties:
-        raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
 
 
 def _get_storage_account_name(storage_account_name):

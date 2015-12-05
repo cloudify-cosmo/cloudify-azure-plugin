@@ -5,7 +5,7 @@ import sys
 import os
 import auth
 import utils
-from cloudify.exceptions import NonRecoverableError, RecoverableError
+from cloudify.exceptions import RecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation
 import azurerequests
@@ -14,7 +14,7 @@ import azurerequests
 @operation
 def creation_validation(**_):
     for property_key in constants.RESOURCE_GROUP_REQUIRED_PROPERTIES:
-        _validate_node_properties(property_key, ctx.node.properties)
+        utils.validate_node_properties(property_key, ctx.node.properties)
 
 
 @operation
@@ -86,11 +86,6 @@ def delete_current_security_group(start_retry_interval=30, **kwargs):
         ctx.logger.info("Security Group {0} could not be deleted.".format(security_group_name))
         
 
-def _validate_node_properties(key, ctx_node_properties):
-    if key not in ctx_node_properties:
-        raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
-        
-        
 def _get_security_group_name(security_group_name):  
     if constants.RESOURCE_GROUP_KEY in ctx.instance.runtime_properties:
         resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]

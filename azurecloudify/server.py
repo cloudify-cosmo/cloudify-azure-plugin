@@ -29,7 +29,7 @@ import azurerequests
 @operation
 def creation_validation(**_):
     for property_key in constants.VM_REQUIRED_PROPERTIES:
-        _validate_node_properties(property_key, ctx.node.properties)
+        utils.validate_node_properties(property_key, ctx.node.properties)
 
 
 @operation
@@ -159,11 +159,6 @@ def set_nic_details(azure_config, **kwargs):
 def set_data_disks(azure_config, **kwargs):
     # This should be per disk issue #31
     utils.write_target_runtime_properties_to_file(required_keys=None, prefixed_keys=[constants.DATA_DISK_SIZE_KEY, constants.DATA_DISK_KEY], need_suffix=None)
-
-
-def _validate_node_properties(key, ctx_node_properties):
-    if key not in ctx_node_properties:
-        raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
 
 
 def _set_private_ip(vm_name):
