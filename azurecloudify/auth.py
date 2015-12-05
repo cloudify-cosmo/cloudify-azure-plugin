@@ -15,6 +15,7 @@ import utils
 def initialize(use_client_file=True, start_retry_interval=30, **kwargs):
     generate_token(use_client_file=True, start_retry_interval=30, **kwargs)
 
+
 def generate_token(use_client_file=True, start_retry_interval=30, **kwargs):
     endpoints, payload = _get_payload_endpoints()
     token, token_expires = _get_token_value_expiry(endpoints, payload)
@@ -105,28 +106,35 @@ def set_azure_config(azure_config, **kwargs):
 def _get_payload_endpoints():
 
     tenant_id = utils.get_value_from_node('tenant_id')
+    ctx.logger.info("_get_payload_endpoints: {0} is {1}".format('tenant_id', tenant_id))
 
     client_id = utils.get_value_from_node('client_id')
+    ctx.logger.info("_get_payload_endpoints: {0} is {1}".format('client_id', client_id))
+
     aad_password = utils.get_value_from_node('aad_password')
+    ctx.logger.info("_get_payload_endpoints: {0} is {1}".format('aad_password', aad_password))
 
     grant_type = utils.get_value_from_node('grant_type')
+    ctx.logger.info("_get_payload_endpoints: {0} is {1}".format('grant_type', grant_type))
 
-    application_id = utils.get_value_from_node('application_id')
     username = utils.get_value_from_node('username')
+    ctx.logger.info("_get_payload_endpoints: {0} is {1}".format('username', username))
+
     password = utils.get_value_from_node('password')
+    ctx.logger.info("_get_payload_endpoints: {0} is {1}".format('password', password))
+
 
     endpoints = "{0}/{1}/oauth2/token".format(constants.login_url, tenant_id)
 
     payload = {
         'grant_type': grant_type,
         'resource': constants.resource,
+        'client_id' :client_id
     }
 
     if grant_type == constants.CLIENT_CRED_GRANT_TYPE:
-        payload['client_id'] = client_id
         payload['client_secret'] = aad_password
     else:
-        payload['client_id'] = application_id
         payload['username'] = username
         payload['password'] = password
 
