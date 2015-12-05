@@ -118,8 +118,6 @@ node_templates:
         type: cloudify.azure.relationships.server_connected_to_nic
       - target: nodecellar_storage_account
         type: cloudify.azure.relationships.server_connected_to_storage_account
-      - target: azure_token
-        type: cloudify.azure.relationships.resource_depends_on_azure_token
       - target: nodecellar_resource_group
         type: cloudify.azure.relationships.resource_contained_in_resource_group
 
@@ -130,19 +128,12 @@ node_templates:
         type: cloudify.azure.relationships.server_connected_to_nic
       - target: nodecellar_storage_account
         type: cloudify.azure.relationships.server_connected_to_storage_account
-      - target: azure_token
-        type: cloudify.azure.relationships.resource_depends_on_azure_token
       - target: nodecellar_resource_group
         type: cloudify.azure.relationships.resource_contained_in_resource_group
 
   nodecellar_resource_group:
     type: cloudify.azure.nodes.ResourceGroup
     properties:
-      location: { get_input: location}
-      subscription_id: { get_input: subscription_id}
-      client_id: { get_input: client_id}
-      tenant_id: { get_input: tenant_id}
-      aad_password: { get_input: aad_password}
       use_external_resource: true
       existing_resource_group_name: { get_input: existing_resource_group_name}
       
@@ -153,109 +144,68 @@ node_templates:
   nodecellar_storage_account:
     type: cloudify.azure.nodes.StorageAccount
     properties:
-      location: { get_input: location}
-      subscription_id: { get_input: subscription_id}
-      client_id: { get_input: client_id}
-      tenant_id: { get_input: tenant_id}
-      aad_password: { get_input: aad_password}
       use_external_resource: true
       existing_storage_account_name: { get_input: existing_storage_account_name}
       
     relationships:
       - target: nodecellar_resource_group
         type: cloudify.azure.relationships.storage_account_contained_in_resource_group
-      - target: azure_token
-        type: cloudify.azure.relationships.resource_depends_on_azure_token
+
 
   nodejs_public_ip:
     type: cloudify.azure.nodes.PublicIP
     properties:
-      location: { get_input: location}
-      subscription_id: { get_input: subscription_id}
-      client_id: { get_input: client_id}
-      tenant_id: { get_input: tenant_id}
-      aad_password: { get_input: aad_password}
       use_external_resource: { get_input: use_external_resource}
       existing_public_ip_name: { get_input: existing_public_ip_name}
       
     relationships:
       - target: nodecellar_vnet
         type: cloudify.azure.relationships.public_ip_connected_to_vnet
-      - target: azure_token
-        type: cloudify.azure.relationships.resource_depends_on_azure_token
       - target: nodecellar_resource_group
         type: cloudify.azure.relationships.resource_contained_in_resource_group
 
   nodejs_nic:
     type: cloudify.azure.nodes.NIC
     properties:
-      location: { get_input: location}
-      subscription_id: { get_input: subscription_id}
-      client_id: { get_input: client_id}
-      tenant_id: { get_input: tenant_id}
-      aad_password: { get_input: aad_password}
       use_external_resource: { get_input: use_external_resource}
       existing_nic_name: { get_input: existing_nic_name}
       
     relationships:
       - target: nodejs_public_ip
         type: cloudify.azure.relationships.nic_connected_to_public_ip
-      - target: azure_token
-        type: cloudify.azure.relationships.resource_depends_on_azure_token
       - target: nodecellar_resource_group
         type: cloudify.azure.relationships.resource_contained_in_resource_group
 
   mongod_nic:
     type: cloudify.azure.nodes.NIC
     properties:
-      location: { get_input: location}
-      subscription_id: { get_input: subscription_id}
-      client_id: { get_input: client_id}
-      tenant_id: { get_input: tenant_id}
-      aad_password: { get_input: aad_password}
       use_external_resource: { get_input: use_external_resource}
       existing_nic_name: { get_input: existing_nic_name}
       
     relationships:
       - target: nodecellar_vnet
         type: cloudify.azure.relationships.nic_connected_to_vnet
-      - target: azure_token
-        type: cloudify.azure.relationships.resource_depends_on_azure_token
       - target: nodecellar_resource_group
         type: cloudify.azure.relationships.resource_contained_in_resource_group
 
   nodecellar_subnet:
     type: cloudify.azure.nodes.Subnet
     properties:
-      location: { get_input: location}
-      subscription_id: { get_input: subscription_id}
-      client_id: { get_input: client_id}
-      tenant_id: { get_input: tenant_id}
-      aad_password: { get_input: aad_password}
       use_external_resource: true
       subnet: { get_input: subnet}
 
     relationships:
       - target: nodecellar_resource_group
         type: cloudify.azure.relationships.subnet_contained_in_resource_group
-      - target: azure_token
-        type: cloudify.azure.relationships.resource_depends_on_azure_token
 
 
   nodecellar_vnet:
     type: cloudify.azure.nodes.VNET
     properties:
-      location: { get_input: location}
-      subscription_id: { get_input: subscription_id}
-      client_id: { get_input: client_id}
-      tenant_id: { get_input: tenant_id}
-      aad_password: { get_input: aad_password}
       use_external_resource: true
       existing_vnet_name: { get_input: existing_vnet_name}
 
     relationships:
-      - target: azure_token
-        type: cloudify.azure.relationships.resource_depends_on_azure_token
       - target: nodecellar_subnet
         type: cloudify.azure.relationships.vnet_connected_to_subnet
       - target: nodecellar_resource_group
@@ -267,6 +217,8 @@ node_templates:
       client_id: { get_input: client_id }
       tenant_id: { get_input: tenant_id }
       aad_password: { get_input: aad_password }
+      subscription_id: { get_input: subscription_id}
+      location: { get_input: location }
 
   mongod:
     type: nodecellar.nodes.MonitoredMongoDatabase
