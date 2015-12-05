@@ -212,6 +212,74 @@ class TestWorkflowClean(AzureLocalTestUtils):
         self.assertIn('terminated', instance_state)
 
 
+class AzureResourceGroupUnitTests(AzureLocalTestUtils):
+
+    def test_get_resource_groups(self):
+
+        ctx = self.mock_cloudify_context(
+            'test_get_resource_groups')
+        current_ctx.set(ctx=ctx)
+
+        client = self._get_azure_client()
+        groups_from_test = client.get_resource_groups()
+
+        groups_from_plugin = resourcegroup.get_resource_groups()
+
+        self.assertEqual(len(groups_from_test), len(groups_from_plugin))
+
+    def test_get_resource_groups_not_found(self):
+
+        ctx = self.mock_cloudify_context(
+            'test_get_resource_groups_not_found')
+        current_ctx.set(ctx=ctx)
+
+        not_found_names = ['test_get_resource_groups_not_found']
+
+        groups_from_plugin = resourcegroup.get_resource_groups(
+            list_of_group_names=not_found_names)
+
+        self.assertIsNone(groups_from_plugin)
+        
+        
+    def test_delete_resource_group(self):
+
+        ctx = self.mock_cloudify_context(
+            'test_delete_resource_group')
+        current_ctx.set(ctx=ctx)
+
+        ctx.node.properties['use_external_resource'] = True
+        ctx.instance.runtime_properties[RESOURCE_GROUP_KEY] = \
+            'rg-1234'
+
+        output = resourcegroup.delete_resource_group()
+        self.assertEqual(True, output)
+        self.assertNotIn(
+            RESOURCE_GROUP_KEY, ctx.instance.runtime_properties)
+
+    def test_create_resource_group(self):
+
+        ctx = self.mock_cloudify_context(
+            'test_create_resource_group')
+        current_ctx.set(ctx=ctx)
+
+        client = self._get_azure_client()
+        group = client.create_resource_group(
+            'test_create_resource_group',
+            'some description')
+        self.addCleanup(group.delete)
+        ctx.node.properties['use_external_resource'] = True
+       
+        output = resourcegroup.create_resource_group()
+        self.assertEqual(True, output)
+        self.assertEqual(
+            ctx.instance.runtime_properties[RESOURCE_GROUP_KEY])
+
+        client = self._get_azure_client()
+        group = client.create_resource_group(
+            'test_create_resource_group')
+        self.addCleanup(group.delete)
+
+
 class AzureSecurityGroupUnitTests(AzureLocalTestUtils):
 
     def test_get_all_security_groups(self):
@@ -533,7 +601,7 @@ class AzureElasticIPUnitTests(EC2LocalTestUtils):
             elasticip._allocate_external_elasticip()
 
 
-class AzureInstanceUnitTests(AzureLocalTestUtils):
+class AzureServerUnitTests(AzureLocalTestUtils):
 
     def test_instance_invalid_ami(self):
         ctx = self.mock_cloudify_context(
