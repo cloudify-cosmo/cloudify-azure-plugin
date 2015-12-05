@@ -11,39 +11,11 @@ node_types:
   cloudify.azure.nodes.ResourceGroup:
     derived_from: cloudify.nodes.Root
     properties:
-      use_external_resource:
-        description: >
-          Indicates whether to use external resource or not. Default value is false
-        type: boolean
-        default: false
-      subscription_id:
-        description: >
-          Indicates the subscription id required to create resource group
-        type: string
-        default: ''
-      location:
-        description: >
-         location where VM will be provisioned
-        type: string
-        default: 'West US'
+      azure_config:
+        default: {}
       existing_resource_group_name:
         description: >
-         Indicates the name of exsisting resource group
-        type: string
-        default: ''
-      client_id:
-        description: >
-          Indicates the user's client id
-        type: string
-        default: ''
-      tenant_id:
-        description: >
-          Indicates the user's tenant id
-        type: string
-        default: ''
-      aad_password:
-        description: >
-          Indicates the name of the virtual machine required to create resource group
+         Indicates the name of existing resource group
         type: string
         default: ''
       
@@ -69,34 +41,9 @@ node_types:
           Indicates whether to use external resource or not. Default value is false
         type: boolean
         default: false
-      subscription_id:
-        description: >
-          Indicates the subscription id required to create resource group
-        type: string
-        default: ''
-      location:
-        description: >
-         location where VM will be provisioned
-        type: string
-        default: 'West US'
       existing_security_group_name:
         description: >
          Indicates the name of exsisting network security group
-        type: string
-        default: ''
-      client_id:
-        description: >
-          Indicates the user's client id
-        type: string
-        default: ''
-      tenant_id:
-        description: >
-          Indicates the user's tenant id
-        type: string
-        default: ''
-      aad_password:
-        description: >
-          Indicates the name of the virtual machine required to create network security group
         type: string
         default: ''
       security_group_protocol:
@@ -141,9 +88,7 @@ node_types:
         default: '*'
       rules:
        default: []
-       
-      
-      
+
     interfaces:
       cloudify.interfaces.lifecycle:
         configure: microsoft.azurecloudify.securitygroup.create_security_group
@@ -161,16 +106,8 @@ node_types:
   cloudify.azure.nodes.Server:
     derived_from: cloudify.nodes.Compute
     properties:
-      location:
-        description: >
-          Indicates the location where VM will be provisioned
-        type: string
-        default: 'West US'
-      subscription_id:
-        description: >
-          Indicates the subscription id of user account
-        type: string
-        default: ''
+      azure_config:
+        default: {}
       vm_prefix:
         description: >
           Indicates the prefix of the VM's name
@@ -199,22 +136,7 @@ node_types:
            Indicates the ssh public-key data of the user
         type: string
         default: ''
-      client_id:
-        description: >
-          Indicates the user's client id
-        type: string
-        default: ''
-      tenant_id:
-        description: >
-          Indicates the user's tenant id
-        type: string
-        default: ''
       ssh_username:
-        description: >
-          Indicates the name of the virtual machine required to create network interface card
-        type: string
-        default: ''
-      aad_password:
         description: >
           Indicates the name of the virtual machine required to create network interface card
         type: string
@@ -277,39 +199,16 @@ node_types:
   cloudify.azure.nodes.PublicIP:
     derived_from: cloudify.nodes.VirtualIP
     properties:
+      azure_config:
+        default: {}
       use_external_resource:
         description: >
          Indicates whether to use external resource or not. Default value is false
         type: boolean
         default: false
-      subscription_id:
-        description: >
-          Indicates the subscription id required to create public ip address.
-        type: string
-        default: ''
-      location:
-        description: >
-         location where VM will be provisioned
-        type: string
-        default: 'West US'
       existing_public_ip_name:
         description: >
          Indicates the name of existing public ip
-        type: string
-        default: ''
-      client_id:
-        description: >
-          Indicates the user's client id
-        type: string
-        default: ''
-      tenant_id:
-        description: >
-          Indicates the user's tenant id
-        type: string
-        default: ''
-      aad_password:
-        description: >
-          Indicates the name of the virtual machine required to create network interface card
         type: string
         default: ''
 
@@ -330,36 +229,13 @@ node_types:
   cloudify.azure.nodes.CustomScript:
     derived_from: cloudify.nodes.Root
     properties:
+      azure_config:
+        default: {}
       use_external_resource:
         description: >
          Indicates whether to use external resource or not. Default value is false
         type: boolean
         default: false
-      subscription_id:
-        description: >
-          Indicates the subscription id required to create public ip address.
-        type: string
-        default: ''
-      location:
-        description: >
-         location where VM will be provisioned
-        type: string
-        default: 'West US'
-      client_id:
-        description: >
-          Indicates the user's client id
-        type: string
-        default: ''
-      tenant_id:
-        description: >
-          Indicates the user's tenant id
-        type: string
-        default: ''
-      aad_password:
-        description: >
-          Indicates the name of the virtual machine required to create network interface card
-        type: string
-        default: ''
       custom_script_path:
         description: >
           Indicates the url/path of the file to be run as the custom script on the vm
@@ -387,36 +263,13 @@ node_types:
   cloudify.azure.nodes.DataDisk:
     derived_from: cloudify.nodes.Root
     properties:
+      azure_config:
+        default: {}
       use_external_resource:
         description: >
          Indicates whether to use external resource or not. Default value is false
         type: boolean
         default: false
-      subscription_id:
-        description: >
-          Indicates the subscription id required to create public ip address.
-        type: string
-        default: ''
-      location:
-        description: >
-         location where VM will be provisioned
-        type: string
-        default: 'West US'
-      client_id:
-        description: >
-          Indicates the user's client id
-        type: string
-        default: ''
-      tenant_id:
-        description: >
-          Indicates the user's tenant id
-        type: string
-        default: ''
-      aad_password:
-        description: >
-          Indicates the name of the virtual machine required to create network interface card
-        type: string
-        default: ''
       data_disk_size_GB:
         description: >
           Storage capacity of external disk (optional) in GBs
@@ -432,39 +285,16 @@ node_types:
   cloudify.azure.nodes.StorageAccount:
     derived_from: cloudify.nodes.Root
     properties:
+      azure_config:
+        default: {}
       use_external_resource:
         description: >
          Indicates whether to use external resource or not. Default value is false
         type: boolean
         default: false
-      subscription_id:
-        description: >
-         Indicates the subscription id required to create public ip address.
-        type: string
-        default: ''
-      location:
-        description: >
-         location where VM will be provisioned
-        type: string
-        default: 'West US'
       existing_storage_account_name:
         description: >
          Indicates the name of existing storage account
-        type: string
-        default: ''
-      client_id:
-        description: >
-          Indicates the user's client id
-        type: string
-        default: ''
-      tenant_id:
-        description: >
-          Indicates the user's tenant id
-        type: string
-        default: ''
-      aad_password:
-        description: >
-          Indicates the name of the virtual machine required to create network interface card
         type: string
         default: ''
 
@@ -485,39 +315,16 @@ node_types:
   cloudify.azure.nodes.NIC:
     derived_from: cloudify.nodes.Port
     properties:
+      azure_config:
+        default: {}
       use_external_resource:
         description: >
          Indicates whether to use external resource or not. Default value is false
         type: boolean
         default: false
-      subscription_id:
-        description: >
-          Indicates the subscription id required to create network interface card. 
-        type: string
-        default: ''
-      location:
-        description: >
-         location where VM will be provisioned
-        type: string
-        default: 'West US'
       existing_nic_name:
         description: >
          Indicates the name of existing network interface card
-        type: string
-        default: ''
-      client_id:
-        description: >
-         Indicates the user's client id
-        type: string
-        default: ''
-      tenant_id:
-        description: >
-          Indicates the user's tenant id
-        type: string
-        default: ''
-      aad_password:
-        description: >
-          Indicates the name of the virtual machine required to create network interface card
         type: string
         default: ''
 
@@ -538,42 +345,13 @@ node_types:
   cloudify.azure.nodes.VNET:
     derived_from: cloudify.nodes.Network
     properties:
+      azure_config:
+        default: {}	
       use_external_resource:
         description: >
          Indicates whether to use external resource or not. Default value is false
         type: boolean
         default: false
-      subscription_id:
-        description: >
-          Indicates the subscription id required to create virtual network.
-        type: string
-        default: ''
-      location:
-        description: >
-         location where VM will be provisioned
-        type: string
-        default: 'West US'
-      existing_vnet_name:
-        description: >
-         Indicates the name of exsisting virtual network
-        type: string
-        default: ''
-      client_id:
-        description: >
-          Indicates the user's client id
-        type: string
-        default: ''
-      tenant_id:
-        description: >
-          Indicates the user's tenant id
-        type: string
-        default: ''
-      aad_password:
-        description: >
-          Indicates the name of the virtual machine required to create network interface card
-        type: string
-        default: ''
-
 
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -592,39 +370,16 @@ node_types:
   cloudify.azure.nodes.Subnet:
     derived_from: cloudify.nodes.Subnet
     properties:
+      azure_config:
+        default: {}
       use_external_resource:
         description: >
          Indicates whether to use external resource or not. Default value is false
         type: boolean
         default: false
-      subscription_id:
-        description: >
-          Indicates the subscription id required to create virtual network.
-        type: string
-        default: ''
-      location:
-        description: >
-         location where VM will be provisioned
-        type: string
-        default: 'West US'
       subnet:
         description: >
          Indicates the name of exsisting virtual subnet
-        type: string
-        default: ''
-      client_id:
-        description: >
-          Indicates the user's client id
-        type: string
-        default: ''
-      tenant_id:
-        description: >
-          Indicates the user's tenant id
-        type: string
-        default: ''
-      aad_password:
-        description: >
-          Indicates the name of the virtual machine required to create network interface card
         type: string
         default: ''
 
