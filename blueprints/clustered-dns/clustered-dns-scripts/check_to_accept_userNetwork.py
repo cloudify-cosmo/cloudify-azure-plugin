@@ -8,8 +8,7 @@ from cloudify.decorators import operation
 error_message="\nPlease enter a valid PRIVATE IP-ADDRESS network\nPrivate networks can use IP addresses anywhere in the following ranges: \n192.168.0.0 - 192.168.255.255 (65,536 IP addresses) \n172.16.0.0 - 172.31.255.255 (1,048,576 IP addresses) \n10.0.0.0 - 10.255.255.255 (16,777,216 IP addresses)\n"
 correct_message="\nNetwork accepted\n"
 
-def network_check(argv[1])
-	user_network= argv[1]
+def network_check(user_network):
 	ip = IPNetwork(user_network)
 	octate = user_network.split(".")
 	network_valid=0

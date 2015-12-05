@@ -8,12 +8,8 @@ zone_files_path="/etc/bind/zones"
 curlybrace1="{"
 curlybrace2="}"
 
-def add_forward_record():
-	host_name_to_be_added= sys.argv[1]
-	ip_address_to_be_added= sys.argv[2]
-	domain_name= sys.argv[3]
+def add_forward_record(host_name_to_be_added, ip_address_to_be_added, domain_name):
 	record_valid=1
-	
 	os.chdir("/root")
 	network_address_file= open("user_network_address", 'r')
 	network_address=network_address_file.read()       
@@ -45,9 +41,7 @@ def add_forward_record():
 	else:
 		print ("\nSorry, cannot accept this record! \nPlease enter an IP address within your entered zone! \nYour entered zone is: %s\n" % (IPNetwork(network_address))) 
 
-def add_reverse_record():
-	ip_address_to_be_added= sys.argv[1]
-	host_name_to_be_added= sys.argv[2]
+def add_reverse_record(ip_address_to_be_added,host_name_to_be_added):
 	record_valid=1
 	ip_valid=0
 	os.chdir("/root")
@@ -145,4 +139,5 @@ def remove_reverse_record():
 		print "\nThe record you wanted to remove is already absent in the database!\n"
 
 
-
+add_forward_record(argv[1],argv[2],argv[3])
+add_reverse_record(argv[2],argv[1])

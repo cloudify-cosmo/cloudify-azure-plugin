@@ -34,6 +34,8 @@ ssh_username: 'azuretest'
 aad_password: 'Maryland123!'
 key_data:  |
 nic_name: ''
+host_name_1: ''
+ip_address_1: ''
    ---- BEGIN SSH2 PUBLIC KEY ----
    Comment: "rsa-key-20150804"
 

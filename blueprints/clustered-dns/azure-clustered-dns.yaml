@@ -120,7 +120,15 @@ inputs:
     
   nic_name:
     type: string
-    default: ''  
+    default: '' 
+
+  host_name_1: 
+    type: string
+    default: ''
+
+  ip_address_1: 
+    type: string
+    default: ''
 
 node_templates:
 
@@ -155,17 +163,22 @@ node_templates:
     type: cloudify.azure.nodes.SoftwareComponent        
     interfaces:
        cloudify.interfaces.lifecycle:
-         create: clustered-dns-scripts/cloudify_dns/install.sh
+         create: clustered-dns-scripts/dns_install.sh
          configure:
-           implementation: clustered-dns-scripts/cloudify_dns/configure.py
+           implementation: clustered-dns-scripts/configure.py
            inputs:
              process:
                args: [{get_input: dns_server_domain_name}, {get_attribute: [dns_host, ip]}]
+         start: 
+           implementation: clustered-dns-scripts/tasks.py
+           inputs:
+             process:
+               args: [{get_input: host_name_1}, {get_input: ip_address_1}, {get_input: dns_server_domain_name}]
          stop: clustered-dns-scripts/cloudify_dns/dns_stop.sh
          delete: clustered-dns-scripts/cloudify_dns/dns_uninstall.sh
        cloudify.interfaces.validation:
          creation: 
-           implementation: clustered-dns-scripts/cloudify_dns/check_to_accept_user_network.py
+           implementation: clustered-dns-scripts/check_to_accept_user_network.py
            inputs: 
              process:
                args: [{get_input: dns_server_domain_network}]
@@ -203,10 +216,10 @@ node_templates:
     type: cloudify.azure.nodes.SoftwareComponent
     interfaces:
        cloudify.interfaces.lifecycle:
-         create: clustered-dns-scripts/cloudify_pen/pen_install.sh
-         start: clustered-dns-scripts/cloudify_pen/pen_start.py
-         stop: clustered-dns-scripts/cloudify_pen/pen_stop.py
-         delete: clustered-dns-scripts/cloudify_pen/pen_uninstall.py
+         create: cloudify_pen/pen_install.sh
+         start: cloudify_pen/pen_start.py
+         stop: cloudify_pen/pen_stop.py
+         delete: cloudify_pen/pen_uninstall.py
     relationships:
        type: pen_app_server_contained_in_pen_host
        target: pen_host

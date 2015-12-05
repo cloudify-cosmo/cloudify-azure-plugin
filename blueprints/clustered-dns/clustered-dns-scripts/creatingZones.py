@@ -7,9 +7,7 @@ from cloudify.decorators import operation
 zone_files_path="/etc/bind/zones"
 
 
-def creating_forward_zone(argv[1], argv[2]):
-	domain_name= argv[1]
-	ipaddr_nameServer= argv[2]
+def creating_forward_zone(domain_name, ipaddr_nameServer):
 	old_file="/etc/bind/db.local"
 	os.chdir(zone_files_path)
 	new_zone_file="{0}{1}".format("db.",domain_name)
@@ -43,8 +41,7 @@ def creating_forward_zone(argv[1], argv[2]):
 	print "\nThe forward zone is created and is now ready to accept your records!\nYou can add forward records any time!\n"
 
 
-def creating_reverse_zone(argv[1]):
-	domain_name= argv[1]
+def creating_reverse_zone(domain_name):
 	old_file="/etc/bind/db.127"
 	
 	old_file_content=open(old_file,'r')

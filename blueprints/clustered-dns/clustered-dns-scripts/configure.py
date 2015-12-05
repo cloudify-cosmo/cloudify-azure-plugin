@@ -16,8 +16,7 @@ def configure_ipv4_mode():
 	bind9_file_content.write("# run resolvconf? \nRESOLVCONF=no \n \n# startup options bind9_filer the server \nOPTIONS=\"-4 -u bind\"")
 	bind9_file_content.close
 
-def options_file_configure(argv[2]):	
-	ip_address_of_server=argv[2]
+def options_file_configure(ip_address_of_server):	
 	options_file="/etc/bind/named.conf.options"
 	options_file_content=open(options_file,'w')
 	options_file_content.write("\noptions %s \n\t directory \"/var/cache/bind\"; \n\t recursion yes; \t \t # enables resursive queries \n\t allow-recursion %s any; %s; \t \t # allows recursive queries from \"any\" clients \n\t allow-recursion-on %s any; %s; \n\t listen-on %s %s; %s; \n\t allow-transfer %s none; %s; \t\t # disable zone transfers by default \n \n \t forwarders %s \n \t \t \t 8.8.8.8; \n \t \t \t 8.8.4.4;\n \t%s;\n%s;" % (curlybrace1, curlybrace1,curlybrace2,curlybrace1,curlybrace2,curlybrace1,ip_address_of_server, curlybrace2,curlybrace1,curlybrace2, curlybrace1,curlybrace2, curlybrace2))
@@ -26,8 +25,7 @@ def options_file_configure(argv[2]):
 		subprocess.call('rm -rf /etc/bind/zones', shell=True)
 	os.mkdir(zone_files_directory)
 
-def local_file_configure(argv[1]):
-	domain_name= argv[1]
+def local_file_configure(domain_name):
 	reverse_zone_file_name,reverse_zone_name=reverseZone_name()
 	local_file_path="/etc/bind/named.conf.local"
 	local_file_path_content = open(local_file_path, 'w')
