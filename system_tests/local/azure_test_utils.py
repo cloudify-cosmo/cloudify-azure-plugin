@@ -40,10 +40,6 @@ SIMPLE_VNET = 'simple_subnet'
 SIMPLE_NIC = 'simple_nic'
 SIMPLE_PIP = 'simple_pip'
 SIMPLE_VM = 'simple_server'
-PAIR_A_PIP = 'pair_a_connected_elastic_ip'
-PAIR_A_VM = 'pair_a_connected_instance'
-PAIR_B_SG = 'pair_b_connected_security_group'
-PAIR_B_VM = 'pair_b_connected_instance'
 
 
 class AzureLocalTestUtils(TestCase):
