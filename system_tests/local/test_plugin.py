@@ -475,132 +475,147 @@ class AzureKeyPairUnitTests(AzureLocalTestUtils):
         self.assertEqual(kp.name, output.name)
 
 
-class AzureElasticIPUnitTests(EC2LocalTestUtils):
+class StorageAccountUnitTests(AzureLocalTestUtils):
 
-    def test_get_address_object_by_id(self):
+    def test_get_storage_account(self):
 
         ctx = self.mock_relationship_context(
-            'test_get_address_object_by_id')
+            'test_get_storage_account')
         current_ctx.set(ctx=ctx)
 
-        client = self._get_ec2_client()
-        address = client.allocate_address()
-        address_object = \
-            elasticip._get_address_object_by_id(address.public_ip)
+        client = self._get_azure_client()
+        storage_account_name = \
+            storageaccount.get_storage_accounts()
         self.addCleanup(address_object.delete)
         self.assertEqual(
-            address.public_ip, address_object.public_ip)
+            )
 
-    def test_get_address_by_id(self):
+    def test_create_storage_account(self):
 
         ctx = self.mock_relationship_context(
-            'test_get_address_by_id')
+            'test_create_storage_account')
         current_ctx.set(ctx=ctx)
 
-        client = self._get_ec2_client()
+        client = self._get_azure_client()
         address_object = client.allocate_address()
         self.addCleanup(address_object.delete)
-        address = elasticip._get_address_by_id(address_object.public_ip)
-        self.assertEqual(address, address_object.public_ip)
+        address = storageaccount.create_storage_account()
+        "" What to write here""
+        self.assertEqual(address, address_object.public_ip)                      
 
-    def test_disassociate_external_elasticip_or_instance_external(self):
+    def test_delete_storage_account(self):
 
         ctx = self.mock_relationship_context(
-            'test_disassociate_external_elasticip_or_instance_external')
+            'test_delete_storage_account')
         current_ctx.set(ctx=ctx)
         ctx.source.node.properties['use_external_resource'] = True
         ctx.target.node.properties['use_external_resource'] = True
-        ctx.source.instance.runtime_properties['public_ip_address'] = \
-            '127.0.0.1'
+        ctx.source.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = \
+            'storage_account_'
 
         output = \
-            elasticip._disassociate_external_elasticip_or_instance()
+            storageaccount.delete_storage_account()
 
         self.assertEqual(True, output)
         self.assertNotIn(
-            'public_ip_address',
+            'storage_account_name',
             ctx.source.instance.runtime_properties)
+            
+            
+class SubnetUnitTests(AzureLocalTestUtils):
 
-    def test_associate_external_elasticip_or_instance_external(self):
+    def test_get_storage_account(self):
 
         ctx = self.mock_relationship_context(
-            'test_associate_external_elasticip_or_instance_external')
+            'test_get_storage_account')
         current_ctx.set(ctx=ctx)
-        client = self._get_ec2_client()
+
+        client = self._get_azure_client()
+        storage_account_name = \
+            storageaccount.get_storage_accounts()
+        self.addCleanup(address_object.delete)
+        self.assertEqual(
+            )
+
+    def test_create_storage_account(self):
+
+        ctx = self.mock_relationship_context(
+            'test_create_storage_account')
+        current_ctx.set(ctx=ctx)
+
+        client = self._get_azure_client()
         address_object = client.allocate_address()
         self.addCleanup(address_object.delete)
+        address = storageaccount.create_storage_account()
+        "" What to write here""
+        self.assertEqual(address, address_object.public_ip)                      
 
+    def test_delete_storage_account(self):
+
+        ctx = self.mock_relationship_context(
+            'test_delete_storage_account')
+        current_ctx.set(ctx=ctx)
         ctx.source.node.properties['use_external_resource'] = True
         ctx.target.node.properties['use_external_resource'] = True
-        ctx.source.instance.runtime_properties['public_ip_address'] = \
-            '127.0.0.1'
+        ctx.source.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = \
+            'storage_account_'
 
         output = \
-            elasticip._associate_external_elasticip_or_instance(
-                address_object.public_ip)
-
-        self.assertEqual(True, output)
-
-        self.assertIn(
-            'public_ip_address',
-            ctx.source.instance.runtime_properties)
-        self.assertEqual(
-            address_object.public_ip,
-            ctx.source.instance.runtime_properties['public_ip_address'])
-
-    def test_release_external_elasticip_external(self):
-
-        ctx = self.mock_cloudify_context(
-            'test_release_external_elasticip')
-        current_ctx.set(ctx=ctx)
-        ctx.node.properties['use_external_resource'] = True
-        ctx.instance.runtime_properties[EXTERNAL_RESOURCE_ID] = \
-            '127.0.0.1'
-
-        output = \
-            elasticip._release_external_elasticip()
+            storageaccount.delete_storage_account()
 
         self.assertEqual(True, output)
         self.assertNotIn(
-            EXTERNAL_RESOURCE_ID,
-            ctx.instance.runtime_properties)
+            'storage_account_name',
+            ctx.source.instance.runtime_properties)
 
-    def test_allocate_external_elasticip_external(self):
+class VnetUnitTests(AzureLocalTestUtils):
 
-        ctx = self.mock_cloudify_context(
-            'test_allocate_external_elasticip_external')
+    def test_get_storage_account(self):
+
+        ctx = self.mock_relationship_context(
+            'test_get_storage_account')
         current_ctx.set(ctx=ctx)
-        client = self._get_ec2_client()
+
+        client = self._get_azure_client()
+        storage_account_name = \
+            storageaccount.get_storage_accounts()
+        self.addCleanup(address_object.delete)
+        self.assertEqual(
+            )
+
+    def test_create_storage_account(self):
+
+        ctx = self.mock_relationship_context(
+            'test_create_storage_account')
+        current_ctx.set(ctx=ctx)
+
+        client = self._get_azure_client()
         address_object = client.allocate_address()
         self.addCleanup(address_object.delete)
-        ctx.node.properties['use_external_resource'] = True
-        ctx.node.properties['resource_id'] = address_object.public_ip
+        address = storageaccount.create_storage_account()
+        "" What to write here""
+        self.assertEqual(address, address_object.public_ip)                      
+
+    def test_delete_storage_account(self):
+
+        ctx = self.mock_relationship_context(
+            'test_delete_storage_account')
+        current_ctx.set(ctx=ctx)
+        ctx.source.node.properties['use_external_resource'] = True
+        ctx.target.node.properties['use_external_resource'] = True
+        ctx.source.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY] = \
+            'storage_account_'
 
         output = \
-            elasticip._allocate_external_elasticip()
+            storageaccount.delete_storage_account()
 
         self.assertEqual(True, output)
-        self.assertIn(
-            EXTERNAL_RESOURCE_ID,
-            ctx.instance.runtime_properties)
-        self.assertEqual(
-            address_object.public_ip,
-            ctx.instance.runtime_properties[EXTERNAL_RESOURCE_ID])
-
-    def test_allocate_external_elasticip_external_bad_id(self):
-
-        ctx = self.mock_cloudify_context(
-            'test_allocate_external_elasticip_external')
-        current_ctx.set(ctx=ctx)
-        ctx.node.properties['use_external_resource'] = True
-        ctx.node.properties['resource_id'] = '127.0.0.1'
-
-        with self.assertRaisesRegexp(
-                NonRecoverableError,
-                'elasticip does not exist in the account'):
-            elasticip._allocate_external_elasticip()
+        self.assertNotIn(
+            'storage_account_name',
+            ctx.source.instance.runtime_properties)
 
 
+    
 class AzureServerUnitTests(AzureLocalTestUtils):
 
     def test_instance_invalid_ami(self):
