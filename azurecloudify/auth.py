@@ -104,16 +104,16 @@ def set_azure_config(azure_config, **kwargs):
 
 def _get_payload_endpoints():
 
-    tenant_id = utils.get_value_from_node['tenant_id']
+    tenant_id = utils.get_value_from_node('tenant_id')
 
-    client_id = utils.get_value_from_node['client_id']
-    aad_password = utils.get_value_from_node['aad_password']
+    client_id = utils.get_value_from_node('client_id')
+    aad_password = utils.get_value_from_node('aad_password')
 
-    grant_type = utils.get_value_from_node['grant_type']
+    grant_type = utils.get_value_from_node('grant_type')
 
-    application_id = utils.get_value_from_node['application_id']
-    username = utils.get_value_from_node['username']
-    password = utils.get_value_from_node['password']
+    application_id = utils.get_value_from_node('application_id')
+    username = utils.get_value_from_node('username')
+    password = utils.get_value_from_node('password')
 
     endpoints = "{0}/{1}/oauth2/token".format(constants.login_url, tenant_id)
 
