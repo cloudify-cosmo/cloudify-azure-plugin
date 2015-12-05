@@ -276,7 +276,8 @@ def get_value_from_node(current_key, store_in_runtime):
 
     current_instance = get_instance_or_source_instance()
     if current_key in current_instance.runtime_properties:
-            return current_instance.runtime_properties[current_key]
+        ctx.logger.info("Returning {0} from runtime".format(current_key))
+        return current_instance.runtime_properties[current_key]
 
     return None
 
