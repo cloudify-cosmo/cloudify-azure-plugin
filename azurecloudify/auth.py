@@ -152,9 +152,9 @@ def _get_token_from_file(file_path):
 
 
 def get_credentials():
-    current_node = utils.get_node_or_source_node()
-    subscription_id = current_node.properties['subscription_id']
-    location = current_node.properties['location']
+    current_instance = utils.get_instance_or_source_instance()
+    subscription_id = current_instance.runtime_properties['subscription_id']
+    location = current_instance.runtime_properties['location']
     credentials = 'Bearer ' + get_auth_token()
     headers = {"Content-Type": "application/json", "Authorization": credentials}
     return headers, location, subscription_id
