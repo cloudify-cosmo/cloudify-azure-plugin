@@ -182,12 +182,12 @@ def set_security_group_details(azure_config, **kwargs):
 
 @operation
 def set_public_ip_details(azure_config, **kwargs):
-    utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY, constants.PUBLIC_IP_KEY, constants.VNET_KEY, constants.SECURITY_GROUP_KEY], prefixed_keys=[constants.SUBNET_KEY], need_suffix=[constants.PUBLIC_IP_KEY])
+    utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY, constants.PUBLIC_IP_KEY, constants.VNET_KEY, constants.SECURITY_GROUP_KEY]+constants.REQUIRED_CONFIG_DATA, prefixed_keys=[constants.SUBNET_KEY], need_suffix=[constants.PUBLIC_IP_KEY])
 
 
 @operation
 def set_vnet_details(azure_config, **kwargs):
-    utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY, constants.VNET_KEY, constants.SECURITY_GROUP_KEY], [constants.SUBNET_KEY])
+    utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY, constants.VNET_KEY, constants.SECURITY_GROUP_KEY]+constants.REQUIRED_CONFIG_DATA, [constants.SUBNET_KEY])
 
 
 def _get_nic_name(nic_name):

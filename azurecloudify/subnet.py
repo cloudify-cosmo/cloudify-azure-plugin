@@ -61,7 +61,7 @@ def set_security_group_details(azure_config, **kwargs):
 
 @operation
 def set_resource_group_details(azure_config, **kwargs):
-    utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY])
+    utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY]+constants.REQUIRED_CONFIG_DATA)
 
 
 def set_subnets_from_runtime(caller_string, source_runtime_properties, target_runtime_properties, use_only_first_subnet=True):

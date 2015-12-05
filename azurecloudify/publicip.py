@@ -94,7 +94,7 @@ def delete_current_public_ip(start_retry_interval=30, **kwargs):
 
 @operation
 def set_dependent_resources_names(azure_config, **kwargs):
-    utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY, constants.VNET_KEY, constants.SECURITY_GROUP_KEY], [constants.SUBNET_KEY])
+    utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY, constants.VNET_KEY, constants.SECURITY_GROUP_KEY]+constants.REQUIRED_CONFIG_DATA, prefixed_keys=[constants.SUBNET_KEY], need_suffix=None)
 
 
 def _get_public_ip_name(public_ip_name):

@@ -56,7 +56,7 @@ def delete_disk(**_):
 
 @operation
 def set_storageaccount_details(azure_config, **kwargs):
-    utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY, constants.STORAGE_ACCOUNT_KEY])
+    utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY, constants.STORAGE_ACCOUNT_KEY]+constants.REQUIRED_CONFIG_DATA)
 
 
 

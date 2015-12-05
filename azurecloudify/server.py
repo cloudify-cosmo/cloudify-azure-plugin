@@ -147,7 +147,7 @@ def delete_current_virtual_machine(start_retry_interval=30, **kwargs):
 
 @operation
 def set_storage_account_details(azure_config, **kwargs):
-    utils.write_target_runtime_properties_to_file(required_keys=[constants.RESOURCE_GROUP_KEY, constants.STORAGE_ACCOUNT_KEY])
+    utils.write_target_runtime_properties_to_file(required_keys=[constants.RESOURCE_GROUP_KEY, constants.STORAGE_ACCOUNT_KEY]+constants.REQUIRED_CONFIG_DATA)
 
 
 @operation

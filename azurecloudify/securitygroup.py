@@ -57,7 +57,7 @@ def verify_provision(start_retry_interval, **kwargs):
 
 @operation
 def set_dependent_resources_names(azure_config, **kwargs):
-    utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY])
+    utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY]+constants.REQUIRED_CONFIG_DATA)
 
 
 @operation

@@ -22,6 +22,9 @@ import utils
 from cloudify.exceptions import NonRecoverableError, RecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation
+import azurerequests
+import json
+import requests
 
 
 @operation
@@ -91,7 +94,7 @@ def delete_current_vnet(start_retry_interval=30, **kwargs):
 
 @operation
 def set_resource_group_details(azure_config, **kwargs):
-    utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY])
+    utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY]+constants.REQUIRED_CONFIG_DATA)
 
 
 @operation

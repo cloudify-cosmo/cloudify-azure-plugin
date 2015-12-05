@@ -96,7 +96,7 @@ def delete_current_storage_account(start_retry_interval=30, **kwargs):
 
 @operation
 def set_dependent_resources_names(azure_config, **kwargs):
-    utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY])
+    utils.write_target_runtime_properties_to_file([constants.RESOURCE_GROUP_KEY]+constants.REQUIRED_CONFIG_DATA)
 
 
 def _get_storage_account_name(storage_account_name):

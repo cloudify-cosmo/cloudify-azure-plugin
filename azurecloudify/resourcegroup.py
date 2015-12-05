@@ -33,6 +33,7 @@ def creation_validation(**_):
 
 @operation
 def create_resource_group(**_):
+    utils.set_runtime_properties_from_file()
     resource_group_name = utils.set_resource_name(_get_resource_group_name, 'Resource group',
                                                   constants.RESOURCE_GROUP_KEY, constants.EXISTING_RESOURCE_GROUP_KEY,
                                                   constants.RESOURCE_GROUP_PREFIX)

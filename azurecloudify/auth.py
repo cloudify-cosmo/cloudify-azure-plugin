@@ -29,7 +29,8 @@ def generate_token(use_client_file=True, start_retry_interval=30, **kwargs):
             f.write(json.dumps(json_data))
             f.close()
     except:
-        raise NonRecoverableError("Failures while creating or using {}".format(constants.default_path_to_local_azure_token_file))
+        raise NonRecoverableError("Failures while creating or using {}".
+            format(constants.default_path_to_local_azure_token_file))
 
     ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = token
     ctx.instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY] = token_expires
