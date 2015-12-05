@@ -260,7 +260,7 @@ def get_node_or_source_node():
 def get_value_from_node(current_key, store_in_runtime):
     current_node = get_node_or_source_node()
     if 'azure_config' in current_node.properties:
-        current_azure_config = current_node.propertie['azure_config']
+        current_azure_config = current_node.properties['azure_config']
         if current_key in current_azure_config:
             current_value = current_azure_config[current_key]
             if store_in_runtime:
@@ -268,7 +268,7 @@ def get_value_from_node(current_key, store_in_runtime):
             return current_value
 
     if current_key in current_node.properties:
-        current_value = current_node.propertie[current_key]
+        current_value = current_node.properties[current_key]
         if store_in_runtime:
             ctx.instance.runtime_properties['current_key'] = current_value
         return current_value
