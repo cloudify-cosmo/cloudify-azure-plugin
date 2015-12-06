@@ -247,14 +247,14 @@ class AzureResourceGroupUnitTests(AzureLocalTestUtils):
             'test_delete_resource_group')
         current_ctx.set(ctx=ctx)
 
-        ctx.node.properties['use_external_resource'] = True
-        ctx.instance.runtime_properties[RESOURCE_GROUP_KEY] = \
-            'rg-1234'
-
-        output = resourcegroup.delete_resource_group()
-        self.assertEqual(True, output)
-        self.assertNotIn(
-            RESOURCE_GROUP_KEY, ctx.instance.runtime_properties)
+        client = self._get_azure_client()
+        group = client.create_resource_group(
+            'test_get_resource_group',
+            'some description')
+        self.addCleanup(group.delete)
+        group_from_plugin = securitygroup._get_resource_group_from_id(
+            group_id=group.id)
+        self.assertEqual(group.name, group_from_plugin.name)
 
     def test_create_resource_group(self):
 
