@@ -147,42 +147,40 @@ class AzureLocalTestUtils(TestCase):
 
     def mock_relationship_context(self, testname):
 
-        instance_context = MockContext({
+        server_context = MockContext({
             'node': MockContext({
                 'properties': {
-                    constants.AWS_CONFIG_PROPERTY: 
-                        self._get_aws_config(),
-                    'use_external_resource': False,
-                    'resource_id': ''
+                    constants.AZURE_CONFIG_PROPERTY: 
+                        self._get_azure_config()
                 }
             }),
             'instance': MockContext({
                 'runtime_properties': {
-                    'aws_resource_id': 'i-abc1234',
+                    'azure_resource_id': 'i-abc1234',
                     'public_ip_address': '127.0.0.1'
                 }
             })
         })
 
-        elasticip_context = MockContext({
+        publicip_context = MockContext({
             'node': MockContext({
                 'properties': {
-                    constants.AWS_CONFIG_PROPERTY: 
-                        self._get_aws_config(),
+                    constants.AZURE_CONFIG_PROPERTY: 
+                        self._get_azure_config(),
                     'use_external_resource': False,
-                    'resource_id': '',
+                    'existing_pip_name': '',
                 }
             }),
             'instance': MockContext({
                 'runtime_properties': {
-                    'aws_resource_id': ''
+                    PUBLIC_IP_KEY: 'public_ip_'
                 }
             })
         })
 
         relationship_context = MockCloudifyContext(
             node_id=testname, source=instance_context,
-            target=elasticip_context)
+            target=publicip_context)
 
         return relationship_context
 
@@ -200,11 +198,11 @@ class AzureLocalTestUtils(TestCase):
 
     def _get_azure_config(self):
 
-        region = get_region(self.azurecloudify_region_name)
+        location = get_region(self.azurecloudify_region_name)
+        subscription_id = 
 
         return {
-            'azure_access_key_id': self.azurecloudify_access_key_id,
-            'azure_secret_access_key': self.azurecloudify_secret_access_key,
+            'subscription_id': self.azurecloudify_access_key_id,
             'location': location
         }
 
@@ -213,8 +211,8 @@ class AzureLocalTestUtils(TestCase):
         return cloudifyazure(**azure_config)
 
     def _create_resource_group(self, azure_client):
-        new_address = azure_client.allocate_address(domain=None)
-        return new_address
+        resource_group_name = azure_client.allocate_address(domain=None)
+        return resource_group_name
 
     def _create_storage_account(self, azure_client, name):
         private_key_path = tempfile.mkdtemp()
