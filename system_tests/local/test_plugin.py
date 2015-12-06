@@ -274,12 +274,7 @@ class AzureResourceGroupUnitTests(AzureLocalTestUtils):
         self.assertEqual(
             ctx.instance.runtime_properties[RESOURCE_GROUP_KEY])
 
-        client = self._get_azure_client()
-        group = client.create_resource_group(
-            'test_create_resource_group')
-        self.addCleanup(group.delete)
-
-
+       
 class AzureSecurityGroupUnitTests(AzureLocalTestUtils):
 
     def test_get_all_security_groups(self):
