@@ -20,6 +20,7 @@ import time
 import copy
 from contextlib import contextmanager
 
+
 from cosmo_tester.framework.handlers import (
     BaseHandler,
     BaseCloudifyInputsConfigReader)
@@ -245,11 +246,13 @@ class AzureHandler(BaseHandler):
     CleanupContext = AzureCleanupContext
     CloudifyConfigReader = CloudifyAzureInputsConfigReader
 
-    def azure_clients(self):
+    def azure_client(self):
         creds = self._client_creds()
         return (client.Client(**creds),
                 client.Client(subscription_id=creds['subscription_id'],
                                 location=creds['location'],
+                                tenant_id = creds['tenant_id']
+                                client_id = creds['client_id']
                 client.Client(**creds))
 
     def azure_infra_state(self):
