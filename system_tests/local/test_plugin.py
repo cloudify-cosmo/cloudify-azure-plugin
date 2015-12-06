@@ -280,38 +280,38 @@ class AzureSecurityGroupUnitTests(AzureLocalTestUtils):
     def test_get_all_security_groups(self):
 
         ctx = self.mock_cloudify_context(
-            'test_get_all_security_groups')
+            'test_get_security_groups')
         current_ctx.set(ctx=ctx)
 
-        client = self._get_ec2_client()
-        groups_from_test = client.get_all_security_groups()
+        client = self._get_azure_client()
+        groups_from_test = client.get_security_groups()
 
-        groups_from_plugin = securitygroup._get_all_security_groups()
+        groups_from_plugin = securitygroup._get_security_groups()
 
         self.assertEqual(len(groups_from_test), len(groups_from_plugin))
 
-    def test_get_all_security_groups_not_found(self):
+    def test_get_security_groups_not_found(self):
 
         ctx = self.mock_cloudify_context(
-            'test_get_all_security_groups_not_found')
+            'test_get_security_groups_not_found')
         current_ctx.set(ctx=ctx)
 
-        not_found_names = ['test_get_all_security_groups_not_found']
+        not_found_names = ['test_get_security_groups_not_found']
 
-        groups_from_plugin = securitygroup._get_all_security_groups(
+        groups_from_plugin = securitygroup._get_security_groups(
             list_of_group_names=not_found_names)
 
         self.assertIsNone(groups_from_plugin)
 
-    def test_get_security_group_from_name(self):
+    def test_delete_security_group(self):
 
         ctx = self.mock_cloudify_context(
-            'test_get_security_group_from_name')
+            'test_delete_security_group')
         current_ctx.set(ctx=ctx)
 
         client = self._get_ec2_client()
         group = client.create_security_group(
-            'test_get_security_group_from_name',
+            'test_get_security_group',
             'some description')
         self.addCleanup(group.delete)
         group_from_plugin = securitygroup._get_security_group_from_id(
