@@ -40,6 +40,14 @@ SIMPLE_VNET = 'simple_subnet'
 SIMPLE_NIC = 'simple_nic'
 SIMPLE_PIP = 'simple_pip'
 SIMPLE_VM = 'simple_server'
+PAIR_A_RG = 'pair_a_connected_resource_group'
+PAIR_A_SA = 'pair_a_connected_storage_account'
+PAIR_A_SG = 'pair_a_connected_security_group'
+PAIR_A_SUBNET = 'pair_a_connected_subnet'
+PAIR_A_VNET = 'pair_a_connected_vnet'
+PAIR_A_NIC = 'pair_a_connected_nic'
+PAIR_A_PIP = 'pair_a_connected_pip'
+PAIR_A_VM = 'pair_a_connected_vm'
 
 
 class AzureLocalTestUtils(TestCase):
