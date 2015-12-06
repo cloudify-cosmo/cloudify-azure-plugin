@@ -20,10 +20,9 @@ def add_node(current_pen_servers_list, current_pointer_record, server_present):
 
 def main(pen_servers_list):
 	server_is_present=0
-	pointer_record= sys.argv[1]
 	lock = LockFile(path_of_pen_script)
 	lock.acquire()
-	server_is_present, pen_servers_list = add_node(pen_servers_list, pointer_record, server_is_present)
+	server_is_present, pen_servers_list = add_node(pen_servers_list, argv[1], server_is_present)
 	if server_is_present==0:
 		subprocess.call("pidof pen > allpid.txt", shell=True)
 		all_pid_file = open("/root/allpid.txt", 'r')
