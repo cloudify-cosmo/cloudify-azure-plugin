@@ -318,29 +318,36 @@ class AzureSecurityGroupUnitTests(AzureLocalTestUtils):
         group_from_plugin = securitygroup._get_security_group(
             group_id=group.id)
         self.assertEqual(group.name, group_from_plugin.name)
-    def test_create_group_rules_ruleset(self):
+        
+        
+    def test_get_security_group_params(self.security_group_json):
 
         ctx = self.mock_cloudify_context(
-            'test_create_group_rules_ruleset')
+            'test_get_security_group_params')
         ctx.node.properties['rules'] = [
             {
-                'ip_protocol': 'tcp',
-                'from_port': 22,
-                'to_port': 22,
-                'cidr_ip': '0.0.0.0/0'
+                'protocol': 'tcp',
+                'sourcePortRange': '60000',
+                'destinationPortRange': '65000',
+                'sourceAddressPrefix': '*',
+                'destinationAddressPrefix': '*',
+                'access: 'Allow',
+                'priority': '100',
+                'direction': 'Inbound'
+                
             }
         ]
 
         current_ctx.set(ctx=ctx)
 
-        client = self._get_ec2_client()
+        client = self._get_azure_client()
         group = client.create_security_group(
-            'test_create_group_rules',
+            'test_get_security_group_params',
             'some description')
         self.addCleanup(group.delete)
         securitygroup._create_group_rules(group)
         groups_from_test = \
-            client.get_all_security_groups(groupnames=[group.name])
+            client.get_security_groups(groupnames=[group.name])
         self.assertEqual(group.id, groups_from_test[0].id)
         self.assertEqual(
             str(groups_from_test[0].rules[0]),
