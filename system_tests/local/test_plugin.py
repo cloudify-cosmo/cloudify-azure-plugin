@@ -274,173 +274,80 @@ class AzureResourceGroupUnitTests(AzureLocalTestUtils):
         self.assertEqual(
             ctx.instance.runtime_properties[RESOURCE_GROUP_KEY])
 
-        client = self._get_azure_client()
-        group = client.create_resource_group(
-            'test_create_resource_group')
-        self.addCleanup(group.delete)
-
-
+       
 class AzureSecurityGroupUnitTests(AzureLocalTestUtils):
 
-    def test_get_all_security_groups(self):
+    def test_get_security_groups(self):
 
         ctx = self.mock_cloudify_context(
-            'test_get_all_security_groups')
+            'test_get_security_groups')
         current_ctx.set(ctx=ctx)
 
-        client = self._get_ec2_client()
-        groups_from_test = client.get_all_security_groups()
+        client = self._get_azure_client()
+        groups_from_test = client.get_security_groups()
 
-        groups_from_plugin = securitygroup._get_all_security_groups()
+        groups_from_plugin = securitygroup._get_security_groups()
 
         self.assertEqual(len(groups_from_test), len(groups_from_plugin))
 
-    def test_get_all_security_groups_not_found(self):
+
+    def test_get_security_groups_not_found(self):
 
         ctx = self.mock_cloudify_context(
-            'test_get_all_security_groups_not_found')
+            'test_get_security_groups_not_found')
         current_ctx.set(ctx=ctx)
 
-        not_found_names = ['test_get_all_security_groups_not_found']
+        not_found_names = ['test_get_security_groups_not_found']
 
-        groups_from_plugin = securitygroup._get_all_security_groups(
+        groups_from_plugin = securitygroup._get_security_groups(
             list_of_group_names=not_found_names)
 
         self.assertIsNone(groups_from_plugin)
 
-    def test_get_security_group_from_name(self):
+    def test_delete_security_group(self):
 
         ctx = self.mock_cloudify_context(
-            'test_get_security_group_from_name')
+            'test_delete_security_group')
         current_ctx.set(ctx=ctx)
 
-        client = self._get_ec2_client()
+        client = self._get_azure_client()
         group = client.create_security_group(
-            'test_get_security_group_from_name',
+            'test_get_security_group',
             'some description')
         self.addCleanup(group.delete)
-        group_from_plugin = securitygroup._get_security_group_from_id(
+        group_from_plugin = securitygroup._get_security_group(
             group_id=group.id)
         self.assertEqual(group.name, group_from_plugin.name)
-
-    def test_get_security_group_from_id(self):
-
-        ctx = self.mock_cloudify_context(
-            'test_get_security_group_from_id')
-        current_ctx.set(ctx=ctx)
-
-        client = self._get_ec2_client()
-        group = client.create_security_group(
-            'test_get_security_group_from_id',
-            'some description')
-        self.addCleanup(group.delete)
-        group_from_plugin = securitygroup._get_security_group_from_name(
-            group_name=group.name)
-        self.assertEqual(group.id, group_from_plugin.id)
-
-    def test_get_security_group_from_name_but_really_id(self):
+        
+        
+    def test_get_security_group_params(self.security_group_json):
 
         ctx = self.mock_cloudify_context(
-            'test_get_security_group_from_name_but_really_id')
-        current_ctx.set(ctx=ctx)
-
-        client = self._get_ec2_client()
-        group = client.create_security_group(
-            'test_get_security_group_from_name_but_really_id',
-            'some description')
-        self.addCleanup(group.delete)
-        group_from_plugin = securitygroup._get_security_group_from_name(
-            group_name=group.id)
-        self.assertEqual(group.name, group_from_plugin.name)
-
-    def test_get_security_group_from_id_but_really_name(self):
-
-        ctx = self.mock_cloudify_context(
-            'test_get_security_group_from_id_but_really_name')
-        current_ctx.set(ctx=ctx)
-
-        client = self._get_ec2_client()
-        group = client.create_security_group(
-            'test_get_security_group_from_id_but_really_name',
-            'some description')
-        self.addCleanup(group.delete)
-        group_from_plugin = securitygroup._get_security_group_from_id(
-            group_id=group.name)
-        self.assertEqual(group.id, group_from_plugin.id)
-
-    def test_delete_external_securitygroup_external(self):
-
-        ctx = self.mock_cloudify_context(
-            'test_delete_external_securitygroup_external')
-        current_ctx.set(ctx=ctx)
-
-        ctx.node.properties['use_external_resource'] = True
-        ctx.instance.runtime_properties[EXTERNAL_RESOURCE_ID] = \
-            'sg-blahblah'
-
-        output = securitygroup._delete_external_securitygroup()
-        self.assertEqual(True, output)
-        self.assertNotIn(
-            EXTERNAL_RESOURCE_ID, ctx.instance.runtime_properties)
-
-    def test_create_external_securitygroup_external(self):
-
-        ctx = self.mock_cloudify_context(
-            'test_create_external_securitygroup_external')
-        current_ctx.set(ctx=ctx)
-
-        client = self._get_ec2_client()
-        group = client.create_security_group(
-            'test_create_external_securitygroup_external',
-            'some description')
-        self.addCleanup(group.delete)
-        ctx.node.properties['use_external_resource'] = True
-        ctx.node.properties['resource_id'] = group.id
-
-        output = securitygroup._create_external_securitygroup(group.name)
-        self.assertEqual(True, output)
-        self.assertEqual(
-            ctx.instance.runtime_properties[EXTERNAL_RESOURCE_ID],
-            group.id)
-
-    def test_create_external_securitygroup_external_bad_id(self):
-
-        ctx = self.mock_cloudify_context(
-            'test_create_external_securitygroup_external_bad_id')
-        current_ctx.set(ctx=ctx)
-
-        ctx.node.properties['use_external_resource'] = True
-        ctx.node.properties['resource_id'] = 'sg-73cd3f1e'
-
-        with self.assertRaisesRegexp(
-                NonRecoverableError,
-                'security group does not exist'):
-            securitygroup._create_external_securitygroup(
-                'sg-73cd3f1e')
-
-    def test_create_group_rules_ruleset(self):
-
-        ctx = self.mock_cloudify_context(
-            'test_create_group_rules_ruleset')
+            'test_get_security_group_params')
         ctx.node.properties['rules'] = [
             {
-                'ip_protocol': 'tcp',
-                'from_port': 22,
-                'to_port': 22,
-                'cidr_ip': '0.0.0.0/0'
+                'protocol': 'tcp',
+                'sourcePortRange': '60000',
+                'destinationPortRange': '65000',
+                'sourceAddressPrefix': '*',
+                'destinationAddressPrefix': '*',
+                'access: 'Allow',
+                'priority': '100',
+                'direction': 'Inbound'
+                
             }
         ]
 
         current_ctx.set(ctx=ctx)
 
-        client = self._get_ec2_client()
+        client = self._get_azure_client()
         group = client.create_security_group(
-            'test_create_group_rules',
+            'test_get_security_group_params',
             'some description')
         self.addCleanup(group.delete)
         securitygroup._create_group_rules(group)
         groups_from_test = \
-            client.get_all_security_groups(groupnames=[group.name])
+            client.get_security_groups(groupnames=[group.name])
         self.assertEqual(group.id, groups_from_test[0].id)
         self.assertEqual(
             str(groups_from_test[0].rules[0]),

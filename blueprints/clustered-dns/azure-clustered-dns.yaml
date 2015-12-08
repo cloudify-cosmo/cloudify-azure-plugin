@@ -174,8 +174,8 @@ node_templates:
            inputs:
              process:
                args: [{get_input: host_name_1}, {get_input: ip_address_1}, {get_input: dns_server_domain_name}]
-         stop: clustered-dns-scripts/cloudify_dns/dns_stop.sh
-         delete: clustered-dns-scripts/cloudify_dns/dns_uninstall.sh
+         stop: clustered-dns-scripts/dns_stop.sh
+         delete: clustered-dns-scripts/dns_uninstall.sh
        cloudify.interfaces.validation:
          creation: 
            implementation: clustered-dns-scripts/check_to_accept_user_network.py
@@ -217,6 +217,11 @@ node_templates:
     interfaces:
        cloudify.interfaces.lifecycle:
          create: cloudify_pen/pen_install.sh
+         configure:
+           implementation: cloudify_pen/add_node.py
+           inputs:
+             process:
+               args: [{get_attribute: [dns_host, ip]}]
          start: cloudify_pen/pen_start.py
          stop: cloudify_pen/pen_stop.py
          delete: cloudify_pen/pen_uninstall.py
