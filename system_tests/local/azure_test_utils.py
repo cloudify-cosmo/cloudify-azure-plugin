@@ -108,9 +108,11 @@ class AzureLocalTestUtils(TestCase):
                 self._get_azure_config()
         }
 
-    def mock_cloudify_context(self, test_name, external_vm=False,
-                              resource_id_vm='', resource_id_sg='',
-                              resource_id_kp=''):
+    def mock_cloudify_context(self, test_name, external_resource=False,
+                              vm_prefix='', resource_group_name='',
+                              storage_account_name='',security_group_name='',
+                              public_ip_name = '',nic_name=''
+                              subnet_name='',vnet_name=''):
         """ Creates a mock context for the instance
             tests
         """
@@ -198,9 +200,11 @@ class AzureLocalTestUtils(TestCase):
 
     def _get_azure_config(self):
 
-        location = get_region(self.azurecloudify_region_name)
-        subscription_id = 
-
+        location = get_region(self.azurecloudify)
+        subscription_id = '',
+        location = '',
+        client_id = '',
+        tenant_id = ''
         return {
             'subscription_id': self.azurecloudify_access_key_id,
             'location': location
