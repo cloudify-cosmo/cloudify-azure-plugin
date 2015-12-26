@@ -1,0 +1,16 @@
+
+node_types:
+  
+  healing_node_type:
+    derived_from: cloudify.nodes.SoftwareComponent
+    properties:
+      nodes_to_monitor:
+      default: [] 
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        start:
+          implementation: scripts/healing/healing-start.sh
+          executor: central_deployment_agent
+        stop:
+          implementation: scripts/healing/healing-stop.sh
+          executor: central_deployment_agent
