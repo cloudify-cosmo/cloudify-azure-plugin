@@ -115,7 +115,8 @@ node_templates:
   healing_container:
     type: cloudify.nodes.Compute
     properties:
-      agent_config: none
+      agent_config:
+        install_method: none
 
   healing_dog:
     type: healing_node_type
