@@ -17,14 +17,20 @@ if [ $statusCode -gt 0 ]; then
   exit ${statusCode}
 fi
 
-ctx logger info "Downloading scripts/healing/policy.py ..."
-LOC=$(ctx download-resource scripts/healing/policy.py)
+ctx logger info "Downloading scripts/healing/healing.py ..."
+LOC=$(ctx download-resource scripts/healing/healing.py)
+status_code=$?
+ctx logger info "ctx download-resource status code is ${status_code}"
+ctx logger info "LOC is ${LOC}"
 
-#nohup "${currVenv}/bin/python" ${LOC} "${NTM}" "${DPLID}" > /dev/null 2>&1 &
-COMMAND="${currVenv}/python ${LOC} \"${NTM}\" ${DPLID} > /root/logfile"
-crontab_file=/home/`whoami`/mycron
+COMMAND="${currVenv}/python ${LOC} \"${NTM}\" ${DPLID} > /tmp/logfile.log"
+crontab_file=/tmp/mycron
 ctx logger info "Adding ${COMMAND} to ${crontab_file} ..."
-echo "*/1 * * * * $COMMAND" >> ${crontab_file}
+echo "*/1 * * * * ${COMMAND}" >> ${crontab_file}
+status_code=$?
+ctx logger info "echo ${COMMAND} code is ${status_code}"
 ctx logger info "Adding the task to the crontab ..."
 crontab ${crontab_file}
+status_code=$?
+ctx logger info "crontab ${crontab_file} status code is ${status_code}"
 ctx logger info "Done adding the task to the crontab - Starting the healing dog"

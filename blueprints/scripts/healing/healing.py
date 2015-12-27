@@ -13,9 +13,9 @@ import datetime
 # autoheal only missing nodes comparing to the node_instances that are taken from cloudify
 # Checking it only for compute nodes
 
-COOL_DOWN_PATH = '/home/`whoami`/cooldown'
-LOG_FILE_PATH = '/home/`whoami`/logfile.log'
-PID_FILE_PATH = '/home/`whoami`/pid_file'
+COOL_DOWN_PATH = '/tmp/cooldown'
+LOG_FILE_PATH = '/tmp/logfile.log'
+PID_FILE_PATH = '/tmp/pid_file'
 
 
 def cool_down():
