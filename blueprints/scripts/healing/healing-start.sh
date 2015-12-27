@@ -23,14 +23,16 @@ status_code=$?
 ctx logger info "ctx download-resource status code is ${status_code}"
 ctx logger info "LOC is ${LOC}"
 
-COMMAND="${currVenv}/python ${LOC} \"${NTM}\" ${DPLID} > /tmp/logfile.log"
+COMMAND="${currVenv}/bin/python ${LOC} \"${NTM}\" ${DPLID}"
 crontab_file=/tmp/mycron
 ctx logger info "Adding ${COMMAND} to ${crontab_file} ..."
 echo "*/1 * * * * ${COMMAND}" >> ${crontab_file}
 status_code=$?
 ctx logger info "echo ${COMMAND} code is ${status_code}"
-ctx logger info "Adding the task to the crontab ..."
-crontab ${crontab_file}
+ctx logger info "Adding the task to the crontab : crontab ${crontab_file} ..."
+sudo crontab ${crontab_file}
 status_code=$?
 ctx logger info "crontab ${crontab_file} status code is ${status_code}"
+currCrontab=`sudo crontab -l`
+ctx logger info "currCrontab is ${currCrontab}"
 ctx logger info "Done adding the task to the crontab - Starting the healing dog"

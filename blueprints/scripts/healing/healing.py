@@ -45,23 +45,28 @@ def check_heal(nodes_to_monitor,deployment_id):
         instances = cloudify_client.node_instances.list(deployment_id, node_name)
 #        f.write('instances{0}\n'.format(instances))
         for instance in instances:
+            log_file.write("deployment_id is {0}\n".format(deployment_id))
+            log_file.write("node_name is {0}\n".format(node_name))
+            log_file.write("instance.id is {0}\n".format(instance.id))
             q_string = 'SELECT MEAN(value) FROM /' + deployment_id + '\.' + node_name + '\.' + instance.id + '\.cpu_total_system/ GROUP BY time(10s) '\
                      'WHERE  time > now() - 40s'
-            log_file.write('query string is{0}\n'.format(q_string))
+            log_file.write('query string is:{0}\n'.format(q_string))
             try:
                 result = influx_client.query(q_string)
-                log_file.write('result is {0} \n'.format(result))
+                log_file.write('Query result is {0} \n'.format(result))
                 if not result:
+                    log_file.write("Opening {0} and closing it\n".format(COOL_DOWN_PATH))
                     open(COOL_DOWN_PATH, 'a').close()
+                    log_file.write("utime {0}\n".format(COOL_DOWN_PATH))
                     utime(COOL_DOWN_PATH, None)
-                    execution_id = cloudify_client.executions.start(deployment_id, 'heal', {'node_id': instance.id})
-                    log_file.write('execution_id is {0} \n'.format(str(execution_id)))
+                    log_file.write("Healing {0}\n".format(instance.id))
+                    execution_id = cloudify_client.executions.start(deployment_id, 'heal', {'node_instance_id': instance.id})
+                    log_file.write('execution_id is {0}\n'.format(str(execution_id)))
             except InfluxDBClientError as ee:
                 log_file.write('DBClienterror {0}\n'.format(str(ee)))
-                log_file.write('instance id is {0}\n'.format(instance))
+                log_file.write('instance id is {0}\n'.format(str(instance.id)))
             except Exception as e:
                 log_file.write(str(e))
-#               check_heal(nodes_to_monitor,depl_id)
 
 
 def main(argv):
