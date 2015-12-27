@@ -5,7 +5,7 @@ node_types:
     derived_from: cloudify.nodes.SoftwareComponent
     properties:
       nodes_to_monitor:
-      default: [] 
+        default: [] 
     interfaces:
       cloudify.interfaces.lifecycle:
         start:
