@@ -341,7 +341,7 @@ def _get_vm_base_json(location, random_suffix_value, resource_group_name, storag
                 "osDisk": {
                     "name": "{0}{1}".format(constants.os_disk_name, random_suffix_value),
                     "vhd": {
-                        "uri": "http://{0}.blob.core.windows.net/vhds/osdisk{1}.vhd".format(storage_account_name,
+                        "uri": "https://{0}.blob.core.windows.net/vhds/osdisk{1}.vhd".format(storage_account_name,
                                                                                             random_suffix_value)
                     },
                     "caching": "ReadWrite",
