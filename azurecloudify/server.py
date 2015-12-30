@@ -119,14 +119,20 @@ def stop_a_vm(**_):
     print (response_stop_vm.text)
 
 
+def _delete_vm_and_disks(start_retry_interval=30, **kwargs):
+    delete_current_virtual_machine(start_retry_interval, **kwargs)
+    _delete_os_disk()
+    _delete_data_disks()
+
+
 @operation
 def delete_virtual_machine(start_retry_interval=30, **kwargs):
-    delete_current_virtual_machine(start_retry_interval, **kwargs)
+    _delete_vm_and_disks(start_retry_interval, **kwargs)
     utils.clear_runtime_properties()
 
 
 def delete_a_virtual_machine(start_retry_interval=30, **kwargs):
-    delete_current_virtual_machine(start_retry_interval, **kwargs)
+    _delete_vm_and_disks(start_retry_interval, **kwargs)
 
 
 def delete_current_virtual_machine(start_retry_interval=30, **kwargs):
@@ -302,6 +308,13 @@ def _set_data_disk_json(vm_json, storage_account_name):
 
 def _get_vm_base_json(location, random_suffix_value, resource_group_name, storage_account_name, subscription_id,
                       vm_name,availability_set_name):
+
+    os_disk_name = "{0}{1}".format(constants.os_disk_prefix, random_suffix_value)
+    ctx.instance.runtime_properties[constants.OS_DISK_NAME] = os_disk_name
+
+    os_disk_uri = "https://{0}.blob.core.windows.net/vhds/{1}.vhd"\
+        .format(storage_account_name, os_disk_name)
+    ctx.instance.runtime_properties[constants.OS_DISK_URI] = os_disk_uri
     return {
         "id": "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Compute/virtualMachines/{2}".format(
             subscription_id, resource_group_name, vm_name),
@@ -339,10 +352,9 @@ def _get_vm_base_json(location, random_suffix_value, resource_group_name, storag
                     "version": constants.vm_version
                 },
                 "osDisk": {
-                    "name": "{0}{1}".format(constants.os_disk_name, random_suffix_value),
+                    "name": "{0}".format(os_disk_name),
                     "vhd": {
-                        "uri": "https://{0}.blob.core.windows.net/vhds/osdisk{1}.vhd".format(storage_account_name,
-                                                                                            random_suffix_value)
+                        "uri": os_disk_uri
                     },
                     "caching": "ReadWrite",
                     "createOption": "FromImage"
@@ -353,6 +365,40 @@ def _get_vm_base_json(location, random_suffix_value, resource_group_name, storag
             }
         }
     }
+
+
+def _delete_os_disk(start_retry_interval):
+    headers, location, subscription_id = auth.get_credentials()
+
+    os_disk_name = ctx.instance.runtime_properties[constants.OS_DISK_NAME]
+    delete_os_disk_url = ctx.instance.runtime_properties[constants.OS_DISK_URI]
+    ctx.instance.runtime_properties[constants.RESOURCE_NOT_DELETED] = True
+
+    try:
+        ctx.logger.info("Deleting the OS Disk {0}: {1}".format(os_disk_name, delete_os_disk_url))
+        response_delete_os_disk = requests.delete(url=delete_os_disk_url, headers=headers)
+        return azurerequests.check_delete_response(response_delete_os_disk, start_retry_interval,
+                                                   '_delete_os_disk', os_disk_name, constants.OS_DISK)
+    except:
+        ctx.logger.info("OS disk {0} could not be deleted".format(delete_os_disk_url))
+
+
+def _delete_data_disks(start_retry_interval):
+    headers, location, subscription_id = auth.get_credentials()
+    storage_account_name = ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
+    for curr_key in ctx.instance.runtime_properties:
+        if curr_key.startswith(constants.DATA_DISK_KEY):
+            disk_name = ctx.instance.runtime_properties[curr_key]
+            ctx.logger.info("_delete_data_disks : disk_name is {0}".format(disk_name))
+            delete_data_disk_url = "https://{0}.blob.core.windows.net/vhds/{1}.vhd".format(storage_account_name, disk_name)
+            ctx.instance.runtime_properties[constants.RESOURCE_NOT_DELETED] = True    
+            try:
+                ctx.logger.info("Deleting the data Disk {0}: {1}".format(disk_name, delete_data_disk_url))
+                response_delete_data_disk = requests.delete(url=delete_data_disk_url, headers=headers)
+                return azurerequests.check_delete_response(response_delete_data_disk, start_retry_interval,
+                                                   '_delete_data_disks', disk_name, constants.OS_DISK)
+            except:
+                ctx.logger.info("Data disk {0} could not be deleted".format(delete_data_disk_url))
 
 
 def get_provisioning_state(**_):

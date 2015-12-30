@@ -29,7 +29,7 @@ vnet_address_prefixes = ["10.1.0.0/16", "10.2.0.0/16"]
 address_prefix = "10.1.0.0/24"
 IP_PREFIX = 'myip1'
 image_reference_version = 'latest'
-os_disk_name = 'osdisk'
+os_disk_prefix = 'osdisk'
 vm_caching = 'ReadWrite'
 vm_createOption = 'FromImage'
 vm_version = "latest"
@@ -87,6 +87,9 @@ DATA_DISK_SIZE_KEY = 'data_disk_size_GB'
 VM_KEY = 'vm_key_name'
 VM_PREFIX = 'vm_prefix'
 
+OS_DISK_NAME = 'os_disk_name'
+OS_DISK_URI = 'os_disk_uri'
+
 NIC_KEY = 'nic_key_name'
 NIC_PREFIX = 'nic_'
 EXISTING_NIC_KEY = 'existing_nic_name'
@@ -139,6 +142,7 @@ WAITING_TIME = 20
 RESOURCE_GROUP = "resourcegroup"
 STORAGE_ACCOUNT = "storageaccount"
 DATA_DISKS = 'dataDisks'
+OS_DISK = 'osdisk'
 
 valid_status_codes = [OK_STATUS_CODE, ACCEPTED_STATUS_CODE, CREATED_STATUS_CODE]
 
