@@ -25,7 +25,7 @@ setup(
     author='Gigaspaces',
     author_email='cosmo-admin@gigaspaces.com',
 
-    version='1.2.1',
+    version='1.3.1',
     description='Cloudify plugin for Azure infrastructure.',
 
     # This must correspond to the actual packages in the plugin.
@@ -33,7 +33,7 @@ setup(
 
     license='LICENSE',
     install_requires=[
-        'cloudify-plugins-common>=3.2',
+        'cloudify-plugins-common>=3.3.1',
         'azure',
         'lockfile',
         'requests'
