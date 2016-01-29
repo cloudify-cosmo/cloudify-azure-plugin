@@ -26,6 +26,8 @@ from azurecloudify import (
     publicip,
     instance
 )
+
+# Cloudify Imports
 from cloudify.state import current_ctx
 from cloudify.exceptions import NonRecoverableError
 
