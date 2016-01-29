@@ -123,8 +123,7 @@ class TestWorkflowClean(AzureLocalTestUtils):
         instance_list = reservation_list[0].instances
         self.assertEqual(1, len(instance_list))
         
-        
-
+    
         self.localenv.execute('uninstall', task_retries=10)
 
         with self.assertRaises(AzureResponseError):
