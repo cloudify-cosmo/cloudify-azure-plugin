@@ -24,7 +24,8 @@ from azurecloudify import (
     subnet,
     nic,
     publicip,
-    instance
+    constants
+    auth
 )
 
 # Cloudify Imports
