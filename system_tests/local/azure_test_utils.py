@@ -83,7 +83,7 @@ class AzureLocalTestUtils(TestCase):
                     client_id='', tenant_id='',
                     vm_prefix='', vm_size='',
                     image_reference_offer='', image_reference_sku='',
-                    image_reference_publisher='',ssh_username=''
+                    image_reference_publisher='',ssh_username='',
                     aad_password='',
                     use_external_resource=False,
                     test_name='vanilla_test'):
@@ -111,7 +111,7 @@ class AzureLocalTestUtils(TestCase):
     def mock_cloudify_context(self, test_name, external_resource=False,
                               vm_prefix='', resource_group_name='',
                               storage_account_name='',security_group_name='',
-                              public_ip_name = '',nic_name=''
+                              public_ip_name = '',nic_name='',
                               subnet_name='',vnet_name=''):
         """ Creates a mock context for the instance
             tests
