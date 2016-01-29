@@ -133,7 +133,7 @@ class TestWorkflowClean(AzureLocalTestUtils):
             client._gesecurity_group_name(group_names=security_group_name)
         with self.assertRaises(AzureResponseError):
             client._get_all_resource_groups(group_names=resource_group_name)
-         with self.assertRaises(AzureResponseError):
+        with self.assertRaises(AzureResponseError):
             client._get_resource_groups(group_names=resource_group_name)
         client.get_all_reservations(instance_ids=instance_id)
         instance_state = reservation_list[0].instances[0].update()
