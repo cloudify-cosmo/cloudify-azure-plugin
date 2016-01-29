@@ -31,6 +31,27 @@ from azurecloudify import (
 # Cloudify Imports
 from cloudify.state import current_ctx
 from cloudify.exceptions import NonRecoverableError
+from azure_test_utils import (
+    AzureLocalTestUtils,
+    INSTANCE_TO_IP, INSTANCE_TO_SG,
+    EXTERNAL_RESOURCE_ID,
+    SIMPLE_RG,
+    SIMPLE_SA,
+    SIMPLE_SG,
+    SIMPLE_SUBNET,
+    SIMPLE_VNET,
+    SIMPLE_NIC,
+    SIMPLE_PIP,
+    SIMPLE_VM,
+    PAIR_A_RG,
+    PAIR_A_SA,
+    PAIR_A_SG,
+    PAIR_A_SUBNET,
+    PAIR_A_VNET,
+    PAIR_A_NIC,
+    PAIR_A_PIP,
+    PAIR_A_VM
+)
 
 
 
