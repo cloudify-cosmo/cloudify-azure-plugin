@@ -14,7 +14,7 @@
 #    * limitations under the License.
 
 # Third Party
-from azurecloudify import azureclient
+#from azurecloudify import azureclient
 
 from azurecloudify import (
     resourcegroup,
