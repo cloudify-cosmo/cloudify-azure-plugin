@@ -16,7 +16,6 @@
 # Third Party
 from azurecloudify import azureclient
 
-# Cloudify Imports
 from azurecloudify import (
     resourcegroup,
     securitygroup,
