@@ -252,8 +252,8 @@ class AzureHandler(BaseHandler):
                 client.Client(subscription_id=creds['subscription_id'],
                                 location=creds['location'],
                                 tenant_id = creds['tenant_id'],
-                                client_id = creds['client_id']
-                client.Client(**creds)
+                                client_id = creds['client_id'],
+                client.Client(**creds))
 
     def azure_infra_state(self):
        
