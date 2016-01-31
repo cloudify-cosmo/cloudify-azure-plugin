@@ -253,7 +253,7 @@ class AzureHandler(BaseHandler):
                                 location=creds['location'],
                                 tenant_id = creds['tenant_id'],
                                 client_id = creds['client_id']
-                client.Client(**creds))
+                client.Client(**creds)
 
     def azure_infra_state(self):
        
