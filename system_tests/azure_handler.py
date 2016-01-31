@@ -299,7 +299,7 @@ class AzureHandler(BaseHandler):
         failed = {
             'servers': {},
             'storageaccounts': {},
-            'resourcegroups' {},
+            'resourcegroups': {},
             'publicips': {},  
             'vnets': {},  
             'nics': {},  
