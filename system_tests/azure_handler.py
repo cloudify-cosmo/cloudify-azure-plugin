@@ -251,7 +251,7 @@ class AzureHandler(BaseHandler):
         return (client.Client(**creds),
                 client.Client(subscription_id=creds['subscription_id'],
                                 location=creds['location'],
-                                tenant_id = creds['tenant_id']
+                                tenant_id = creds['tenant_id'],
                                 client_id = creds['client_id']
                 client.Client(**creds))
 
