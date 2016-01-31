@@ -121,7 +121,7 @@ class CloudifyAzureInputsConfigReader(BaseCloudifyInputsConfigReader):
     def image_reference_publisher(self):
         return self.config['image_reference_publisher']
         
-     @property
+    @property
     def image_reference_sku(self):
         return self.config['image_reference_sku']
 
