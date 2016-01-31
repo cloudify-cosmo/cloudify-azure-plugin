@@ -311,7 +311,7 @@ class AzureHandler(BaseHandler):
         for vm_name in servers:
             if vm_name in resources_to_remove['servers']:
                 with self._handled_exception(vm_name, failed, 'servers'):
-                azurecloudify.server.delete_vm(vm_name)
+                    azurecloudify.server.delete_vm(vm_name)
 
         for nic_name in nics:
             if nic_name in resources_to_remove['nics']:
