@@ -148,7 +148,8 @@ node_templates:
       ssh_username: { get_input: ssh_username}
       aad_password: { get_input: aad_password}
       nic_name: { get_input: nic_name}
-    instances: 2
+    instances: 
+      deploy:2
     relationships:
       - target: dns_nic
         type: cloudify.azure.relationships.server_connected_to_nic
