@@ -246,7 +246,7 @@ class AzureHandler(BaseHandler):
     CleanupContext = AzureCleanupContext
     CloudifyConfigReader = CloudifyAzureInputsConfigReader
 
-    def azure_client(self):
+    def azure_clients(self):
         creds = self._client_creds()
         return (client.Client(**creds),
                 client.Client(subscription_id=creds['subscription_id'],
