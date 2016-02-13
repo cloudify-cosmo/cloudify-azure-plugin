@@ -258,7 +258,7 @@ class AzureHandler(BaseHandler):
     @retry(stop_max_attempt_number=5, wait_fixed=20000)
     def azure_infra_state(self):
        
-        azurecloudify = self.azure_clients()
+        azurecloudify = self.azure_client()
         try:
             prefix = self.env.resources_prefix
         except (AttributeError, KeyError):
