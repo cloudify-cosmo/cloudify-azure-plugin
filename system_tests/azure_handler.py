@@ -252,7 +252,7 @@ class AzureHandler(BaseHandler):
                 client.Client(subscription_id=creds['subscription_id'],
                                 location=creds['location'],
                                 tenant_id = creds['tenant_id'],
-                                client_id = creds['client_id'],
+                                client_id = creds['client_id']),
                 client.Client(**creds))
 
     @retry(stop_max_attempt_number=5, wait_fixed=20000)
