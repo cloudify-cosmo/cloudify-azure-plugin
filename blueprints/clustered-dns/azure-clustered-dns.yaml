@@ -56,11 +56,11 @@ inputs:
 
   dns_server_domain_name:
     description: The domain name for which you want your server to be authorized for. For ex- abc.org etc
-    type: String
+    type: string
 
   dns_server_domain_network:
     description: The private network for your domain
-    type: String
+    type: string
 
   use_external_resource:
     type: boolean
@@ -148,8 +148,7 @@ node_templates:
       ssh_username: { get_input: ssh_username}
       aad_password: { get_input: aad_password}
       nic_name: { get_input: nic_name}
-    instances: 
-      deploy:2
+    instances: {deploy 2}
     relationships:
       - target: dns_nic
         type: cloudify.azure.relationships.server_connected_to_nic
