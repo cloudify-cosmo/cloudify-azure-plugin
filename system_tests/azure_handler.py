@@ -255,7 +255,7 @@ class AzureHandler(BaseHandler):
                                 client_id = creds['client_id'],
                 client.Client(**creds))
 
-
+    @retry(stop_max_attempt_number=5, wait_fixed=20000)
     def azure_infra_state(self):
        
         azurecloudify = self.azure_clients()
