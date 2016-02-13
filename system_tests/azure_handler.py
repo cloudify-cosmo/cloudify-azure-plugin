@@ -365,7 +365,7 @@ class AzureHandler(BaseHandler):
         
 
     def _storageaccounts(self, azure_client):
-        return [(storage_account_name]
+        return [(storage_account_name)
                 for storage_account in storageaccount._get_storage_account_name()]
 
     def _securityaccounts(self,azure_client):
