@@ -356,36 +356,36 @@ class AzureHandler(BaseHandler):
 
     def _resourcegroups(self, azure_client):
         return [(resource_group_name)
-                for resource_group in resourcegroup._get_resource_group_name()]
+                for resource_group in self.azurecloudify.resourcegroup._get_resource_group_name()]
         
 
     def _storageaccounts(self, azure_client):
         return [(storage_account_name)
-                for storage_account in storageaccount._get_storage_account_name()]
+                for storage_account in self.azurecloudify.storageaccount._get_storage_account_name()]
 
     def _securityaccounts(self,azure_client):
         return [(security_group_name)
-                for security_group in securitygroup._get_security_group_name()]
+                for security_group in self.azurecloudify.securitygroup._get_security_group_name()]
 
     def _vnets(self, azure_client):
         return [vnet_name
-                for vnet_name in vnet._get_vnet_name()]
+                for vnet_name in self.azurecloudify.vnet._get_vnet_name()]
 
     def _publicips(self, azure_client):
         return [public_ip_name
-                for public_ip in publicip._get_public_ip_name()]
+                for public_ip in self.azurecloudify.publicip._get_public_ip_name()]
 
     def _nics(self, azure_client):
         return [nic_name
-                for nic in nic._get_nic_name]
+                for nic in self.azurecloudify.nic._get_nic_name]
 
     def _servers(self, azure_client):
         return [vm_name
-                for vnet in server._get_server_name]
+                for vnet in self.azurecloudify.server._get_server_name]
 
     def _availability_sets(self, azure_client):
         return [availability_set_name
-                for availabilty_set in availabilityset._get_availability_set_name]
+                for availabilty_set in self.azurecloudify.availabilityset._get_availability_set_name]
 
     @contextmanager
     def _handled_exception(self, resource_id, failed, resource_group):
