@@ -20,10 +20,6 @@ import time
 import copy
 from contextlib import contextmanager
 
-from cinderclient.v1 import client as cinderclient
-import novaclient.v2.client as nvclient
-import neutronclient.v2_0.client as neclient
-from retrying import retry
 
 from cosmo_tester.framework.handlers import (
     BaseHandler,
@@ -252,12 +248,7 @@ class AzureHandler(BaseHandler):
 
     def azure_clients(self):
         creds = self._client_creds()
-        return (client.Client(**creds),
-                client.Client(subscription_id=creds['subscription_id'],
-                                location=creds['location'],
-                                tenant_id = creds['tenant_id'],
-                                client_id = creds['client_id']),
-                client.Client(**creds))
+        return (creds)
 
     @retry(stop_max_attempt_number=5, wait_fixed=20000)
     def azure_infra_state(self):
