@@ -356,7 +356,7 @@ class AzureHandler(BaseHandler):
 
     def _resourcegroups(self, azure_client):
         return [(resource_group_name)
-                for resource_group in resoucegroup._get_resource_group_name()]
+                for resource_group in resourcegroup._get_resource_group_name()]
         
 
     def _storageaccounts(self, azure_client):
