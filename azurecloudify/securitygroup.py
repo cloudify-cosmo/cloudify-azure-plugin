@@ -90,7 +90,7 @@ def _get_security_group_name(security_group_name):
     if constants.RESOURCE_GROUP_KEY in ctx.instance.runtime_properties:
         resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     else:
-        raise RecoverableError("{} is not in public ip runtime_properties yet.".format(constants.RESOURCE_GROUP_KEY))
+        raise RecoverableError("{0} is not in public ip runtime_properties yet.".format(constants.RESOURCE_GROUP_KEY))
     headers, location, subscription_id = auth.get_credentials()
     list_security_group_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/microsoft.network/networkSecurityGroups?api-version='+constants.api_version
     response_get_security_group = requests.get(url=list_security_group_url, headers=headers)
@@ -98,7 +98,7 @@ def _get_security_group_name(security_group_name):
     if security_group_name in response_get_security_group.text:
         return True
     else:
-        ctx.logger.info("Security group {} does not exist".format(security_group_name))
+        ctx.logger.info("Security group {0} does not exist".format(security_group_name))
         return False
 
 
