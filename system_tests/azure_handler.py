@@ -19,7 +19,7 @@ import os
 import time
 import copy
 from contextlib import contextmanager
-
+import azurecloudify
 
 from cosmo_tester.framework.handlers import (
     BaseHandler,
