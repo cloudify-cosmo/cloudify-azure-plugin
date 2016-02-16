@@ -64,7 +64,6 @@ inputs:
 
   use_external_resource:
     type: boolean
-    default: ''
     
   existing_security_group_name:
     type: string
@@ -116,8 +115,8 @@ inputs:
 
   agents_user:
     type: string
-    default: 'azuretest'
-    
+    default: 'azuretest' 
+   
   nic_name:
     type: string
     default: '' 
@@ -148,7 +147,7 @@ node_templates:
       ssh_username: { get_input: ssh_username}
       aad_password: { get_input: aad_password}
       nic_name: { get_input: nic_name}
-    instances: {deploy 2}
+    instances: {deploy: 2}
     relationships:
       - target: dns_nic
         type: cloudify.azure.relationships.server_connected_to_nic
@@ -183,8 +182,9 @@ node_templates:
              process:
                args: [{get_input: dns_server_domain_network}]
     relationships:
-       type: dns_app_server_contained_in_dns_host
-       target: dns_host
+      - target: dns_host
+        type: dns_app_server_contained_in_dns_host
+       
 
   pen_host:
     type: cloudify.azure.nodes.Server
@@ -210,7 +210,6 @@ node_templates:
         type: cloudify.azure.relationships.resource_depends_on_azure_token
       - target: clustered_dns_resource_group
         type: cloudify.azure.relationships.resource_contained_in_resource_group
-
 
   pen_app_server:
     type: cloudify.azure.nodes.SoftwareComponent
@@ -246,8 +245,7 @@ node_templates:
       aad_password: { get_input: aad_password}
       use_external_resource: true
       clustered_dns_vnet: { get_input: clustered_dns_vnet_name}
-      subnet: { get_input: clustered_dns_subnet_name}
-      
+      subnet: { get_input: clustered_dns_subnet_name}      
     relationships:
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
@@ -263,8 +261,7 @@ node_templates:
       tenant_id: { get_input: tenant_id}
       aad_password: { get_input: aad_password}
       use_external_resource: { get_input: use_external_resource}
-      existing_nic_name: { get_input: existing_nic_name}
-      
+      existing_nic_name: { get_input: existing_nic_name}      
     relationships:
       - target: nodejs_public_ip
         type: cloudify.azure.relationships.nic_connected_to_public_ip
@@ -282,8 +279,7 @@ node_templates:
       tenant_id: { get_input: tenant_id}
       aad_password: { get_input: aad_password}
       use_external_resource: { get_input: use_external_resource}
-      existing_nic_name: { get_input: existing_nic_name}
-      
+      existing_nic_name: { get_input: existing_nic_name}      
     relationships:
       - target: clustered_dns_vnet
         type: cloudify.azure.relationships.nic_connected_to_vnet
@@ -346,7 +342,7 @@ node_templates:
 relationships:
 
     dns_app_server_contained_in_dns_host:
-      derived_from: cloudify_relationships_contained_in
+      derived_from: cloudify.relationships.contained_in
       source_interfaces:
         cloudify.interfaces.relationship_lifecycle:
            postconfigure: 
