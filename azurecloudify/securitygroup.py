@@ -120,36 +120,38 @@ def _get_security_group_params(security_group_json):
     # Issue #30 :
     # https://github.com/cloudify-cosmo/cloudify-azure-plugin/issues/30
     ######################################################################
-    protocol = ctx.node.properties['security_group_protocol']
-    source_port_range = ctx.node.properties['security_group_sourcePortRange']
-    destination_port_range = ctx.node.properties['security_group_destinationPortRange']
-    source_address_prefix = ctx.node.properties['security_group_sourceAddressPrefix']
-    destination_address_prefix = ctx.node.properties['security_group_destinationAddressPrefix']
-    access_security_group = ctx.node.properties['security_group_access']
-    security_group_priority = ctx.node.properties['security_group_priority']
-    security_group_direction = ctx.node.properties['security_group_direction']
-
-    current_rule = {
-        "name": "mySecGrpRule",
-        "properties": {
-            "description": "My Security Group Rule Description",
-            "protocol": protocol,
-            "sourcePortRange": source_port_range,
-            "destinationPortRange": destination_port_range,
-            "sourceAddressPrefix": source_address_prefix,
-            "destinationAddressPrefix": destination_address_prefix,
-            "access": access_security_group,
-            "priority": security_group_priority,
-            "direction": security_group_direction
+    for(rule in ctx.node.properties.rules)
+    {
+        protocol = rule['security_group_protocol']
+        source_port_range = rule['security_group_sourcePortRange']
+        destination_port_range = rule['security_group_destinationPortRange']
+        source_address_prefix = rule['security_group_sourceAddressPrefix']
+        destination_address_prefix = rule['security_group_destinationAddressPrefix']
+        access_security_group = rule['security_group_access']
+        security_group_priority = rule['security_group_priority']
+        security_group_direction = rule['security_group_direction']
+    
+        current_rule = {
+            "name": "mySecGrpRule",
+            "properties": {
+                "description": "My Security Group Rule Description",
+                "protocol": protocol,
+                "sourcePortRange": source_port_range,
+                "destinationPortRange": destination_port_range,
+                "sourceAddressPrefix": source_address_prefix,
+                "destinationAddressPrefix": destination_address_prefix,
+                "access": access_security_group,
+                "priority": security_group_priority,
+                "direction": security_group_direction
+            }
         }
-    }
-    security_group_json['properties']['securityRules'].append(current_rule)
+        security_group_json['properties']['securityRules'].append(current_rule)
     # End of loop
     ######################################################################
-
+    }
     security_group_params = json.dumps(security_group_json)
     return security_group_params
-
+    
 
 def get_provisioning_state(**_):
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
