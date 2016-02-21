@@ -225,9 +225,9 @@ node_templates:
          stop: cloudify_pen/pen_stop.py
          delete: cloudify_pen/pen_uninstall.py
     relationships:
-       type: pen_app_server_contained_in_pen_host
-       target: pen_host
-
+      - target: pen_host
+        type: pen_app_server_contained_in_pen_host
+       
   azure_token:
     type: cloudify.azure.nodes.azure_token
     properties:
@@ -263,7 +263,7 @@ node_templates:
       use_external_resource: { get_input: use_external_resource}
       existing_nic_name: { get_input: existing_nic_name}      
     relationships:
-      - target: nodejs_public_ip
+      - target: pen_public_ip
         type: cloudify.azure.relationships.nic_connected_to_public_ip
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
