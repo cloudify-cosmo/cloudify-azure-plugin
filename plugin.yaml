@@ -279,7 +279,12 @@ node_types:
         description: >
           Storage capacity of external disk (optional) in GBs
         type: string
-        default: '0'    
+        default: '0'
+      lun:
+        description: >
+          number of disks
+        type: integer
+        default: '1'
 
     interfaces:
       cloudify.interfaces.lifecycle:
