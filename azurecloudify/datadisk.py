@@ -46,8 +46,7 @@ def create_disk(**_):
 		ctx.instance.runtime_properties[curr_disk_key] = current_disk_name
 		ctx.logger.info("create_disk: {0} is {1}".format(curr_disk_key, current_disk_name))
 		ctx.instance.runtime_properties[constants.DATA_DISK_SIZE_KEY] = ctx.node.properties[constants.DATA_DISK_SIZE_KEY]
-		ctx.logger.info("create_disk: {0} is {1}".format(current_disk_name,
-														 ctx.instance.runtime_properties[constants.DATA_DISK_SIZE_KEY]))
+		ctx.logger.info("create_disk: {0} is {1}".format(current_disk_name, ctx.instance.runtime_properties[constants.DATA_DISK_SIZE_KEY]))
 
 
 @operation
