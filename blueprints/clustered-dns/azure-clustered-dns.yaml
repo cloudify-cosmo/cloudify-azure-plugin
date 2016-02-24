@@ -183,9 +183,15 @@ node_templates:
                args: [{get_input: dns_server_domain_network}]
     relationships:
       - target: dns_host
-        type: dns_app_server_contained_in_dns_host
+        type: cloudify.relationships.contained_in
+        source_interfaces:
+          cloudify.interfaces.relationship_lifecycle:
+            postconfigure: 
+              implementation: clustered-dns-scripts/cloudify_dns/creatingZones.py
+              inputs:
+                process:
+                  args: [{get_input: dns_server_domain_name}, {get_attribute: [dns_host, ip]}]
        
-
   pen_host:
     type: cloudify.azure.nodes.Server
     properties:
@@ -339,14 +345,3 @@ node_templates:
       - target: azure_token
         type: cloudify.azure.relationships.resource_depends_on_azure_token
 
-relationships:
-
-    dns_app_server_contained_in_dns_host:
-      derived_from: cloudify.relationships.contained_in
-      source_interfaces:
-        cloudify.interfaces.relationship_lifecycle:
-           postconfigure: 
-             implementation: clustered-dns-scripts/cloudify_dns/creatingZones.py
-             inputs:
-               process:
-                 args: [{get_input: dns_server_domain_name}, {get_attribute: [dns_host, ip]}]
