@@ -725,14 +725,6 @@ node_templates:
     properties:
       use_external_resource: { get_input: use_external_resource}
       existing_security_group_name: { get_input: existing_security_group_name}
-      security_group_protocol: { get_input: security_group_protocol}
-      security_group_access: { get_input: security_group_access}
-      security_group_priority: { get_input: security_group_priority}
-      security_group_sourcePortRange: { get_input: security_group_sourcePortRange}
-      security_group_destinationPortRange: { get_input: security_group_destinationPortRange}
-      security_group_sourceAddressPrefix: { get_input: security_group_sourceAddressPrefix}
-      security_group_destinationAddressPrefix: { get_input: security_group_destinationAddressPrefix}
-      security_group_direction: { get_input: security_group_direction}
       rules:
         - protocol: TCP
           from_port: 80
