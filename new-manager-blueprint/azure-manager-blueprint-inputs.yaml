@@ -25,6 +25,7 @@ aad_password: 'REPLACE_WITH_ACTIVE_DIRECTORY_PASSWORD'
 custom_script_command: 'sh sample.sh'
 custom_script_path: 'https://raw.githubusercontent.com/cloudify-cosmo/cloudify-azure-plugin/master/new-manager-blueprint/sample.sh'
 data_disk_size_GB: '1'
+no_of_disks: 1
 key_data:  |
    ---- BEGIN SSH2 PUBLIC KEY ----
    Comment: "imported-openssh-key"
