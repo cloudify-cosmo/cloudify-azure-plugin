@@ -247,7 +247,7 @@ node_types:
         description: >
           number of disks
         type: integer
-        default: 1
+        default: 0
 
     interfaces:
       cloudify.interfaces.lifecycle:
