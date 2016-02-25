@@ -727,29 +727,60 @@ node_templates:
       existing_security_group_name: { get_input: existing_security_group_name}
       rules:
         - protocol: TCP
+          access: 'Allow'
+          pririty: '100'
           from_port: 80
           to_port: 80
+          sourceAddressPrefix: '*'
+          destinationAddressPrefix: '*'
           cidr_ip: 0.0.0.0/32
+          direction: 'Inbound'
         - protocol: TCP
+          access: 'Allow'
+          pririty: '200'
           from_port: 443
           to_port: 443
+          sourceAddressPrefix: '*'
+          destinationAddressPrefix: '*'
           cidr_ip: 0.0.0.0/32
+          direction: 'Inbound'
         - protocol: TCP
+          access: 'Allow'
+          pririty: '300'
           from_port: 22
           to_port: 22
+          sourceAddressPrefix: '*'
+          destinationAddressPrefix: '*'
           cidr_ip: 0.0.0.0/32
+          direction: 'Inbound'
         - protocol: TCP
+          access: 'Allow'
+          pririty: '400'
           from_port: 8101
           to_port: 8101
+          sourceAddressPrefix: '*'
+          destinationAddressPrefix: '*'
           cidr_ip: 0.0.0.0/32
+          direction: 'Inbound'
         - protocol: TCP
+          access: 'Allow'
+          pririty: '500'
           from_port: 5672
           to_port: 5672
+          sourceAddressPrefix: '*'
+          destinationAddressPrefix: '*'
           cidr_ip: 0.0.0.0/32
+          direction: 'Inbound'
         - protocol: TCP
+          access: 'Allow'
+          pririty: '600'
           from_port: 53229
           to_port: 53229
+          sourceAddressPrefix: '*'
+          destinationAddressPrefix: '*'
           cidr_ip: 0.0.0.0/32
+          direction: 'Inbound'
+
 
     relationships:
       - target: manager_resource_group
