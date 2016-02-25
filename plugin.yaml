@@ -243,7 +243,7 @@ node_types:
           Storage capacity of external disk (optional) in GBs
         type: string
         default: '0'
-      lun:
+      no_of_disks:
         description: >
           number of disks
         type: integer
