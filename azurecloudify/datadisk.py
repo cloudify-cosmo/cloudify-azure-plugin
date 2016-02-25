@@ -35,8 +35,8 @@ def creation_validation(**_):
 @operation
 def create_disk(**_):
 	luns = ctx.node.properties['lun']
+	curr_disk_key = []
 	for x in range(0, luns):
-		curr_disk_key = []
 		curr_disk_key.append("{0}{1}{2}".format(constants.DATA_DISK_KEY, ctx.node.id, ctx.instance.id))
 		#if curr_disk_key in ctx.instance.runtime_properties:
 		#	ctx.logger.info("Using disk {0}".format(ctx.instance.runtime_properties[curr_disk_key]))
