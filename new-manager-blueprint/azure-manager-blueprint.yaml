@@ -734,7 +734,7 @@ node_templates:
       rules:
         - protocol: TCP
           access: 'Allow'
-          pririty: '100'
+          priority: '100'
           from_port: 80
           to_port: 80
           sourceAddressPrefix: '*'
@@ -743,7 +743,7 @@ node_templates:
           direction: 'Inbound'
         - protocol: TCP
           access: 'Allow'
-          pririty: '200'
+          priority: '200'
           from_port: 443
           to_port: 443
           sourceAddressPrefix: '*'
@@ -752,7 +752,7 @@ node_templates:
           direction: 'Inbound'
         - protocol: TCP
           access: 'Allow'
-          pririty: '300'
+          priority: '300'
           from_port: 22
           to_port: 22
           sourceAddressPrefix: '*'
@@ -761,7 +761,7 @@ node_templates:
           direction: 'Inbound'
         - protocol: TCP
           access: 'Allow'
-          pririty: '400'
+          priority: '400'
           from_port: 8101
           to_port: 8101
           sourceAddressPrefix: '*'
@@ -770,7 +770,7 @@ node_templates:
           direction: 'Inbound'
         - protocol: TCP
           access: 'Allow'
-          pririty: '500'
+          priority: '500'
           from_port: 5672
           to_port: 5672
           sourceAddressPrefix: '*'
@@ -779,7 +779,7 @@ node_templates:
           direction: 'Inbound'
         - protocol: TCP
           access: 'Allow'
-          pririty: '600'
+          priority: '600'
           from_port: 53229
           to_port: 53229
           sourceAddressPrefix: '*'
