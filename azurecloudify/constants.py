@@ -83,6 +83,7 @@ CUSTOM_SCRIPT_PREFIX = 'custom_script_'
 DATA_DISK_KEY = 'data_disk_key_name'
 DATA_DISK_PREFIX = 'data_disk_'
 DATA_DISK_SIZE_KEY = 'data_disk_size_GB'
+DATA_DISK_LUN_KEY = 'data_disk_logical_unit_number'
 
 VM_KEY = 'vm_key_name'
 VM_PREFIX = 'vm_prefix'
