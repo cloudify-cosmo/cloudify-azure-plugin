@@ -117,7 +117,7 @@ inputs:
     type: string
     default: '0'
     
-  no_of_disks:
+  data_disk_logical_unit_number:
     type: integer
     default: 0
     
@@ -532,7 +532,7 @@ dsl_definitions:
     custom_script_command: { get_input: custom_script_command}
     custom_script_path: { get_input: custom_script_path}
     data_disk_size_GB: { get_input: data_disk_size_GB}
-    no_of_disks: { get_input: no_of_disks}
+    data_disk_logical_unit_number: { get_input: data_disk_logical_unit_number}
     security_group_destinationAddressPrefix: { get_input: security_group_destinationAddressPrefix}
     use_external_resource: { get_input: use_external_resource }
     existing_resource_group_name: { get_input: existing_resource_group_name }
@@ -685,7 +685,7 @@ node_templates:
     type: cloudify.azure.nodes.DataDisk
     properties:
       data_disk_size_GB: { get_input: data_disk_size_GB}
-      no_of_disks: { get_input: no_of_disks}
+      data_disk_logical_unit_number: { get_input: data_disk_logical_unit_number}
 
     relationships:
       - target: manager_storage_account
