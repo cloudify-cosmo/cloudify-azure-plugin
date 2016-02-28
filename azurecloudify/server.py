@@ -282,7 +282,7 @@ def _set_data_disk_json(vm_json, storage_account_name):
 
     storage_profile[constants.DATA_DISKS] = []
     data_disks = storage_profile[constants.DATA_DISKS]
-    lun = 0
+    lun = ctx.node.properties['data_disk_size_GB']
     for curr_key in ctx.instance.runtime_properties:
         if curr_key.startswith(constants.DATA_DISK_KEY):
             ctx.logger.info("_set_data_disk_json : disk key is {0}".format(curr_key))
@@ -303,7 +303,6 @@ def _set_data_disk_json(vm_json, storage_account_name):
                 "diskSizeGB": disk_size
             }
             storage_profile[constants.DATA_DISKS].append(curr_disk)
-            lun += 1
 
 
 def _get_vm_base_json(location, random_suffix_value, resource_group_name, storage_account_name, subscription_id,
