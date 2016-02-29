@@ -164,7 +164,7 @@ def set_nic_details(azure_config, **kwargs):
 @operation
 def set_data_disks(azure_config, **kwargs):
     # This should be per disk issue #31
-    utils.write_target_runtime_properties_to_file(required_keys=None, prefixed_keys=[constants.DATA_DISK_SIZE_KEY, constants.DATA_DISK_KEY], need_suffix=None)
+    utils.write_target_runtime_properties_to_file(required_keys=None, prefixed_keys=[constants.DATA_DISK_SIZE_KEY, constants.DATA_DISK_KEY, constants.DATA_DISK_LUN_KEY],  need_suffix=None)
 
 
 def _set_private_ip(vm_name):
