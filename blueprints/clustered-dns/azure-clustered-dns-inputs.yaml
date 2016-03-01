@@ -17,32 +17,23 @@ clustered_dns_subnet_name:
 client_id: '4de44750-2c58-407e-8504-08d9c2e91254'
 use_external_resource: False
 tenant_id: 'e8f83ddf-4dee-4e1d-b77a-ff3ddaaf52d8'
-existing_resource_group_name: ''
-existing_storage_account_name: ''
-existing_vnet_name: ''
+existing_resource_group_name: 'mdgrprg17garn'
+existing_storage_account_name: 'mdgrpsa17garn'
+existing_vnet_name: 'mdgrpvnet17garn'
 existing_nic_name: ''
 existing_public_ip_name: ''
-security_group_protocol: ''
-security_group_access: ''
-security_group_priority: ''
-security_group_direction: ''
-security_group_sourcePortRange: ''
-security_group_destinationPortRange: ''
-security_group_sourceAddressPrefix: ''
-security_group_destinationAddressPrefix: ''
 ssh_username: 'azuretest'
 aad_password: 'Maryland123!'
-key_data:  |
 nic_name: ''
 host_name_1: ''
 ip_address_1: ''
+key_data:  |
    ---- BEGIN SSH2 PUBLIC KEY ----
-   Comment: "rsa-key-20150804"
-
-   AAAAB3NzaC1yc2EAAAABJQAAAQEA0Y5tAjA2C9xPLRMMfU37J3kGUYQzRAbPu2gN
-   9HKKB+/bkzEE+W9zysYgL1vu3heqUewQlnMz2G6gfDca+6FmitMpZdz8E0ZYUy4M
-   CG+fWs/6xT92OsVLAi2VRgQlyGqOD+KJEZdMnIbbWyPzaLC0yaUDEUNWe2hRNkr0
-   daRY21UCCZG9+zZNR4ndJWxjJyF4Om1G4R5gruickOs5yECbgEMISpENWmXATc6U
-   UsVhRznp4u6iBusZO3ilH7B3YbDyGhXs4X/TcwBj6zuWaJsHXzorTL621g4Ppp4I
-   g6QVQSrBpNBe2JCjou6tlGSBFm7vApUwAYaMStDzaIcLck/nUQ==
+   Comment: "2048-bit RSA, converted by root@Radhikavm from OpenSSH"
+   AAAAB3NzaC1yc2EAAAADAQABAAABAQDp0xKjuZAW9536BEtXYSLTbbeUz1tT8bK4mGmTg1
+   L742XdZv/C9fmGiCWtQCyCdr9CQcMTJMj6i10DFjZEWVObBYVVnYTVo22l1Llkg0rMnH8L
+   d4p7A9/tDbQzBUg1hkVQVA7q+JmK6/7n/Nk8fujquODmL4Kz7I5hllgiggbXvnZN0rz04h
+   Nf6l2oXIgjZi3dB4N5OW3EkcVeArDQDBNy54OfGXuvXqwKGoUtNldOz7lwc9UBV3vFG02N
+   JJP3cnWnarz/G+xHifVs1UPXd+cEwSdsaa4wVRpHcymYkpjL1ljV2pWcIqWuPbxW4uhYk9
+   JATqqdKjPrbZIvOkimrfdd
    ---- END SSH2 PUBLIC KEY ----
