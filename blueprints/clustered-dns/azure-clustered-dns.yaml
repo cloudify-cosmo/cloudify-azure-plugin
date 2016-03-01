@@ -159,7 +159,7 @@ node_templates:
         type: cloudify.azure.relationships.resource_contained_in_resource_group
 
   dns_app_server:
-    type: cloudify.azure.nodes.SoftwareComponent        
+    type: cloudify.nodes.SoftwareComponent        
     interfaces:
        cloudify.interfaces.lifecycle:
          create: clustered-dns-scripts/dns_install.sh
@@ -218,7 +218,7 @@ node_templates:
         type: cloudify.azure.relationships.resource_contained_in_resource_group
 
   pen_app_server:
-    type: cloudify.azure.nodes.SoftwareComponent
+    type: cloudify.nodes.SoftwareComponent
     interfaces:
        cloudify.interfaces.lifecycle:
          create: cloudify_pen/pen_install.sh
@@ -232,7 +232,7 @@ node_templates:
          delete: cloudify_pen/pen_uninstall.py
     relationships:
       - target: pen_host
-        type: pen_app_server_contained_in_pen_host
+        type: cloudify.relationships.contained_in
        
   azure_token:
     type: cloudify.azure.nodes.azure_token
