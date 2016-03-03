@@ -120,7 +120,7 @@ def _get_security_group_params(security_group_json):
     # Issue #30 :
     # https://github.com/cloudify-cosmo/cloudify-azure-plugin/issues/30
     ######################################################################
-    for rule in ctx.node.properties.[rules]:
+    for rule in ctx.node.properties[rules]:
         protocol = rule['security_group_protocol']
         source_port_range = rule['security_group_sourcePortRange']
         destination_port_range = rule['security_group_destinationPortRange']
@@ -129,8 +129,9 @@ def _get_security_group_params(security_group_json):
         access_security_group = rule['security_group_access']
         security_group_priority = rule['security_group_priority']
         security_group_direction = rule['security_group_direction']
-    
+      
         current_rule = {
+            
             "name": "mySecGrpRule",
             "properties": {
                 "description": "My Security Group Rule Description",
@@ -143,6 +144,11 @@ def _get_security_group_params(security_group_json):
                 "priority": security_group_priority,
                 "direction": security_group_direction
             }
+        security_group_json = {
+            "location": location,
+            "properties": {
+            "securityRules": []
+        }
 
         security_group_json['properties']['securityRules'].append(current_rule)
     # End of loop
