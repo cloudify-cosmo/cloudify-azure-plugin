@@ -144,11 +144,7 @@ def _get_security_group_params(security_group_json):
                 "priority": security_group_priority,
                 "direction": security_group_direction
             }
-        security_group_json = {
-            "location": location,
-            "properties": {
-            "securityRules": []
-        }
+    
 
         security_group_json['properties']['securityRules'].append(current_rule)
     # End of loop
