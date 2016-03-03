@@ -522,13 +522,6 @@ dsl_definitions:
     tenant_id: { get_input: tenant_id }
     ssh_username: { get_input: ssh_user }
     aad_password: { get_input: aad_password }
-    security_group_access: { get_input: security_group_access}
-    security_group_direction: { get_input: security_group_direction}
-    security_group_protocol: { get_input: security_group_protocol}
-    security_group_priority: { get_input: security_group_priority}
-    security_group_sourcePortRange: { get_input: security_group_sourcePortRange}
-    security_group_destinationPortRange: { get_input: security_group_destinationPortRange}
-    security_group_sourceAddressPrefix: { get_input: security_group_sourceAddressPrefix}
     custom_script_command: { get_input: custom_script_command}
     custom_script_path: { get_input: custom_script_path}
     data_disk_size_GB: { get_input: data_disk_size_GB}
