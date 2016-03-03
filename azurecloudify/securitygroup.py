@@ -121,14 +121,14 @@ def _get_security_group_params(security_group_json):
     # https://github.com/cloudify-cosmo/cloudify-azure-plugin/issues/30
     ######################################################################
     for rule in ctx.node.properties['rules']:
-        protocol = rule['security_group_protocol']
-        source_port_range = rule['security_group_sourcePortRange']
-        destination_port_range = rule['security_group_destinationPortRange']
-        source_address_prefix = rule['security_group_sourceAddressPrefix']
-        destination_address_prefix = rule['security_group_destinationAddressPrefix']
-        access_security_group = rule['security_group_access']
-        security_group_priority = rule['security_group_priority']
-        security_group_direction = rule['security_group_direction']
+        protocol = rule['protocol']
+        sourcePortRange = rule['sourcePortRange']
+        destinationPortRange = rule['destinationPortRange']
+        sourceAddressPrefix = rule['sourceAddressPrefix']
+        destinationAddressPrefix = rule['destinationAddressPrefix']
+        access = rule['access']
+        priority = rule['priority']
+        direction = rule['direction']
       
         current_rule = {
             
@@ -136,13 +136,13 @@ def _get_security_group_params(security_group_json):
             "properties": {
                 "description": "My Security Group Rule Description",
                 "protocol": protocol,
-                "sourcePortRange": source_port_range,
-                "destinationPortRange": destination_port_range,
-                "sourceAddressPrefix": source_address_prefix,
-                "destinationAddressPrefix": destination_address_prefix,
-                "access": access_security_group,
-                "priority": security_group_priority,
-                "direction": security_group_direction
+                "sourcePortRange": sourcePortRange,
+                "destinationPortRange": destinationPortRange,
+                "sourceAddressPrefix": sourceAddressPrefix,
+                "destinationAddressPrefix": destinationAddressPrefix,
+                "access": access,
+                "priority": priority,
+                "direction": direction
             }
         }
 
