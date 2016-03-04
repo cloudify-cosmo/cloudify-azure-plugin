@@ -718,71 +718,71 @@ node_templates:
       - target: manager_resource_group
         type: cloudify.relationships.contained_in
 
-  manager_security_group:
-    type: cloudify.azure.nodes.SecurityGroup
-    properties:
-      use_external_resource: { get_input: use_external_resource}
-      existing_security_group_name: { get_input: existing_security_group_name}
-      rules:
-        - protocol: 'Tcp'
-          access: 'Allow'
-          description: 'port 80'
-          priority: 100
-          sourcePortRange: '80'
-          destinationPortRange: '80'
-          sourceAddressPrefix: '*'
-          destinationAddressPrefix: '*'
-          direction: 'Inbound'
-        - protocol: 'Tcp'
-          access: 'Allow'
-          description: 'port 443'
-          priority: 200
-          sourcePortRange: '443'
-          destinationPortRange: '443'
-          sourceAddressPrefix: '*'
-          destinationAddressPrefix: '*'
-          direction: 'Inbound'
-        - protocol: 'Tcp'
-          access: 'Allow'
-          description: 'port 22'
-          priority: 300
-          sourcePortRange: '22'
-          destinationPortRange: '22'
-          sourceAddressPrefix: '*'
-          destinationAddressPrefix: '*'
-          direction: 'Inbound'
-        - protocol: 'Tcp'
-          access: 'Allow'
-          description: 'port 8101'
-          priority: 400
-          sourcePortRange: '8101'
-          destinationPortRange: '8101'
-          sourceAddressPrefix: '*'
-          destinationAddressPrefix: '*'
-          direction: 'Inbound'
-        - protocol: 'Tcp'
-          access: 'Allow'
-          description: 'port 5672'
-          priority: 500
-          sourcePortRange: '5672'
-          destinationPortRange: '5672'
-          sourceAddressPrefix: '*'
-          destinationAddressPrefix: '*'
-          direction: 'Inbound'
-        - protocol: 'Tcp'
-          access: 'Allow'
-          description: 'port 53229'
-          priority: 600
-          sourcePortRange: '53229'
-          destinationPortRange: '53229'
-          sourceAddressPrefix: '*'
-          destinationAddressPrefix: '*'
-          direction: 'Inbound'
+#  manager_security_group:
+#    type: cloudify.azure.nodes.SecurityGroup
+#    properties:
+#      use_external_resource: { get_input: use_external_resource}
+#      existing_security_group_name: { get_input: existing_security_group_name}
+#      rules:
+#        - protocol: 'Tcp'
+#          access: 'Allow'
+#          description: 'port 80'
+#          priority: 100
+#          sourcePortRange: '80'
+#          destinationPortRange: '80'
+#          sourceAddressPrefix: '*'
+#          destinationAddressPrefix: '*'
+#          direction: 'Inbound'
+#        - protocol: 'Tcp'
+#          access: 'Allow'
+#          description: 'port 443'
+#          priority: 200
+#          sourcePortRange: '443'
+#          destinationPortRange: '443'
+#          sourceAddressPrefix: '*'
+#          destinationAddressPrefix: '*'
+#          direction: 'Inbound'
+#        - protocol: 'Tcp'
+#          access: 'Allow'
+#          description: 'port 22'
+#          priority: 300
+#          sourcePortRange: '22'
+#          destinationPortRange: '22'
+#          sourceAddressPrefix: '*'
+#          destinationAddressPrefix: '*'
+#          direction: 'Inbound'
+#        - protocol: 'Tcp'
+#          access: 'Allow'
+#          description: 'port 8101'
+#          priority: 400
+#          sourcePortRange: '8101'
+#          destinationPortRange: '8101'
+#          sourceAddressPrefix: '*'
+#          destinationAddressPrefix: '*'
+#          direction: 'Inbound'
+#        - protocol: 'Tcp'
+#          access: 'Allow'
+#          description: 'port 5672'
+#          priority: 500
+#          sourcePortRange: '5672'
+#          destinationPortRange: '5672'
+#          sourceAddressPrefix: '*'
+#          destinationAddressPrefix: '*'
+#          direction: 'Inbound'
+#        - protocol: 'Tcp'
+#          access: 'Allow'
+#          description: 'port 53229'
+#          priority: 600
+#          sourcePortRange: '53229'
+#          destinationPortRange: '53229'
+#          sourceAddressPrefix: '*'
+#          destinationAddressPrefix: '*'
+#          direction: 'Inbound'
 
 
-    relationships:
-      - target: manager_resource_group
-        type: cloudify.azure.relationships.security_group_contained_in_resource_group
+#    relationships:
+#      - target: manager_resource_group
+#        type: cloudify.azure.relationships.security_group_contained_in_resource_group
 
   manager_subnet:
     type: cloudify.azure.nodes.Subnet
@@ -793,8 +793,8 @@ node_templates:
     relationships:
       - target: manager_resource_group
         type: cloudify.azure.relationships.subnet_contained_in_resource_group
-      - target: manager_security_group
-        type: cloudify.azure.relationships.subnet_connected_to_security_group
+#      - target: manager_security_group
+#        type: cloudify.azure.relationships.subnet_connected_to_security_group
 
   manager_vnet:
     type: cloudify.azure.nodes.VNET
