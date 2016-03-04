@@ -726,7 +726,7 @@ node_templates:
 #      rules:
 #        - protocol: 'Tcp'
 #          access: 'Allow'
-#          description: 'port 80'
+#          description: 'port 80 '
 #          priority: 100
 #          sourcePortRange: '80'
 #          destinationPortRange: '80'
