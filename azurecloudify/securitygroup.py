@@ -113,7 +113,6 @@ def _get_security_group_json(location):
 
 
 def _get_security_group_params(security_group_json):
-
     # This should be in a loop (there may be more than one rule)
     # Issue #29 :
     # https://github.com/cloudify-cosmo/cloudify-azure-plugin/issues/29
@@ -122,12 +121,16 @@ def _get_security_group_params(security_group_json):
     ######################################################################
     for rule in ctx.node.properties['rules']:
         protocol = rule['protocol']
+        ctx.logger.info("protocol is:\n {0}".format(protocol))
         sourcePortRange = rule['sourcePortRange']
+        ctx.logger.info("sourcePortRange is:\n {0}".format(sourcePortRange))
         destinationPortRange = rule['destinationPortRange']
+        ctx.logger.info("destinationPortRange is:\n {0}".format(destinationPortRange))
         sourceAddressPrefix = rule['sourceAddressPrefix']
         destinationAddressPrefix = rule['destinationAddressPrefix']
         access = rule['access']
         priority = rule['priority']
+        ctx.logger.info("priority is:\n {0}".format(priority))
         direction = rule['direction']
       
         current_rule = {
@@ -150,6 +153,7 @@ def _get_security_group_params(security_group_json):
     # End of loop
     ######################################################################
     security_group_params = json.dumps(security_group_json)
+    ctx.logger.info("security_group_params is:\n {0}".format(security_group_params))
     return security_group_params
     
 

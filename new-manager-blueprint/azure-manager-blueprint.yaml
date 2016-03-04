@@ -724,59 +724,59 @@ node_templates:
       use_external_resource: { get_input: use_external_resource}
       existing_security_group_name: { get_input: existing_security_group_name}
       rules:
-        - protocol: TCP
+        - protocol: 'Tcp'
           access: 'Allow'
-          priority: '100'
-          sourcePortRange: 80
-          destinationPortRange: 80
+          description: 'port 80'
+          priority: 100
+          sourcePortRange: '80'
+          destinationPortRange: '80'
           sourceAddressPrefix: '*'
           destinationAddressPrefix: '*'
-          cidr_ip: 0.0.0.0/32
           direction: 'Inbound'
-        - protocol: TCP
+        - protocol: 'Tcp'
           access: 'Allow'
-          priority: '200'
-          sourcePortRange: 443
-          destinationPortRange: 443
+          description: 'port 443'
+          priority: 200
+          sourcePortRange: '443'
+          destinationPortRange: '443'
           sourceAddressPrefix: '*'
           destinationAddressPrefix: '*'
-          cidr_ip: 0.0.0.0/32
           direction: 'Inbound'
-        - protocol: TCP
+        - protocol: 'Tcp'
           access: 'Allow'
-          priority: '300'
-          sourcePortRange: 22
-          destinationPortRange: 22
+          description: 'port 22'
+          priority: 300
+          sourcePortRange: '22'
+          destinationPortRange: '22'
           sourceAddressPrefix: '*'
           destinationAddressPrefix: '*'
-          cidr_ip: 0.0.0.0/32
           direction: 'Inbound'
-        - protocol: TCP
+        - protocol: 'Tcp'
           access: 'Allow'
-          priority: '400'
-          sourcePortRange: 8101
-          destinationPortRange: 8101
+          description: 'port 8101'
+          priority: 400
+          sourcePortRange: '8101'
+          destinationPortRange: '8101'
           sourceAddressPrefix: '*'
           destinationAddressPrefix: '*'
-          cidr_ip: 0.0.0.0/32
           direction: 'Inbound'
-        - protocol: TCP
+        - protocol: 'Tcp'
           access: 'Allow'
-          priority: '500'
-          sourcePortRange: 5672
-          to_port: 5672
+          description: 'port 5672'
+          priority: 500
+          sourcePortRange: '5672'
+          destinationPortRange: '5672'
           sourceAddressPrefix: '*'
           destinationAddressPrefix: '*'
-          cidr_ip: 0.0.0.0/32
           direction: 'Inbound'
-        - protocol: TCP
+        - protocol: 'Tcp'
           access: 'Allow'
-          priority: '600'
-          sourcePortRange: 53229
-          destinationPortRange: 53229
+          description: 'port 53229'
+          priority: 600
+          sourcePortRange: '53229'
+          destinationPortRange: '53229'
           sourceAddressPrefix: '*'
           destinationAddressPrefix: '*'
-          cidr_ip: 0.0.0.0/32
           direction: 'Inbound'
 
 
