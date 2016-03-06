@@ -238,11 +238,6 @@ node_templates:
   clustered_dns_vnet:
     type: cloudify.azure.nodes.VNET
     properties:
-      location: { get_input: location}
-      subscription_id: { get_input: subscription_id}
-      client_id: { get_input: client_id}
-      tenant_id: { get_input: tenant_id}
-      aad_password: { get_input: aad_password}
       use_external_resource: true
       clustered_dns_vnet: { get_input: clustered_dns_vnet_name}
       subnet: { get_input: clustered_dns_subnet_name}      
