@@ -292,7 +292,6 @@ def _set_data_disk_json(vm_json, storage_account_name):
             disk_size = ctx.instance.runtime_properties[constants.DATA_DISK_SIZE_KEY]
             ctx.logger.info("_set_data_disk_json : disk_size is {0}".format(disk_size))
             curr_disk = {
-                "lun": lun,
                 "name": disk_name,
                 "createOption": "Empty",
                 "vhd": {
