@@ -7,7 +7,7 @@ node_types:
   ###########################################################
 
   nodecellar.nodes.MonitoredServer:
-    derived_from: cloudify.azure.nodes.Server
+    derived_from: cloudify.azure.nodes.Instance
     properties:
       cloudify_agent:
         default:

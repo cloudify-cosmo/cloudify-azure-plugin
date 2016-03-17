@@ -71,7 +71,7 @@ node_types:
         creation: microsoft.azurecloudify.securitygroup.creation_validation
 
 
-  cloudify.azure.nodes.Server:
+  cloudify.azure.nodes.Instance:
     derived_from: cloudify.nodes.Compute
     properties:
       azure_config:
