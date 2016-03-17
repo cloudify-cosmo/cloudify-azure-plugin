@@ -7,6 +7,7 @@ plugins:
     executor: central_deployment_agent
     source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/master.zip
 
+
 node_types:
   cloudify.azure.nodes.ResourceGroup:
     derived_from: cloudify.nodes.Root
@@ -23,7 +24,6 @@ node_types:
          Indicates the name of existing resource group
         type: string
         default: ''
-      
     interfaces:
       cloudify.interfaces.lifecycle:
         configure: microsoft.azurecloudify.resourcegroup.create_resource_group
@@ -37,7 +37,8 @@ node_types:
         delete: microsoft.azurecloudify.resourcegroup.delete_resource_group
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.resourcegroup.creation_validation
-        
+  
+
   cloudify.azure.nodes.SecurityGroup:
     derived_from: cloudify.nodes.SecurityGroup
     properties:
@@ -55,8 +56,6 @@ node_types:
         description: >
            Indicates the rules associated with the security group
         default: []
-        
-
     interfaces:
       cloudify.interfaces.lifecycle:
         configure: microsoft.azurecloudify.securitygroup.create_security_group
@@ -70,7 +69,8 @@ node_types:
         delete: microsoft.azurecloudify.securitygroup.delete_security_group
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.securitygroup.creation_validation
-              
+
+
   cloudify.azure.nodes.Server:
     derived_from: cloudify.nodes.Compute
     properties:
@@ -109,7 +109,6 @@ node_types:
           Indicates the name of the virtual machine required to create network interface card
         type: string
         default: ''
-
     interfaces:
       cloudify.interfaces.lifecycle:
         configure:
@@ -130,6 +129,35 @@ node_types:
           implementation: microsoft.azurecloudify.server.creation_validation
 
 
+  cloudify.azure.nodes.LinuxInstance:
+    derived_from: cloudify.azure.nodes.Instance
+
+
+  cloudify.azure.nodes.WindowsInstance:
+    derived_from: cloudify.azure.nodes.Instance
+    properties:
+      windows_os:
+        type: boolean
+        default: true
+      username:
+        type: string
+        description: |
+          Administrator username to set on the instance
+        default: Administrator
+      password:
+        type: string
+        description: |
+          Administrator password to set on the instance
+        default: cloudifyrocks!
+    agent_config:
+      type: cloudify.datatypes.AgentConfig
+      default:
+        install_method: remote
+        port: 5985
+        user: { get_property: [SELF, username] }
+        password: { get_property: [SELF, password] }
+
+
   cloudify.azure.nodes.ServerWithNic:
     derived_from: cloudify.azure.nodes.Server
     properties:
@@ -143,7 +171,6 @@ node_types:
          Indicates the name of existing network interface card
         type: string
         default: ''
-
     interfaces:
       cloudify.interfaces.lifecycle:
         configure:
@@ -179,7 +206,6 @@ node_types:
          Indicates the name of existing public ip
         type: string
         default: ''
-
     interfaces:
       cloudify.interfaces.lifecycle:
         configure: microsoft.azurecloudify.publicip.create_public_ip
@@ -193,7 +219,8 @@ node_types:
         delete: microsoft.azurecloudify.publicip.delete_public_ip
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.publicip.creation_validation
-        
+
+
   cloudify.azure.nodes.CustomScript:
     derived_from: cloudify.nodes.Root
     properties:
@@ -214,7 +241,6 @@ node_types:
           Indicates the terminal command used to run the custom script
         type: string
         default: ''
-
     interfaces:
       cloudify.interfaces.lifecycle:
         configure: microsoft.azurecloudify.extensions.create_custom_script
@@ -227,7 +253,8 @@ node_types:
               default: 30
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.extensions.creation_validation
-        
+
+
   cloudify.azure.nodes.DataDisk:
     derived_from: cloudify.nodes.Root
     properties:
@@ -248,12 +275,12 @@ node_types:
           LUN (Logical Unit Number) of the external disk
         type: integer
         default: 0
-
     interfaces:
       cloudify.interfaces.lifecycle:
         configure: microsoft.azurecloudify.datadisk.create_disk
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.datadisk.creation_validation
+
 
   cloudify.azure.nodes.StorageAccount:
     derived_from: cloudify.nodes.Root
@@ -270,7 +297,6 @@ node_types:
          Indicates the name of existing storage account
         type: string
         default: ''
-
     interfaces:
       cloudify.interfaces.lifecycle:
         configure: microsoft.azurecloudify.storageaccount.create_storage_account
@@ -284,6 +310,7 @@ node_types:
         delete: microsoft.azurecloudify.storageaccount.delete_storage_account
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.storageaccount.creation_validation
+
 
   cloudify.azure.nodes.NIC:
     derived_from: cloudify.nodes.Port
@@ -300,7 +327,6 @@ node_types:
          Indicates the name of existing network interface card
         type: string
         default: ''
-
     interfaces:
       cloudify.interfaces.lifecycle:
         configure: microsoft.azurecloudify.nic.create_nic
@@ -314,6 +340,7 @@ node_types:
         delete: microsoft.azurecloudify.nic.delete_nic
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.nic.creation_validation
+
 
   cloudify.azure.nodes.VNET:
     derived_from: cloudify.nodes.Network
@@ -330,7 +357,6 @@ node_types:
          Indicates the name of exsisting virtual network
         type: string
         default: ''
-
     interfaces:
       cloudify.interfaces.lifecycle:
         configure: microsoft.azurecloudify.vnet.create_vnet
@@ -344,6 +370,7 @@ node_types:
         delete: microsoft.azurecloudify.vnet.delete_vnet
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.vnet.creation_validation
+
 
   cloudify.azure.nodes.Subnet:
     derived_from: cloudify.nodes.Subnet
@@ -360,13 +387,13 @@ node_types:
          Indicates the name of exsisting virtual subnet
         type: string
         default: ''
-
     interfaces:
       cloudify.interfaces.lifecycle:
         configure: microsoft.azurecloudify.subnet.create_subnet
         delete: microsoft.azurecloudify.subnet.delete_subnet
       cloudify.interfaces.validation:
         creation: microsoft.azurecloudify.subnet.creation_validation
+
 
   cloudify.azure.nodes.azure_token:
     derived_from: cloudify.nodes.Root
@@ -416,7 +443,6 @@ node_types:
           Indicates the grant_type: 'client_credentials' (with aad_password) or 'password' (with aaplication_id)
         type: string
         default: 'client_credentials'
-
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
@@ -429,8 +455,8 @@ node_types:
               type: integer
               default: 30
 
-relationships:
 
+relationships:
    cloudify.azure.relationships.storage_account_contained_in_resource_group:
     derived_from: cloudify.relationships.contained_in
     source_interfaces:
@@ -441,6 +467,7 @@ relationships:
             azure_config:
               default: {}
 
+
    cloudify.azure.relationships.subnet_contained_in_resource_group:
     derived_from: cloudify.relationships.contained_in
     source_interfaces:
@@ -450,7 +477,8 @@ relationships:
           inputs:
             azure_config:
               default: {}
-   
+
+
    cloudify.azure.relationships.vnet_contained_in_resource_group:
     derived_from: cloudify.relationships.contained_in
     source_interfaces:
@@ -460,6 +488,7 @@ relationships:
           inputs:
             azure_config:
               default: {}
+
 
    cloudify.azure.relationships.server_connected_to_storage_account:
     derived_from: cloudify.relationships.connected_to
@@ -477,6 +506,7 @@ relationships:
               description: Polling interval in seconds until the server is started
               type: integer
               default: 30
+
 
    cloudify.azure.relationships.security_group_contained_in_resource_group:
     derived_from: cloudify.relationships.contained_in
@@ -499,6 +529,7 @@ relationships:
             azure_config:
               default: {}
 
+
    cloudify.azure.relationships.nic_connected_to_security_group:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
@@ -509,6 +540,7 @@ relationships:
             azure_config:
               default: {}
 
+
    cloudify.azure.relationships.vnet_connected_to_subnet:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
@@ -518,7 +550,7 @@ relationships:
           inputs:
             azure_config:
               default: {}
-              
+
 
    cloudify.azure.relationships.public_ip_connected_to_vnet:
     derived_from: cloudify.relationships.connected_to
@@ -541,6 +573,7 @@ relationships:
             azure_config:
               default: {}
 
+
    cloudify.azure.relationships.nic_connected_to_vnet:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
@@ -550,6 +583,7 @@ relationships:
           inputs:
             azure_config:
               default: {}
+
 
    cloudify.azure.relationships.server_connected_to_nic:
     derived_from: cloudify.relationships.connected_to
@@ -561,6 +595,7 @@ relationships:
             azure_config:
               default: {}
 
+
    cloudify.azure.relationships.custom_script_contained_in_server:
     derived_from: cloudify.relationships.contained_in
     source_interfaces:
@@ -570,7 +605,8 @@ relationships:
           inputs:
             azure_config:
               default: {}
-              
+
+
    cloudify.azure.relationships.server_connected_to_datadisk:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
@@ -580,6 +616,7 @@ relationships:
           inputs:
             azure_config:
               default: {}
+
 
    cloudify.azure.relationships.datadisk_contained_in_storage_account:
     derived_from: cloudify.relationships.contained_in
@@ -601,6 +638,7 @@ relationships:
           inputs:
             azure_config:
               default: {}
+
 
    cloudify.azure.relationships.resource_contained_in_resource_group:
     derived_from: cloudify.relationships.contained_in
