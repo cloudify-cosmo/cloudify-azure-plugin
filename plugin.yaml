@@ -149,13 +149,13 @@ node_types:
         description: |
           Administrator password to set on the instance
         default: cloudifyrocks!
-    agent_config:
-      type: cloudify.datatypes.AgentConfig
-      default:
-        install_method: remote
-        port: 5985
-        user: { get_property: [SELF, username] }
-        password: { get_property: [SELF, password] }
+      agent_config:
+        type: cloudify.datatypes.AgentConfig
+        default:
+          install_method: remote
+          port: 5985
+          user: { get_property: [SELF, username] }
+          password: { get_property: [SELF, password] }
 
 
   cloudify.azure.nodes.ServerWithNic:
