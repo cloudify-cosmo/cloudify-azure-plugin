@@ -159,7 +159,7 @@ node_types:
 
 
   cloudify.azure.nodes.ServerWithNic:
-    derived_from: cloudify.azure.nodes.Server
+    derived_from: cloudify.azure.nodes.Instance
     properties:
       use_external_resource:
         description: >
