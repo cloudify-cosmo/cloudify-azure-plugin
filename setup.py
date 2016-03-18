@@ -1,5 +1,5 @@
-########
-# Copyright (c) 2015 GigaSpaces Technologies Ltd. All rights reserved
+# #######
+# Copyright (c) 2016 GigaSpaces Technologies Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,30 +12,25 @@
 #    * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
-
+'''Microsoft Azure plugin for Cloudify package config'''
 
 from setuptools import setup
 
-# Replace the place holders with values for your project
-
 setup(
-
-    # Do not use underscores in the plugin name.
     name='cloudify-azure-plugin',
-    author='Gigaspaces',
-    author_email='cosmo-admin@gigaspaces.com',
-
     version='1.3.1',
-    description='Cloudify plugin for Azure infrastructure.',
-
-    # This must correspond to the actual packages in the plugin.
-    packages=['azurecloudify'],
-
     license='LICENSE',
+    packages=[
+        'cloudify_azure',
+        'cloudify_azure.auth',
+        'cloudify_azure.resources',
+        'cloudify_azure.resources.compute',
+        'cloudify_azure.resources.network',
+        'cloudify_azure.resources.storage'
+    ],
+    description='Microsoft Azure plugin for Cloudify',
     install_requires=[
         'cloudify-plugins-common>=3.3.1',
-        'azure',
-        'lockfile',
         'requests'
     ]
 )
