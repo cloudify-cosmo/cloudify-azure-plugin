@@ -21,6 +21,8 @@ import constants
 import sys
 import auth
 import os
+import utils
+import azurerequests
 from resourcegroup import *
 from cloudify.exceptions import NonRecoverableError,RecoverableError
 from cloudify import ctx
