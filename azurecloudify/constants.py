@@ -72,6 +72,7 @@ EXISTING_VNET_KEY = 'existing_vnet_name'
 
 AVAILABILITY_SET_KEY = 'availability_set_key_name'
 AVAILABILITY_SET_PREFIX = 'availability_set_'
+EXISTING_AVAILABILITY_SET_KEY = 'existing_availability_set_name'
 
 SUBNET_KEY = 'subnet_key_name'
 SUBNET_PREFIX = 'subnet_'
