@@ -36,6 +36,33 @@ def creation_validation(**_):
 @operation
 def create_availability_set(**_):
     utils.set_runtime_properties_from_file()
+    availability_set_name = utils.set_resource_name(_get_availability_set_name, 'Availabilty set',
+                      constants.AVAILABILITY_SET_KEY, constants.EXISTING_AVAILABILITY_SET_KEY,
+                      constants.AVAILABILITY_SET_PREFIX)
+    if availability_set_name is None:
+        # Using an existing storage account, so don't create anything
+        return constants.ACCEPTED_STATUS_CODE
+
+    headers, location, subscription_id = auth.get_credentials()
+    resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+    if constants.AVAILABILITY_SET_KEY not in ctx.instance.runtime_properties:
+        ctx.instance.runtime_properties[constants.AVAILABILITY_SET_KEY] = availability_set_name
+
+    ctx.logger.info("Creating a new availability set: {0}".format(availability_set_name))
+    availability_set_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/availabilitySets/'+availability_set_name+'?api-version='
+    availability_set_params = json.dumps({ 
+           "name": availability_set_name, 
+           "type": "Microsoft.Compute/availabilitySets", 
+           "location": location
+        })
+    status_code = utils.create_resource(headers, availability_set_name, availability_set_params, availability_set_url, 'Availability set')
+    ctx.logger.info("{0} is {1}".format(constants.AVAILABILITY_SET_KEY, availability_set_name))
+    return status_code
+    
+"""    
+@operation
+def create_availability_set(**_):
+    utils.set_runtime_properties_from_file()
     availability_set_name = ''
     if availability_set_name is None:
         return
@@ -68,6 +95,7 @@ def create_availability_set(**_):
         ctx.logger.info("Availabilty set {0} could not be created".format(availability_set_name))
         raise NonRecoverableError("Availabilty Set {} could not be created".format(availability_set_name))
             
+"""
            
 @operation
 def set_dependent_resources_names(azure_config, **kwargs):
@@ -103,7 +131,7 @@ def _validate_node_properties(key, ctx_node_properties):
         raise NonRecoverableError('{0} is a required input. Unable to create.'.format(key))
         
 
-def _get_availabilty_set_name(availability_set_name):  
+def _get_availability_set_name(availability_set_name):  
     ctx.logger.info("In _get_availability_set_name looking for {0} ".format(availability_set_name))
     headers, location, subscription_id = auth.get_credentials()
 
