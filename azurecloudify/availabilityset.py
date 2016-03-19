@@ -15,18 +15,14 @@
 
 # Built-in Imports
 import requests
-from requests import Request,Session,Response
 import json
 import constants
-import sys
-import auth
-import os
 import utils
-import azurerequests
-from resourcegroup import *
-from cloudify.exceptions import NonRecoverableError,RecoverableError
+from cloudify.exceptions import NonRecoverableError
 from cloudify import ctx
 from cloudify.decorators import operation
+import auth
+import azurerequests
 
 
 @operation
