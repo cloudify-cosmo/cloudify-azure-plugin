@@ -34,14 +34,13 @@ def creation_validation(**_):
 @operation
 def create_availability_set(**_):
     utils.set_runtime_properties_from_file()
-    """
     availability_set_name = utils.set_resource_name(_get_availability_set_name, 'Availabilty set',
                       constants.AVAILABILITY_SET_KEY, constants.EXISTING_AVAILABILITY_SET_KEY,
                       constants.AVAILABILITY_SET_PREFIX)
     if availability_set_name is None:
         # Using an existing storage account, so don't create anything
         return constants.ACCEPTED_STATUS_CODE
-"""
+        
     headers, location, subscription_id = auth.get_credentials()
     resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     if constants.AVAILABILITY_SET_KEY not in ctx.instance.runtime_properties:
