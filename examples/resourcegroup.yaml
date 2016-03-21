@@ -22,7 +22,6 @@ inputs:
   client_secret:
     type: string
     required: true
-    default: Maryland123!
   location:
     type: string
     required: true
