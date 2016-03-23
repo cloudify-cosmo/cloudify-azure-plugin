@@ -334,6 +334,79 @@ def get_ancestor_property(inst, prop, rel_type):
     return parent.node.properties.get(prop)
 
 
+def get_rel_id_reference(resource, rel_type, api_fmt=True, _ctx=ctx):
+    '''
+        Finds a resource by relationship type and
+        returns an Azure ID
+
+    :param `cloudify_azure.resources.base.Resource` resource:
+        Resource class to map resources to
+    :param string rel_type: Cloudify relationship name
+    :param boolean api_fmt: If True, returns the resource ID as a dict
+        object with an *id* key. If False, returns just the ID string
+    :param `cloudify.ctx` _ctx: Cloudify context
+    :returns: Azure ID of a resource
+    :rtype: string or dict or None
+    '''
+    subscription_id = get_subscription_id()
+    for rel in _ctx.instance.relationships:
+        if rel_type in rel.type_hierarchy:
+            iface = resource(_ctx=rel.target)
+            name = rel.target.node.properties.get('name')
+            resid = '/subscriptions/{0}{1}/{2}'.format(
+                subscription_id,
+                iface.endpoint,
+                name)
+            if api_fmt:
+                return {'id': resid}
+            return resid
+    return None
+
+
+def get_rel_node_name(rel_type, _ctx=ctx):
+    '''
+        Finds a resource by relationship type and
+        returns its name
+
+    :param string rel_type: Cloudify relationship name
+    :param `cloudify.ctx` _ctx: Cloudify context
+    :returns: Name of a resource
+    :rtype: string or None
+    '''
+    for rel in _ctx.instance.relationships:
+        if rel_type in rel.type_hierarchy:
+            return rel.target.node.properties.get('name')
+    return None
+
+
+def get_rel_id_references(resource, rel_type, api_fmt=True, _ctx=ctx):
+    '''
+        Finds resources by relationship type and
+        returns Azure IDs
+
+    :param `cloudify_azure.resources.base.Resource` resource:
+        Resource class to map resources to
+    :param string rel_type: Cloudify relationship name
+    :param boolean api_fmt: If True, returns the resource IDs as a dict
+        array with an *id* key. If False, returns just the ID strings
+    :param `cloudify.ctx` _ctx: Cloudify context
+    :returns: Azure ID of resources
+    :rtype: array
+    '''
+    ids = list()
+    subscription_id = get_subscription_id()
+    for rel in _ctx.instance.relationships:
+        if rel_type in rel.type_hierarchy:
+            iface = resource(_ctx=rel.target)
+            name = rel.target.node.properties.get('name')
+            resid = '/subscriptions/{0}{1}/{2}'.format(
+                subscription_id,
+                iface.endpoint,
+                name)
+            ids.append({'id': resid} if api_fmt else resid)
+    return ids
+
+
 def get_credentials(_ctx=ctx):
     '''
         Gets any Azure API access information from the

@@ -117,6 +117,72 @@ two options to mitigate this issue on the Cloudify side of things.
  during Manager bootstrapping.
 
 
+Azure Storage Services REST API
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+As of this writing (March 2016) the Microsoft Azure Storage Services API is an
+awkward, XML-only RESTful service that behaves disimilarly to their other
+Resource Manager REST APIs.  While this plugin does not support this interface,
+there are some bits of information that should be shared in case future
+developers or users wish to implement pieces of the API in their applications.
+
+The API uses *Shared Key Authentication* in order to authenticate API requests.
+This is, quite possibly, the least intuitive way to authenticate to a
+modern API.  You can find the official Microsoft explanation here -
+https://msdn.microsoft.com/en-us/library/azure/dd179428.aspx
+
+TL;DR; When you create a Storage Account resource (using this plugin, or
+otherwise), you have access to two unique Access Keys.  You can find them
+in the Azure UI if you click the key icon when looking at your
+Storage Account.  Generally, you want to protect these keys and not
+give them out to users / applications for use.  Instead, you want to create
+a *Signature String* that will accompany requests.
+
+The link above explains how to craft a Signature String and how to make
+requests using GET parameters that align with your Signature String format.
+If you're working in Python, here's a small example of how to construct
+a Signature String.
+
+**Python - create the Signature String**
+
+.. code-block:: python
+
+    import base64
+    import hmac
+    import hashlib
+
+    # Beautiful, isn't it?
+    # Basically, we specify the current date, API version,
+    # Storage Account name, and the operation we want to perform (list)
+    # The goal of this string is to match the request GET parameters and
+    # headers that this string will accompany later. If, for instance,
+    # the date is not the same date we specify in a header later, this
+    # operation will fail.
+    sts = 'GET\n\n\n\n\n\n\n\n\n\n\n\n{0}\n{1}\n/{2}/\n{3}'.format(
+        'x-ms-date:Tue, 22 Mar 2016 02:30:00 GMT',
+        'x-ms-version:2015-02-21',
+        'your_storage_acct',
+        'comp:list')
+
+    # Maths and stuff...
+    # Decode the base64 Storage Account key, use it as our HMAC key.
+    # Take the previously created String to Sign and use it as the HMAC message.
+    # Perform an HMAC using SHA-256 digest and encode the result as base64.
+    sss = base64.b64encode(
+        hmac.new(base64.b64decode(key), sts, hashlib.sha256).digest())
+
+
+**BASH - create the API request using the Signature String**
+
+.. code-block:: bash
+
+    curl -X GET \
+    -H "x-ms-version: 2015-02-21" \
+    -H "x-ms-date: Tue, 22 Mar 2016 02:30:00 GMT" \
+    -H "Authorization: SharedKey your_storage_acct:ZLr5mNVKE3ToBs9HhNzwIDa79N0SLZeaVpXgE32fqGA=" \
+    "https://your_storage_acct.blob.core.windows.net/?comp=list"
+
+
 External Links
 ==============
 .. toctree::

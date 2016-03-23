@@ -50,3 +50,11 @@ REL_IPC_CONNECTED_TO_SUBNET = \
     'cloudify.azure.relationships.ip_configuration_connected_to_subnet'
 REL_IPC_CONNECTED_TO_PUBIP = \
     'cloudify.azure.relationships.ip_configuration_connected_to_public_ip'
+REL_CONNECTED_TO_SA = \
+    'cloudify.azure.relationships.connected_to_storage_account'
+REL_CONNECTED_TO_AS = \
+    'cloudify.azure.relationships.connected_to_availability_set'
+REL_VM_CONNECTED_TO_NIC = \
+    'cloudify.azure.relationships.vm_connected_to_network_interface_card'
+REL_VMX_CONTAINED_IN_VM = \
+    'cloudify.azure.relationships.vmx_contained_in_vm'

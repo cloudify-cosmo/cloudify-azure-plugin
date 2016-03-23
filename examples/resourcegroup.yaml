@@ -7,9 +7,9 @@ imports:
 
 inputs:
   resource_prefix:
-    default: test
+    default: josh
   resource_suffix:
-    default: 99
+    default: 11
   subscription_id:
     type: string
     required: true
@@ -29,6 +29,29 @@ inputs:
   retry_after:
     type: integer
     default: 120
+  # VM inputs
+  vm_size: 
+    type: string
+    required: true
+  vm_image_publisher: 
+    type: string
+    required: true
+  vm_image_offer: 
+    type: string
+    required: true
+  vm_image_sku:
+    type: string
+    required: true
+  vm_image_version:
+    type: string
+    required: true
+  vm_os_username: 
+    type: string
+    required: true
+  vm_os_password: 
+    type: string
+    required: true
+  # Auth inputs
   azure_config:
     default:
       subscription_id: { get_input: subscription_id }
@@ -45,18 +68,18 @@ node_templates:
       location: { get_input: location }
       azure_config: { get_input: azure_config }
       
-#  storage_account:
-#    type: cloudify.azure.nodes.storage.StorageAccount
-#    properties:
-#      name: {concat:[{get_input: resource_prefix},sa,{get_input: resource_suffix}]}
-#      location: { get_input: location }
-#      retry_after: { get_input: retry_after }
-#      azure_config: { get_input: azure_config }
-#      resource_config:
-#        accountType: Standard_LRS
-#    relationships:
-#    - type: cloudify.azure.relationships.contained_in_resource_group
-#      target: resource_group
+  storage_account:
+    type: cloudify.azure.nodes.storage.StorageAccount
+    properties:
+      name: {concat:[{get_input: resource_prefix},sa,{get_input: resource_suffix}]}
+      location: { get_input: location }
+      retry_after: { get_input: retry_after }
+      azure_config: { get_input: azure_config }
+      resource_config:
+        accountType: Standard_LRS
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_resource_group
+      target: resource_group
       
   virtual_network:
     type: cloudify.azure.nodes.network.VirtualNetwork
@@ -126,21 +149,42 @@ node_templates:
     - type: cloudify.azure.relationships.network_security_group_attached_to_subnet
       target: subnet
       
-  network_security_rule:
+  network_security_rule_rdp:
     type: cloudify.azure.nodes.network.NetworkSecurityRule
     properties:
-      name: {concat:[{get_input: resource_prefix},nsr,{get_input: resource_suffix}]}
+      name: {concat:[{get_input: resource_prefix},nsr_rdp,{get_input: resource_suffix}]}
       location: { get_input: location }
       retry_after: { get_input: retry_after }
       azure_config: { get_input: azure_config }
       resource_config:
-        description: SSH allow
+        description: RDP allow
         protocol: Tcp
         sourcePortRange: '*'
-        destinationPortRange: 22
+        destinationPortRange: 3389
         sourceAddressPrefix: '*'
         destinationAddressPrefix: '*'
         priority: 100
+        access: Allow
+        direction: Inbound
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_network_security_group
+      target: network_security_group
+  
+  network_security_rule_winrm:
+    type: cloudify.azure.nodes.network.NetworkSecurityRule
+    properties:
+      name: {concat:[{get_input: resource_prefix},nsr_winrm,{get_input: resource_suffix}]}
+      location: { get_input: location }
+      retry_after: { get_input: retry_after }
+      azure_config: { get_input: azure_config }
+      resource_config:
+        description: WinRM-HTTP allow
+        protocol: Tcp
+        sourcePortRange: '*'
+        destinationPortRange: 5985
+        sourceAddressPrefix: '*'
+        destinationAddressPrefix: '*'
+        priority: 101
         access: Allow
         direction: Inbound
     relationships:
@@ -197,3 +241,53 @@ node_templates:
     relationships:
     - type: cloudify.azure.relationships.contained_in_resource_group
       target: resource_group
+
+  virtual_machine:
+    type: cloudify.azure.nodes.compute.VirtualMachine
+    properties:
+      name: {concat:[{get_input: resource_prefix},vm,{get_input: resource_suffix}]}
+      location: { get_input: location }
+      retry_after: { get_input: retry_after }
+      azure_config: { get_input: azure_config }
+      resource_config:
+        hardwareProfile:
+          vmSize: { get_input: vm_size }
+        storageProfile:
+          imageReference:
+            publisher: { get_input: vm_image_publisher }
+            offer: { get_input: vm_image_offer }
+            sku: { get_input: vm_image_sku }
+            version: { get_input: vm_image_version }
+        osProfile:
+          computerName: { get_property: [SELF, name] }
+          adminUsername: { get_input: vm_os_username }
+          adminPassword: { get_input: vm_os_password }
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_resource_group
+      target: resource_group
+    - type: cloudify.azure.relationships.connected_to_storage_account
+      target: storage_account
+    - type: cloudify.azure.relationships.connected_to_availability_set
+      target: availability_set
+    - type: cloudify.azure.relationships.vm_connected_to_network_interface_card
+      target: network_interface_card
+      
+  virtual_machine_extension:
+    type: cloudify.azure.nodes.compute.VirtualMachineExtension
+    properties:
+      name: {concat:[{get_input: resource_prefix},vmx,{get_input: resource_suffix}]}
+      location: { get_input: location }
+      retry_after: { get_input: retry_after }
+      azure_config: { get_input: azure_config }
+      resource_config:
+        publisher: Microsoft.Compute
+        ext_type: CustomScriptExtension
+        typeHandlerVersion: "1.4"
+        settings:
+          fileUris:
+          - https://raw.githubusercontent.com/01000101/cloudify-azure-plugin/rebuild/scripts/ps_enable_winrm_http.ps1
+          commandToExecute: >-
+            powershell -ExecutionPolicy Unrestricted -file ps_enable_winrm_http.ps1
+    relationships:
+    - type: cloudify.azure.relationships.vmx_contained_in_vm
+      target: virtual_machine

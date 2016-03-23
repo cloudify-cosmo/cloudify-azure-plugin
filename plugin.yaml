@@ -12,14 +12,14 @@ data_types:
   cloudify.datatypes.azure.Config:
     properties:
       subscription_id:
-        description: |
+        description: >
           A Microsoft Azure subscription ID. This is a unique
           user account in Azure. This can be found in the
           Subscriptions tab on your dashboard.
         type: string
         required: false
       tenant_id:
-        description: |
+        description: >
           A Microsoft Azure tenant ID. This can be found in
           the Azure Active Directory dashboard by accessing
           your directory. Open the Application Endpoints
@@ -28,7 +28,7 @@ data_types:
         type: string
         required: false
       client_id:
-        description: |
+        description: >
           A Microsoft Azure client ID. This can be found in
           the Azure Active Directory dashboard by accessing
           your directory. View the Applications tab and select
@@ -38,25 +38,25 @@ data_types:
         type: string
         required: false
       client_secret:
-        description: |
+        description: >
           A Microsoft Azure client secret key. This can be found
           or generated in the same location as your client ID.
         type: string
         required: false
 
   cloudify.datatypes.azure.storage.StorageAccountConfig:
-    description: |
+    description: >
       See https://msdn.microsoft.com/en-us/library/mt163564.aspx
     properties:
       accountType:
-        description: |
+        description: >
           An storage account type (case sensitive)
         type: string
         default: Standard_LRS
         required: true
 
   cloudify.datatypes.azure.network.VirtualNetworkConfig:
-    description: |
+    description: >
       See https://msdn.microsoft.com/en-us/library/mt163661.aspx
     properties:
       addressSpace:
@@ -71,14 +71,14 @@ data_types:
         required: false
         
   cloudify.datatypes.azure.network.NetworkSecurityGroupConfig:
-    description: |
+    description: >
       See https://msdn.microsoft.com/en-us/library/mt163656.aspx
     properties:
       securityRules:
         required: false
         
   cloudify.datatypes.azure.network.NetworkSecurityRuleConfig:
-    description: |
+    description: >
       See https://msdn.microsoft.com/en-us/library/mt163645.aspx
     properties:
       description:
@@ -110,7 +110,7 @@ data_types:
         required: true
         
   cloudify.datatypes.azure.network.SubnetConfig:
-    description: |
+    description: >
       See https://msdn.microsoft.com/en-us/library/mt163621.aspx
     properties:
       addressPrefix:
@@ -121,14 +121,14 @@ data_types:
         required: false
         
   cloudify.datatypes.azure.network.RouteTableConfig:
-    description: |
+    description: >
       See https://msdn.microsoft.com/en-us/library/mt502548.aspx
     properties:
       routes:
         required: false
         
   cloudify.datatypes.azure.network.RouteConfig:
-    description: |
+    description: >
       See https://msdn.microsoft.com/en-us/library/mt459110.aspx
     properties:
       addressPrefix:
@@ -143,7 +143,7 @@ data_types:
         
 
   cloudify.datatypes.azure.network.NetworkInterfaceCardConfig:
-    description: |
+    description: >
       See https://msdn.microsoft.com/en-us/library/mt163668.aspx
     properties:
       networkSecurityGroups:
@@ -158,48 +158,48 @@ data_types:
     properties:
       privateIPAddress:
         type: string
-        description: |
+        description: >
           Static, private IP Address
         required: false
       privateIPAllocationMethod:
         type: string
-        description: |
+        description: >
           Defines how a private IP address is assigned. Options
           are Static or Dynamic
         required: true
         
   cloudify.datatypes.azure.network.PublicIPAddressConfig:
-    description: |
+    description: >
       See https://msdn.microsoft.com/en-us/library/mt163590.aspx
     properties:
       publicIPAllocationMethod:
         type: string
-        description: |
+        description: >
           Defines whether the IP address is stable or dynamic.
           Options are Static or Dynamic
         required: true
       idleTimeoutInMinutes:
         type: integer
-        description: |
+        description: >
           Specifies the timeout (in minutes) for the TCP idle connection.
           The value can be set between 4 and 30 minutes
         required: false
       domainNameLabel:
         type: string
-        description: |
+        description: >
           The concatenation of the domain name label and the regionalized
           DNS zone make up the fully qualified domain name associated
           with the public IP address.
         required: false
       reverseFqdn:
         type: string
-        description: |
+        description: >
           A fully qualified domain name that resolves to this
           public IP address.
         required: false
         
   cloudify.datatypes.azure.compute.AvailabilitySetConfig:
-    description: |
+    description: >
       See https://msdn.microsoft.com/en-us/library/mt163607.aspx
     properties:
       platformUpdateDomainCount:
@@ -208,7 +208,37 @@ data_types:
       platformFaultDomainCount:
         type: integer
         required: false
-
+        
+  cloudify.datatypes.azure.compute.VirtualMachineConfig:
+    description: >
+      https://msdn.microsoft.com/en-us/library/azure/mt163591.aspx
+    properties:
+      hardwareProfile:
+        required: true
+      storageProfile:
+        required: true
+      osProfile:
+        required: true
+        
+  cloudify.datatypes.azure.compute.VirtualMachineExtensionConfig:
+    description: >
+      See https://msdn.microsoft.com/en-us/library/azure/mt163624.aspx
+    properties:
+      publisher:
+        type: string
+        required: true
+      ext_type:
+        description: >
+          Since "type" is a reserved name, "ext_type" maps to "type"
+        type: string
+        required: true
+      typeHandlerVersion:
+        type: string
+        required: true
+        default: 1.4
+      settings:
+        required: false
+              
 
 node_types:
   cloudify.azure.nodes.ResourceGroup:
@@ -216,7 +246,7 @@ node_types:
     properties:
       name:
         type: string
-        description: |
+        description: >
           Name for the resource. Resource group name must be no longer than
           80 characters long. It can contain only alphanumeric characters,
           dash, underscore, opening parenthesis, closing parenthesis,
@@ -224,28 +254,28 @@ node_types:
         required: true
       location:
         type: string
-        description: |
+        description: >
           Specifies the supported Azure location for the resource
         required: false
       tags:
-        description: |
+        description: >
           Specifies a dictionary of one or more name and value pairs that describe a tag
         required: false
       use_external_resource:
-        description: |
+        description: >
           Indicate whether the resource exists or if Cloudify should create the resource
         type: boolean
         default: false
         required: true
       retry_after:
-        description: |
+        description: >
           Overrides the Azure-specified "retry_after" response. This property
           will set the number of seconds for each task retry interval (in the
           case of iteratively checking the status of an asynchronous operation)
         type: integer
         required: false
       azure_config:
-        description: |
+        description: >
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
@@ -259,47 +289,47 @@ node_types:
     properties:
       name:
         type: string
-        description: |
+        description: >
           Name for the resource. Storage account name must be between
           3 and 24 characters in length and use numbers and lower-case
           letters only.
         required: true
       resource_group_name:
         type: string
-        description: |
+        description: >
           Name of the Resource Group that the existing resource belongs to
           (this is only useful when not using a relationship between a resource
           node and a Resource Group node)
         required: false
       location:
         type: string
-        description: |
+        description: >
           Specifies the supported Azure location for the resource
         required: false
       tags:
-        description: |
+        description: >
           Specifies a dictionary of one or more name and value pairs that describe a tag
         required: false
       resource_config:
-        description: |
+        description: >
           A dictionary of values to pass as properties when creating the resource
         type: cloudify.datatypes.azure.storage.StorageAccountConfig
         required: true
       use_external_resource:
-        description: |
+        description: >
           Indicate whether the resource exists or if Cloudify should create the resource
         type: boolean
         default: false
         required: true
       retry_after:
-        description: |
+        description: >
           Overrides the Azure-specified "retry_after" response. This property
           will set the number of seconds for each task retry interval (in the
           case of iteratively checking the status of an asynchronous operation)
         type: integer
         required: false
       azure_config:
-        description: |
+        description: >
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
@@ -313,45 +343,45 @@ node_types:
     properties:
       name:
         type: string
-        description: |
+        description: >
           Name for the resource. 
         required: true
       resource_group_name:
         type: string
-        description: |
+        description: >
           Name of the Resource Group that the existing resource belongs to
           (this is only useful when not using a relationship between a resource
           node and a Resource Group node)
         required: false
       location:
         type: string
-        description: |
+        description: >
           Specifies the supported Azure location for the resource
         required: false
       tags:
-        description: |
+        description: >
           Specifies a dictionary of one or more name and value pairs that describe a tag
         required: false
       resource_config:
-        description: |
+        description: >
           A dictionary of values to pass as properties when creating the resource
         type: cloudify.datatypes.azure.network.VirtualNetworkConfig
         required: false
       use_external_resource:
-        description: |
+        description: >
           Indicate whether the resource exists or if Cloudify should create the resource
         type: boolean
         default: false
         required: true
       retry_after:
-        description: |
+        description: >
           Overrides the Azure-specified "retry_after" response. This property
           will set the number of seconds for each task retry interval (in the
           case of iteratively checking the status of an asynchronous operation)
         type: integer
         required: false
       azure_config:
-        description: |
+        description: >
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
@@ -365,45 +395,45 @@ node_types:
     properties:
       name:
         type: string
-        description: |
+        description: >
           Name for the resource. 
         required: true
       resource_group_name:
         type: string
-        description: |
+        description: >
           Name of the Resource Group that the existing resource belongs to
           (this is only useful when not using a relationship between a resource
           node and a Resource Group node)
         required: false
       location:
         type: string
-        description: |
+        description: >
           Specifies the supported Azure location for the resource
         required: false
       tags:
-        description: |
+        description: >
           Specifies a dictionary of one or more name and value pairs that describe a tag
         required: false
       resource_config:
-        description: |
+        description: >
           A dictionary of values to pass as properties when creating the resource
         type: cloudify.datatypes.azure.network.NetworkSecurityGroupConfig
         required: false
       use_external_resource:
-        description: |
+        description: >
           Indicate whether the resource exists or if Cloudify should create the resource
         type: boolean
         default: false
         required: true
       retry_after:
-        description: |
+        description: >
           Overrides the Azure-specified "retry_after" response. This property
           will set the number of seconds for each task retry interval (in the
           case of iteratively checking the status of an asynchronous operation)
         type: integer
         required: false
       azure_config:
-        description: |
+        description: >
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
@@ -417,52 +447,52 @@ node_types:
     properties:
       name:
         type: string
-        description: |
+        description: >
           Name for the resource. 
         required: true
       resource_group_name:
         type: string
-        description: |
+        description: >
           Name of the Resource Group that the existing resource belongs to
           (this is only useful when not using a relationship between a resource
           node and a Resource Group node)
         required: false
       network_security_group_name:
         type: string
-        description: |
+        description: >
           Name of the Network Security Group that the existing resource belongs to
           (this is only useful when not using a relationship between a resource
-          node and a Virtual Network node)
+          node and a Network Security Groupnode)
         required: false
       location:
         type: string
-        description: |
+        description: >
           Specifies the supported Azure location for the resource
         required: false
       tags:
-        description: |
+        description: >
           Specifies a dictionary of one or more name and value pairs that describe a tag
         required: false
       resource_config:
-        description: |
+        description: >
           A dictionary of values to pass as properties when creating the resource
         type: cloudify.datatypes.azure.network.NetworkSecurityRuleConfig
         required: false
       use_external_resource:
-        description: |
+        description: >
           Indicate whether the resource exists or if Cloudify should create the resource
         type: boolean
         default: false
         required: true
       retry_after:
-        description: |
+        description: >
           Overrides the Azure-specified "retry_after" response. This property
           will set the number of seconds for each task retry interval (in the
           case of iteratively checking the status of an asynchronous operation)
         type: integer
         required: false
       azure_config:
-        description: |
+        description: >
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
@@ -476,52 +506,52 @@ node_types:
     properties:
       name:
         type: string
-        description: |
+        description: >
           Name for the resource. 
         required: true
       resource_group_name:
         type: string
-        description: |
+        description: >
           Name of the Resource Group that the existing resource belongs to
           (this is only useful when not using a relationship between a resource
           node and a Resource Group node)
         required: false
       virtual_network_name:
         type: string
-        description: |
+        description: >
           Name of the Virtual Network that the existing resource belongs to
           (this is only useful when not using a relationship between a resource
           node and a Virtual Network node)
         required: false
       location:
         type: string
-        description: |
+        description: >
           Specifies the supported Azure location for the resource
         required: false
       tags:
-        description: |
+        description: >
           Specifies a dictionary of one or more name and value pairs that describe a tag
         required: false
       resource_config:
-        description: |
+        description: >
           A dictionary of values to pass as properties when creating the resource
         type: cloudify.datatypes.azure.network.SubnetConfig
         required: false
       use_external_resource:
-        description: |
+        description: >
           Indicate whether the resource exists or if Cloudify should create the resource
         type: boolean
         default: false
         required: true
       retry_after:
-        description: |
+        description: >
           Overrides the Azure-specified "retry_after" response. This property
           will set the number of seconds for each task retry interval (in the
           case of iteratively checking the status of an asynchronous operation)
         type: integer
         required: false
       azure_config:
-        description: |
+        description: >
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
@@ -535,45 +565,45 @@ node_types:
     properties:
       name:
         type: string
-        description: |
+        description: >
           Name for the resource. 
         required: true
       resource_group_name:
         type: string
-        description: |
+        description: >
           Name of the Resource Group that the existing resource belongs to
           (this is only useful when not using a relationship between a resource
           node and a Resource Group node)
         required: false
       location:
         type: string
-        description: |
+        description: >
           Specifies the supported Azure location for the resource
         required: false
       tags:
-        description: |
+        description: >
           Specifies a dictionary of one or more name and value pairs that describe a tag
         required: false
       resource_config:
-        description: |
+        description: >
           A dictionary of values to pass as properties when creating the resource
         type: cloudify.datatypes.azure.network.RouteTableConfig
         required: false
       use_external_resource:
-        description: |
+        description: >
           Indicate whether the resource exists or if Cloudify should create the resource
         type: boolean
         default: false
         required: true
       retry_after:
-        description: |
+        description: >
           Overrides the Azure-specified "retry_after" response. This property
           will set the number of seconds for each task retry interval (in the
           case of iteratively checking the status of an asynchronous operation)
         type: integer
         required: false
       azure_config:
-        description: |
+        description: >
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
@@ -587,52 +617,52 @@ node_types:
     properties:
       name:
         type: string
-        description: |
+        description: >
           Name for the resource. 
         required: true
       resource_group_name:
         type: string
-        description: |
+        description: >
           Name of the Resource Group that the existing resource belongs to
           (this is only useful when not using a relationship between a resource
           node and a Resource Group node)
         required: false
       route_table_name:
         type: string
-        description: |
+        description: >
           Name of the Network Security Group that the existing resource belongs to
           (this is only useful when not using a relationship between a resource
           node and a Virtual Network node)
         required: false
       location:
         type: string
-        description: |
+        description: >
           Specifies the supported Azure location for the resource
         required: false
       tags:
-        description: |
+        description: >
           Specifies a dictionary of one or more name and value pairs that describe a tag
         required: false
       resource_config:
-        description: |
+        description: >
           A dictionary of values to pass as properties when creating the resource
         type: cloudify.datatypes.azure.network.RouteConfig
         required: false
       use_external_resource:
-        description: |
+        description: >
           Indicate whether the resource exists or if Cloudify should create the resource
         type: boolean
         default: false
         required: true
       retry_after:
-        description: |
+        description: >
           Overrides the Azure-specified "retry_after" response. This property
           will set the number of seconds for each task retry interval (in the
           case of iteratively checking the status of an asynchronous operation)
         type: integer
         required: false
       azure_config:
-        description: |
+        description: >
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
@@ -646,45 +676,45 @@ node_types:
     properties:
       name:
         type: string
-        description: |
+        description: >
           Name for the resource. 
         required: true
       resource_group_name:
         type: string
-        description: |
+        description: >
           Name of the Resource Group that the existing resource belongs to
           (this is only useful when not using a relationship between a resource
           node and a Resource Group node)
         required: false
       location:
         type: string
-        description: |
+        description: >
           Specifies the supported Azure location for the resource
         required: false
       tags:
-        description: |
+        description: >
           Specifies a dictionary of one or more name and value pairs that describe a tag
         required: false
       resource_config:
-        description: |
+        description: >
           A dictionary of values to pass as properties when creating the resource
         type: cloudify.datatypes.azure.network.NetworkInterfaceCardConfig
         required: false
       use_external_resource:
-        description: |
+        description: >
           Indicate whether the resource exists or if Cloudify should create the resource
         type: boolean
         default: false
         required: true
       retry_after:
-        description: |
+        description: >
           Overrides the Azure-specified "retry_after" response. This property
           will set the number of seconds for each task retry interval (in the
           case of iteratively checking the status of an asynchronous operation)
         type: integer
         required: false
       azure_config:
-        description: |
+        description: >
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
@@ -698,18 +728,18 @@ node_types:
     properties:
       name:
         type: string
-        description: |
+        description: >
           Name for the resource. 
         required: true
       resource_group_name:
         type: string
-        description: |
+        description: >
           Name of the Resource Group that the existing resource belongs to
           (this is only useful when not using a relationship between a resource
           node and a Resource Group node)
         required: false
       resource_config:
-        description: |
+        description: >
           A dictionary of values to pass as properties when creating the resource
         type: cloudify.datatypes.azure.network.IPConfigurationConfig
         required: true
@@ -719,45 +749,45 @@ node_types:
     properties:
       name:
         type: string
-        description: |
+        description: >
           Name for the resource. 
         required: true
       resource_group_name:
         type: string
-        description: |
+        description: >
           Name of the Resource Group that the existing resource belongs to
           (this is only useful when not using a relationship between a resource
           node and a Resource Group node)
         required: false
       location:
         type: string
-        description: |
+        description: >
           Specifies the supported Azure location for the resource
         required: false
       tags:
-        description: |
+        description: >
           Specifies a dictionary of one or more name and value pairs that describe a tag
         required: false
       resource_config:
-        description: |
+        description: >
           A dictionary of values to pass as properties when creating the resource
         type: cloudify.datatypes.azure.network.PublicIPAddressConfig
         required: false
       use_external_resource:
-        description: |
+        description: >
           Indicate whether the resource exists or if Cloudify should create the resource
         type: boolean
         default: false
         required: true
       retry_after:
-        description: |
+        description: >
           Overrides the Azure-specified "retry_after" response. This property
           will set the number of seconds for each task retry interval (in the
           case of iteratively checking the status of an asynchronous operation)
         type: integer
         required: false
       azure_config:
-        description: |
+        description: >
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
@@ -771,45 +801,45 @@ node_types:
     properties:
       name:
         type: string
-        description: |
+        description: >
           Name for the resource.
         required: true
       resource_group_name:
         type: string
-        description: |
+        description: >
           Name of the Resource Group that the existing resource belongs to
           (this is only useful when not using a relationship between a resource
           node and a Resource Group node)
         required: false
       location:
         type: string
-        description: |
+        description: >
           Specifies the supported Azure location for the resource
         required: false
       tags:
-        description: |
+        description: >
           Specifies a dictionary of one or more name and value pairs that describe a tag
         required: false
       resource_config:
-        description: |
+        description: >
           A dictionary of values to pass as properties when creating the resource
         type: cloudify.datatypes.azure.compute.AvailabilitySetConfig
         required: true
       use_external_resource:
-        description: |
+        description: >
           Indicate whether the resource exists or if Cloudify should create the resource
         type: boolean
         default: false
         required: true
       retry_after:
-        description: |
+        description: >
           Overrides the Azure-specified "retry_after" response. This property
           will set the number of seconds for each task retry interval (in the
           case of iteratively checking the status of an asynchronous operation)
         type: integer
         required: false
       azure_config:
-        description: |
+        description: >
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
@@ -818,7 +848,118 @@ node_types:
         create: pkg.cloudify_azure.resources.compute.availabilityset.create
         delete: pkg.cloudify_azure.resources.compute.availabilityset.delete
 
-
+  cloudify.azure.nodes.compute.VirtualMachine:
+    derived_from: cloudify.nodes.Root
+    properties:
+      name:
+        type: string
+        description: >
+          Name for the resource.
+        required: true
+      resource_group_name:
+        type: string
+        description: >
+          Name of the Resource Group that the existing resource belongs to
+          (this is only useful when not using a relationship between a resource
+          node and a Resource Group node)
+        required: false
+      location:
+        type: string
+        description: >
+          Specifies the supported Azure location for the resource
+        required: false
+      tags:
+        description: >
+          Specifies a dictionary of one or more name and value pairs that describe a tag
+        required: false
+      resource_config:
+        description: >
+          A dictionary of values to pass as properties when creating the resource
+        type: cloudify.datatypes.azure.compute.VirtualMachineConfig
+        required: true
+      use_external_resource:
+        description: >
+          Indicate whether the resource exists or if Cloudify should create the resource
+        type: boolean
+        default: false
+        required: true
+      retry_after:
+        description: >
+          Overrides the Azure-specified "retry_after" response. This property
+          will set the number of seconds for each task retry interval (in the
+          case of iteratively checking the status of an asynchronous operation)
+        type: integer
+        required: false
+      azure_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create: pkg.cloudify_azure.resources.compute.virtualmachine.create
+        delete: pkg.cloudify_azure.resources.compute.virtualmachine.delete
+        
+  cloudify.azure.nodes.compute.VirtualMachineExtension:
+    derived_from: cloudify.nodes.Root
+    properties:
+      name:
+        type: string
+        description: >
+          Name for the resource. 
+        required: true
+      resource_group_name:
+        type: string
+        description: >
+          Name of the Resource Group that the existing resource belongs to
+          (this is only useful when not using a relationship between a resource
+          node and a Resource Group node)
+        required: false
+      virtual_machine_name:
+        type: string
+        description: >
+          Name of the Virtual Machine that the existing resource belongs to
+          (this is only useful when not using a relationship between a resource
+          node and a Virtual Machine node)
+        required: false
+      location:
+        type: string
+        description: >
+          Specifies the supported Azure location for the resource
+        required: false
+      tags:
+        description: >
+          Specifies a dictionary of one or more name and value pairs that describe a tag
+        required: false
+      resource_config:
+        description: >
+          A dictionary of values to pass as properties when creating the resource
+        type: cloudify.datatypes.azure.compute.VirtualMachineExtensionConfig
+        required: false
+      use_external_resource:
+        description: >
+          Indicate whether the resource exists or if Cloudify should create the resource
+        type: boolean
+        default: false
+        required: true
+      retry_after:
+        description: >
+          Overrides the Azure-specified "retry_after" response. This property
+          will set the number of seconds for each task retry interval (in the
+          case of iteratively checking the status of an asynchronous operation)
+        type: integer
+        required: false
+      azure_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create: pkg.cloudify_azure.resources.compute.virtualmachineextension.create
+        delete: pkg.cloudify_azure.resources.compute.virtualmachineextension.delete
+        
+        
 relationships:
   cloudify.azure.relationships.contained_in_resource_group:
     derived_from: cloudify.relationships.contained_in
@@ -857,3 +998,15 @@ relationships:
     
   cloudify.azure.relationships.ip_configuration_connected_to_public_ip:
     derived_from: cloudify.relationships.connected_to
+    
+  cloudify.azure.relationships.connected_to_storage_account:
+    derived_from: cloudify.relationships.connected_to
+    
+  cloudify.azure.relationships.connected_to_availability_set:
+    derived_from: cloudify.relationships.connected_to
+
+  cloudify.azure.relationships.vm_connected_to_network_interface_card:
+    derived_from: cloudify.relationships.connected_to
+    
+  cloudify.azure.relationships.vmx_contained_in_vm:
+    derived_from: cloudify.relationships.contained_in

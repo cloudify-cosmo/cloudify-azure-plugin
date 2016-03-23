@@ -61,35 +61,6 @@ def get_ip_configurations(_ctx=ctx):
     return [x for x in ipconfigs if x is not None]
 
 
-def get_id_reference(resource, rel_type, api_fmt=True, _ctx=ctx):
-    '''
-        Finds a resource by relationship type and
-        returns an Azure ID
-
-    :param `cloudify_azure.resources.base.Resource` resource:
-        Resource class to map resources to
-    :param string rel_type: Cloudify relationship name
-    :param boolean api_fmt: If True, returns the resource ID as a dict
-        object with an *id* key. If False, returns just the ID string
-    :param `cloudify.ctx` _ctx: Cloudify context
-    :returns: Azure ID of a resource
-    :rtype: string or dict or None
-    '''
-    subscription_id = utils.get_subscription_id()
-    for rel in _ctx.instance.relationships:
-        if rel_type in rel.type_hierarchy:
-            iface = resource(_ctx=rel.target)
-            name = rel.target.node.properties.get('name')
-            resid = '/subscriptions/{0}{1}/{2}'.format(
-                subscription_id,
-                iface.endpoint,
-                name)
-            if api_fmt:
-                return {'id': resid}
-            return resid
-    return None
-
-
 def build_ip_configuration(ipc):
     '''
         Attempts to construct a proper IP Configuration from
@@ -103,13 +74,15 @@ def build_ip_configuration(ipc):
     if not ipc or not ipc.instance.relationships:
         return None
     # Find a referenced Subnet
-    subnet = get_id_reference(Subnet,
-                              constants.REL_IPC_CONNECTED_TO_SUBNET,
-                              _ctx=ipc)
+    subnet = utils.get_rel_id_reference(
+        Subnet,
+        constants.REL_IPC_CONNECTED_TO_SUBNET,
+        _ctx=ipc)
     # Find a referenced Public IP
-    pubip = get_id_reference(PublicIPAddress,
-                             constants.REL_IPC_CONNECTED_TO_PUBIP,
-                             _ctx=ipc)
+    pubip = utils.get_rel_id_reference(
+        PublicIPAddress,
+        constants.REL_IPC_CONNECTED_TO_PUBIP,
+        _ctx=ipc)
 
     # Build a partial config and update it with properties config
     return utils.dict_update({
