@@ -31,6 +31,8 @@ from cloudify_azure.resources.network.networkinterfacecard \
     import NetworkInterfaceCard
 from cloudify_azure.resources.compute.availabilityset \
     import AvailabilitySet
+from cloudify_azure.resources.compute.virtualmachineextension \
+    import VirtualMachineExtension
 
 
 class VirtualMachine(Resource):
@@ -119,6 +121,32 @@ def create(**_):
                     'osProfile': os_profile
                 }
             )
+        })
+
+
+@operation
+def configure(ps_entry, ps_urls, **_):
+    '''Configures the resource'''
+    # Use a Virtual Machine Extension to enable WinRM HTTP (unencrypted)
+    # This entire function can be overridden from the plugin
+    command_to_exec = 'powershell -ExecutionPolicy Unrestricted ' \
+                      '-file {0}'.format(ps_entry)
+    utils.task_resource_create(
+        VirtualMachineExtension(
+            virtual_machine=ctx.node.properties.get('name')
+        ),
+        {
+            'location': ctx.node.properties.get('location'),
+            'tags': ctx.node.properties.get('tags'),
+            'properties': {
+                'publisher': 'Microsoft.Compute',
+                'type': 'CustomScriptExtension',
+                'typeHandlerVersion': '1.4',
+                'settings': {
+                    'fileUris': ps_urls,
+                    'commandToExecute': command_to_exec
+                }
+            }
         })
 
 

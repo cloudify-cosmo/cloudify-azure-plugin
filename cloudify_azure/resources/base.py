@@ -137,9 +137,18 @@ class Resource(object):
             json=params)
         # Convert headers from CaseInsensitiveDict to Dict
         headers = dict(res.headers)
+        self.log.debug('headers: {0}'.format(headers))
         # Check the response
+        # HTTP 201 (CREATED) - The operation has started
+        if res.status_code == httplib.CREATED:
+            if headers.get('location'):
+                self.ctx.instance.runtime_properties['async_op'] = headers
+                raise RecoverableError(
+                    'Operation "{0}" started'
+                    .format(self.get_operation_id(headers)),
+                    retry_after=self.get_retry_after(headers))
         # HTTP 202 (ACCEPTED) - The operation has started but is asynchronous
-        if res.status_code == httplib.ACCEPTED:
+        elif res.status_code == httplib.ACCEPTED:
             if not headers.get('location'):
                 raise RecoverableError(
                     'HTTP 202 ACCEPTED but no Location header present')
@@ -150,6 +159,12 @@ class Resource(object):
                 retry_after=self.get_retry_after(headers))
         # HTTP 200 (OK) - The resource already exists
         elif res.status_code == httplib.OK:
+            if headers.get('azure-asyncoperation'):
+                self.ctx.instance.runtime_properties['async_op'] = headers
+                raise RecoverableError(
+                    'Operation "{0}" started'
+                    .format(self.get_operation_id(headers)),
+                    retry_after=self.get_retry_after(headers))
             self.log.warn('{0} already exists. Using resource.'
                           .format(self.name))
             return
@@ -163,10 +178,9 @@ class Resource(object):
                 'Operation failed. (code={0}, data={1})'
                 .format(res.status_code, res.text))
         # All other errors will be treated as recoverable
-        elif res.status_code != httplib.CREATED:
-            raise RecoverableError(
-                'Expected HTTP status code {0}, recieved {1}'
-                .format(httplib.CREATED, res.status_code))
+        raise RecoverableError(
+            'Expected HTTP status code {0}, recieved {1}'
+            .format(httplib.CREATED, res.status_code))
 
     def update(self, name, params, force=False):
         '''
@@ -288,13 +302,21 @@ class Resource(object):
         # Make the request
         self.log.info('Checking status of operation "{0}"'
                       .format(op_id))
+        op_url = op_info.get('location') or \
+            op_info.get('azure-asyncoperation')
         res = self.client.request(method='get',
-                                  url=op_info['location'])
+                                  url=op_url)
         # Convert headers from CaseInsensitiveDict to Dict
         headers = dict(res.headers)
         self.ctx.instance.runtime_properties['async_op'] = None
         # HTTP 200 (OK) - Operation is successful and complete
         if res.status_code == httplib.OK:
+            if headers.get('azure-asyncoperation'):
+                if res.json().get('status') == 'InProgress':
+                    raise RecoverableError(
+                        'Operation "{0}" still pending'
+                        .format(self.get_operation_id(headers)),
+                        retry_after=self.get_retry_after(headers))
             return
         # HTTP 202 (ACCEPTED) - Operation is still pending
         elif res.status_code == httplib.ACCEPTED:

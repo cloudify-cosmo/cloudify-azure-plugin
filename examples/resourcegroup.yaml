@@ -9,7 +9,7 @@ inputs:
   resource_prefix:
     default: josh
   resource_suffix:
-    default: 11
+    default: 12
   subscription_id:
     type: string
     required: true
@@ -271,7 +271,7 @@ node_templates:
       target: availability_set
     - type: cloudify.azure.relationships.vm_connected_to_network_interface_card
       target: network_interface_card
-      
+
   virtual_machine_extension:
     type: cloudify.azure.nodes.compute.VirtualMachineExtension
     properties:
@@ -284,10 +284,8 @@ node_templates:
         ext_type: CustomScriptExtension
         typeHandlerVersion: "1.4"
         settings:
-          fileUris:
-          - https://raw.githubusercontent.com/01000101/cloudify-azure-plugin/rebuild/scripts/ps_enable_winrm_http.ps1
           commandToExecute: >-
-            powershell -ExecutionPolicy Unrestricted -file ps_enable_winrm_http.ps1
+            echo Hello, Cloudify user!
     relationships:
     - type: cloudify.azure.relationships.vmx_contained_in_vm
       target: virtual_machine

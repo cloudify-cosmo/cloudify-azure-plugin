@@ -898,6 +898,19 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         create: pkg.cloudify_azure.resources.compute.virtualmachine.create
+        configure:
+          implementation: pkg.cloudify_azure.resources.compute.virtualmachine.configure
+          inputs:
+            ps_entry:
+              description: >
+                This is the entry point file name that the CustomScriptExtension
+                will execute. Multiple files can be specified in ps_urls and this
+                input sets which file to start executing. The file which is loaded
+                first can then load the other files and continue executing. 
+              default: ps_enable_winrm_http.ps1
+            ps_urls:
+              default:
+              - https://raw.githubusercontent.com/01000101/cloudify-azure-plugin/rebuild/scripts/ps_enable_winrm_http.ps1
         delete: pkg.cloudify_azure.resources.compute.virtualmachine.delete
         
   cloudify.azure.nodes.compute.VirtualMachineExtension:
