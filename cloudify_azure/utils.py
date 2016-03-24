@@ -13,8 +13,8 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 '''
-    cloudify_azure.utils
-    ~~~~~~~~~~~~~~~~~~~~
+    Utils
+    ~~~~~
     Microsoft Azure plugin for Cloudify helper utilities
 '''
 

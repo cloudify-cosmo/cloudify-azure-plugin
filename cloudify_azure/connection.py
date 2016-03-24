@@ -13,8 +13,8 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 '''
-    cloudify_azure.connection
-    ~~~~~~~~~~~~~~~~~~~~~~~~~
+    Connection
+    ~~~~~~~~~~
     Microsoft Azure REST API connection helpers
 '''
 

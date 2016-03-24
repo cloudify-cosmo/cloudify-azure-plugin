@@ -13,8 +13,8 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 '''
-    cloudify_azure.constants
-    ~~~~~~~~~~~~~~~~~~~~~~~~
+    Constants
+    ~~~~~~~~~
     Microsoft Azure plugin for Cloudify constants
 '''
 

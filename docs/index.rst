@@ -117,6 +117,51 @@ two options to mitigate this issue on the Cloudify side of things.
  during Manager bootstrapping.
 
 
+VirtualMachineExtension Limitations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Microsoft has imposed an odd limitation on running multiple Virtual Machine
+Extensions of the same type (CustomScriptExtension, for instance).  This
+introduces an even further limitation within the scope of a Cloudify
+blueprint using this plugin.  Cloudify Agents for Windows require that
+WinRM be accessible on the target host and this is currently only
+achievable by using a CustomScriptExtension to enable and configure
+WinRM-HTTP (unencrypted, port 5985).  So, since the built in
+cloudify.azure.nodes.compute.VirtualMachine node type has to use
+this Virtual Machine Extension, it means that users will not be able to
+specify a cloudify.azure.nodes.compute.VirtualMachineExtension in their
+blueprint if it is to be of type CustomScriptExtension (since there already
+is one to enable WinRM on the host).  This is not true for Linux as it relies on
+SSH and SSH is enabled on Azure Linux hosts by default (no script needed).
+
+One workaround for this, if you have a strong need to include your own scripts,
+is to override this built-in script.  You can achieve this by changing the
+script name and/or URI list of the node type.  This is what the type defines
+by default:
+
+.. code-block:: yaml
+
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create: pkg.cloudify_azure.resources.compute.virtualmachine.create
+        configure:
+          implementation: pkg.cloudify_azure.resources.compute.virtualmachine.configure
+          inputs:
+            ps_entry:
+              default: ps_enable_winrm_http.ps1
+            ps_urls:
+              default:
+              - https://server-fqdn/ps_enable_winrm_http.ps1
+        delete: pkg.cloudify_azure.resources.compute.virtualmachine.delete
+
+The inputs ps_entry and ps_urls can be overriden if you create a new node
+type.  It's recommended that, if you do this, you still reference the
+default script within your override script as to still enable WinRM (unless
+you intend to remove or replace this functionality).  Without the default
+script functionality in place, WinRM will not be enabled properly and the
+Cloudify Agent will not be able to connect to the host.
+
+
 Azure Storage Services REST API
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

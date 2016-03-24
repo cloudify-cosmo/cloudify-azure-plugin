@@ -13,8 +13,8 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 '''
-    cloudify_azure.auth.oauth2
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    auth.OAuth2
+    ~~~~~~~~~~~
     OAuth 2.0 authorization interface for the Microsoft Azure REST API
 '''
 

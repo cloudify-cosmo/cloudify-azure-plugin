@@ -13,8 +13,8 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 '''
-    cloudify_azure.resources.base
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    resources.Base
+    ~~~~~~~~~~~~~~
     Microsoft Azure API abstraction layer
 '''
 
@@ -68,7 +68,7 @@ class Resource(object):
             logger=self.log,
             _ctx=self.ctx)
 
-    def get(self, name):
+    def get(self, name=None):
         '''
             Gets details about an existing resource
 
@@ -81,9 +81,13 @@ class Resource(object):
         '''
         self.log.info('Retrieving {0} "{1}'.format(self.name, name))
         # Make the request
+        if name:
+            url = '{0}/{1}'.format(self.endpoint, name)
+        else:
+            url = self.endpoint
         res = self.client.request(
             method='get',
-            url='{0}/{1}'.format(self.endpoint, name))
+            url=url)
         # Convert headers from CaseInsensitiveDict to Dict
         headers = dict(res.headers)
         # Check the response
@@ -99,8 +103,6 @@ class Resource(object):
                 retry_after=self.get_retry_after(headers))
         # HTTP 200 (OK) - The resource already exists
         elif res.status_code == httplib.OK:
-            self.log.info('{0} already exists. Using resource.'
-                          .format(self.name))
             return res.json()
         # If Azure sent a 400, we're sending bad data
         if res.status_code == httplib.BAD_REQUEST:
@@ -139,14 +141,15 @@ class Resource(object):
         headers = dict(res.headers)
         self.log.debug('headers: {0}'.format(headers))
         # Check the response
-        # HTTP 201 (CREATED) - The operation has started
+        # HTTP 201 (CREATED) - The operation succeeded
         if res.status_code == httplib.CREATED:
-            if headers.get('location'):
+            if headers.get('azure-asyncoperation'):
                 self.ctx.instance.runtime_properties['async_op'] = headers
                 raise RecoverableError(
                     'Operation "{0}" started'
                     .format(self.get_operation_id(headers)),
                     retry_after=self.get_retry_after(headers))
+            return
         # HTTP 202 (ACCEPTED) - The operation has started but is asynchronous
         elif res.status_code == httplib.ACCEPTED:
             if not headers.get('location'):
@@ -159,12 +162,6 @@ class Resource(object):
                 retry_after=self.get_retry_after(headers))
         # HTTP 200 (OK) - The resource already exists
         elif res.status_code == httplib.OK:
-            if headers.get('azure-asyncoperation'):
-                self.ctx.instance.runtime_properties['async_op'] = headers
-                raise RecoverableError(
-                    'Operation "{0}" started'
-                    .format(self.get_operation_id(headers)),
-                    retry_after=self.get_retry_after(headers))
             self.log.warn('{0} already exists. Using resource.'
                           .format(self.name))
             return
@@ -311,12 +308,11 @@ class Resource(object):
         self.ctx.instance.runtime_properties['async_op'] = None
         # HTTP 200 (OK) - Operation is successful and complete
         if res.status_code == httplib.OK:
-            if headers.get('azure-asyncoperation'):
-                if res.json().get('status') == 'InProgress':
-                    raise RecoverableError(
-                        'Operation "{0}" still pending'
-                        .format(self.get_operation_id(headers)),
-                        retry_after=self.get_retry_after(headers))
+            if res.json().get('status') == 'InProgress':
+                raise RecoverableError(
+                    'Operation "{0}" still pending'
+                    .format(self.get_operation_id(headers)),
+                    retry_after=self.get_retry_after(headers))
             return
         # HTTP 202 (ACCEPTED) - Operation is still pending
         elif res.status_code == httplib.ACCEPTED:

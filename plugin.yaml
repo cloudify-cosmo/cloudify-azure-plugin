@@ -5,7 +5,7 @@
 plugins:
   pkg:
     executor: central_deployment_agent
-    source: ../../
+    source: https://github.com/01000101/cloudify-azure-plugin/archive/rebuild.zip
 
 
 data_types:
@@ -849,7 +849,7 @@ node_types:
         delete: pkg.cloudify_azure.resources.compute.availabilityset.delete
 
   cloudify.azure.nodes.compute.VirtualMachine:
-    derived_from: cloudify.nodes.Root
+    derived_from: cloudify.nodes.Compute
     properties:
       name:
         type: string
@@ -895,6 +895,22 @@ node_types:
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
+      ip:
+        description: |
+          Property specifying the IP address of the resource to
+          use for the agent installer. 
+        type: string
+        required: false
+      os_family:
+        description: |
+          Property specifying what type of operating system family
+          this compute node will run.
+        default: windows
+      agent_config:
+        type: cloudify.datatypes.AgentConfig
+        default:
+          install_method: remote
+          port: 5985
     interfaces:
       cloudify.interfaces.lifecycle:
         create: pkg.cloudify_azure.resources.compute.virtualmachine.create

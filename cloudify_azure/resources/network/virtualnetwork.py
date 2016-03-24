@@ -13,8 +13,8 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 '''
-    cloudify_azure.resources.network.virtualnetwork
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    resources.network.VirtualNetwork
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Microsoft Azure Virtual Network interface
 '''
 

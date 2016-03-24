@@ -13,8 +13,8 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 '''
-    cloudify_azure.resources.compute.virtualmachine
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    resources.compute.VirtualMachine
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Microsoft Azure Virtual Machine interface
 '''
 
@@ -29,6 +29,8 @@ from cloudify_azure import (constants, utils)
 # Relationship interfaces
 from cloudify_azure.resources.network.networkinterfacecard \
     import NetworkInterfaceCard
+from cloudify_azure.resources.network.publicipaddress \
+    import PublicIPAddress
 from cloudify_azure.resources.compute.availabilityset \
     import AvailabilitySet
 from cloudify_azure.resources.compute.virtualmachineextension \
@@ -148,6 +150,43 @@ def configure(ps_entry, ps_urls, **_):
                 }
             }
         })
+
+    # Write the IP address to runtime properties for the agent
+    # Get a reference to the NIC
+    rel_nic = utils.get_relationship_by_type(
+        ctx.instance.relationships,
+        constants.REL_VM_CONNECTED_TO_NIC)
+    # No NIC? Exit and hope the user doesn't plan to install an agent
+    if not rel_nic:
+        return
+    # Get the NIC data from the API directly (because of IPConfiguration)
+    nic = NetworkInterfaceCard(_ctx=rel_nic.target)
+    nic_data = nic.get(rel_nic.target.node.properties.get('name'))
+    # Iterate over each IPConfiguration entry
+    for ip_cfg in nic_data.get(
+            'properties', dict()).get(
+                'ipConfigurations', list()):
+        # Get the Public IP Address endpoint
+        pubip_id = ip_cfg.get(
+            'properties', dict()).get(
+                'publicIPAddress', dict()).get('id')
+        # If one was found, use it as priority
+        if isinstance(pubip_id, dict):
+            # use the ID to get the data on the public ip
+            pubip = PublicIPAddress(_ctx=rel_nic.target)
+            pubip.endpoint = '{0}{1}'.format(
+                constants.CONN_API_ENDPOINT,
+                pubip_id)
+            pubip_data = pubip.get()
+            if isinstance(pubip_data, dict):
+                ctx.instance.runtime_properties['ip'] = \
+                    pubip_data.get('properties', dict()).get('ipAddress')
+        # Use the private IP as fall-back
+        else:
+            ctx.instance.runtime_properties['ip'] = \
+                ip_cfg.get('properties', dict()).get('privateIPAddress')
+    ctx.logger.info('VM properties: {0}'.format(ctx.node.properties))
+    ctx.logger.info('VM runtime: {0}'.format(ctx.instance.runtime_properties))
 
 
 @operation
