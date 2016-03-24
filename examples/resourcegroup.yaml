@@ -9,7 +9,7 @@ inputs:
   resource_prefix:
     default: josh
   resource_suffix:
-    default: 13
+    default: 11
   subscription_id:
     type: string
     required: true
@@ -190,6 +190,8 @@ node_templates:
     relationships:
     - type: cloudify.azure.relationships.contained_in_network_security_group
       target: network_security_group
+    - type: cloudify.relationships.depends_on
+      target: network_security_rule_rdp
   
   public_ip_address:
     type: cloudify.azure.nodes.network.PublicIPAddress

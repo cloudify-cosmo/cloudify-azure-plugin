@@ -167,16 +167,19 @@ def configure(ps_entry, ps_urls, **_):
             'properties', dict()).get(
                 'ipConfigurations', list()):
         # Get the Public IP Address endpoint
+        ctx.logger.debug('ipConfiguration: {0}'.format(ip_cfg))
         pubip_id = ip_cfg.get(
             'properties', dict()).get(
                 'publicIPAddress', dict()).get('id')
+        ctx.logger.debug('pubip_id: {0}'.format(pubip_id))
         # If one was found, use it as priority
-        if isinstance(pubip_id, dict):
+        if isinstance(pubip_id, basestring):
             # use the ID to get the data on the public ip
             pubip = PublicIPAddress(_ctx=rel_nic.target)
             pubip.endpoint = '{0}{1}'.format(
                 constants.CONN_API_ENDPOINT,
                 pubip_id)
+            ctx.logger.debug('pubip.endpoint: {0}'.format(pubip.endpoint))
             pubip_data = pubip.get()
             if isinstance(pubip_data, dict):
                 ctx.instance.runtime_properties['ip'] = \
