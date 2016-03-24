@@ -84,14 +84,11 @@ node_templates:
   virtual_network:
     type: cloudify.azure.nodes.network.VirtualNetwork
     properties:
-      name: {concat:[{get_input: resource_prefix},vnet,{get_input: resource_suffix}]}
-      location: { get_input: location }
-      retry_after: { get_input: retry_after }
+      resource_group_name: joshrg02
+      name: joshvnet02
+      use_external_resource: true
+      location: eastus
       azure_config: { get_input: azure_config }
-      resource_config:
-        addressSpace:
-          addressPrefixes:
-          - 10.10.0.0/16
     relationships:
     - type: cloudify.azure.relationships.contained_in_resource_group
       target: resource_group
@@ -104,7 +101,7 @@ node_templates:
       retry_after: { get_input: retry_after }
       azure_config: { get_input: azure_config }
       resource_config:
-        addressPrefix: 10.10.8.0/24
+        addressPrefix: 10.1.1.0/24
     relationships:
     - type: cloudify.azure.relationships.contained_in_virtual_network
       target: virtual_network
@@ -122,7 +119,7 @@ node_templates:
     - type: cloudify.azure.relationships.route_table_attached_to_subnet
       target: subnet
       
-  route:
+  route_internet:
     type: cloudify.azure.nodes.network.Route
     properties:
       name: {concat:[{get_input: resource_prefix},route,{get_input: resource_suffix}]}
@@ -135,7 +132,23 @@ node_templates:
     relationships:
     - type: cloudify.azure.relationships.contained_in_route_table
       target: route_table
-      
+
+  route_cfy_manager:
+    type: cloudify.azure.nodes.network.Route
+    properties:
+      name: {concat:[{get_input: resource_prefix},route,{get_input: resource_suffix}]}
+      location: { get_input: location }
+      retry_after: { get_input: retry_after }
+      azure_config: { get_input: azure_config }
+      resource_config:
+        addressPrefix: 10.1.0.0/16
+        nextHopType: VnetLocal
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_route_table
+      target: route_table
+    - type: cloudify.relationships.depends_on
+      target: route_internet
+
   network_security_group:
     type: cloudify.azure.nodes.network.NetworkSecurityGroup
     properties:

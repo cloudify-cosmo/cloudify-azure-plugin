@@ -863,6 +863,12 @@ node_types:
           (this is only useful when not using a relationship between a resource
           node and a Resource Group node)
         required: false
+      use_public_ip:
+        type: boolean
+        description: >
+          Tells the deployment to use the public IP (if available) of the resource
+          for Cloudify Agent connections
+        default: false
       location:
         type: string
         description: >

@@ -162,32 +162,32 @@ def configure(ps_entry, ps_urls, **_):
     # Get the NIC data from the API directly (because of IPConfiguration)
     nic = NetworkInterfaceCard(_ctx=rel_nic.target)
     nic_data = nic.get(rel_nic.target.node.properties.get('name'))
+
     # Iterate over each IPConfiguration entry
     for ip_cfg in nic_data.get(
             'properties', dict()).get(
                 'ipConfigurations', list()):
-        # Get the Public IP Address endpoint
-        ctx.logger.debug('ipConfiguration: {0}'.format(ip_cfg))
-        pubip_id = ip_cfg.get(
-            'properties', dict()).get(
-                'publicIPAddress', dict()).get('id')
-        ctx.logger.debug('pubip_id: {0}'.format(pubip_id))
-        # If one was found, use it as priority
-        if isinstance(pubip_id, basestring):
-            # use the ID to get the data on the public ip
-            pubip = PublicIPAddress(_ctx=rel_nic.target)
-            pubip.endpoint = '{0}{1}'.format(
-                constants.CONN_API_ENDPOINT,
-                pubip_id)
-            ctx.logger.debug('pubip.endpoint: {0}'.format(pubip.endpoint))
-            pubip_data = pubip.get()
-            if isinstance(pubip_data, dict):
-                ctx.instance.runtime_properties['ip'] = \
-                    pubip_data.get('properties', dict()).get('ipAddress')
-        # Use the private IP as fall-back
-        else:
-            ctx.instance.runtime_properties['ip'] = \
-                ip_cfg.get('properties', dict()).get('privateIPAddress')
+        ctx.instance.runtime_properties['ip'] = \
+            ip_cfg.get('properties', dict()).get('privateIPAddress')
+        if ctx.node.properties.get('use_public_ip'):
+            # Get the Public IP Address endpoint
+            ctx.logger.debug('ipConfiguration: {0}'.format(ip_cfg))
+            pubip_id = ip_cfg.get(
+                'properties', dict()).get(
+                    'publicIPAddress', dict()).get('id')
+            ctx.logger.debug('pubip_id: {0}'.format(pubip_id))
+            # If one was found, use it as priority
+            if isinstance(pubip_id, basestring):
+                # use the ID to get the data on the public ip
+                pubip = PublicIPAddress(_ctx=rel_nic.target)
+                pubip.endpoint = '{0}{1}'.format(
+                    constants.CONN_API_ENDPOINT,
+                    pubip_id)
+                ctx.logger.debug('pubip.endpoint: {0}'.format(pubip.endpoint))
+                pubip_data = pubip.get()
+                if isinstance(pubip_data, dict):
+                    ctx.instance.runtime_properties['ip'] = \
+                        pubip_data.get('properties', dict()).get('ipAddress')
     ctx.logger.info('VM properties: {0}'.format(ctx.node.properties))
     ctx.logger.info('VM runtime: {0}'.format(ctx.instance.runtime_properties))
 
