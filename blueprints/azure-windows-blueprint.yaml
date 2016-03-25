@@ -1,0 +1,227 @@
+tosca_definitions_version: cloudify_dsl_1_2
+
+imports:
+  - http://www.getcloudify.org/spec/cloudify/3.3.1/types.yaml
+  - https://raw.githubusercontent.com/01000101/cloudify-azure-plugin/CFY-5107---Windows-host-support/plugin.yaml
+
+#####################################################################################
+# inputs section allows the user to use same
+# blueprint for creating different deployments, each one
+# with its own parameters.
+# to specify deployment inputs run:
+#   - cfy deployments create -b <blueprint_id> -d <deployment_id> -i inputs.json
+#####################################################################################
+
+inputs:
+  subscription_id:
+    type: string
+    default: ''
+
+  location:
+    type: string
+    default: 'West US'  
+
+  vm_prefix:
+    type: string
+    default: 'cfy'
+
+  vm_size: 
+    type: string
+    default: 'Standard_A2'
+  
+  image_reference_offer:
+    type: string
+    default: 'WindowsServer'
+    
+  image_reference_publisher:
+    type: string
+    default: 'MicrosoftWindowsServer'
+    
+  image_reference_sku:
+    type: string
+    default: '2012-R2-Datacenter'
+    
+  use_external_resource:
+    type: boolean
+    default: false
+
+  existing_resource_group_name:
+    type: string
+    default: ''
+    
+  existing_security_group_name:
+    type: string
+    default: ''
+
+  existing_storage_account_name:
+    type: string
+    default: ''
+
+  existing_vnet_name:
+    type: string
+    default: ''
+
+  subnet:
+    type: string
+    default: ''
+
+  existing_public_ip_name:
+    type: string
+    default: ''
+
+  existing_nic_name:
+    type: string
+    default: ''
+
+  client_id:
+    type: string
+    default: ''
+
+  tenant_id:
+    type: string
+    default: ''
+
+  username:
+    type: string
+    required: false
+  
+  password:
+    type: string
+    required: false
+  
+  aad_password:
+    type: string
+    default: ''
+    
+    
+node_types:
+  local.nodes.WindowsServer:
+    derived_from: cloudify.azure.nodes.WindowsServer
+    properties:
+      vm_prefix:
+        default: { get_input: vm_prefix }
+      username:
+        default: { get_input: username }
+      password:
+        default: { get_input: password }
+      image_reference_offer:
+        default: { get_input: image_reference_offer}
+      image_reference_publisher:
+        default: { get_input: image_reference_publisher}
+      image_reference_sku:
+        default: { get_input: image_reference_sku}
+      vm_size:
+        default: { get_input: vm_size}
+      subscription_id:
+        default: { get_input: subscription_id}
+      location:
+        default: { get_input: location }
+      client_id:
+        default: { get_input: client_id}
+      tenant_id:
+        default: { get_input: tenant_id}
+      aad_password:
+        default: { get_input: aad_password}
+    
+
+node_templates:
+
+  host:
+    type: local.nodes.WindowsServer
+    relationships:
+      - target: nic
+        type: cloudify.azure.relationships.server_connected_to_nic
+      - target: storage_account
+        type: cloudify.azure.relationships.server_connected_to_storage_account
+      - target: resource_group
+        type: cloudify.azure.relationships.resource_contained_in_resource_group
+
+  resource_group:
+    type: cloudify.azure.nodes.ResourceGroup
+    properties:
+      use_external_resource: true
+      existing_resource_group_name: { get_input: existing_resource_group_name}
+      
+    relationships:
+      - target: azure_token
+        type: cloudify.azure.relationships.resource_depends_on_azure_token
+     
+  storage_account:
+    type: cloudify.azure.nodes.StorageAccount
+    properties:
+      use_external_resource: true
+      existing_storage_account_name: { get_input: existing_storage_account_name}
+      
+    relationships:
+      - target: resource_group
+        type: cloudify.azure.relationships.storage_account_contained_in_resource_group
+
+
+  public_ip:
+    type: cloudify.azure.nodes.PublicIP
+    properties:
+      use_external_resource: { get_input: use_external_resource}
+      existing_public_ip_name: { get_input: existing_public_ip_name}
+      
+    relationships:
+      - target: vnet
+        type: cloudify.azure.relationships.public_ip_connected_to_vnet
+      - target: resource_group
+        type: cloudify.azure.relationships.resource_contained_in_resource_group
+
+  nic:
+    type: cloudify.azure.nodes.NIC
+    properties:
+      use_external_resource: { get_input: use_external_resource}
+      existing_nic_name: { get_input: existing_nic_name}
+      
+    relationships:
+      - target: public_ip
+        type: cloudify.azure.relationships.nic_connected_to_public_ip
+      - target: resource_group
+        type: cloudify.azure.relationships.resource_contained_in_resource_group
+
+  subnet:
+    type: cloudify.azure.nodes.Subnet
+    properties:
+      use_external_resource: true
+      subnet: { get_input: subnet}
+
+    relationships:
+      - target: resource_group
+        type: cloudify.azure.relationships.subnet_contained_in_resource_group
+
+
+  vnet:
+    type: cloudify.azure.nodes.VNET
+    properties:
+      use_external_resource: true
+      existing_vnet_name: { get_input: existing_vnet_name}
+
+    relationships:
+      - target: subnet
+        type: cloudify.azure.relationships.vnet_connected_to_subnet
+      - target: resource_group
+        type: cloudify.azure.relationships.vnet_contained_in_resource_group
+
+  azure_token:
+    type: cloudify.azure.nodes.azure_token
+    properties:
+      client_id: { get_input: client_id }
+      tenant_id: { get_input: tenant_id }
+      aad_password: { get_input: aad_password }
+      subscription_id: { get_input: subscription_id}
+      location: { get_input: location }
+
+  app:
+    type: cloudify.nodes.ApplicationModule
+    relationships:
+      - type: cloudify.relationships.contained_in
+        target: host
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        start:
+          implementation: scripts/powershell/echo.ps1
+          inputs:
+            process:
+              command_prefix: powershell

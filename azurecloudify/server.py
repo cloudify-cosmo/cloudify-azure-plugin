@@ -102,6 +102,10 @@ def check_if_vm_started(start_retry_interval, **kwargs):
         ctx.logger.info("set_ips: vm has already started")
 
     _set_public_ip(subscription_id, resource_group_name, headers)
+
+    if ctx.node.properties.get('os_family', '').lower() == 'windows':
+        ctx.logger.info('Installing Virtual Machine Extensions')
+        execute_vm_extensions()
     return constants.OK_STATUS_CODE
 
 
@@ -165,6 +169,54 @@ def set_nic_details(azure_config, **kwargs):
 def set_data_disks(azure_config, **kwargs):
     # This should be per disk issue #31
     utils.write_target_runtime_properties_to_file(required_keys=None, prefixed_keys=[constants.DATA_DISK_SIZE_KEY, constants.DATA_DISK_KEY, constants.DATA_DISK_LUN_KEY],  need_suffix=None)
+
+
+def execute_vm_extensions():
+    '''Executes a Virtual Machine Extension (PowerShell scripts)'''
+    resource_group_name = \
+        ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
+    vm_name = ctx.instance.runtime_properties[constants.VM_KEY]
+    headers, location, subscription_id = auth.get_credentials()
+    # Build Virtual Machine Extensions URL
+    vmx_url = '{0}/{1}/{2}/{3}/{4}/{5}?{6}'.format(
+        constants.azure_url,
+        'subscriptions/{0}'.format(subscription_id),
+        'resourceGroups/{0}'.format(resource_group_name),
+        'providers/Microsoft.Compute',
+        'virtualMachines/{0}'.format(vm_name),
+        'extensions/{0}'.format(vm_name),
+        'validating=true&api-version=2016-03-30'
+    )
+    # Configure VMX entry point and script URLs
+    ps_urls = ctx.node.properties.get('vmx_script_urls', list())
+    ps_exec = ctx.node.properties.get('vmx_script_entry')
+    # If a VMX is defined, build it
+    if ps_exec:
+        command_to_exec = 'powershell -ExecutionPolicy Unrestricted ' \
+                          '-file {0}'.format(ps_exec)
+        data = {
+            'location': location,
+            'properties': {
+                'publisher': 'Microsoft.Compute',
+                'type': 'CustomScriptExtension',
+                'typeHandlerVersion': '1.4',
+                'settings': {
+                    'fileUris': ps_urls,
+                    'commandToExecute': command_to_exec
+                }
+            }
+        }
+        # Install extension
+        ctx.logger.info('Request: PUT {0}'.format(vmx_url))
+        ctx.logger.info('Request-Data: {0}'.format(data))
+        response_vm = requests.put(
+            url=vmx_url,
+            json=data,
+            headers=headers)
+        ctx.logger.info('Response: {0} - {1}'.format(
+            response_vm.status_code,
+            json.dumps(response_vm.json(), indent=2)
+        ))
 
 
 def _set_private_ip(vm_name):
@@ -244,7 +296,7 @@ def _get_virtual_machine_params(location, random_suffix_value, resource_group_na
                                subscription_id, vm_name, availability_set_name):
     ctx.logger.info("In _get_virtual_machine_params vm:{0} b4 _get_vm_base_json".format(vm_name))
     vm_json = _get_vm_base_json(location, random_suffix_value, resource_group_name, storage_account_name,
-                                subscription_id, vm_name, availability_set_name)
+                                subscription_id, vm_name)
 
     ctx.logger.info("In _get_virtual_machine_params vm:{0} b4 _set_network_json".format(vm_name))
     _set_network_json(vm_json, subscription_id, resource_group_name)
@@ -307,15 +359,46 @@ def _set_data_disk_json(vm_json, storage_account_name):
             storage_profile[constants.DATA_DISKS].append(curr_disk)
 
 
-def _get_vm_base_json(location, random_suffix_value, resource_group_name, storage_account_name, subscription_id,
-                      vm_name,availability_set_name):
-
+def _get_vm_base_json(location, random_suffix_value,
+                      resource_group_name, storage_account_name,
+                      subscription_id, vm_name):
     os_disk_name = "{0}{1}".format(constants.os_disk_prefix, random_suffix_value)
     ctx.instance.runtime_properties[constants.OS_DISK_NAME] = os_disk_name
 
     os_disk_uri = "https://{0}.blob.core.windows.net/vhds/{1}.vhd"\
         .format(storage_account_name, os_disk_name)
     ctx.instance.runtime_properties[constants.OS_DISK_URI] = os_disk_uri
+
+    os_profile = {"computername": vm_name}
+
+    if ctx.node.properties.get('os_family', '').lower() == 'windows':
+        # VM profile for Windows
+        os_profile['adminUsername'] = ctx.node.properties['username']
+        os_profile['adminPassword'] = ctx.node.properties['password']
+        os_profile['windowsConfiguration'] = {
+            "provisionVMAgent": True,
+            "winRM": {
+                "listeners": [{
+                    "protocol": "Http",
+                    "certificateUrl": None
+                }]
+            }
+        }
+    else:
+        # VM profile for Linux
+        # Disables password authentication and uses SSH keys instead
+        os_profile['adminUsername'] = ctx.node.properties['ssh_username']
+        os_profile['linuxConfiguration'] = {
+            "disablePasswordAuthentication": "true",
+            "ssh": {
+                "publicKeys": [{
+                    "path": "/home/{0}/.ssh/authorized_keys".format(
+                        ctx.node.properties['ssh_username']),
+                    "keyData": ctx.node.properties['key_data']
+                }]
+            }
+        }
+
     return {
         "id": "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Compute/virtualMachines/{2}".format(
             subscription_id, resource_group_name, vm_name),
@@ -323,28 +406,10 @@ def _get_vm_base_json(location, random_suffix_value, resource_group_name, storag
         "type": "Microsoft.Compute/virtualMachines",
         "location": location,
         "properties": {
-# To be developed by Pranjali and Vaidehi
-#            "availabilitySet": {
-#                "id": "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Compute/availabilitySets/{2}".format(subscription_id, resource_group_name, availability_set_name)
-#            },
             "hardwareProfile": {
                 "vmSize": ctx.node.properties['vm_size']
             },
-            "osProfile": {
-                "computername": vm_name,
-                "adminUsername": ctx.node.properties['ssh_username'],
-                "linuxConfiguration": {
-                    "disablePasswordAuthentication": "true",
-                    "ssh": {
-                        "publicKeys": [
-                            {
-                                "path": "/home/{0}/.ssh/authorized_keys".format(ctx.node.properties['ssh_username']),
-                                "keyData": ctx.node.properties['key_data']
-                            }
-                        ]
-                    }
-                }
-            },
+            "osProfile": os_profile,
             "storageProfile": {
                 "imageReference": {
                     "publisher": ctx.node.properties['image_reference_publisher'],
@@ -368,7 +433,7 @@ def _get_vm_base_json(location, random_suffix_value, resource_group_name, storag
     }
 
 
-def _delete_os_disk(start_retry_interval):
+def _delete_os_disk(start_retry_interval=30):
     headers, location, subscription_id = auth.get_credentials()
 
     os_disk_name = ctx.instance.runtime_properties[constants.OS_DISK_NAME]
@@ -384,7 +449,7 @@ def _delete_os_disk(start_retry_interval):
         ctx.logger.info("OS disk {0} could not be deleted".format(delete_os_disk_url))
 
 
-def _delete_data_disks(start_retry_interval):
+def _delete_data_disks(start_retry_interval=30):
     headers, location, subscription_id = auth.get_credentials()
     storage_account_name = ctx.instance.runtime_properties[constants.STORAGE_ACCOUNT_KEY]
     for curr_key in ctx.instance.runtime_properties:
@@ -392,7 +457,7 @@ def _delete_data_disks(start_retry_interval):
             disk_name = ctx.instance.runtime_properties[curr_key]
             ctx.logger.info("_delete_data_disks : disk_name is {0}".format(disk_name))
             delete_data_disk_url = "https://{0}.blob.core.windows.net/vhds/{1}.vhd".format(storage_account_name, disk_name)
-            ctx.instance.runtime_properties[constants.RESOURCE_NOT_DELETED] = True    
+            ctx.instance.runtime_properties[constants.RESOURCE_NOT_DELETED] = True
             try:
                 ctx.logger.info("Deleting the data Disk {0}: {1}".format(disk_name, delete_data_disk_url))
                 response_delete_data_disk = requests.delete(url=delete_data_disk_url, headers=headers)
