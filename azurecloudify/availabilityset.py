@@ -47,7 +47,7 @@ def create_availability_set(**_):
         ctx.instance.runtime_properties[constants.AVAILABILITY_SET_KEY] = availability_set_name
 
     ctx.logger.info("Creating a new availability set: {0}".format(availability_set_name))
-    availability_set_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/availabilitySets/'+availability_set_name+'?api-version='
+    availability_set_url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/availabilitySets/'+availability_set_name+'?api-version='+constants.api_version
     availability_set_params = json.dumps({ 
            "name": availability_set_name, 
            "type": "Microsoft.Compute/availabilitySets", 
