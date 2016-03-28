@@ -7,7 +7,6 @@ plugins:
     executor: central_deployment_agent
     source: https://github.com/01000101/cloudify-azure-plugin/archive/rebuild.zip
 
-
 data_types:
   cloudify.datatypes.azure.Config:
     properties:
@@ -237,6 +236,21 @@ data_types:
         required: true
         default: 1.4
       settings:
+        required: false
+  
+  cloudify.datatypes.azure.network.LoadBalancerConfig:
+    description: >
+      See https://msdn.microsoft.com/en-us/library/mt163574.aspx
+    properties:
+      frontendIPConfigurations:
+        required: false
+      backendAddressPools:
+        required: false
+      loadBalancingRules:
+        required: false
+      probes:
+        required: false
+      inboundNatRules:
         required: false
               
 
@@ -738,11 +752,38 @@ node_types:
           (this is only useful when not using a relationship between a resource
           node and a Resource Group node)
         required: false
+      location:
+        type: string
+        description: >
+          Specifies the supported Azure location for the resource
+        required: false
+      tags:
+        description: >
+          Specifies a dictionary of one or more name and value pairs that describe a tag
+        required: false
       resource_config:
         description: >
           A dictionary of values to pass as properties when creating the resource
         type: cloudify.datatypes.azure.network.IPConfigurationConfig
         required: true
+      use_external_resource:
+        description: >
+          Indicate whether the resource exists or if Cloudify should create the resource
+        type: boolean
+        default: false
+        required: true
+      retry_after:
+        description: >
+          Overrides the Azure-specified "retry_after" response. This property
+          will set the number of seconds for each task retry interval (in the
+          case of iteratively checking the status of an asynchronous operation)
+        type: integer
+        required: false
+      azure_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
         
   cloudify.azure.nodes.network.PublicIPAddress:
     derived_from: cloudify.nodes.Root
@@ -923,14 +964,13 @@ node_types:
         configure:
           implementation: pkg.cloudify_azure.resources.compute.virtualmachine.configure
           inputs:
-            ps_entry:
+            command_to_execute:
               description: >
-                This is the entry point file name that the CustomScriptExtension
-                will execute. Multiple files can be specified in ps_urls and this
-                input sets which file to start executing. The file which is loaded
-                first can then load the other files and continue executing. 
-              default: ps_enable_winrm_http.ps1
-            ps_urls:
+                This is the command that the CustomScriptExtension extension will
+                execute. The file_uris below will be downloaded and this property
+                should specify a command to start the execution of one of them.
+              default: powershell -ExecutionPolicy Unrestricted -file ps_enable_winrm_http.ps1
+            file_uris:
               default:
               - https://raw.githubusercontent.com/01000101/cloudify-azure-plugin/rebuild/scripts/ps_enable_winrm_http.ps1
         delete: pkg.cloudify_azure.resources.compute.virtualmachine.delete
@@ -994,6 +1034,107 @@ node_types:
         create: pkg.cloudify_azure.resources.compute.virtualmachineextension.create
         delete: pkg.cloudify_azure.resources.compute.virtualmachineextension.delete
         
+  cloudify.azure.nodes.network.LoadBalancer:
+    derived_from: cloudify.nodes.Root
+    properties:
+      name:
+        type: string
+        description: >
+          Name for the resource. 
+        required: true
+      resource_group_name:
+        type: string
+        description: >
+          Name of the Resource Group that the existing resource belongs to
+          (this is only useful when not using a relationship between a resource
+          node and a Resource Group node)
+        required: false
+      location:
+        type: string
+        description: >
+          Specifies the supported Azure location for the resource
+        required: false
+      tags:
+        description: >
+          Specifies a dictionary of one or more name and value pairs that describe a tag
+        required: false
+      resource_config:
+        description: >
+          A dictionary of values to pass as properties when creating the resource
+        type: cloudify.datatypes.azure.network.LoadBalancerConfig
+        required: false
+      use_external_resource:
+        description: >
+          Indicate whether the resource exists or if Cloudify should create the resource
+        type: boolean
+        default: false
+        required: true
+      retry_after:
+        description: >
+          Overrides the Azure-specified "retry_after" response. This property
+          will set the number of seconds for each task retry interval (in the
+          case of iteratively checking the status of an asynchronous operation)
+        type: integer
+        required: false
+      azure_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create: pkg.cloudify_azure.resources.network.loadbalancer.create
+        delete: pkg.cloudify_azure.resources.network.loadbalancer.delete
+        
+  cloudify.azure.nodes.network.LoadBalancer.BackendAddressPool:
+    derived_from: cloudify.nodes.Root
+    properties:
+      name:
+        type: string
+        description: >
+          Name for the resource. 
+        required: true
+      resource_group_name:
+        type: string
+        description: >
+          Name of the Resource Group that the existing resource belongs to
+          (this is only useful when not using a relationship between a resource
+          node and a Resource Group node)
+        required: false
+      load_balancer_name:
+        type: string
+        required: false
+      location:
+        type: string
+        description: >
+          Specifies the supported Azure location for the resource
+        required: false
+      tags:
+        description: >
+          Specifies a dictionary of one or more name and value pairs that describe a tag
+        required: false
+      use_external_resource:
+        description: >
+          Indicate whether the resource exists or if Cloudify should create the resource
+        type: boolean
+        default: false
+        required: true
+      retry_after:
+        description: >
+          Overrides the Azure-specified "retry_after" response. This property
+          will set the number of seconds for each task retry interval (in the
+          case of iteratively checking the status of an asynchronous operation)
+        type: integer
+        required: false
+      azure_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create: pkg.cloudify_azure.resources.network.loadbalancer.create_backend_pool
+        delete: pkg.cloudify_azure.resources.network.loadbalancer.delete_backend_pool
         
 relationships:
   cloudify.azure.relationships.contained_in_resource_group:
@@ -1006,6 +1147,9 @@ relationships:
     derived_from: cloudify.relationships.contained_in
     
   cloudify.azure.relationships.contained_in_route_table:
+    derived_from: cloudify.relationships.contained_in
+    
+  cloudify.azure.relationships.contained_in_load_balancer:
     derived_from: cloudify.relationships.contained_in
     
   cloudify.azure.relationships.network_security_group_attached_to_subnet:
@@ -1024,10 +1168,7 @@ relationships:
         
   cloudify.azure.relationships.nic_connected_to_network_security_group:
     derived_from: cloudify.relationships.connected_to
-        
-  cloudify.azure.relationships.nic_connected_to_ip_configuration:
-    derived_from: cloudify.relationships.connected_to
-        
+             
   cloudify.azure.relationships.ip_configuration_connected_to_subnet:
     derived_from: cloudify.relationships.connected_to
     
@@ -1040,8 +1181,19 @@ relationships:
   cloudify.azure.relationships.connected_to_availability_set:
     derived_from: cloudify.relationships.connected_to
 
-  cloudify.azure.relationships.vm_connected_to_network_interface_card:
+  cloudify.azure.relationships.connected_to_ip_configuration:
+    derived_from: cloudify.relationships.connected_to
+
+  cloudify.azure.relationships.connected_to_nic:
     derived_from: cloudify.relationships.connected_to
     
   cloudify.azure.relationships.vmx_contained_in_vm:
     derived_from: cloudify.relationships.contained_in
+    
+  cloudify.azure.relationships.lb_be_pool_connected_to_nic:
+    derived_from: cloudify.relationships.connected_to
+    source_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        establish: pkg.cloudify_azure.resources.network.loadbalancer.attach_nic_to_backend_pool
+        unlink: pkg.cloudify_azure.resources.network.loadbalancer.detach_nic_from_backend_pool
+        

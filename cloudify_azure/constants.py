@@ -42,8 +42,8 @@ REL_CONTAINED_IN_NSG = \
     'cloudify.azure.relationships.contained_in_network_security_group'
 REL_CONTAINED_IN_RT = \
     'cloudify.azure.relationships.contained_in_route_table'
-REL_NIC_CONNECTED_TO_IPC = \
-    'cloudify.azure.relationships.nic_connected_to_ip_configuration'
+REL_CONTAINED_IN_LB = \
+    'cloudify.azure.relationships.contained_in_load_balancer'
 REL_NIC_CONNECTED_TO_NSG = \
     'cloudify.azure.relationships.nic_connected_to_network_security_group'
 REL_IPC_CONNECTED_TO_SUBNET = \
@@ -54,7 +54,13 @@ REL_CONNECTED_TO_SA = \
     'cloudify.azure.relationships.connected_to_storage_account'
 REL_CONNECTED_TO_AS = \
     'cloudify.azure.relationships.connected_to_availability_set'
-REL_VM_CONNECTED_TO_NIC = \
-    'cloudify.azure.relationships.vm_connected_to_network_interface_card'
+REL_CONNECTED_TO_NIC = \
+    'cloudify.azure.relationships.connected_to_nic'
+REL_CONNECTED_TO_IPC = \
+    'cloudify.azure.relationships.connected_to_ip_configuration'
 REL_VMX_CONTAINED_IN_VM = \
     'cloudify.azure.relationships.vmx_contained_in_vm'
+REL_LB_CONNECTED_TO_NIC = \
+    'cloudify.azure.relationships.lb_connected_to_nic'
+REL_LB_BE_POOL_CONNECTED_TO_NIC = \
+    'cloudify.azure.relationships.lb_be_pool_connected_to_nic'

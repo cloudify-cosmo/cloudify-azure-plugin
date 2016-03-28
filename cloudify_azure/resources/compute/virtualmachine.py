@@ -74,13 +74,15 @@ class VirtualMachine(Resource):
 def create(**_):
     '''Uses an existing, or creates a new, Virtual Machine'''
     # Build storage profile
+    os_disk_name = '{0}_osdisk'.format(ctx.node.properties.get('name'))
     storage_profile = {
         'osDisk': {
-            'name': 'osdisk',
+            'name': os_disk_name,
             'vhd': {
-                'uri': 'http://{0}.{1}/vhds/osdisk.vhd'.format(
+                'uri': 'http://{0}.{1}/vhds/{2}.vhd'.format(
                     utils.get_rel_node_name(constants.REL_CONNECTED_TO_SA),
-                    'blob.core.windows.net')
+                    'blob.core.windows.net',
+                    os_disk_name)
             },
             'caching': 'ReadWrite',
             'createOption': 'FromImage'
@@ -90,7 +92,7 @@ def create(**_):
     network_profile = {
         'networkInterfaces': utils.get_rel_id_references(
             NetworkInterfaceCard,
-            constants.REL_VM_CONNECTED_TO_NIC
+            constants.REL_CONNECTED_TO_NIC
         )
     }
     # Build the OS profile
@@ -127,12 +129,10 @@ def create(**_):
 
 
 @operation
-def configure(ps_entry, ps_urls, **_):
+def configure(command_to_execute, file_uris, **_):
     '''Configures the resource'''
-    # Use a Virtual Machine Extension to enable WinRM HTTP (unencrypted)
+    # By default, this should enable WinRM HTTP (unencrypted)
     # This entire function can be overridden from the plugin
-    command_to_exec = 'powershell -ExecutionPolicy Unrestricted ' \
-                      '-file {0}'.format(ps_entry)
     utils.task_resource_create(
         VirtualMachineExtension(
             virtual_machine=ctx.node.properties.get('name')
@@ -145,8 +145,8 @@ def configure(ps_entry, ps_urls, **_):
                 'type': 'CustomScriptExtension',
                 'typeHandlerVersion': '1.4',
                 'settings': {
-                    'fileUris': ps_urls,
-                    'commandToExecute': command_to_exec
+                    'fileUris': file_uris,
+                    'commandToExecute': command_to_execute
                 }
             }
         })
@@ -155,41 +155,34 @@ def configure(ps_entry, ps_urls, **_):
     # Get a reference to the NIC
     rel_nic = utils.get_relationship_by_type(
         ctx.instance.relationships,
-        constants.REL_VM_CONNECTED_TO_NIC)
+        constants.REL_CONNECTED_TO_NIC)
     # No NIC? Exit and hope the user doesn't plan to install an agent
     if not rel_nic:
         return
     # Get the NIC data from the API directly (because of IPConfiguration)
     nic = NetworkInterfaceCard(_ctx=rel_nic.target)
     nic_data = nic.get(rel_nic.target.node.properties.get('name'))
-
     # Iterate over each IPConfiguration entry
     for ip_cfg in nic_data.get(
             'properties', dict()).get(
                 'ipConfigurations', list()):
         ctx.instance.runtime_properties['ip'] = \
             ip_cfg.get('properties', dict()).get('privateIPAddress')
+        # See if the user wants to use the public IP or not
         if ctx.node.properties.get('use_public_ip'):
             # Get the Public IP Address endpoint
-            ctx.logger.debug('ipConfiguration: {0}'.format(ip_cfg))
             pubip_id = ip_cfg.get(
                 'properties', dict()).get(
                     'publicIPAddress', dict()).get('id')
-            ctx.logger.debug('pubip_id: {0}'.format(pubip_id))
-            # If one was found, use it as priority
             if isinstance(pubip_id, basestring):
                 # use the ID to get the data on the public ip
                 pubip = PublicIPAddress(_ctx=rel_nic.target)
                 pubip.endpoint = '{0}{1}'.format(
-                    constants.CONN_API_ENDPOINT,
-                    pubip_id)
-                ctx.logger.debug('pubip.endpoint: {0}'.format(pubip.endpoint))
+                    constants.CONN_API_ENDPOINT, pubip_id)
                 pubip_data = pubip.get()
                 if isinstance(pubip_data, dict):
                     ctx.instance.runtime_properties['ip'] = \
                         pubip_data.get('properties', dict()).get('ipAddress')
-    ctx.logger.info('VM properties: {0}'.format(ctx.node.properties))
-    ctx.logger.info('VM runtime: {0}'.format(ctx.instance.runtime_properties))
 
 
 @operation

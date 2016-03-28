@@ -20,6 +20,9 @@
 
 # HTTP status codes
 import httplib
+# JSON serializing
+import json
+import yaml
 # Exception handling
 from cloudify.exceptions import NonRecoverableError, RecoverableError
 # API connection
@@ -90,6 +93,7 @@ class Resource(object):
             url=url)
         # Convert headers from CaseInsensitiveDict to Dict
         headers = dict(res.headers)
+        self.log.debug('headers: {0}'.format(headers))
         # Check the response
         # HTTP 202 (ACCEPTED) - The operation has started but is asynchronous
         if res.status_code == httplib.ACCEPTED:
@@ -132,6 +136,8 @@ class Resource(object):
         '''
         self.log.info('Creating {0} "{1}'.format(self.name, name))
         self.ctx.instance.runtime_properties['async_op'] = None
+        # Sanitize input data
+        params = self.sanitize_json_input(params)
         # Make the request
         res = self.client.request(
             method='put',
@@ -162,6 +168,12 @@ class Resource(object):
                 retry_after=self.get_retry_after(headers))
         # HTTP 200 (OK) - The resource already exists
         elif res.status_code == httplib.OK:
+            if headers.get('azure-asyncoperation'):
+                self.ctx.instance.runtime_properties['async_op'] = headers
+                raise RecoverableError(
+                    'Operation "{0}" started'
+                    .format(self.get_operation_id(headers)),
+                    retry_after=self.get_retry_after(headers))
             self.log.warn('{0} already exists. Using resource.'
                           .format(self.name))
             return
@@ -199,6 +211,8 @@ class Resource(object):
             params = utils.dict_update(data, params)
         self.log.info('Updating {0} "{1}'.format(self.name, name))
         self.ctx.instance.runtime_properties['async_op'] = None
+        # Sanitize input data
+        params = self.sanitize_json_input(params)
         # Make the request
         res = self.client.request(
             method='put',
@@ -206,6 +220,7 @@ class Resource(object):
             json=params)
         # Convert headers from CaseInsensitiveDict to Dict
         headers = dict(res.headers)
+        self.log.debug('headers: {0}'.format(headers))
         # Check the response
         # HTTP 202 (ACCEPTED) - The operation has started but is asynchronous
         if res.status_code == httplib.ACCEPTED:
@@ -254,6 +269,7 @@ class Resource(object):
             url='{0}/{1}'.format(self.endpoint, name))
         # Convert headers from CaseInsensitiveDict to Dict
         headers = dict(res.headers)
+        self.log.debug('headers: {0}'.format(headers))
         # HTTP 200 (OK) - The operation is successful and complete
         if res.status_code == httplib.OK:
             return
@@ -305,6 +321,7 @@ class Resource(object):
                                   url=op_url)
         # Convert headers from CaseInsensitiveDict to Dict
         headers = dict(res.headers)
+        self.log.debug('headers: {0}'.format(headers))
         self.ctx.instance.runtime_properties['async_op'] = None
         # HTTP 200 (OK) - Operation is successful and complete
         if res.status_code == httplib.OK:
@@ -360,3 +377,22 @@ class Resource(object):
         :rtype: string
         '''
         return headers.get('x-ms-request-id', 'not-reported')
+
+    @staticmethod
+    def sanitize_json_input(us_data):
+        '''
+            Sanitizes data before going to Requests. This mostly
+            handles cases where there are mixed-encoded objects
+            where part of the object is ASCII/UTF-8 and the other
+            part is Unicode.
+
+        :param obj us_data: JSON-serializable Python object
+        :returns: UTF-8 JSON object
+        :rtype: JSON object
+        '''
+        if not us_data:
+            return None
+        if not isinstance(us_data, dict) and not isinstance(us_data, list):
+            return None
+        return yaml.safe_load(
+            json.dumps(us_data, ensure_ascii=True).encode('utf8'))

@@ -31,18 +31,62 @@
     Interface Card which connects to the IP Configuration(s).
 '''
 
-# default context
+# Node properties and logger
 from cloudify import ctx
-# Relationships, node zombies... er... walkers
+# Base resource class
+from cloudify_azure.resources.base import Resource
+# Logger, API version
 from cloudify_azure import (constants, utils)
+# IP configurations
 # Relationship interfaces
 from cloudify_azure.resources.network.subnet \
     import Subnet
 from cloudify_azure.resources.network.publicipaddress \
     import PublicIPAddress
 
+# pylint: disable=R0913
 
-def get_ip_configurations(_ctx=ctx):
+
+class IPConfiguration(Resource):
+    '''
+        Microsoft Azure IP Configuration interface
+
+    .. warning::
+        This interface should only be instantiated from
+        within a Cloudify Lifecycle Operation
+
+    :param string resource_group: Name of the parent Resource Group
+    :param string resource_group: Name of the parent Resource Group
+    :param string api_version: API version to use for all requests
+    :param `logging.Logger` logger:
+        Parent logger for the class to use. Defaults to `ctx.logger`
+    '''
+    def __init__(self,
+                 resource_group=None,
+                 network_interface_card=None,
+                 api_version=constants.API_VER_NETWORK,
+                 logger=None,
+                 _ctx=ctx):
+        resource_group = resource_group or \
+            utils.get_resource_group(_ctx=_ctx)
+        network_interface_card = network_interface_card or \
+            _ctx.node.properties.get('network_interface_card_name')
+        Resource.__init__(
+            self,
+            'IP Configuration',
+            '/{0}/{1}/{2}/{3}'.format(
+                'resourceGroups/{0}'.format(resource_group),
+                'providers/Microsoft.Network/',
+                'networkInterfaces/{0}'.format(network_interface_card),
+                'ipConfigurations'
+            ),
+            api_version=api_version,
+            logger=logger,
+            _ctx=_ctx)
+
+
+def get_ip_configurations(_ctx=ctx,
+                          rel=constants.REL_CONNECTED_TO_IPC):
     '''
         Finds all IP Configurations associated with the current node.
         This method searches for any IP Configuration-specific
@@ -53,10 +97,10 @@ def get_ip_configurations(_ctx=ctx):
     :rtype: list
     '''
     ipconfigs = list()
-    for rel in _ctx.instance.relationships:
-        if constants.REL_NIC_CONNECTED_TO_IPC in rel.type_hierarchy:
+    for node_rel in _ctx.instance.relationships:
+        if rel in node_rel.type_hierarchy:
             ipconfigs.append(
-                build_ip_configuration(rel.target))
+                build_ip_configuration(node_rel.target))
     # Weed out bad IP Configurations
     return [x for x in ipconfigs if x is not None]
 

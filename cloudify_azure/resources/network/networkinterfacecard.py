@@ -44,7 +44,6 @@ class NetworkInterfaceCard(Resource):
         within a Cloudify Lifecycle Operation
 
     :param string resource_group: Name of the parent Resource Group
-    :param string virtual_network: Name of the parent Virtual Network
     :param string api_version: API version to use for all requests
     :param `logging.Logger` logger:
         Parent logger for the class to use. Defaults to `ctx.logger`

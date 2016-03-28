@@ -21,9 +21,6 @@
 # Logger, default context
 from cloudify import ctx
 from logging import DEBUG
-# JSON serializing
-import json
-import yaml
 # Dict updating
 from collections import Mapping
 # Constants
@@ -42,7 +39,9 @@ def dict_update(orig, updates):
     return orig
 
 
-def task_resource_create(resource, params, name=None, _ctx=ctx):
+def task_resource_create(resource, params,
+                         name=None, use_external=None,
+                         _ctx=ctx):
     '''
         Creates a new Microsoft Azure resource and
         polls, if necessary, until the operation
@@ -60,8 +59,11 @@ def task_resource_create(resource, params, name=None, _ctx=ctx):
     '''
     # Get the resource name
     name = name or _ctx.node.properties.get('name')
+    # Get use_external_resource boolean
+    if use_external is None:
+        use_external = _ctx.node.properties.get('use_external_resource')
     # Check for existing resources
-    if _ctx.node.properties.get('use_external_resource'):
+    if use_external:
         return resource.get(name)
     # Handle pending asynchrnous operations
     if _ctx.instance.runtime_properties.get('async_op'):
@@ -71,7 +73,9 @@ def task_resource_create(resource, params, name=None, _ctx=ctx):
     resource.create(name, params)
 
 
-def task_resource_update(resource, params, name=None, _ctx=ctx):
+def task_resource_update(resource, params,
+                         name=None, use_external=None,
+                         _ctx=ctx):
     '''
         Updates an existing Microsoft Azure resource and
         polls, if necessary, until the operation
@@ -89,6 +93,9 @@ def task_resource_update(resource, params, name=None, _ctx=ctx):
     '''
     # Get the resource name
     name = name or _ctx.node.properties.get('name')
+    # Get use_external_resource boolean
+    if use_external is None:
+        use_external = _ctx.node.properties.get('use_external_resource')
     # Handle pending asynchrnous operations
     if _ctx.instance.runtime_properties.get('async_op'):
         return resource.operation_complete(
@@ -97,7 +104,8 @@ def task_resource_update(resource, params, name=None, _ctx=ctx):
     resource.update(name, params)
 
 
-def task_resource_delete(resource, name=None, _ctx=ctx):
+def task_resource_delete(resource, name=None,
+                         use_external=None, _ctx=ctx):
     '''
         Deletes a Microsoft Azure resource and
         polls, if necessary, until the operation
@@ -114,6 +122,9 @@ def task_resource_delete(resource, name=None, _ctx=ctx):
     '''
     # Get the resource name
     name = name or _ctx.node.properties.get('name')
+    # Get use_external_resource boolean
+    if use_external is None:
+        use_external = _ctx.node.properties.get('use_external_resource')
     # Check for existing resources
     if _ctx.node.properties.get('use_external_resource'):
         return resource.get(name)
@@ -133,8 +144,21 @@ def get_resource_config(_ctx=ctx):
     :returns: Resource config parameters
     :rtype: dict
     '''
-    return yaml.safe_load(
-        json.dumps(_ctx.node.properties.get('resource_config')))
+    return _ctx.node.properties.get('resource_config')
+
+
+def get_resource_name(rel, prop=None, _ctx=ctx):
+    '''
+        Finds the resource associated with the current node. This
+        method searches both by node properties (priority) or by
+        node relationships
+
+    :returns: Resource name
+    :rtype: string
+    '''
+    if prop:
+        prop = _ctx.node.properties.get(prop)
+    return prop or get_ancestor_property(_ctx.instance, 'name', rel)
 
 
 def get_resource_group(_ctx=ctx):
@@ -281,6 +305,35 @@ def get_relationship_by_type(rels, rel_type):
     return None
 
 
+def get_relationships_by_type(rels, rel_type):
+    '''
+        Finds relationships by a relationship type
+
+    Example::
+
+        # Import
+        from cloudify import ctx
+        from cloudify_azure import utils
+        # Find specific relationships
+        rels = utils.get_relationships_by_type(
+            ctx.instance.relationships,
+            'cloudify.azure.relationships.a_custom_relationship')
+
+    :param list<`cloudify.context.RelationshipContext`> rels: \
+        List of Cloudify instance relationships
+    :param string rel_type: Relationship type
+    :returns: List of relationship objects
+    :rtype: list of :class:`cloudify.context.RelationshipContext`
+    '''
+    ret = list()
+    if not isinstance(rels, list):
+        return ret
+    for rel in rels:
+        if rel_type in rel.type_hierarchy:
+            ret.append(rel)
+    return ret
+
+
 def get_parent(inst, rel_type='cloudify.relationships.contained_in'):
     '''
         Gets the parent of an instance
@@ -332,6 +385,30 @@ def get_ancestor_property(inst, prop, rel_type):
         return get_ancestor_property(parent.instance, prop, rel_type)
     # We found a match
     return parent.node.properties.get(prop)
+
+
+def get_full_id_reference(resource, api_fmt=True, _ctx=ctx):
+    '''
+        Creates a full, usable Azure ID reference
+
+    :param `cloudify_azure.resources.base.Resource` resource:
+        Resource class to map resources to
+    :param boolean api_fmt: If True, returns the resource ID as a dict
+        object with an *id* key. If False, returns just the ID string
+    :param `cloudify.ctx` _ctx: Cloudify context
+    :returns: Azure ID of a resource
+    :rtype: string or dict or None
+    '''
+    subscription_id = get_subscription_id(_ctx=_ctx)
+    iface = resource(_ctx=_ctx)
+    name = _ctx.node.properties.get('name')
+    resid = '/subscriptions/{0}{1}/{2}'.format(
+        subscription_id,
+        iface.endpoint,
+        name)
+    if api_fmt:
+        return {'id': resid}
+    return resid
 
 
 def get_rel_id_reference(resource, rel_type, api_fmt=True, _ctx=ctx):
