@@ -5,7 +5,7 @@
 plugins:
   microsoft:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/master.zip
+    source: https://github.com/01000101/cloudify-azure-plugin/archive/CFY-5107---Windows-host-support.zip
 
 node_types:
   cloudify.azure.nodes.ResourceGroup:
@@ -128,6 +128,81 @@ node_types:
       cloudify.interfaces.validation:
         creation:
           implementation: microsoft.azurecloudify.server.creation_validation
+
+
+  cloudify.azure.nodes.WindowsServer:
+    derived_from: cloudify.azure.nodes.Server
+    properties:
+      vm_prefix:
+        default: { get_input: vm_prefix }
+      install_agent:
+        default: true
+      subscription_id:
+        required: false
+      location:
+        required: false
+      client_id:
+        required: false
+      tenant_id:
+        required: false
+      vm_size:
+        description: >
+          Indicates the size of VM
+        type: string
+        default: 'Standard A1'
+      image_reference_offer:
+        description: >
+          Flavour of virtual machine
+        type: string
+        default: 'WindowsServer'
+      image_reference_publisher:
+        description: >
+          Publisher of virtual machine
+        type: string
+        default: 'MicrosoftWindowsServer'
+      image_reference_sku:
+        description: >
+          Version of operating system
+        type: string
+        default: '2012-R2-Datacenter'       
+      username:
+        type: string
+        description: >
+          Administrator username to set on the instance
+        default: cloudify
+      password:
+        type: string
+        description: >
+          Administrator password to set on the instance
+        default: Cloud1fyR0cks!
+      os_family:
+        type: string
+        description: >
+          Property specifying what type of operating system family
+          this compute node will run. Valid choices are
+          "windows" and "linux"
+        default: windows
+      vmx_script_urls:
+        description: >
+          A list of URLs to pass as Virtual Machine Extension
+          scripts. Use the vmx_script_entry property to specify
+          which script will act as the execution entry point
+        default:
+        - https://raw.githubusercontent.com/01000101/cloudify-azure-plugin/CFY-5107---Windows-host-support/blueprints/scripts/winrm/enable_winrm_http.ps1
+      vmx_script_entry:
+        type: string
+        description: >
+          The filename to execute. For instance, if a VMX script URL
+          is http://some-domain.com/scripts/my_script.ps1, this property
+          should be my_script.ps1
+        default: enable_winrm_http.ps1
+      agent_config:
+        type: cloudify.datatypes.AgentConfig
+        default:
+          install_method: remote
+          port: 5985
+          user: { get_property: [SELF, username] }
+          password: { get_property: [SELF, password] }
 
 
   cloudify.azure.nodes.ServerWithNic:

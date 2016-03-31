@@ -13,11 +13,13 @@ existing_storage_account_name: ''
 existing_vnet_name: ''
 existing_nic_name: ''
 existing_public_ip_name: ''
-ssh_username: 'azuretest'
 aad_password: 'mypassword'
 custom_script_command: ''
 custom_script_path: ''
 data_disk_size_GB: ''
+
+# Linux options
+ssh_username: 'azuretest'
 key_data:  |
    ---- BEGIN SSH2 PUBLIC KEY ----
    Comment: "rsa-key-20150804"
@@ -28,3 +30,7 @@ key_data:  |
    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX   
    ---- END SSH2 PUBLIC KEY ----
+
+# Windows options
+username: cloudify
+password: Cloud1fyR0cks!
