@@ -117,6 +117,47 @@ two options to mitigate this issue on the Cloudify side of things.
  during Manager bootstrapping.
 
 
+Linux VM public key authentication
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The `osProfile.linuxConfiguration.ssh.publicKeys` properties are available
+when creating a new Linux VM and they specify an array of public keys that can
+be placed on a Linux VM.  Using this requires the use of two subkeys named
+`path` and `keyData`.  `path` is an absolute filesystem path denoting where
+the public key will be placed (generally, you will want this in
+/home/yourusername/.ssh/authorized_keys to enable remote SSH access).
+`keyData` is a literal string containing the PKCS8-formatted public key. If
+your public key current starts with something like "----- BEGIN PUBLIC KEY -----",
+your key is in the SSH2 format and must be converted using the steps in the
+next paragraph.  If it starts with "ssh-rsa " then it is in the PKCS8 format
+and you can use it with your blueprint.  Note - when specifying your key data
+in a YAML file you may wish to use double-quotes and line escapes
+to preserve the key data if you want to use multiple lines (see the following
+snippet).
+
+.. code-block:: yaml
+
+    vm_os_pubkeys:
+    -   path: {concat:[ '/home/', { get_input: vm_os_username }, '/.ssh/authorized_keys' ]}
+        keyData:
+            "ssh-rsa AAAAB3NzaC1yc2EAAAADAAABAAABAQCUJy5McWvvqoKMkwPn+Evnvb67\
+            9BGySsd0SMtuCVz8A1oG7Tke60psxWkO/DAOXn6Alm/UkoY9wqGSCJRCEvTOJvSP\
+            vHNo2nTdibzNFl8NnJsHWJAbeuu5RuvMaqiIv0GUKCSAtSl/5+aFbKO0QEA74kVN\
+            48PB3gXNxzL5/wkv/SZEa65lhbJHo0y/SwsazssrQ3i9p/dlwg6tZZtEFJDK9a7r\
+            MYa3Xq5lbBtYeUU9MTAsX+u5HnEPFLYkzCsKC9pfv7kA+zX37wN5n0e4rAG3AaGp\
+            U9yT/Oy8xKxHao82asi6NM3JIzJlwymk4Kf0F4D+A5hbpAdy9zW1YXovQppb"
+
+
+If you already have a SSH2-formatted public key, you can easily convert it
+to a PKCS8-formatted key for use with Azure using the following command
+(on Fedora 23 - small adjustments may be needed for other systems running
+different versions of OpenSSL).
+
+.. code-block:: bash
+
+    ssh-keygen -f /path/to/linuxvm.pub.pem -i -m PKCS8
+
+
 VirtualMachineExtension Limitations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

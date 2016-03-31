@@ -2,7 +2,8 @@ tosca_definitions_version: cloudify_dsl_1_2
 
 imports:
 - http://www.getcloudify.org/spec/cloudify/3.3.1/types.yaml
-- https://raw.githubusercontent.com/01000101/cloudify-azure-plugin/rebuild/plugin.yaml
+# - https://raw.githubusercontent.com/01000101/cloudify-azure-plugin/rebuild/plugin.yaml
+- ../plugin.yaml
 
 inputs:
   resource_prefix:
@@ -42,6 +43,9 @@ inputs:
   vm_size: 
     type: string
     required: true
+  vm_os_family:
+    type: string
+    required: true
   vm_image_publisher: 
     type: string
     required: true
@@ -60,6 +64,12 @@ inputs:
   vm_os_password: 
     type: string
     required: true
+  vm_os_pubkeys:
+    required: false
+  vm_os_pubkey_auth_only:
+    type: boolean
+    required: false
+    default: false
   # Auth inputs
   azure_config:
     default:
@@ -168,10 +178,31 @@ node_templates:
     - type: cloudify.azure.relationships.contained_in_resource_group
       target: resource_group
       
-  network_security_rule_rdp:
+  #network_security_rule_rdp:
+  #  type: cloudify.azure.nodes.network.NetworkSecurityRule
+  #  properties:
+  #    name: {concat:[{get_input: resource_prefix},nsr_rdp,{get_input: resource_suffix}]}
+  #    location: { get_input: location }
+  #    retry_after: { get_input: retry_after }
+  #    azure_config: { get_input: azure_config }
+  #    resource_config:
+  #      description: RDP allow
+  #      protocol: Tcp
+  #      sourcePortRange: '*'
+  #      destinationPortRange: 3389
+  #      sourceAddressPrefix: '*'
+  #      destinationAddressPrefix: '*'
+  #      priority: 100
+  #      access: Allow
+  #      direction: Inbound
+  #  relationships:
+  #  - type: cloudify.azure.relationships.contained_in_network_security_group
+  #    target: network_security_group
+  
+  network_security_rule_ssh:
     type: cloudify.azure.nodes.network.NetworkSecurityRule
     properties:
-      name: {concat:[{get_input: resource_prefix},nsr_rdp,{get_input: resource_suffix}]}
+      name: {concat:[{get_input: resource_prefix},nsr_ssh,{get_input: resource_suffix}]}
       location: { get_input: location }
       retry_after: { get_input: retry_after }
       azure_config: { get_input: azure_config }
@@ -179,7 +210,7 @@ node_templates:
         description: RDP allow
         protocol: Tcp
         sourcePortRange: '*'
-        destinationPortRange: 3389
+        destinationPortRange: 22
         sourceAddressPrefix: '*'
         destinationAddressPrefix: '*'
         priority: 100
@@ -207,6 +238,7 @@ node_templates:
       location: { get_input: location }
       retry_after: { get_input: retry_after }
       azure_config: { get_input: azure_config }
+      os_family: { get_input: vm_os_family }
       resource_config:
         hardwareProfile:
           vmSize: { get_input: vm_size }
@@ -220,6 +252,10 @@ node_templates:
           computerName: { get_property: [SELF, name] }
           adminUsername: { get_input: vm_os_username }
           adminPassword: { get_input: vm_os_password }
+          linuxConfiguration:
+            ssh:
+              publicKeys: { get_input: vm_os_pubkeys }
+            disablePasswordAuthentication: { get_input: vm_os_pubkey_auth_only }
       agent_config:
         user: { get_input: vm_os_username }
         password: { get_input: vm_os_password }
@@ -234,6 +270,19 @@ node_templates:
     - type: cloudify.azure.relationships.connected_to_nic
       target: vm_nic
      
+  vm_public_ip:
+    type: cloudify.azure.nodes.network.PublicIPAddress
+    properties:
+      name: {concat:[{get_input: resource_prefix},pipvm,{get_input: resource_suffix}]}
+      location: { get_input: location }
+      retry_after: { get_input: retry_after }
+      azure_config: { get_input: azure_config }
+      resource_config:
+        publicIPAllocationMethod: Static
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_resource_group
+      target: resource_group
+     
   vm_nic_ip_cfg:
     type: cloudify.azure.nodes.network.IPConfiguration
     properties:
@@ -246,6 +295,8 @@ node_templates:
     relationships:
     - type: cloudify.azure.relationships.ip_configuration_connected_to_subnet
       target: subnet
+    - type: cloudify.azure.relationships.ip_configuration_connected_to_public_ip
+      target: vm_public_ip
    
   vm_nic:
     type: cloudify.azure.nodes.network.NetworkInterfaceCard
@@ -264,25 +315,25 @@ node_templates:
     - type: cloudify.azure.relationships.nic_connected_to_lb_be_pool
       target: load_balancer_backend_pool
      
-  vm_webapp:
-    type: cloudify.azure.nodes.compute.VirtualMachineExtension
-    properties:
-      name: vm_webapp
-      location: { get_input: location }
-      retry_after: { get_input: retry_after }
-      azure_config: { get_input: azure_config }
-      resource_config:
-        publisher: Microsoft.Powershell
-        ext_type: DSC
-        typeHandlerVersion: '2.8'
-        settings:
-          ModulesUrl: https://github.com/Azure/azure-quickstart-templates/raw/master/dsc-extension-iis-server-windows-vm/ContosoWebsite.ps1.zip
-          ConfigurationFunction: ContosoWebsite.ps1\ContosoWebsite
-          Properties:
-            Machinename: { get_property: [vm, name] }
-    relationships:
-    - type: cloudify.azure.relationships.vmx_contained_in_vm
-      target: vm
+  #vm_webapp:
+  #  type: cloudify.azure.nodes.compute.VirtualMachineExtension
+  #  properties:
+  #    name: vm_webapp
+  #    location: { get_input: location }
+  #    retry_after: { get_input: retry_after }
+  #    azure_config: { get_input: azure_config }
+  #    resource_config:
+  #      publisher: Microsoft.Powershell
+  #      ext_type: DSC
+  #      typeHandlerVersion: '2.8'
+  #      settings:
+  #        ModulesUrl: https://github.com/Azure/azure-quickstart-templates/raw/master/dsc-extension-iis-server-windows-vm/ContosoWebsite.ps1.zip
+  #        ConfigurationFunction: ContosoWebsite.ps1\ContosoWebsite
+  #        Properties:
+  #          Machinename: { get_property: [vm, name] }
+  #  relationships:
+  #  - type: cloudify.azure.relationships.vmx_contained_in_vm
+  #    target: vm
       
   lb_public_ip:
     type: cloudify.azure.nodes.network.PublicIPAddress

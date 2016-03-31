@@ -96,18 +96,33 @@ def create(**_):
         )
     }
     # Build the OS profile
-    os_profile = {
-        'windowsConfiguration': {
-            # This is required for extension scripts to work
-            'provisionVMAgent': True,
-            'winRM': {
-                'listeners': [{
-                    'protocol': 'Http',
-                    'certificateUrl': None
-                }]
-            }
+    os_family = ctx.node.properties.get('os_family', '').lower()
+    os_profile = dict()
+    res_cfg = utils.get_resource_config()
+    # Set defaults for Windows installs to enable WinRM listener
+    if os_family == 'windows' and \
+            not res_cfg.get('osProfile', dict()).get('windowsConfiguration'):
+        os_profile = {
+            'windowsConfiguration': {
+                # This is required for extension scripts to work
+                'provisionVMAgent': True,
+                'winRM': {
+                    'listeners': [{
+                        'protocol': 'Http',
+                        'certificateUrl': None
+                    }]
+                }
+            },
+            'linuxConfiguration': None
         }
-    }
+    elif not res_cfg.get('osProfile', dict()).get('linuxConfiguration'):
+        os_profile = {
+            'linuxConfiguration': {
+                'disablePasswordAuthentication': False
+            },
+            'windowsConfiguration': None
+        }
+
     # Create a resource (if necessary)
     utils.task_resource_create(
         VirtualMachine(),
@@ -131,25 +146,27 @@ def create(**_):
 @operation
 def configure(command_to_execute, file_uris, **_):
     '''Configures the resource'''
-    # By default, this should enable WinRM HTTP (unencrypted)
-    # This entire function can be overridden from the plugin
-    utils.task_resource_create(
-        VirtualMachineExtension(
-            virtual_machine=ctx.node.properties.get('name')
-        ),
-        {
-            'location': ctx.node.properties.get('location'),
-            'tags': ctx.node.properties.get('tags'),
-            'properties': {
-                'publisher': 'Microsoft.Compute',
-                'type': 'CustomScriptExtension',
-                'typeHandlerVersion': '1.4',
-                'settings': {
-                    'fileUris': file_uris,
-                    'commandToExecute': command_to_execute
+    os_family = ctx.node.properties.get('os_family', '').lower()
+    if os_family == 'windows':
+        # By default, this should enable WinRM HTTP (unencrypted)
+        # This entire function can be overridden from the plugin
+        utils.task_resource_create(
+            VirtualMachineExtension(
+                virtual_machine=ctx.node.properties.get('name')
+            ),
+            {
+                'location': ctx.node.properties.get('location'),
+                'tags': ctx.node.properties.get('tags'),
+                'properties': {
+                    'publisher': 'Microsoft.Compute',
+                    'type': 'CustomScriptExtension',
+                    'typeHandlerVersion': '1.4',
+                    'settings': {
+                        'fileUris': file_uris,
+                        'commandToExecute': command_to_execute
+                    }
                 }
-            }
-        })
+            })
 
     # Write the IP address to runtime properties for the agent
     # Get a reference to the NIC

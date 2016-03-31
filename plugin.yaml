@@ -5,7 +5,8 @@
 plugins:
   pkg:
     executor: central_deployment_agent
-    source: https://github.com/01000101/cloudify-azure-plugin/archive/rebuild.zip
+#    source: https://github.com/01000101/cloudify-azure-plugin/archive/rebuild.zip
+    source: ../../
 
 data_types:
   cloudify.datatypes.azure.Config:
