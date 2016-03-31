@@ -1190,7 +1190,7 @@ relationships:
   cloudify.azure.relationships.vmx_contained_in_vm:
     derived_from: cloudify.relationships.contained_in
     
-  cloudify.azure.relationships.lb_be_pool_connected_to_nic:
+  cloudify.azure.relationships.nic_connected_to_lb_be_pool:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:

@@ -212,12 +212,12 @@ def attach_nic_to_backend_pool(**_):
     '''
     # Get the ID of the Backend Pool
     be_pool_id = utils.get_full_id_reference(
-        BackendAddressPool, _ctx=ctx.source)
+        BackendAddressPool, _ctx=ctx.target)
     # Get an interface to the Network Interface Card
-    nic_iface = NetworkInterfaceCard(_ctx=ctx.target)
+    nic_iface = NetworkInterfaceCard(_ctx=ctx.source)
     # Get the existing NIC IPConfigurations
     nic_data = nic_iface.get(
-        ctx.target.node.properties.get('name'))
+        ctx.source.node.properties.get('name'))
     nic_ip_cfgs = nic_data.get('properties', dict()).get(
         'ipConfigurations', list())
     # Add the Backend Pool to the NIC IPConfigurations
@@ -234,7 +234,7 @@ def attach_nic_to_backend_pool(**_):
             'properties': {
                 'ipConfigurations': nic_ip_cfgs
             }
-        }, _ctx=ctx.target)
+        }, _ctx=ctx.source)
 
 
 @operation
@@ -245,12 +245,12 @@ def detach_nic_from_backend_pool(**_):
     '''
     # Get the ID of the Backend Pool
     be_pool_id = utils.get_full_id_reference(
-        BackendAddressPool, _ctx=ctx.source)
+        BackendAddressPool, _ctx=ctx.target)
     # Get an interface to the Network Interface Card
-    nic_iface = NetworkInterfaceCard(_ctx=ctx.target)
+    nic_iface = NetworkInterfaceCard(_ctx=ctx.source)
     # Get the existing NIC IPConfigurations
     nic_data = nic_iface.get(
-        ctx.target.node.properties.get('name'))
+        ctx.source.node.properties.get('name'))
     nic_ip_cfgs = nic_data.get('properties', dict()).get(
         'ipConfigurations', list())
     # Remove the Backend Pool from the NIC IPConfigurations
@@ -270,4 +270,4 @@ def detach_nic_from_backend_pool(**_):
             'properties': {
                 'ipConfigurations': nic_ip_cfgs
             }
-        }, _ctx=ctx.target)
+        }, _ctx=ctx.source)

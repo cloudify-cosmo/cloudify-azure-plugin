@@ -62,5 +62,3 @@ REL_VMX_CONTAINED_IN_VM = \
     'cloudify.azure.relationships.vmx_contained_in_vm'
 REL_LB_CONNECTED_TO_NIC = \
     'cloudify.azure.relationships.lb_connected_to_nic'
-REL_LB_BE_POOL_CONNECTED_TO_NIC = \
-    'cloudify.azure.relationships.lb_be_pool_connected_to_nic'
