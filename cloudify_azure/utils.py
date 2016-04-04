@@ -411,6 +411,28 @@ def get_full_id_reference(resource, api_fmt=True, _ctx=ctx):
     return resid
 
 
+def get_full_resource_id(iface, name, api_fmt=True, _ctx=ctx):
+    '''
+        Creates a full, usable Azure ID reference
+
+    :param `cloudify_azure.resources.base.Resource` iface:
+        Existing resource instance interface
+    :param boolean api_fmt: If True, returns the resource ID as a dict
+        object with an *id* key. If False, returns just the ID string
+    :param `cloudify.ctx` _ctx: Cloudify context
+    :returns: Azure ID of a resource
+    :rtype: string or dict or None
+    '''
+    subscription_id = get_subscription_id(_ctx=_ctx)
+    resid = '/subscriptions/{0}{1}/{2}'.format(
+        subscription_id,
+        iface.endpoint,
+        name)
+    if api_fmt:
+        return {'id': resid}
+    return resid
+
+
 def get_rel_id_reference(resource, rel_type, api_fmt=True, _ctx=ctx):
     '''
         Finds a resource by relationship type and

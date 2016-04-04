@@ -359,8 +359,9 @@ def create_incoming_nat_rule(**_):
     lb_rules = lb_data.get('properties', dict()).get(
         'inboundNatRules', list())
     # Get the Load Balancer Frontend IP Configuration
-    lb_fe_ipc_id = utils.get_rel_id_reference(
-        FrontendIPConfiguration, constants.REL_CONNECTED_TO_IPC)
+    lb_fe_ipc_name = utils.get_rel_node_name(constants.REL_CONNECTED_TO_IPC)
+    lb_fe_ipc_id = utils.get_full_resource_id(
+        FrontendIPConfiguration(), lb_fe_ipc_name)
     # Update the resource config
     res_cfg['frontendIPConfiguration'] = lb_fe_ipc_id
     lb_rules.append({
@@ -426,8 +427,9 @@ def create_rule(**_):
     lb_probe_id = utils.get_rel_id_reference(
         Probe, constants.REL_CONNECTED_TO_LB_PROBE)
     # Get the Load Balancer Frontend IP Configuration
-    lb_fe_ipc_id = utils.get_rel_id_reference(
-        FrontendIPConfiguration, constants.REL_CONNECTED_TO_IPC)
+    lb_fe_ipc_name = utils.get_rel_node_name(constants.REL_CONNECTED_TO_IPC)
+    lb_fe_ipc_id = utils.get_full_resource_id(
+        FrontendIPConfiguration(), lb_fe_ipc_name)
     # Get the existing Load Balancer Rules
     lb_rules = lb_data.get('properties', dict()).get(
         'loadBalancingRules', list())
