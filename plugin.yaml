@@ -297,7 +297,7 @@ data_types:
     properties:
       protocol:
         type: string
-        default: Http
+        default: Tcp
         required: true
       frontendPort:
         type: integer
