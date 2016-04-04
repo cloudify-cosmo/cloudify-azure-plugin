@@ -47,7 +47,7 @@ Configuration CloudifyExample
         $false
       }
       SetScript = {
-        Set-WebBinding -Name 'Default Web Site' -BindingInformation "*:80:" -PropertyName Port -Value $WebServerPort
+        Set-WebBinding -Name 'Default Web Site' -BindingInformation "*:80:" -PropertyName Port -Value $using:WebServerPort
       }
     }
   }
