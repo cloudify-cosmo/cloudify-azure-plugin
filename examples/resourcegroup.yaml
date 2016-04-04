@@ -7,7 +7,7 @@ imports:
 
 inputs:
   resource_prefix:
-    default: cfy
+    default: josh
   resource_suffix:
     default: 10
   subscription_id:
@@ -29,16 +29,11 @@ inputs:
   retry_after:
     type: integer
     default: 60
-  # Existing resources (manager)
-  mgr_resource_group_name:
+  # Networking
+  subnet_private_cidr:
     type: string
     required: true
-  mgr_virtual_network_name:
-    type: string
-    required: true
-  mgr_subnet_name:
-    type: string
-    required: true
+    default: 10.10.0.0/16
   # VM inputs
   vm_size: 
     type: string
@@ -70,7 +65,40 @@ inputs:
     type: boolean
     required: false
     default: false
+  # Manager voodoo
+  plugin_resources:
+    description: >
+      Holds any archives that should be uploaded to the manager.
+    default:
+    - 'http://repository.cloudifysource.org/org/cloudify3/3.3.1/sp-RELEASE/cloudify_aws_plugin-1.3.1-py27-none-linux_x86_64-centos-Core.wgn'
+    - 'http://repository.cloudifysource.org/org/cloudify3/3.3.1/sp-RELEASE/cloudify_fabric_plugin-1.3.1-py27-none-linux_x86_64-centos-Core.wgn'
+    - 'http://repository.cloudifysource.org/org/cloudify3/3.3.1/sp-RELEASE/cloudify_diamond_plugin-1.3.1-py27-none-linux_x86_64-redhat-Maipo.wgn'
+    - 'http://repository.cloudifysource.org/org/cloudify3/3.3.1/sp-RELEASE/cloudify_diamond_plugin-1.3.1-py27-none-linux_x86_64-centos-Core.wgn'
+    - 'http://repository.cloudifysource.org/org/cloudify3/3.3.1/sp-RELEASE/cloudify_diamond_plugin-1.3.1-py26-none-linux_x86_64-centos-Final.wgn'
+    - 'http://repository.cloudifysource.org/org/cloudify3/3.3.1/sp-RELEASE/cloudify_diamond_plugin-1.3.1-py27-none-linux_x86_64-Ubuntu-precise.wgn'
+    - 'http://repository.cloudifysource.org/org/cloudify3/3.3.1/sp-RELEASE/cloudify_diamond_plugin-1.3.1-py27-none-linux_x86_64-Ubuntu-trusty.wgn'
+  dsl_resources:
+    description: >
+      Holds a set of dsl required resources
+    default:
+    - {'source_path': 'http://www.getcloudify.org/spec/aws-plugin/1.3.1/plugin.yaml', 'destination_path': '/spec/aws-plugin/1.3.1/plugin.yaml'}
+    - {'source_path': 'http://www.getcloudify.org/spec/fabric-plugin/1.3.1/plugin.yaml', 'destination_path': '/spec/fabric-plugin/1.3.1/plugin.yaml'}
+    - {'source_path': 'http://www.getcloudify.org/spec/diamond-plugin/1.3.1/plugin.yaml', 'destination_path': '/spec/diamond-plugin/1.3.1/plugin.yaml'}
+    - {'source_path': 'http://www.getcloudify.org/spec/cloudify/3.3.1/types.yaml', 'destination_path': '/spec/cloudify/3.3.1/types.yaml'}
+
   # Auth inputs
+  agent_ssh_username:
+    type: string
+    default: { get_input: vm_os_username }
+  agent_ssh_key_filename:
+    type: string
+    required: true
+  manager_ssh_username:
+    type: string
+    default: { get_input: vm_os_username }
+  manager_ssh_key_filename:
+    type: string
+    required: true
   azure_config:
     default:
       subscription_id: { get_input: subscription_id }
@@ -80,6 +108,78 @@ inputs:
 
 
 node_templates:
+  manager_configuration:
+    type: cloudify.nodes.MyCloudifyManager
+    properties:
+      ssh_user: { get_input: manager_ssh_username }
+      ssh_key_filename: { get_input: manager_ssh_key_filename }
+      agent_local_key_path: { get_input: agent_ssh_key_filename }
+
+      cloudify:
+        transient_deployment_workers_mode:
+          enabled: true
+          global_parallel_executions_limit: 50
+
+        cloudify_agent:
+          min_workers: 0
+          max_workers: 5
+          remote_execution_port: 22
+          user: { get_input: agent_ssh_username }
+          #broker_ip: { get_input: rabbitmq_endpoint_ip }
+          #broker_user: { get_input: rabbitmq_username }
+          #broker_pass: { get_input: rabbitmq_password }
+          #broker_ssl_enabled: { get_input: rabbitmq_ssl_enabled }
+          #broker_ssl_cert: { get_input: rabbitmq_cert_public }
+
+        workflows:
+          task_retries: -1  # this means forever
+          task_retry_interval: 30
+
+        policy_engine:
+          start_timeout: 30
+        import_resolver:
+          parameters:
+            rules:
+            - {'http://www.getcloudify.org/spec': 'http://localhost:53229/spec'}
+
+        upload_resources:
+          plugin_resources: { get_input: plugin_resources }
+          dsl_resources: { get_input: dsl_resources }
+
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        configure:
+          implementation: fabric.fabric_plugin.tasks.run_task
+          inputs:
+            tasks_file: components/manager/scripts/aws-ec2/configure.py
+            task_name: configure_manager
+            task_properties:
+              aws_config: *aws_configuration
+              manager_config_path: { get_property: [SELF, cloudify, plugins, aws_config_path] }
+
+            fabric_env: &manager_fabric_env
+              user: { get_input: ssh_user }
+              key_filename: { get_property: [management_keypair, private_key_path] }
+              host_string: { get_attribute: [manager_server_ip, aws_resource_id] }
+        create:
+          implementation: fabric.fabric_plugin.tasks.run_script
+          inputs:
+            script_path: components/manager/scripts/configure_manager.sh
+            fabric_env:
+              <<: *manager_fabric_env
+              always_use_pty: true
+
+    relationships:
+      - type: cloudify.relationships.contained_in
+        target: manager_host
+        target_interfaces:
+          cloudify.interfaces.relationship_lifecycle:
+            postconfigure:
+             implementation: components/manager/scripts/set_manager_public_ip.py
+             inputs:
+              public_ip: { get_attribute: [manager_server_ip, aws_resource_id] }
+
+  
   resource_group:
     type: cloudify.azure.nodes.ResourceGroup
     properties:
@@ -103,10 +203,9 @@ node_templates:
   virtual_network:
     type: cloudify.azure.nodes.network.VirtualNetwork
     properties:
-      resource_group_name: { get_input: mgr_resource_group_name }
-      name: { get_input: mgr_virtual_network_name }
-      use_external_resource: true
+      name: {concat:[{get_input: resource_prefix},vnet,{get_input: resource_suffix}]}
       location: { get_input: location }
+      retry_after: { get_input: retry_after }
       azure_config: { get_input: azure_config }
     relationships:
     - type: cloudify.azure.relationships.contained_in_resource_group
@@ -115,57 +214,59 @@ node_templates:
   subnet:
     type: cloudify.azure.nodes.network.Subnet
     properties:
-      resource_group_name: { get_input: mgr_resource_group_name }
-      name: { get_input: mgr_subnet_name }
-      use_external_resource: true
+      name: {concat:[{get_input: resource_prefix},subnet,{get_input: resource_suffix}]}
       location: { get_input: location }
+      retry_after: { get_input: retry_after }
       azure_config: { get_input: azure_config }
+      resource_config:
+        addressPrefix: { get_input: subnet_private_cidr }
+        
     relationships:
     - type: cloudify.azure.relationships.contained_in_virtual_network
       target: virtual_network
       
-  #route_table:
-  #  type: cloudify.azure.nodes.network.RouteTable
-  #  properties:
-  #    name: {concat:[{get_input: resource_prefix},rt,{get_input: resource_suffix}]}
-  #    location: { get_input: location }
-  #    retry_after: { get_input: retry_after }
-  #    azure_config: { get_input: azure_config }
-  #  relationships:
-  #  - type: cloudify.azure.relationships.contained_in_resource_group
-  #    target: resource_group
-  #  - type: cloudify.azure.relationships.route_table_attached_to_subnet
-  #    target: subnet
-  #    
-  #route_internet:
-  #  type: cloudify.azure.nodes.network.Route
-  #  properties:
-  #    name: {concat:[{get_input: resource_prefix},route,{get_input: resource_suffix}]}
-  #    location: { get_input: location }
-  #    retry_after: { get_input: retry_after }
-  #    azure_config: { get_input: azure_config }
-  #    resource_config:
-  #      addressPrefix: 0.0.0.0/0
-  #      nextHopType: Internet
-  #  relationships:
-  #  - type: cloudify.azure.relationships.contained_in_route_table
-  #    target: route_table
-  #
-  #route_cfy_manager:
-  #  type: cloudify.azure.nodes.network.Route
-  #  properties:
-  #    name: {concat:[{get_input: resource_prefix},route,{get_input: resource_suffix}]}
-  #    location: { get_input: location }
-  #    retry_after: { get_input: retry_after }
-  #    azure_config: { get_input: azure_config }
-  #    resource_config:
-  #      addressPrefix: 10.1.0.0/16
-  #      nextHopType: VnetLocal
-  #  relationships:
-  #  - type: cloudify.azure.relationships.contained_in_route_table
-  #    target: route_table
-  #  - type: cloudify.relationships.depends_on
-  #    target: route_internet
+  route_table:
+    type: cloudify.azure.nodes.network.RouteTable
+    properties:
+      name: {concat:[{get_input: resource_prefix},rt,{get_input: resource_suffix}]}
+      location: { get_input: location }
+      retry_after: { get_input: retry_after }
+      azure_config: { get_input: azure_config }
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_resource_group
+      target: resource_group
+    - type: cloudify.azure.relationships.route_table_attached_to_subnet
+      target: subnet
+      
+  route_internet:
+    type: cloudify.azure.nodes.network.Route
+    properties:
+      name: {concat:[{get_input: resource_prefix},route,{get_input: resource_suffix}]}
+      location: { get_input: location }
+      retry_after: { get_input: retry_after }
+      azure_config: { get_input: azure_config }
+      resource_config:
+        addressPrefix: 0.0.0.0/0
+        nextHopType: Internet
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_route_table
+      target: route_table
+  
+  route_cfy_manager:
+    type: cloudify.azure.nodes.network.Route
+    properties:
+      name: {concat:[{get_input: resource_prefix},route,{get_input: resource_suffix}]}
+      location: { get_input: location }
+      retry_after: { get_input: retry_after }
+      azure_config: { get_input: azure_config }
+      resource_config:
+        addressPrefix: { get_input: subnet_private_cidr }
+        nextHopType: VnetLocal
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_route_table
+      target: route_table
+    - type: cloudify.relationships.depends_on
+      target: route_internet
   
   network_security_group:
     type: cloudify.azure.nodes.network.NetworkSecurityGroup
@@ -174,64 +275,79 @@ node_templates:
       location: { get_input: location }
       retry_after: { get_input: retry_after }
       azure_config: { get_input: azure_config }
-    relationships:
-    - type: cloudify.azure.relationships.contained_in_resource_group
-      target: resource_group
-      
-  #network_security_rule_rdp:
-  #  type: cloudify.azure.nodes.network.NetworkSecurityRule
-  #  properties:
-  #    name: {concat:[{get_input: resource_prefix},nsr_rdp,{get_input: resource_suffix}]}
-  #    location: { get_input: location }
-  #    retry_after: { get_input: retry_after }
-  #    azure_config: { get_input: azure_config }
-  #    resource_config:
-  #      description: RDP allow
-  #      protocol: Tcp
-  #      sourcePortRange: '*'
-  #      destinationPortRange: 3389
-  #      sourceAddressPrefix: '*'
-  #      destinationAddressPrefix: '*'
-  #      priority: 100
-  #      access: Allow
-  #      direction: Inbound
-  #  relationships:
-  #  - type: cloudify.azure.relationships.contained_in_network_security_group
-  #    target: network_security_group
-  
-  network_security_rule_ssh:
-    type: cloudify.azure.nodes.network.NetworkSecurityRule
-    properties:
-      name: {concat:[{get_input: resource_prefix},nsr_ssh,{get_input: resource_suffix}]}
-      location: { get_input: location }
-      retry_after: { get_input: retry_after }
-      azure_config: { get_input: azure_config }
       resource_config:
-        description: RDP allow
-        protocol: Tcp
-        sourcePortRange: '*'
-        destinationPortRange: 22
-        sourceAddressPrefix: '*'
-        destinationAddressPrefix: '*'
-        priority: 100
-        access: Allow
-        direction: Inbound
-    relationships:
-    - type: cloudify.azure.relationships.contained_in_network_security_group
-      target: network_security_group
-      
-  availability_set:
-    type: cloudify.azure.nodes.compute.AvailabilitySet
-    properties:
-      name: {concat:[{get_input: resource_prefix},availset,{get_input: resource_suffix}]}
-      location: { get_input: location }
-      retry_after: { get_input: retry_after }
-      azure_config: { get_input: azure_config }
+        securityRules:
+        - name: nsr_ssh
+          properties:
+            description: SSH access
+            protocol: Tcp
+            sourcePortRange: '*'
+            destinationPortRange: 22
+            sourceAddressPrefix: '*'
+            destinationAddressPrefix: '*'
+            priority: 100
+            access: Allow
+            direction: Inbound
+        - name: nsr_http
+          properties:
+            description: REST API (HTTP) access
+            protocol: Tcp
+            sourcePortRange: '*'
+            destinationPortRange: 80
+            sourceAddressPrefix: '*'
+            destinationAddressPrefix: '*'
+            priority: 200
+            access: Allow
+            direction: Inbound
+        - name: nsr_https
+          properties:
+            description: REST API (HTTPS) access
+            protocol: Tcp
+            sourcePortRange: '*'
+            destinationPortRange: 443
+            sourceAddressPrefix: '*'
+            destinationAddressPrefix: '*'
+            priority: 201
+            access: Allow
+            direction: Inbound
+        - name: nsr_internal_rest
+          properties:
+            description: Internal REST access
+            protocol: Tcp
+            sourcePortRange: '*'
+            destinationPortRange: 8101
+            sourceAddressPrefix: { get_input: subnet_private_cidr }
+            destinationAddressPrefix: '*'
+            priority: 300
+            access: Allow
+            direction: Inbound
+        - name: nsr_rabbitmq
+          properties:
+            description: RabbitMQ access
+            protocol: Tcp
+            sourcePortRange: '*'
+            destinationPortRange: 5672
+            sourceAddressPrefix: { get_input: subnet_private_cidr }
+            destinationAddressPrefix: '*'
+            priority: 400
+            access: Allow
+            direction: Inbound
+        - name: nsr_fileserver
+          properties:
+            description: FileServer access
+            protocol: Tcp
+            sourcePortRange: '*'
+            destinationPortRange: 53229
+            sourceAddressPrefix: { get_input: subnet_private_cidr }
+            destinationAddressPrefix: '*'
+            priority: 500
+            access: Allow
+            direction: Inbound
     relationships:
     - type: cloudify.azure.relationships.contained_in_resource_group
       target: resource_group
-
-  vm:
+ 
+  manager_host:
     type: cloudify.azure.nodes.compute.VirtualMachine
     properties:
       name: {concat:[{get_input: resource_prefix},vm,{get_input: resource_suffix}]}
@@ -239,6 +355,7 @@ node_templates:
       retry_after: { get_input: retry_after }
       azure_config: { get_input: azure_config }
       os_family: { get_input: vm_os_family }
+      use_public_ip: true
       resource_config:
         hardwareProfile:
           vmSize: { get_input: vm_size }
@@ -257,16 +374,12 @@ node_templates:
               publicKeys: { get_input: vm_os_pubkeys }
             disablePasswordAuthentication: { get_input: vm_os_pubkey_auth_only }
       agent_config:
-        user: { get_input: vm_os_username }
-        password: { get_input: vm_os_password }
         install_method: none
     relationships:
     - type: cloudify.azure.relationships.contained_in_resource_group
       target: resource_group
     - type: cloudify.azure.relationships.connected_to_storage_account
       target: storage_account
-    - type: cloudify.azure.relationships.connected_to_availability_set
-      target: availability_set
     - type: cloudify.azure.relationships.connected_to_nic
       target: vm_nic
      
@@ -312,78 +425,128 @@ node_templates:
       target: network_security_group
     - type: cloudify.azure.relationships.connected_to_ip_configuration
       target: vm_nic_ip_cfg
-    - type: cloudify.azure.relationships.nic_connected_to_lb_be_pool
-      target: load_balancer_backend_pool
+      
+   
+  python_runtime:
+    type: manager.nodes.PythonRuntime
+    relationships:
+      - type: cloudify.relationships.contained_in
+        target: manager_host
+
+  java_runtime:
+    type: manager.nodes.JavaRuntime
+    relationships:
+      - type: cloudify.relationships.contained_in
+        target: manager_host
+
+  ######################################################################
+  # These are the nodes comprising the Cloudify Manager's components
+  ######################################################################
+  rabbitmq:
+    type: manager.nodes.RabbitMQ
+    relationships:
+      - type: cloudify.relationships.contained_in
+        target: manager_host
+
+  elasticsearch:
+    type: manager.nodes.Elasticsearch
+    relationships:
+      - type: cloudify.relationships.contained_in
+        target: manager_host
+      - type: cloudify.relationships.depends_on
+        target: java_runtime
+
+  logstash:
+    type: manager.nodes.Logstash
+    relationships:
+      - type: cloudify.relationships.contained_in
+        target: manager_host
+      - type: cloudify.relationships.depends_on
+        target: java_runtime
+      - type: logstash_to_elasticsearch
+        target: elasticsearch
+
+  influxdb:
+    type: manager.nodes.InfluxDB
+    relationships:
+      - type: cloudify.relationships.contained_in
+        target: manager_host
+
+  nginx:
+    type: manager.nodes.Nginx
+    relationships:
+      - type: cloudify.relationships.contained_in
+        target: manager_host
+      - type: nginx_to_manager_configuration
+        target: manager_configuration
+
+  riemann:
+    type: manager.nodes.Riemann
+    relationships:
+      - type: cloudify.relationships.contained_in
+        target: manager_host
+      - type: cloudify.relationships.depends_on
+        target: java_runtime
+      - type: riemann_to_rabbitmq
+        target: rabbitmq
+      - type: riemann_to_nginx
+        target: nginx
+
+  rest_service:
+    type: manager.nodes.RestService
+    relationships:
+      - type: cloudify.relationships.contained_in
+        target: manager_host
+      - type: cloudify.relationships.depends_on
+        target: python_runtime
+      - type: rest_to_mgr_config
+        target: manager_configuration
+      - type: restservice_to_elasticsearch
+        target: elasticsearch
+      - type: restservice_to_rabbitmq
+        target: rabbitmq
+
+  mgmt_worker:
+    type: manager.nodes.ManagementWorker
+    relationships:
+      - type: cloudify.relationships.contained_in
+        target: manager_host
+      - type: cloudify.relationships.depends_on
+        target: python_runtime
+      - type: mgmtworker_to_rabbitmq
+        target: rabbitmq
+      - type: mgmtworker_to_nginx
+        target: nginx
+
+  amqp_influx:
+    type: manager.nodes.AmqpInfluxBroker
+    relationships:
+      - type: cloudify.relationships.contained_in
+        target: manager_host
+      - type: cloudify.relationships.depends_on
+        target: python_runtime
+      - type: amqpinflux_to_rabbitmq
+        target: rabbitmq
+      - type: amqpinflux_to_influxdb
+        target: influxdb
+
+  webui:
+    type: manager.nodes.WebUI
+    relationships:
+      - type: cloudify.relationships.contained_in
+        target: manager_host
+      - type: webui_to_restservice
+        target: rest_service
+      - type: webui_to_influxdb
+        target: influxdb
+
+      
+plugins:
+  cli:
+    install: false
+    executor: central_deployment_agent
+
+outputs:
+  manager_ip:
+    value: { get_attribute: [ manager_host, ip ] }
      
-  #vm_webapp:
-  #  type: cloudify.azure.nodes.compute.VirtualMachineExtension
-  #  properties:
-  #    name: vm_webapp
-  #    location: { get_input: location }
-  #    retry_after: { get_input: retry_after }
-  #    azure_config: { get_input: azure_config }
-  #    resource_config:
-  #      publisher: Microsoft.Powershell
-  #      ext_type: DSC
-  #      typeHandlerVersion: '2.8'
-  #      settings:
-  #        ModulesUrl: https://github.com/Azure/azure-quickstart-templates/raw/master/dsc-extension-iis-server-windows-vm/ContosoWebsite.ps1.zip
-  #        ConfigurationFunction: ContosoWebsite.ps1\ContosoWebsite
-  #        Properties:
-  #          Machinename: { get_property: [vm, name] }
-  #  relationships:
-  #  - type: cloudify.azure.relationships.vmx_contained_in_vm
-  #    target: vm
-      
-  lb_public_ip:
-    type: cloudify.azure.nodes.network.PublicIPAddress
-    properties:
-      name: {concat:[{get_input: resource_prefix},pip,{get_input: resource_suffix}]}
-      location: { get_input: location }
-      retry_after: { get_input: retry_after }
-      azure_config: { get_input: azure_config }
-      resource_config:
-        publicIPAllocationMethod: Static
-    relationships:
-    - type: cloudify.azure.relationships.contained_in_resource_group
-      target: resource_group
-      
-  lb_ip_cfg:
-    type: cloudify.azure.nodes.network.IPConfiguration
-    properties:
-      name: {concat:[{get_input: resource_prefix},iplb,{get_input: resource_suffix}]}
-      location: { get_input: location }
-      retry_after: { get_input: retry_after }
-      azure_config: { get_input: azure_config }
-      resource_config:
-        privateIPAllocationMethod: Dynamic
-    relationships:
-    - type: cloudify.azure.relationships.ip_configuration_connected_to_subnet
-      target: subnet
-    - type: cloudify.azure.relationships.ip_configuration_connected_to_public_ip
-      target: lb_public_ip
-      
-  load_balancer:
-    type: cloudify.azure.nodes.network.LoadBalancer
-    properties:
-      name: {concat:[{get_input: resource_prefix},lb,{get_input: resource_suffix}]}
-      location: { get_input: location }
-      retry_after: { get_input: retry_after }
-      azure_config: { get_input: azure_config }
-    relationships:
-    - type: cloudify.azure.relationships.contained_in_resource_group
-      target: resource_group
-    - type: cloudify.azure.relationships.connected_to_ip_configuration
-      target: lb_ip_cfg
-      
-  load_balancer_backend_pool:
-    type: cloudify.azure.nodes.network.LoadBalancer.BackendAddressPool
-    properties:
-      name: lbbepool
-      location: { get_input: location }
-      retry_after: { get_input: retry_after }
-      azure_config: { get_input: azure_config }
-    relationships:
-    - type: cloudify.azure.relationships.contained_in_load_balancer
-      target: load_balancer
-  

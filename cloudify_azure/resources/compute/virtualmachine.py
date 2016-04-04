@@ -183,23 +183,35 @@ def configure(command_to_execute, file_uris, **_):
     for ip_cfg in nic_data.get(
             'properties', dict()).get(
                 'ipConfigurations', list()):
+        # Get the Private IP Address endpoint
         ctx.instance.runtime_properties['ip'] = \
             ip_cfg.get('properties', dict()).get('privateIPAddress')
-        # See if the user wants to use the public IP or not
-        if ctx.node.properties.get('use_public_ip'):
-            # Get the Public IP Address endpoint
-            pubip_id = ip_cfg.get(
-                'properties', dict()).get(
-                    'publicIPAddress', dict()).get('id')
-            if isinstance(pubip_id, basestring):
-                # use the ID to get the data on the public ip
-                pubip = PublicIPAddress(_ctx=rel_nic.target)
-                pubip.endpoint = '{0}{1}'.format(
-                    constants.CONN_API_ENDPOINT, pubip_id)
-                pubip_data = pubip.get()
-                if isinstance(pubip_data, dict):
-                    ctx.instance.runtime_properties['ip'] = \
-                        pubip_data.get('properties', dict()).get('ipAddress')
+        # Get the Public IP Address endpoint
+        pubip_id = ip_cfg.get(
+            'properties', dict()).get(
+                'publicIPAddress', dict()).get('id')
+        if isinstance(pubip_id, basestring):
+            # use the ID to get the data on the public ip
+            pubip = PublicIPAddress(_ctx=rel_nic.target)
+            pubip.endpoint = '{0}{1}'.format(
+                constants.CONN_API_ENDPOINT, pubip_id)
+            pubip_data = pubip.get()
+            if isinstance(pubip_data, dict):
+                ctx.instance.runtime_properties['public_ip'] = \
+                    pubip_data.get('properties', dict()).get('ipAddress')
+    # See if the user wants to use the public IP as primary IP
+    if ctx.node.properties.get('use_public_ip') and \
+            ctx.instance.runtime_properties.get('public_ip'):
+        ctx.instance.runtime_properties['ip'] = \
+            ctx.instance.runtime_properties.get('public_ip')
+    ctx.logger.info('OUTPUT {0}.{1} = "{2}"'.format(
+        ctx.instance.id,
+        'ip',
+        ctx.instance.runtime_properties.get('ip')))
+    ctx.logger.info('OUTPUT {0}.{1} = "{2}"'.format(
+        ctx.instance.id,
+        'public_ip',
+        ctx.instance.runtime_properties.get('public_ip')))
 
 
 @operation

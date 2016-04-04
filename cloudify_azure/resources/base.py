@@ -82,7 +82,7 @@ class Resource(object):
                  :exc:`cloudify.exceptions.NonRecoverableError`,
                  :exc:`requests.RequestException`
         '''
-        self.log.info('Retrieving {0} "{1}'.format(self.name, name))
+        self.log.info('Retrieving {0} "{1}"'.format(self.name, name))
         # Make the request
         if name:
             url = '{0}/{1}'.format(self.endpoint, name)
@@ -134,7 +134,7 @@ class Resource(object):
                  :exc:`cloudify.exceptions.NonRecoverableError`,
                  :exc:`requests.RequestException`
         '''
-        self.log.info('Creating {0} "{1}'.format(self.name, name))
+        self.log.info('Creating {0} "{1}"'.format(self.name, name))
         self.ctx.instance.runtime_properties['async_op'] = None
         # Sanitize input data
         params = self.sanitize_json_input(params)
@@ -209,7 +209,7 @@ class Resource(object):
             data = self.get(name)
             # Updating the data with our new data
             params = utils.dict_update(data, params)
-        self.log.info('Updating {0} "{1}'.format(self.name, name))
+        self.log.info('Updating {0} "{1}"'.format(self.name, name))
         self.ctx.instance.runtime_properties['async_op'] = None
         # Sanitize input data
         params = self.sanitize_json_input(params)
@@ -261,7 +261,7 @@ class Resource(object):
                  :exc:`cloudify.exceptions.NonRecoverableError`,
                  :exc:`requests.RequestException`
         '''
-        self.log.info('Deleting {0} "{1}'.format(self.name, name))
+        self.log.info('Deleting {0} "{1}"'.format(self.name, name))
         self.ctx.instance.runtime_properties['async_op'] = None
         # Make the request
         res = self.client.request(
