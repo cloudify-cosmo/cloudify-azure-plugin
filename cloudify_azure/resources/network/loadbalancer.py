@@ -30,7 +30,7 @@ from cloudify.exceptions import NonRecoverableError
 from cloudify_azure import (constants, utils)
 # Relationship interfaces
 from cloudify_azure.resources.network.ipconfiguration \
-    import get_ip_configurations
+    import (get_ip_configurations, IPConfiguration)
 from cloudify_azure.resources.network.networkinterfacecard \
     import NetworkInterfaceCard
 
@@ -192,12 +192,148 @@ def delete_backend_pool(**_):
     for idx, pool in enumerate(lb_pools):
         if pool.get('name') == ctx.node.properties.get('name'):
             del lb_pools[idx]
-    # Update the Load Balancer with the new pool
+    # Update the Load Balancer with the new pool list
     utils.task_resource_update(
         lb_iface,
         {
             'properties': {
                 'backendAddressPools': lb_pools
+            }
+        },
+        name=lb_props.get('name'),
+        use_external=lb_props.get('use_external_resource'))
+
+
+@operation
+def create_probe(**_):
+    '''Uses an existing, or creates a new, Load Balancer Probe'''
+    # Get an interface to the Load Balancer
+    lb_rel = utils.get_relationship_by_type(
+        ctx.instance.relationships,
+        constants.REL_CONTAINED_IN_LB)
+    lb_props = lb_rel.target.node.properties
+    lb_iface = LoadBalancer()
+    # Get the existing probes
+    lb_data = lb_iface.get(lb_props.get('name'))
+    lb_probes = lb_data.get('properties', dict()).get(
+        'probes', list())
+    lb_probes.append({
+        'name': ctx.node.properties.get('name'),
+        'properties': utils.get_resource_config()
+    })
+    # Update the Load Balancer with the new probe
+    utils.task_resource_update(
+        lb_iface,
+        {
+            'properties': {
+                'probes': lb_probes
+            }
+        },
+        name=lb_props.get('name'),
+        use_external=lb_props.get('use_external_resource'))
+
+
+@operation
+def delete_probe(**_):
+    '''Deletes a Load Balancer Probe'''
+    # Get an interface to the Load Balancer
+    lb_rel = utils.get_relationship_by_type(
+        ctx.instance.relationships,
+        constants.REL_CONTAINED_IN_LB)
+    lb_props = lb_rel.target.node.properties
+    lb_iface = LoadBalancer(_ctx=lb_rel.target)
+    # Get the existing probes
+    lb_data = lb_iface.get(lb_props.get('name'))
+    lb_probes = lb_data.get('properties', dict()).get(
+        'probes', list())
+    for idx, probe in enumerate(lb_probes):
+        if probe.get('name') == ctx.node.properties.get('name'):
+            del lb_probes[idx]
+    # Update the Load Balancer with the new probes list
+    utils.task_resource_update(
+        lb_iface,
+        {
+            'properties': {
+                'probes': lb_probes
+            }
+        },
+        name=lb_props.get('name'),
+        use_external=lb_props.get('use_external_resource'))
+
+
+@operation
+def create_incoming_nat_rule(**_):
+    '''Uses an existing, or creates a new, Load Balancer Incoming NAT Rule'''
+    # Get an interface to the Load Balancer
+    lb_rel = utils.get_relationship_by_type(
+        ctx.instance.relationships,
+        constants.REL_CONTAINED_IN_LB)
+    # Get an interface to the Load Balancer FE IP Config
+    lb_fe_ip_rel = utils.get_relationship_by_type(
+        ctx.instance.relationships,
+        constants.REL_CONNECTED_TO_IPC)
+    if not lb_fe_ip_rel:
+        raise NonRecoverableError(
+            'No Load Balancer Frontend IP Configuration specified')
+    lb_fe_ip_name = lb_fe_ip_rel.target.node.properties.get('name')
+    lb_props = lb_rel.target.node.properties
+    lb_iface = LoadBalancer()
+    # Get the resource config
+    res_cfg = utils.get_resource_config()
+    # Get the existing rules
+    lb_data = lb_iface.get(lb_props.get('name'))
+    lb_rules = lb_data.get('properties', dict()).get(
+        'inboundNatRules', list())
+    # Get the existing front-end IPs
+    lb_fe_ips = lb_data.get('properties', dict()).get(
+        'frontendIPConfigurations', list())
+    # Only use the front-end IP the user specified in the relationships
+    lb_fe_ip_id = None
+    for lb_fe_ip in lb_fe_ips:
+        if lb_fe_ip.get('name') == lb_fe_ip_name:
+            lb_fe_ip_id = {'id': lb_fe_ip.get('id')}
+    if not lb_fe_ip_id:
+        raise NonRecoverableError(
+            'No Load Balancer Frontend IP Configuration ID found')
+    res_cfg['frontendIPConfiguration'] = lb_fe_ip_id
+    lb_rules.append({
+        'name': ctx.node.properties.get('name'),
+        'properties': res_cfg
+    })
+    # Update the Load Balancer with the new probe
+    utils.task_resource_update(
+        lb_iface,
+        {
+            'properties': {
+                'inboundNatRules': lb_rules
+            }
+        },
+        name=lb_props.get('name'),
+        use_external=lb_props.get('use_external_resource'))
+
+
+@operation
+def delete_incoming_nat_rule(**_):
+    '''Deletes a Load Balancer Incoming NAT Rule'''
+    # Get an interface to the Load Balancer
+    lb_rel = utils.get_relationship_by_type(
+        ctx.instance.relationships,
+        constants.REL_CONTAINED_IN_LB)
+    lb_props = lb_rel.target.node.properties
+    lb_iface = LoadBalancer(_ctx=lb_rel.target)
+    # Get the existing probes
+    lb_data = lb_iface.get(lb_props.get('name'))
+    lb_rules = lb_data.get('properties', dict()).get(
+        'inboundNatRules', list())
+    for idx, rule in enumerate(lb_rules):
+        if rule.get('name') == ctx.node.properties.get('name'):
+            del lb_rules[idx]
+    # Update the Load Balancer with the new probes list
+    utils.task_resource_update(
+        lb_iface,
+        {
+            'properties': {
+                'inboundNatRules': lb_rules
             }
         },
         name=lb_props.get('name'),

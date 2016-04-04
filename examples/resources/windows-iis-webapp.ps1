@@ -48,6 +48,7 @@ Configuration CloudifyExample
       }
       SetScript = {
         Set-WebBinding -Name 'Default Web Site' -BindingInformation "*:80:" -PropertyName Port -Value $using:WebServerPort
+        netsh advfirewall firewall add rule name="Cloudify HTTP Web Application" dir=in action=allow protocol=TCP localport=$using:WebServerPort
       }
     }
   }
