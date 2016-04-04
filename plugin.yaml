@@ -266,8 +266,7 @@ data_types:
         required: true
       requestPath:
         type: string
-        default: /
-        required: true
+        required: false
       intervalInSeconds:
         type: integer
         default: 5
