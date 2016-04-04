@@ -58,6 +58,10 @@ REL_CONNECTED_TO_NIC = \
     'cloudify.azure.relationships.connected_to_nic'
 REL_CONNECTED_TO_IPC = \
     'cloudify.azure.relationships.connected_to_ip_configuration'
+REL_CONNECTED_TO_LB_BE_POOL = \
+    'cloudify.azure.relationships.connected_to_lb_be_pool'
+REL_CONNECTED_TO_LB_PROBE = \
+    'cloudify.azure.relationships.connected_to_lb_probe'
 REL_VMX_CONTAINED_IN_VM = \
     'cloudify.azure.relationships.vmx_contained_in_vm'
 REL_LB_CONNECTED_TO_NIC = \

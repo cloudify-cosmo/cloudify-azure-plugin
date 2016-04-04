@@ -112,6 +112,88 @@ class BackendAddressPool(Resource):
             _ctx=_ctx)
 
 
+class Probe(Resource):
+    '''
+        Microsoft Azure Probe interface
+
+    .. warning::
+        This interface should only be instantiated from
+        within a Cloudify Lifecycle Operation
+
+    :param string resource_group: Name of the parent Resource Group
+    :param string load_balancer: Name of the parent Load Balancer
+    :param string api_version: API version to use for all requests
+    :param `logging.Logger` logger:
+        Parent logger for the class to use. Defaults to `ctx.logger`
+    '''
+    def __init__(self,
+                 resource_group=None,
+                 load_balancer_name=None,
+                 api_version=constants.API_VER_NETWORK,
+                 logger=None,
+                 _ctx=ctx):
+        resource_group = resource_group or \
+            utils.get_resource_group(_ctx=_ctx)
+        load_balancer_name = load_balancer_name or \
+            utils.get_resource_name(
+                constants.REL_CONTAINED_IN_LB,
+                'load_balancer_name',
+                _ctx=_ctx)
+        Resource.__init__(
+            self,
+            'Probe',
+            '/{0}/{1}/{2}/{3}'.format(
+                'resourceGroups/{0}'.format(resource_group),
+                'providers/Microsoft.Network',
+                'loadBalancers/{0}'.format(load_balancer_name),
+                'probes'
+            ),
+            api_version=api_version,
+            logger=logger,
+            _ctx=_ctx)
+
+
+class FrontendIPConfiguration(Resource):
+    '''
+        Microsoft Azure Frontend IP Configuration interface
+
+    .. warning::
+        This interface should only be instantiated from
+        within a Cloudify Lifecycle Operation
+
+    :param string resource_group: Name of the parent Resource Group
+    :param string load_balancer: Name of the parent Load Balancer
+    :param string api_version: API version to use for all requests
+    :param `logging.Logger` logger:
+        Parent logger for the class to use. Defaults to `ctx.logger`
+    '''
+    def __init__(self,
+                 resource_group=None,
+                 load_balancer_name=None,
+                 api_version=constants.API_VER_NETWORK,
+                 logger=None,
+                 _ctx=ctx):
+        resource_group = resource_group or \
+            utils.get_resource_group(_ctx=_ctx)
+        load_balancer_name = load_balancer_name or \
+            utils.get_resource_name(
+                constants.REL_CONTAINED_IN_LB,
+                'load_balancer_name',
+                _ctx=_ctx)
+        Resource.__init__(
+            self,
+            'Frontend IP Configuration',
+            '/{0}/{1}/{2}/{3}'.format(
+                'resourceGroups/{0}'.format(resource_group),
+                'providers/Microsoft.Network',
+                'loadBalancers/{0}'.format(load_balancer_name),
+                'frontendIPConfigurations'
+            ),
+            api_version=api_version,
+            logger=logger,
+            _ctx=_ctx)
+
+
 @operation
 def create(**_):
     '''Uses an existing, or creates a new, Load Balancer'''
@@ -268,14 +350,6 @@ def create_incoming_nat_rule(**_):
     lb_rel = utils.get_relationship_by_type(
         ctx.instance.relationships,
         constants.REL_CONTAINED_IN_LB)
-    # Get an interface to the Load Balancer FE IP Config
-    lb_fe_ip_rel = utils.get_relationship_by_type(
-        ctx.instance.relationships,
-        constants.REL_CONNECTED_TO_IPC)
-    if not lb_fe_ip_rel:
-        raise NonRecoverableError(
-            'No Load Balancer Frontend IP Configuration specified')
-    lb_fe_ip_name = lb_fe_ip_rel.target.node.properties.get('name')
     lb_props = lb_rel.target.node.properties
     lb_iface = LoadBalancer()
     # Get the resource config
@@ -284,23 +358,16 @@ def create_incoming_nat_rule(**_):
     lb_data = lb_iface.get(lb_props.get('name'))
     lb_rules = lb_data.get('properties', dict()).get(
         'inboundNatRules', list())
-    # Get the existing front-end IPs
-    lb_fe_ips = lb_data.get('properties', dict()).get(
-        'frontendIPConfigurations', list())
-    # Only use the front-end IP the user specified in the relationships
-    lb_fe_ip_id = None
-    for lb_fe_ip in lb_fe_ips:
-        if lb_fe_ip.get('name') == lb_fe_ip_name:
-            lb_fe_ip_id = {'id': lb_fe_ip.get('id')}
-    if not lb_fe_ip_id:
-        raise NonRecoverableError(
-            'No Load Balancer Frontend IP Configuration ID found')
-    res_cfg['frontendIPConfiguration'] = lb_fe_ip_id
+    # Get the Load Balancer Frontend IP Configuration
+    lb_fe_ipc_id = utils.get_rel_id_reference(
+        FrontendIPConfiguration, constants.REL_CONNECTED_TO_IPC)
+    # Update the resource config
+    res_cfg['frontendIPConfiguration'] = lb_fe_ipc_id
     lb_rules.append({
         'name': ctx.node.properties.get('name'),
         'properties': res_cfg
     })
-    # Update the Load Balancer with the new probe
+    # Update the Load Balancer with the new NAT rule
     utils.task_resource_update(
         lb_iface,
         {
@@ -328,12 +395,84 @@ def delete_incoming_nat_rule(**_):
     for idx, rule in enumerate(lb_rules):
         if rule.get('name') == ctx.node.properties.get('name'):
             del lb_rules[idx]
-    # Update the Load Balancer with the new probes list
+    # Update the Load Balancer with the new NAT rule list
     utils.task_resource_update(
         lb_iface,
         {
             'properties': {
                 'inboundNatRules': lb_rules
+            }
+        },
+        name=lb_props.get('name'),
+        use_external=lb_props.get('use_external_resource'))
+
+
+@operation
+def create_rule(**_):
+    '''Uses an existing, or creates a new, Load Balancer Rule'''
+    # Get the resource config
+    res_cfg = utils.get_resource_config()
+    # Get an interface to the Load Balancer
+    lb_rel = utils.get_relationship_by_type(
+        ctx.instance.relationships,
+        constants.REL_CONTAINED_IN_LB)
+    lb_props = lb_rel.target.node.properties
+    lb_iface = LoadBalancer()
+    lb_data = lb_iface.get(lb_props.get('name'))
+    # Get the Load Balancer Backend Pool
+    lb_be_pool_id = utils.get_rel_id_reference(
+        BackendAddressPool, constants.REL_CONNECTED_TO_LB_BE_POOL)
+    # Get the Load Balancer Probe
+    lb_probe_id = utils.get_rel_id_reference(
+        Probe, constants.REL_CONNECTED_TO_LB_PROBE)
+    # Get the Load Balancer Frontend IP Configuration
+    lb_fe_ipc_id = utils.get_rel_id_reference(
+        FrontendIPConfiguration, constants.REL_CONNECTED_TO_IPC)
+    # Get the existing Load Balancer Rules
+    lb_rules = lb_data.get('properties', dict()).get(
+        'loadBalancingRules', list())
+    # Update the resource config
+    res_cfg['backendAddressPool'] = lb_be_pool_id
+    res_cfg['frontendIPConfiguration'] = lb_fe_ipc_id
+    res_cfg['probe'] = lb_probe_id
+    lb_rules.append({
+        'name': ctx.node.properties.get('name'),
+        'properties': res_cfg
+    })
+    # Update the Load Balancer with the new rule
+    utils.task_resource_update(
+        lb_iface,
+        {
+            'properties': {
+                'loadBalancingRules': lb_rules
+            }
+        },
+        name=lb_props.get('name'),
+        use_external=lb_props.get('use_external_resource'))
+
+
+@operation
+def delete_rule(**_):
+    '''Deletes a Load Balancer Rule'''
+    # Get an interface to the Load Balancer
+    lb_rel = utils.get_relationship_by_type(
+        ctx.instance.relationships,
+        constants.REL_CONTAINED_IN_LB)
+    lb_props = lb_rel.target.node.properties
+    lb_iface = LoadBalancer(_ctx=lb_rel.target)
+    # Get the existing rules
+    lb_data = lb_iface.get(lb_props.get('name'))
+    lb_rules = lb_data.get('properties', dict()).get(
+        'loadBalancingRules', list())
+    for idx, rule in enumerate(lb_rules):
+        if rule.get('name') == ctx.node.properties.get('name'):
+            del lb_rules[idx]
+    # Update the Load Balancer with the new rules list
+    utils.task_resource_update(
+        lb_iface,
+        {
+            'properties': {
+                'loadBalancingRules': lb_rules
             }
         },
         name=lb_props.get('name'),
