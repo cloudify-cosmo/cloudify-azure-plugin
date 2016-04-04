@@ -18,7 +18,7 @@ inputs:
   resource_prefix:
     default: cfy
   resource_suffix:
-    default: 10
+    default: 13
   # Azure account information
   subscription_id:
     type: string
@@ -46,15 +46,15 @@ inputs:
       client_id: { get_input: client_id }
       client_secret: { get_input: client_secret }
   # Existing manager resources
-  #mgr_resource_group_name:
-  #  type: string
-  #  required: true
-  #mgr_virtual_network_name:
-  #  type: string
-  #  required: true
-  #mgr_subnet_name:
-  #  type: string
-  #  required: true
+  mgr_resource_group_name:
+    type: string
+    required: true
+  mgr_virtual_network_name:
+    type: string
+    required: true
+  mgr_subnet_name:
+    type: string
+    required: true
   # Virtual Machine information
   vm_size: 
     type: string
@@ -121,10 +121,9 @@ node_templates:
   virtual_network:
     type: cloudify.azure.nodes.network.VirtualNetwork
     properties:
-      name: {concat:[{get_input: resource_prefix},vnet,{get_input: resource_suffix}]}
-      #resource_group_name: { get_input: mgr_resource_group_name }
-      #name: { get_input: mgr_virtual_network_name }
-      #use_external_resource: true
+      resource_group_name: { get_input: mgr_resource_group_name }
+      name: { get_input: mgr_virtual_network_name }
+      use_external_resource: true
       location: { get_input: location }
       azure_config: { get_input: azure_config }
     relationships:
@@ -134,12 +133,13 @@ node_templates:
   subnet:
     type: cloudify.azure.nodes.network.Subnet
     properties:
-      name: {concat:[{get_input: resource_prefix},subnet,{get_input: resource_suffix}]}
-      #resource_group_name: { get_input: mgr_resource_group_name }
-      #name: { get_input: mgr_subnet_name }
-      #use_external_resource: true
+      resource_group_name: { get_input: mgr_resource_group_name }
+      name: { get_input: mgr_subnet_name }
+      use_external_resource: true
       location: { get_input: location }
       azure_config: { get_input: azure_config }
+      resource_config:
+        addressPrefix: 10.10.0.0/16
     relationships:
     - type: cloudify.azure.relationships.contained_in_virtual_network
       target: virtual_network
@@ -175,6 +175,9 @@ node_templates:
             priority: 200
             access: Allow
             direction: Inbound
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_resource_group
+      target: resource_group
 
   availability_set:
     type: cloudify.azure.nodes.compute.AvailabilitySet
@@ -279,11 +282,10 @@ node_templates:
         ext_type: DSC
         typeHandlerVersion: '2.8'
         settings:
-          ModulesUrl: https://raw.githubusercontent.com/01000101/cloudify-azure-plugin/rebuild/examples/resources/windows-iis-webapp.ps1.zip
-          ConfigurationFunction: windows-iis-webapp.ps1\CloudifyExample
+          ModulesUrl: https://github.com/Azure/azure-quickstart-templates/raw/master/dsc-extension-iis-server-windows-vm/ContosoWebsite.ps1.zip
+          ConfigurationFunction: ContosoWebsite.ps1\ContosoWebsite
           Properties:
             MachineName: { get_property: [vm, name] }
-            WebServerPort: { get_input: webserver_port }
     relationships:
     - type: cloudify.azure.relationships.vmx_contained_in_vm
       target: vm
