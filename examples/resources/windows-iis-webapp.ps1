@@ -12,9 +12,6 @@ Configuration CloudifyExample
     [Int]$WebServerPort
   )
 
-  # Import the xWebsite module
-  Import-DscResource -Module xWebAdministration
-
   Node $MachineName
   {
     # Install the IIS Role
@@ -31,18 +28,27 @@ Configuration CloudifyExample
       Name = "Web-Asp-Net45"
     }
 
-    # Configures the default IIS website
-    xWebsite DefaultSite
+    # Configures IIS web management tools
+    WindowsFeature WebServerManagementConsole
     {
-      Ensure      = "Present"
-      Name        = "Default Web Site"
-      State       = "Stopped"
-      BindingInfo = MSFT_xWebBindingInformation
-      {
-        Protocol = "HTTP"
-        Port     = $WebServerPort
+      Name = "Web-Mgmt-Console"
+      Ensure = "Present"
+    }
+
+    # Sets IIS HTTP binding port
+    Script DeployWebPackage
+    {
+      GetScript = {
+        @{
+          Result = ""
+        }
       }
-      DependsOn = "[WindowsFeature]IIS"
+      TestScript = {
+        $false
+      }
+      SetScript = {
+        Set-WebBinding -Name 'Default Web Site' -BindingInformation "*:80:" -PropertyName Port -Value $WebServerPort
+      }
     }
   }
 }

@@ -2,8 +2,7 @@ tosca_definitions_version: cloudify_dsl_1_2
 
 imports:
 - http://www.getcloudify.org/spec/cloudify/3.3.1/types.yaml
-# - https://raw.githubusercontent.com/01000101/cloudify-azure-plugin/rebuild/plugin.yaml
-- ../plugin.yaml
+- https://raw.githubusercontent.com/01000101/cloudify-azure-plugin/rebuild/plugin.yaml
 
 inputs:
   resource_prefix:

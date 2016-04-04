@@ -214,7 +214,7 @@ node_templates:
       agent_config:
         user: { get_input: vm_os_username }
         password: { get_input: vm_os_password }
-        install_method: none
+        install_method: remote
     relationships:
     - type: cloudify.azure.relationships.contained_in_resource_group
       target: resource_group
@@ -270,7 +270,7 @@ node_templates:
     - type: cloudify.azure.relationships.nic_connected_to_lb_be_pool
       target: load_balancer_backend_pool
 
-  vm_webapp:
+  vm_webserver:
     type: cloudify.azure.nodes.compute.VirtualMachineExtension
     properties:
       name: vm_webapp
@@ -289,6 +289,15 @@ node_templates:
     relationships:
     - type: cloudify.azure.relationships.vmx_contained_in_vm
       target: vm
+      
+  vm_webapp:
+    type: cloudify.nodes.WebApplication
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        start: scripts/configure.py
+    relationships:
+    - type: cloudify.relationships.contained_in
+      target: vm_webserver
       
   lb_public_ip:
     type: cloudify.azure.nodes.network.PublicIPAddress
