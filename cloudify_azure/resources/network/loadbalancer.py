@@ -229,18 +229,23 @@ def create(**_):
     for fe_ipc_data in lb_data.get('properties', dict()).get(
             'frontendIPConfigurations', list()):
         ipc_iface = IPConfiguration()
+        ipc_id = fe_ipc_data.get('id')
+        if not ipc_id:
+            break
         ipc_iface.endpoint = '{0}{1}'.format(
-            constants.CONN_API_ENDPOINT, fe_ipc_data.get('id'))
+            constants.CONN_API_ENDPOINT, ipc_id)
         # Get the Frontend private IP address
         ipc_data = ipc_iface.get()
         ctx.instance.runtime_properties['ip'] = \
             ipc_data.get('properties', dict()).get('privateIPAddress')
         # Get the ID of the Frontend Public IP Configuration
         pipc_iface = PublicIPAddress()
+        pipc_id = fe_ipc_data.get('properties', dict()).get(
+            'publicIPAddress', dict()).get('id')
+        if not pipc_id:
+            break
         pipc_iface.endpoint = '{0}{1}'.format(
-            constants.CONN_API_ENDPOINT,
-            fe_ipc_data.get('properties', dict()).get(
-                'publicIPAddress', dict()).get('id'))
+            constants.CONN_API_ENDPOINT, pipc_id)
         # Get the Frontend public IP address
         pipc_data = pipc_iface.get()
         ctx.instance.runtime_properties['public_ip'] = \
