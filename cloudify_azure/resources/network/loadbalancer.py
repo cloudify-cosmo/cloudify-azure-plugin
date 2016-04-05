@@ -222,23 +222,29 @@ def create(**_):
                     'frontendIPConfigurations': fe_ip_cfg
                 })
         })
-    # Get the frontend IP runtime information
-    fe_ipc_rel = utils.get_relationship_by_type(
-        ctx.instance.relationships,
-        constants.REL_CONNECTED_TO_IPC)
-    if fe_ipc_rel:
-        fe_ipc_data = IPConfiguration().get(
-            fe_ipc_rel.target.node.properties.get('name'))
+    # Get an interface to the Load Balancer
+    lb_iface = LoadBalancer()
+    lb_data = lb_iface.get(ctx.node.properties.get('name'))
+    # Get the ID of the Frontend IP Configuration
+    for fe_ipc_data in lb_data.get('properties', dict()).get(
+            'frontendIPConfigurations', list()):
+        ipc_iface = IPConfiguration()
+        ipc_iface.endpoint = '{0}{1}'.format(
+            constants.CONN_API_ENDPOINT, fe_ipc_data.get('id'))
+        # Get the Frontend private IP address
+        ipc_data = ipc_iface.get()
         ctx.instance.runtime_properties['ip'] = \
-            fe_ipc_data.get('properties', dict()).get('privateIPAddress')
-        fe_pipc_rel = utils.get_relationship_by_type(
-            fe_ipc_rel.target.instance.relationships,
-            constants.REL_IPC_CONNECTED_TO_PUBIP)
-        if fe_pipc_rel:
-            fe_pipc_data = PublicIPAddress().get(
-                fe_pipc_rel.target.node.properties.get('name'))
-            ctx.instance.runtime_properties['public_ip'] = \
-                fe_pipc_data.get('properties', dict()).get('ipAddress')
+            ipc_data.get('properties', dict()).get('privateIPAddress')
+        # Get the ID of the Frontend Public IP Configuration
+        pipc_iface = PublicIPAddress()
+        pipc_iface.endpoint = '{0}{1}'.format(
+            constants.CONN_API_ENDPOINT,
+            fe_ipc_data.get('properties', dict()).get(
+                'publicIPAddress', dict()).get('id'))
+        # Get the Frontend public IP address
+        pipc_data = pipc_iface.get()
+        ctx.instance.runtime_properties['public_ip'] = \
+            pipc_data.get('properties', dict()).get('ipAddress')
 
 
 @operation
