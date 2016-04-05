@@ -30,7 +30,7 @@ from cloudify.exceptions import NonRecoverableError
 from cloudify_azure import (constants, utils)
 # Relationship interfaces
 from cloudify_azure.resources.network.ipconfiguration \
-    import (get_ip_configurations, IPConfiguration)
+    import (get_ip_configurations, IPConfiguration, PublicIPAddress)
 from cloudify_azure.resources.network.networkinterfacecard \
     import NetworkInterfaceCard
 
@@ -222,6 +222,23 @@ def create(**_):
                     'frontendIPConfigurations': fe_ip_cfg
                 })
         })
+    # Get the frontend IP runtime information
+    fe_ipc_rel = utils.get_relationship_by_type(
+        ctx.instance.relationships,
+        constants.REL_CONNECTED_TO_IPC)
+    if fe_ipc_rel:
+        fe_ipc_data = IPConfiguration().get(
+            fe_ipc_rel.target.node.properties.get('name'))
+        ctx.instance.runtime_properties['ip'] = \
+            fe_ipc_data.get('properties', dict()).get('privateIPAddress')
+        fe_pipc_rel = utils.get_relationship_by_type(
+            fe_ipc_rel.target.instance.relationships,
+            constants.REL_IPC_CONNECTED_TO_PUBIP)
+        if fe_pipc_rel:
+            fe_pipc_data = PublicIPAddress().get(
+                fe_pipc_rel.target.node.properties.get('name'))
+            ctx.instance.runtime_properties['public_ip'] = \
+                fe_pipc_data.get('properties', dict()).get('ipAddress')
 
 
 @operation
