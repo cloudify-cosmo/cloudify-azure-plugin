@@ -1,0 +1,27 @@
+# Uniqueness
+resource_prefix: cfy
+resource_suffix: 10
+
+# Account info
+subscription_id: 11111111-2222-3333-4444-555555555555
+tenant_id: 11111111-2222-3333-4444-555555555555
+client_id: 11111111-2222-3333-4444-555555555555
+client_secret: AzureADPassword
+
+# VM info
+vm_size: Standard_A2
+vm_os_family: windows
+
+vm_image_publisher: MicrosoftWindowsServer
+vm_image_offer: WindowsServer
+vm_image_sku: 2012-R2-Datacenter
+vm_image_version: latest
+
+# Username and password to set as the Windows administrator
+vm_os_username: cloudify
+vm_os_password: Cl0ud1fy!
+
+## Existing manager info (required if deploying using an existing manager)
+mgr_resource_group_name: resource_group_x3x4x
+mgr_virtual_network_name: vnet_dxx60
+mgr_subnet_name: subnet_1x72x
