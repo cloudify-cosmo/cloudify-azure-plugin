@@ -34,8 +34,8 @@ vm_os_pubkeys:
 vm_os_pubkey_auth_only: true
 
 ## Manager private keys to use for agents
-ssh_key_filename: '/home/jcornutt/Desktop/Dev/cloudify-hostpool/hostpool-test.pem'
-agent_local_key_path: '/home/jcornutt/Desktop/Dev/cloudify-hostpool/hostpool-test.pem'
+ssh_key_filename: '/some/path/to/your/sshkey.pem'
+agent_local_key_path: '/some/path/to/your/agentkey.pem'
 
 ## Bug fix for deadspin tasks if using maint release
 # management_worker_max_tasks_per_child: 5
