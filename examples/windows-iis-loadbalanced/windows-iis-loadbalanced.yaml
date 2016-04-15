@@ -222,6 +222,9 @@ node_templates:
             offer: { get_input: vm_image_offer }
             sku: { get_input: vm_image_sku }
             version: { get_input: vm_image_version }
+          dataDisks:
+          - diskSizeGB: 2
+          - diskSizeGB: 1
         osProfile:
           computerName: { get_property: [SELF, name] }
           adminUsername: { get_input: vm_os_username }
@@ -332,6 +335,8 @@ node_templates:
             offer: { get_input: vm_image_offer }
             sku: { get_input: vm_image_sku }
             version: { get_input: vm_image_version }
+          dataDisks:
+          - diskSizeGB: 2
         osProfile:
           computerName: { get_property: [SELF, name] }
           adminUsername: { get_input: vm_os_username }

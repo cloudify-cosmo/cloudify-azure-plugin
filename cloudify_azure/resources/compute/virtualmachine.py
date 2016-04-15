@@ -18,6 +18,8 @@
     Microsoft Azure Virtual Machine interface
 '''
 
+# Deep object copying
+from copy import deepcopy
 # Node properties and logger
 from cloudify import ctx
 # Base resource class
@@ -70,23 +72,79 @@ class VirtualMachine(Resource):
             _ctx=_ctx)
 
 
-@operation
-def create(**_):
-    '''Uses an existing, or creates a new, Virtual Machine'''
-    # Build storage profile
-    os_disk_name = '{0}_osdisk'.format(ctx.node.properties.get('name'))
-    storage_profile = {
-        'osDisk': {
-            'name': os_disk_name,
-            'vhd': {
+def build_osdisk_profile(usr_osdisk=None):
+    '''
+        Creates a storageProfile::osDisk object for use when
+        creating a Virtual Machine
+
+    :param dict usr_osdisk: User-override data
+    :returns: storageProfile::osDisk object
+    :rtype: dict
+    '''
+    osdisk = dict()
+    if isinstance(usr_osdisk, dict):
+        osdisk = deepcopy(usr_osdisk)
+    # Generate disk name if one wasn't provided
+    osdisk['name'] = osdisk.get('name') or \
+        '{0}_osdisk'.format(ctx.node.properties.get('name'))
+    # If no disk URI was specified, generate one
+    if not osdisk.get('vhd', dict()).get('uri'):
+        osdisk['vhd'] = {
+            'uri': 'http://{0}.{1}/vhds/{2}.vhd'.format(
+                utils.get_rel_node_name(constants.REL_CONNECTED_TO_SA),
+                'blob.core.windows.net',
+                osdisk.get('name'))
+        }
+    # Fill in the blanks if the user didn't specify
+    osdisk['caching'] = osdisk.get('caching', 'ReadWrite')
+    osdisk['createOption'] = osdisk.get('createOption', 'FromImage')
+    return osdisk
+
+
+def build_datadisks_profile(usr_datadisks):
+    '''
+        Creates a list of storageProfile::dataDisk objects for use when
+        creating a Virtual Machine
+
+    :param dict usr_datadisks: User data
+    :returns: List of storageProfile::dataDisk objects
+    :rtype: list
+    '''
+    datadisks = list()
+    if not usr_datadisks:
+        return list()
+    for idx, usr_datadisk in usr_datadisks:
+        datadisk = deepcopy(usr_datadisk)
+        # Generate disk name if one wasn't provided
+        datadisk['name'] = datadisk.get('name') or \
+            '{0}_datadisk_{1}'.format(ctx.node.properties.get('name'), idx)
+        # If no disk URI was specified, generate one
+        if not datadisk.get('vhd', dict()).get('uri'):
+            datadisk['vhd'] = {
                 'uri': 'http://{0}.{1}/vhds/{2}.vhd'.format(
                     utils.get_rel_node_name(constants.REL_CONNECTED_TO_SA),
                     'blob.core.windows.net',
-                    os_disk_name)
-            },
-            'caching': 'ReadWrite',
-            'createOption': 'FromImage'
-        }
+                    datadisk.get('name'))
+            }
+        # Fill in the blanks if the user didn't specify
+        datadisk['lun'] = datadisk.get('lun', idx)
+        datadisk['createOption'] = datadisk.get('createOption', 'Empty')
+        datadisks.append(datadisk)
+    return datadisks
+
+
+@operation
+def create(**_):
+    '''Uses an existing, or creates a new, Virtual Machine'''
+    res_cfg = utils.get_resource_config()
+    # Build storage profile
+    osdisk = build_osdisk_profile(
+        res_cfg.get('storageProfile', dict()).get('osDisk', dict()))
+    datadisks = build_datadisks_profile(
+        res_cfg.get('storageProfile', dict()).get('dataDisks', list()))
+    storage_profile = {
+        'osDisk': osdisk,
+        'dataDisks': datadisks
     }
     # Build the network profile
     network_profile = {
@@ -98,7 +156,6 @@ def create(**_):
     # Build the OS profile
     os_family = ctx.node.properties.get('os_family', '').lower()
     os_profile = dict()
-    res_cfg = utils.get_resource_config()
     # Set defaults for Windows installs to enable WinRM listener
     if os_family == 'windows' and \
             not res_cfg.get('osProfile', dict()).get('windowsConfiguration'):
