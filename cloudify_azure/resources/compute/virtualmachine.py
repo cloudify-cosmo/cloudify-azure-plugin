@@ -113,7 +113,7 @@ def build_datadisks_profile(usr_datadisks):
     datadisks = list()
     if not usr_datadisks:
         return list()
-    for idx, usr_datadisk in usr_datadisks:
+    for idx, usr_datadisk in enumerate(usr_datadisks):
         datadisk = deepcopy(usr_datadisk)
         # Generate disk name if one wasn't provided
         datadisk['name'] = datadisk.get('name') or \
