@@ -60,4 +60,4 @@ target/
 
 myTestsFolder/
 azurecloudify/tests/test_conf.py
-
+*.iml
