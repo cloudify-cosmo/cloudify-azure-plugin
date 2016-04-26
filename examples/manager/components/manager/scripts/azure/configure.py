@@ -26,10 +26,11 @@ import os
 # Third Party Imports
 import fabric.api
 # Azure config path
-from cloudify_azure.constants import CONFIG_PATH
+from cloudify_azure import constants
 
 
-def configure_manager(manager_config_path=CONFIG_PATH, manager_config=None):
+def configure_manager(manager_config_path=constants.CONFIG_PATH,
+                      manager_config=None):
     '''Sets config defaults and creates the config file'''
     manager_config = manager_config or {}
     if not configure_manager:
