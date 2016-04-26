@@ -25,17 +25,11 @@ from ConfigParser import ConfigParser
 import os
 # Third Party Imports
 import fabric.api
-# Azure config path
-from cloudify_azure import constants
 
 
-def configure_manager(manager_config_path=constants.CONFIG_PATH,
-                      manager_config=None):
+def configure_manager(manager_config_path,
+                      manager_config):
     '''Sets config defaults and creates the config file'''
-    manager_config = manager_config or {}
-    if not configure_manager:
-        return
-
     _, temp_config = tempfile.mkstemp()
     config = ConfigParser()
 
