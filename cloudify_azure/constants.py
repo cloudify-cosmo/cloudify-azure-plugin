@@ -18,6 +18,10 @@
     Microsoft Azure plugin for Cloudify constants
 '''
 
+# Provider context path
+CONFIG_PATH = '~/azure_provider.conf'
+CONFIG_PATH_ENV_VAR_NAME = 'CFY_AZURE_CONFIG_PATH'
+
 # OAuth 2.0 constants
 OAUTH2_ENDPOINT = 'https://login.microsoftonline.com'
 OAUTH2_MGMT_RESOURCE = 'https://management.core.windows.net/'

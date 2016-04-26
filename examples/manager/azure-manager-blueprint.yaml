@@ -123,10 +123,6 @@ inputs:
   tenant_id:
     type: string
     default: ''
-
-  aad_password:
-    type: string
-    default: ''
    
   #############################
   # Security Settings
@@ -490,7 +486,7 @@ inputs:
     description: >
       Holds a set of dsl required resources
     default:
-      - {'source_path': 'https://raw.githubusercontent.com/cloudify-cosmo/cloudify-azure-plugin/master/plugin.yaml', 'destination_path': '/spec/azure-plugin/1.3.1/plugin.yaml'}
+      - {'source_path': 'https://raw.githubusercontent.com/01000101/cloudify-azure-plugin/rebuild/plugin.yaml', 'destination_path': '/spec/azure-plugin/1.3.1/plugin.yaml'}
       - {'source_path': 'http://www.getcloudify.org/spec/fabric-plugin/1.3.1/plugin.yaml', 'destination_path': '/spec/fabric-plugin/1.3.1/plugin.yaml'}
       - {'source_path': 'http://www.getcloudify.org/spec/diamond-plugin/1.3.1/plugin.yaml', 'destination_path': '/spec/diamond-plugin/1.3.1/plugin.yaml'}
       - {'source_path': 'http://www.getcloudify.org/spec/cloudify/3.3.1/types.yaml', 'destination_path': '/spec/cloudify/3.3.1/types.yaml'}
@@ -548,9 +544,11 @@ inputs:
 dsl_definitions:
   azure_configuration: &azure_configuration
     subscription_id: { get_input: subscription_id }
+    tenant_id: { get_input: tenant_id }
+    client_id: { get_input: client_id }
+    client_secret: { get_input: client_secret }
     location: { get_input: location }
     ssh_username: { get_input: ssh_user }
-    aad_password: { get_input: aad_password }
 
 node_templates:
   manager_configuration:
@@ -562,7 +560,7 @@ node_templates:
       agent_remote_key_path: { get_input: agent_remote_key_path }
       cloudify:
         plugins:
-          azure_config_path: ~/azure_config.json
+          azure_config_path: ~/azure_provider.conf
 
         transient_deployment_workers_mode:
           enabled: true
@@ -604,18 +602,27 @@ node_templates:
           plugin_resources: { get_input: plugin_resources }
           dsl_resources: { get_input: dsl_resources }
 
-
     interfaces:
       cloudify.interfaces.lifecycle:
-        create:
-          implementation: fabric.fabric_plugin.tasks.run_script
+        configure:
+          implementation: fabric.fabric_plugin.tasks.run_task
           inputs:
-            script_path: components/manager/scripts/configure_manager.sh
+            tasks_file: components/manager/scripts/azure/configure.py
+            task_name: configure_manager
+            task_properties:
+              manager_config: *azure_configuration
+              manager_config_path: { get_property: [SELF, cloudify, plugins, azure_config_path] }
             fabric_env: &manager_fabric_env
               user: { get_input: ssh_user }
               key_filename: { get_input: ssh_key_filename }
               host_string: { get_attribute: [manager_host, public_ip] }
               always_use_pty: true
+        create:
+          implementation: fabric.fabric_plugin.tasks.run_script
+          inputs:
+            script_path: components/manager/scripts/configure_manager.sh
+            fabric_env:
+              <<: *manager_fabric_env
 
     relationships:
       - type: cloudify.relationships.contained_in

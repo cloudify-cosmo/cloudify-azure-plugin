@@ -22,10 +22,10 @@
 from copy import deepcopy
 # Node properties and logger
 from cloudify import ctx
+# Life-cycle operation decorator
+from cloudify.decorators import operation
 # Base resource class
 from cloudify_azure.resources.base import Resource
-# Lifecycle operation decorator
-from cloudify.decorators import operation
 # Logger, API version
 from cloudify_azure import (constants, utils)
 # Relationship interfaces
