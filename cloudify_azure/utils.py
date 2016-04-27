@@ -18,11 +18,15 @@
     Microsoft Azure plugin for Cloudify helper utilities
 '''
 
-# Logger, default context
-from cloudify import ctx
-from logging import DEBUG
+# OS path
+from os import path
 # Dict updating
 from collections import Mapping
+# Config parser
+from ConfigParser import SafeConfigParser
+# Logger, default context
+from logging import DEBUG
+from cloudify import ctx
 # Constants
 from cloudify_azure import constants
 # AzureCredentials namedtuple
@@ -515,8 +519,32 @@ def get_credentials(_ctx=ctx):
     :returns: Azure credentials and access information
     :rtype: :class:`cloudify_azure.auth.oauth2.AzureCredentials`
     '''
-    creds = get_credentials_from_node(_ctx=_ctx)
+    f_creds = dict()
+    if path.exists(constants.CONFIG_PATH):
+        f_creds = get_credentials_from_file(constants.CONFIG_PATH)
+    ctx.logger.info('f_creds: {0}'.format(f_creds))
+    n_creds = get_credentials_from_node(_ctx=_ctx)
+    ctx.logger.info('n_creds: {0}'.format(n_creds))
+    creds = dict_update(f_creds, n_creds)
+    ctx.logger.info('creds: {0}'.format(creds))
     return AzureCredentials(**creds)
+
+
+def get_credentials_from_file(config_path=constants.CONFIG_PATH):
+    '''
+        Gets Azure API access information from
+        the provider context config file
+
+    :returns: Azure credentials and access information
+    :rtype: dict
+    '''
+    cred_keys = [
+        'client_id', 'client_secret',
+        'subscription_id', 'tenant_id'
+    ]
+    config = SafeConfigParser()
+    config.read(config_path)
+    return {k: config.get('Credentials', k) for k in cred_keys}
 
 
 def get_credentials_from_node(_ctx=ctx):
