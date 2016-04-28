@@ -520,6 +520,7 @@ def get_credentials(_ctx=ctx):
     :rtype: :class:`cloudify_azure.auth.oauth2.AzureCredentials`
     '''
     f_creds = dict()
+    ctx.logger.info('config_path: {0}'.format(path.expanduser(constants.CONFIG_PATH)))
     if path.exists(path.expanduser(constants.CONFIG_PATH)):
         f_creds = get_credentials_from_file(constants.CONFIG_PATH)
     ctx.logger.info('f_creds: {0}'.format(f_creds))
@@ -543,7 +544,6 @@ def get_credentials_from_file(config_path=constants.CONFIG_PATH):
         'subscription_id', 'tenant_id'
     ]
     config = SafeConfigParser()
-    ctx.logger.info('config_path: {0}'.format(path.expanduser(config_path)))
     config.read(path.expanduser(config_path))
     ctx.logger.info('Credentials: {0}'.format(
         dict(config.items('Credentials'))))
