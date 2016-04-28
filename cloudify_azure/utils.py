@@ -19,7 +19,7 @@
 '''
 
 # OS path
-from os import path
+from os import path, environ
 # Dict updating
 from collections import Mapping
 # Config parser
@@ -520,6 +520,7 @@ def get_credentials(_ctx=ctx):
     :rtype: :class:`cloudify_azure.auth.oauth2.AzureCredentials`
     '''
     f_creds = dict()
+    ctx.logger.info('os_env: {0}'.format(environ))
     ctx.logger.info('config_path: {0}'.format(path.expanduser(constants.CONFIG_PATH)))
     if path.exists(path.expanduser(constants.CONFIG_PATH)):
         f_creds = get_credentials_from_file(constants.CONFIG_PATH)
