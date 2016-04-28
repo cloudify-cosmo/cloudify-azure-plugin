@@ -18,7 +18,7 @@
     Microsoft Azure plugin for Cloudify constants
 '''
 
-# Provider context path
+# Provider context absolute path
 CONFIG_PATH = '/opt/cloudify_azure_provider.conf'
 CONFIG_PATH_ENV_VAR_NAME = 'CFY_AZURE_CONFIG_PATH'
 

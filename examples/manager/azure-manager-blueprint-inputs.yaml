@@ -1,12 +1,12 @@
 # Uniqueness
-resource_prefix: joshmgr
-resource_suffix: 12
+resource_prefix: azmgr
+resource_suffix: 10
 
 # Account info
-subscription_id: 6f680d2a-6047-4286-876f-c0ec0b1ff1d0
-tenant_id: e8f83ddf-4dee-4e1d-b77a-ff3ddaaf52d8
-client_id: 4de44750-2c58-407e-8504-08d9c2e91254
-client_secret: Maryland123!
+subscription_id: 11111111-2222-3333-4444-555555555555
+tenant_id: 11111111-2222-3333-4444-555555555555
+client_id: 11111111-2222-3333-4444-555555555555
+client_secret: AzureADPassword
 
 # VM info (Standard_A1 will NOT work for managers. Not enough memory)
 vm_size: Standard_A2
@@ -24,22 +24,21 @@ vm_os_password: Cl0ud1fy!
 vm_os_pubkeys:
 -   path: {concat:[ '/home/', { get_input: vm_os_username }, '/.ssh/authorized_keys' ]}
     keyData:
-        "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCUJy5McWvvqoKMkwPn+Evnvb67\
-        9BGySsd0SMtuCVz8A1oG7Tke60psxWkO/DAOXnrAlm/UkoY9wqGSCJRCEvTOJvSP\
-        vHNo2nTdibzNFl8NnJsHWJAbeuu5RuvMaqiIv0GUKCSAtSl/5+aFbKO0QEA74kVN\
-        48PB3gXNxzL5/wkv/SZEa65lhbJHo0y/Swsa5ssrQ3i9p/dlwg6tZZtEFJDK9a7r\
-        MYa3Xq5lbBtYeUU9MTAsX+u5HnEPFLYkzCsKC9pfv7kAXzX37wN5n0e4rAG3AaGp\
-        U9yT/Oy8xKxHao82asi6NM3JIzJlwymk4Kf0F4D+A5hbpAdy9zW1YXovQppb"
-
+        "ssh-rsa AAAAA3NzaC1yc2EAAAADAQABAAABAQCUJy5McWvvqoKMkwPn+Evnvb67\
+        9BGySsd0AaBbCcz8A1oG7Tke60psxWkO/DAOXnrAlm/UkoY9wqGSCJRCEvTOJvSPv\
+        HNo2nTdibzNFl8NnJsHWJAbeuu5RuvMaqiIv0GUKCSAAAAAAAAAbKO0QEA74kVN48\
+        PB3gXNxzL5/wkv/SZEa65lhbJHoZZZXXXYYYYYZZi9p/dlwg6tZZtEFJDK9a7rMYa\
+        3Xq5lbBtYeUU9MTAsX+u5HnEPFLYkzCsKC9pfv7kAXzX37wN5n0e4rAG3AaGpU9yT\
+        XOy8xKxHao82asi6NM3JIzJlwymk4Kf0F4D+A5hbpAdy9zW1YXovQppb"
 # Force the use of SSH keys for SSH authentication
 vm_os_pubkey_auth_only: true
 
 ## Manager private keys to use for agents
-ssh_key_filename: 'C:\Users\Joshua Cornutt\Dropbox\Dev\cloudify-hostpool\hostpool-test.pem'
-agent_local_key_path: 'C:\Users\Joshua Cornutt\Dropbox\Dev\cloudify-hostpool\hostpool-test.pem'
+ssh_key_filename: '/some/path/to/your/sshkey.pem'
+agent_local_key_path: '/some/path/to/your/agentkey.pem'
 
 ## Bug fix for deadspin tasks if using maint release
-management_worker_max_tasks_per_child: 5
+# management_worker_max_tasks_per_child: 5
 
 ## Set log level to squash unnecessary log dumps
-management_worker_log_level: DEBUG
+# management_worker_log_level: DEBUG

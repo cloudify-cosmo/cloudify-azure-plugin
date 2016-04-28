@@ -548,7 +548,7 @@ def get_credentials_from_file(config_path=constants.CONFIG_PATH):
         'subscription_id', 'tenant_id'
     ]
     config = SafeConfigParser()
-    config.read(path.expanduser(config_path))
+    config.read(config_path)
     ctx.logger.info('Credentials: {0}'.format(
         dict(config.items('Credentials'))))
     return {k: config.get('Credentials', k) for k in cred_keys}
