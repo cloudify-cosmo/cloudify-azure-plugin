@@ -560,7 +560,7 @@ node_templates:
       agent_remote_key_path: { get_input: agent_remote_key_path }
       cloudify:
         plugins:
-          azure_config_path: ~/azure_provider.conf
+          azure_config_path: /opt/cloudify_azure_provider.conf
 
         transient_deployment_workers_mode:
           enabled: true
@@ -577,7 +577,7 @@ node_templates:
           broker_ssl_enabled: { get_input: rabbitmq_ssl_enabled }
           broker_ssl_cert: { get_input: rabbitmq_cert_public }
           env:
-            AZURE_CONFIG_PATH: { get_property: [SELF, cloudify, plugins, azure_config_path] }
+            CFY_AZURE_CONFIG_PATH: { get_property: [SELF, cloudify, plugins, azure_config_path] }
 
         workflows:
           task_retries: -1  # this means forever

@@ -19,7 +19,7 @@
 '''
 
 # Provider context path
-CONFIG_PATH = '~/azure_provider.conf'
+CONFIG_PATH = '/opt/cloudify_azure_provider.conf'
 CONFIG_PATH_ENV_VAR_NAME = 'CFY_AZURE_CONFIG_PATH'
 
 # OAuth 2.0 constants
