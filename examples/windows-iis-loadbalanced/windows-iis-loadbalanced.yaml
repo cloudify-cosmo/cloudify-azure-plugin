@@ -15,12 +15,6 @@ description: >
   such as the Storage Account and Virtual Machines.  Also, Windows
   VMs requires a long time to process and execute the Virtual
   Machine Extensions (Desired State Configuration).
-  
-  This blueprint can be executed using Cloudify's "local" function
-  by commenting out the vm*_webapp node templates and setting
-  the VM agent_config.install_method to "none".  This will not
-  launch the Cloudify example webapp and will, instead, launch
-  the default IIS website.
 
 imports:
 - http://www.getcloudify.org/spec/cloudify/3.3.1/types.yaml

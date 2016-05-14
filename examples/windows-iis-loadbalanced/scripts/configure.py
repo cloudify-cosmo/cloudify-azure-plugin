@@ -16,12 +16,13 @@
 '''
     lifecycle.Configure
     ~~~~~~~~~~~~~~~~~~~
-    Configures the Cloudify test web application
+    Configures the Cloudify test Azure web application
 '''
 
 import os
 import shutil
 from cloudify import ctx
+from cloudify.exceptions import HttpException
 
 IIS_DEF_DIR = 'C:\\inetpub\\wwwroot\\'
 
@@ -48,8 +49,16 @@ def main():
     ctx.logger.info('Removing default IIS web application')
     remove_folder_contents(IIS_DEF_DIR)
     ctx.logger.info('Downloading web application to {0}'.format(IIS_DEF_DIR))
-    ctx.download_resource_and_render('index.html',
-                                     os.path.join(IIS_DEF_DIR, 'index.html'))
+    try:
+        ctx.download_resource_and_render(
+            'webapp/index.html',
+            os.path.join(IIS_DEF_DIR, 'index.html'))
+        ctx.download_resource_and_render(
+            'webapp/style.css',
+            os.path.join(IIS_DEF_DIR, 'style.css'))
+    except HttpException as exc:
+        ctx.logger.error('HttpException during web application '
+                         'install. "{0}"'.format(str(exc)))
 
 
 main()
