@@ -14,28 +14,55 @@
 #    * limitations under the License.
 
 import os
+
+# Azure SDK
+from azure.common.credentials import \
+    ServicePrincipalCredentials
+
+from azure.mgmt.resource.resources import (
+    ResourceManagementClient,
+    ResourceManagementClientConfiguration
+)
+
 from cosmo_tester.framework.testenv import TestCase
 
 from cloudify.workflows import local
 
+IGNORED_LOCAL_WORKFLOW_MODULES = (
+    'worker_installer.tasks',
+    'plugin_installer.tasks',
+    'cloudify_agent.operations',
+    'cloudify_agent.installer.operations',
+)
+
 
 class AzureSystemTests(TestCase):
 
-    @property
-    def ignored_local_workflow_modules(self):
-        return (
-            'worker_installer.tasks',
-            'plugin_installer.tasks',
-            'cloudify_agent.operations',
-            'cloudify_agent.installer.operations',
-        )
+    def _set_up(self,
+                inputs=None,
+                directory='manager/resources',
+                filename='local-blueprint.yaml'):
 
-    @property
-    def blueprint_path(self):
-        return os.path.join(
+        blueprint_path = os.path.join(
             os.path.dirname(
-                os.path.dirname(__file__)
-            ), 'manager/resources', 'local-blueprint.yaml')
+                os.path.dirname(__file__)), directory, filename)
+
+        if not inputs:
+            inputs = self.clean_inputs
+
+        # setup local workflow execution environment
+        self.localenv = local.init_env(
+            blueprint_path,
+            name=self.test_id,
+            inputs=inputs,
+            ignored_modules=IGNORED_LOCAL_WORKFLOW_MODULES)
+
+    def setUp(self):
+        super(AzureSystemTests, self).setUp()
+        self._set_up()
+
+    def tearDown(self):
+        super(AzureSystemTests, self).tearDown()
 
     @property
     def clean_inputs(self):
@@ -44,69 +71,76 @@ class AzureSystemTests(TestCase):
             'tenant_id': self.env.tenant_id,
             'client_id': self.env.client_id,
             'client_secret': self.env.client_secret,
+            'resource_prefix': self.short_test_id,
             'location': self.env.location,
             'retry_after': self.env.retry_after,
-            'subnet_private_cidr': self.env.subnet_private_cidr,
-            'public_keys': self.env.agent_public_key,
-            'public_key_auth_only': self.env.public_key_auth_only,
-            'size': self.env.standard_a2_size,
-            'linux_os_family': self.env.linux_os_family,
-            'ubuntu_image_publisher': self.env.canonical_image_publisher,
-            'ubuntu_image_offer': self.env.ubuntu_server_14_04_image_offer,
-            'ubuntu_image_sku': self.env.ubuntu_server_14_04_image_sku,
-            'ubuntu_image_version': self.env.ubuntu_server_14_04_image_version,
-            'ubuntu_agent_user': self.env.ubuntu_server_ubuntu_user,
-            'ubuntu_os_password': self.env.ubuntu_server_ubuntu_user_password,
-            'ubuntu_public_key_path': self.env.ubuntu_public_key_path,
-            'centos_image_publisher': self.env.openlogic_image_publisher,
-            'centos_image_offer': self.env.centos_image_offer,
-            'centos_image_sku': self.env.centos_7_0_image_sku,
-            'centos_image_version': self.env.centos_image_version,
-            'centos_agent_user': self.env.centos_user,
-            'centos_os_password': self.env.centos_user_password,
-            'centos_public_key_path': self.env.centos_public_key_path,
-            'windows_os_family': self.env.windows_os_family,
-            'windows_image_publisher': self.env.microsoft_image_publisher,
-            'windows_image_offer': self.env.microsoft_2012_image_offer,
-            'windows_image_sku': self.env.microsoft_2012_image_sku,
-            'windows_image_version': self.env.microsoft_2012_image_version,
-            'windows_agent_user': self.env.microsoft_2012_user,
-            'windows_os_password': self.env.microsoft_2012_user_password,
-            'webserver_port': self.env.demo_webserver_port
+            'standard_a2_size': self.env.standard_a2_size,
+            'os_family_linux': self.env.os_family_linux,
+            'image_publisher_ubuntu_trusty': self.env.image_publisher_ubuntu_trusty,
+            'image_offer_ubuntu_trusty': self.env.image_offer_ubuntu_trusty,
+            'image_sku_ubuntu_trusty': self.env.image_sku_ubuntu_trusty,
+            'image_version_ubuntu_trusty': self.env.image_version_ubuntu_trusty,
+            'username_ubuntu_trusty': self.env.username_ubuntu_trusty,
+            'password': self.env.password,
+            'authorized_keys_ubuntu': self.env.authorized_keys_ubuntu,
+            'image_publisher_centos_final': self.env.image_publisher_centos_final,
+            'image_offer_centos_final': self.env.image_offer_centos_final,
+            'image_sku_centos_final': self.env.image_sku_centos_final,
+            'image_version_centos_final': self.env.image_version_centos_final,
+            'username_centos_final': self.env.username_centos_final,
+            'authorized_keys_centos': self.env.authorized_keys_centos,
+            'os_family_windows': self.env.os_family_windows,
+            'image_publisher_windows': self.env.image_publisher_windows,
+            'image_offer_windows': self.env.image_offer_windows,
+            'image_sku_windows': self.env.image_sku_windows,
+            'image_version_windows': self.env.image_version_windows,
+            'username_windows': self.env.username_windows,
+            'keydata': self.env.keydata
         }
 
-    def install_workflow(self, test_name):
-
-        cfy_local = local.init_env(
-            self.blueprint_path,
-            name=test_name,
-            inputs=self.clean_inputs,
-            ignored_modules=self.ignored_local_workflow_modules)
-
-        cfy_local.execute('install', task_retries=10)
-
-        return cfy_local
-
-    def uninstall_workflow(self, cfy_local):
-        cfy_local.execute('uninstall', task_retries=10)
-
-    def infrastructure_assertions(self):
-        pass
-
-    def application_assertions(self):
-        pass
-
     def post_install_assertions(self):
-        self.infrastructure_assertions()
-        self.application_assertions()
+        self.assertEquals(len(self.resources_in_group()), 21)
 
     def post_uninstall_assertions(self):
-        pass
+        self.assertNotIn(
+            self.resource_group.properties.provisioning_state,
+            'Succeeded'
+        )
 
     def test_local(self):
 
-        cfy = self.install_workflow('test_local')
+        self.localenv.execute('install', task_retries=40)
         self.post_install_assertions()
-        self.uninstall_workflow(cfy)
+        self.localenv.execute('uninstall', task_retries=5)
         self.post_uninstall_assertions()
 
+    @property
+    def azure_client(self):
+        return ResourceManagementClient(
+            ResourceManagementClientConfiguration(
+                ServicePrincipalCredentials(
+                    client_id=self.env.client_id,
+                    secret=self.env.client_secret,
+                    tenant=self.env.tenant_id
+                ),
+                self.env.subscription_id
+            )
+        )
+
+    @property
+    def resource_group(self):
+        return self.azure_client.resource_groups.get(
+            '{0}{1}'.format(
+                self.short_test_id,
+                'rg'
+            )
+        )
+
+    @property
+    def short_test_id(self):
+        id = self.test_id.replace('-', '')
+        id = id.replace('2016', '')
+        return id.replace('systemtest', 'st')
+
+    def resources_in_group(self):
+        return [r for r in self.azure_client.resources.list() if self.resource_group.name in r.id]

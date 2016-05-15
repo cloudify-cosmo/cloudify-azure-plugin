@@ -1,0 +1,1 @@
+https://github.com/Azure/azure-sdk-for-python/archive/v2.0.0rc2.zip

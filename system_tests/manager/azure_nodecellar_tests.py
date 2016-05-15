@@ -27,24 +27,30 @@ class AWSNodeCellarTest(nodecellar_test.NodecellarAppTest):
     def get_inputs(self):
 
         return {
-            'subscription_id': self.env.azure_subscription_id,
-            'tenant_id': self.env.azure_tenant_id,
-            'client_id': self.env.azure_client_id,
-            'client_secret': self.env.azure_client_secret,
-            'location': self.env.azure_location,
-            'mgr_resource_group_name': self.env.manager_resource_group_name,
-            'mgr_virtual_network_name': self.env.manager_virtual_network_name,
-            'mgr_subnet_name': self.env.manager_subnet_name,
+            'subscription_id': self.env.subscription_id,
+            'tenant_id': self.env.tenant_id,
+            'client_id': self.env.client_id,
+            'client_secret': self.env.client_secret,
+            'location': self.env.location,
+            'resource_prefix': self.env.short_test_id,
+            'resource_suffix': '',
+            'mgr_resource_group_name': '{0}rg{1}'.format(self.env.resource_prefix, self.env.resource_suffix),
+            'mgr_virtual_network_name': '{0}vnet{1}'.format(self.env.resource_prefix, self.env.resource_suffix),
+            'mgr_subnet_name': '{0}subnet{1}'.format(self.env.resource_prefix, self.env.resource_suffix),
             'vm_size': self.env.standard_a2_size,
-            'vm_os_family': self.env.linux_os_family,
-            'vm_image_publisher': self.env.canonical_image_publisher,
-            'vm_image_offer': self.env.ubuntu_server_14_04_image_offer,
-            'vm_image_sku': self.env.ubuntu_server_14_04_image_sku,
-            'vm_image_version': self.env.ubuntu_server_14_04_image_version,
-            'agent_user': self.env.ubuntu_server_ubuntu_user,
-            'vm_os_password': self.env.ubuntu_server_ubuntu_user_password,
-            'vm_os_pubkeys': self.env.agent_public_key,
-            'webserver_port': WEBSERVER_PORT
+            'vm_os_family': self.env.os_family_linux,
+            'vm_image_publisher': self.env.image_publisher_ubuntu_trusty,
+            'vm_image_offer': self.env.image_offer_ubuntu_trusty,
+            'vm_image_sku': self.env.image_sku_ubuntu_trusty,
+            'vm_image_version': self.env.image_version_ubuntu_trusty,
+            'vm_os_username': self.env.username_ubuntu_trusty,
+            'vm_os_password': self.env.password,
+            'vm_os_pubkeys': [
+                {
+                    'path': self.env.authorized_keys_ubuntu,
+                    'keydata': self.env.keydata
+                }
+            ],
         }
 
     @property
@@ -62,3 +68,9 @@ class AWSNodeCellarTest(nodecellar_test.NodecellarAppTest):
     @property
     def expected_nodes_count(self):
         return 16
+
+    @property
+    def short_test_id(self):
+        id = self.test_id.replace('-', '')
+        id = id.replace('2016', '')
+        return id.replace('systemtest', 'st')
