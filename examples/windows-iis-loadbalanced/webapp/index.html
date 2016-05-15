@@ -50,14 +50,15 @@
                 <small>Azure plugin demo</small>
             </h1>
             <p class="lead">
-                Welcome to the this demo web application.  This site, and all of
-                its supporting services, was deployed using Cloudify and the
-                Cloudify plugin for Microsoft Azure.
+                Welcome to the Cloudify Azure plugin demo web application.
+                This site, and all of its supporting services, was deployed
+                using Cloudify and the Cloudify Azure plugin.
             </p>
             <p class="lead">
                 <small>
-                    Blueprint: ${ctx.blueprint.id}<br />
-                    Deployment: ${ctx.deployment.id}
+                    Blueprint: {{ ctx.blueprint.id }}<br />
+                    Deployment: {{ ctx.deployment.id }}<br />
+                    Node: {{ ctx.node.id }}
                 </small>
             </p>
           </div>
