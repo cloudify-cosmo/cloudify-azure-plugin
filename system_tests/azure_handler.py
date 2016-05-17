@@ -13,7 +13,10 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 
+import os
 import copy
+import string
+from random import choice
 from contextlib import contextmanager
 
 # Azure SDK
@@ -64,7 +67,7 @@ class AzureCleanupContext(BaseHandler.CleanupContext):
 
         failed_to_remove = {}
 
-        for segment in range(6):
+        for segment in range(12):
             failed_to_remove = \
                 env.handler.remove_azure_resources(resources)
             if not failed_to_remove:
@@ -135,6 +138,18 @@ class CloudifyAzureInputsConfigReader(BaseCloudifyInputsConfigReader):
     @property
     def retry_after(self):
         return self.config['retry_after']
+
+    @property
+    def agent_local_key_path(self):
+        return self.config['agent_local_key_path']
+
+    @property
+    def ssh_key_filename(self):
+        return self.config['ssh_key_filename']
+
+    @property
+    def keydata(self):
+        return self.config['system_tests_shared_public']
 
     @property
     def standard_a2_size(self):
@@ -210,8 +225,20 @@ class CloudifyAzureInputsConfigReader(BaseCloudifyInputsConfigReader):
 
 
 class AzureHandler(BaseHandler):
+
     CleanupContext = AzureCleanupContext
     CloudifyConfigReader = CloudifyAzureInputsConfigReader
+
+    def __init__(self, env):
+        super(AzureHandler, self).__init__(env)
+        self.session_password = ''.join(
+            choice(string.letters + string.digits)
+            for _ in range(16)
+        )
+
+    @property
+    def password(self):
+        return self.session_password
 
     @property
     def azure_credentials(self):
@@ -286,7 +313,7 @@ class AzureHandler(BaseHandler):
             try:
                 blank, sub, sub_id, rg, rg_name, pvd, pvd_name, r_type, r_name = r.id.split('/')
             except ValueError:
-                self.logger.info('No need to handle extension: {}'.format(r.id))
+                self.logger.info('Not registering this resource: {}'.format(r.id))
                 continue
             resource = {
                 r_name: {

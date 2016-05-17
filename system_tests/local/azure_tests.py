@@ -143,4 +143,8 @@ class AzureSystemTests(TestCase):
         return id.replace('systemtest', 'st')
 
     def resources_in_group(self):
-        return [r for r in self.azure_client.resources.list() if self.resource_group.name in r.id]
+        return [r for r in
+                self.azure_client.resources.list(
+                    filter="location eq '{0}'".format(
+                        self.env.location)
+                ) if self.resource_group.name in r.id]

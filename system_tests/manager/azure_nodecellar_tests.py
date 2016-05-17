@@ -15,11 +15,36 @@
 
 from cosmo_tester.test_suites.test_blueprints import nodecellar_test
 
-EXTERNAL_RESOURCE_ID = 'aws_resource_id'
-WEBSERVER_PORT = '8080'
 HOST_PUBLIC_IP = 'public_ip'
 
-class AWSNodeCellarTest(nodecellar_test.NodecellarAppTest):
+
+class AzureNodeCellarTest(nodecellar_test.NodecellarAppTest):
+
+    @property
+    def repo_branch(self):
+        return 'CFY-5203-v1.4'
+
+    @property
+    def host_expected_runtime_properties(self):
+        return []
+
+    @property
+    def entrypoint_node_name(self):
+        return 'nodejs_host'
+
+    @property
+    def entrypoint_property_name(self):
+        return HOST_PUBLIC_IP
+
+    @property
+    def expected_nodes_count(self):
+        return 16
+
+    @property
+    def short_test_id(self):
+        id = self.test_id.replace('-', '')
+        id = id.replace('2016', '')
+        return id.replace('systemtest', 'st')
 
     def test_aws_nodecellar(self):
         self._test_nodecellar_impl('azure-blueprint.yaml')
@@ -32,7 +57,7 @@ class AWSNodeCellarTest(nodecellar_test.NodecellarAppTest):
             'client_id': self.env.client_id,
             'client_secret': self.env.client_secret,
             'location': self.env.location,
-            'resource_prefix': self.env.short_test_id,
+            'resource_prefix': self.short_test_id,
             'resource_suffix': '',
             'mgr_resource_group_name': '{0}rg{1}'.format(self.env.resource_prefix, self.env.resource_suffix),
             'mgr_virtual_network_name': '{0}vnet{1}'.format(self.env.resource_prefix, self.env.resource_suffix),
@@ -52,25 +77,3 @@ class AWSNodeCellarTest(nodecellar_test.NodecellarAppTest):
                 }
             ],
         }
-
-    @property
-    def host_expected_runtime_properties(self):
-        return ['ip']
-
-    @property
-    def entrypoint_node_name(self):
-        return 'nodejs_host'
-
-    @property
-    def entrypoint_property_name(self):
-        return HOST_PUBLIC_IP
-
-    @property
-    def expected_nodes_count(self):
-        return 16
-
-    @property
-    def short_test_id(self):
-        id = self.test_id.replace('-', '')
-        id = id.replace('2016', '')
-        return id.replace('systemtest', 'st')

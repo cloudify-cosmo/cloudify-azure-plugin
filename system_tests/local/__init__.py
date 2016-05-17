@@ -22,5 +22,4 @@ def setUp():
 
 
 def tearDown():
-    pass
-    # clear_environment()
+    clear_environment()
