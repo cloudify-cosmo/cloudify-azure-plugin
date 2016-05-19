@@ -241,7 +241,7 @@ def _set_public_ip(subscription_id, resource_group_name, headers):
         curr_properties = response_get_info[u'properties']
         ctx.logger.info("currProperties : {0}".format(str(curr_properties)))
         curr_ip_address = curr_properties[u'ipAddress']
-        ctx.logger.info("Current public IP address is {}".format(str(curr_ip_address)))
+        ctx.logger.info("Current public IP address is {0}".format(str(curr_ip_address)))
         ctx.instance.runtime_properties['vm_public_ip'] = curr_ip_address
         ctx.instance.runtime_properties['public_ip'] = curr_ip_address
 

@@ -105,8 +105,8 @@ class TestStorage(testtools.TestCase):
         keys = storageaccount.get_storageaccount_access_keys(ctx=ctx)
         self.assertIsNotNone(keys)
         self.assertEqual(len(keys), 2)
-        ctx.logger.info("KEY1 is {}".format(keys[0]))
-        ctx.logger.info("KEY2 is {}".format(keys[1]))
+        ctx.logger.info("KEY1 is {0}".format(keys[0]))
+        ctx.logger.info("KEY2 is {0}".format(keys[1]))
 
         result = storageaccount.delete_storage_account(ctx=ctx)
         self.assertIn(result, [constants.OK_STATUS_CODE, constants.ACCEPTED_STATUS_CODE])

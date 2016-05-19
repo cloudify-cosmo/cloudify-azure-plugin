@@ -78,11 +78,11 @@ def get_target_property(ctx, relationship_name, property_name):
                     if property_name == property:
                         return relationship.target.instance.runtime_properties[property]
         raise NonRecoverableError(
-                'Relationship property {} for {} has not been found.'.format(
+                'Relationship property {0} for {1} has not been found.'.format(
                         property_name, ctx.node.name)
                 )
     else:
-        raise NonRecoverableError('Missing relationship for {}.'.format(
+        raise NonRecoverableError('Missing relationship for {0}.'.format(
                                                         ctx.node.name)
                                   )
 
@@ -108,14 +108,14 @@ def get_targets_properties(ctx, relationship_name, properties_name):
                 properties_list.append(properties_dict)
         if not properties_list:
             raise NonRecoverableError(
-                'Relationship property {} for {} has not been found.'.format(
+                'Relationship property {0} for {1} has not been found.'.format(
                     property_name, ctx.node.name)
             )
         else:
-            ctx.logger.debug('properties_list: {}'.format(properties_list))
+            ctx.logger.debug('properties_list: {0}'.format(properties_list))
             return properties_list
     else:
-        raise NonRecoverableError('Missing relationship for {}.'.format(
+        raise NonRecoverableError('Missing relationship for {0}.'.format(
             ctx.node.name)
         )
 
@@ -173,5 +173,5 @@ class WindowsAzureError(Exception):
         self.message = message
 
     def __str__(self):
-        return 'Error {}: {}.'.format(self.code, self.message)
+        return 'Error {0}: {1}.'.format(self.code, self.message)
 

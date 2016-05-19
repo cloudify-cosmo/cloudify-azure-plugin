@@ -33,7 +33,7 @@ def generate_token(use_client_file=True, start_retry_interval=30, **kwargs):
             f.write(json.dumps(json_data))
             f.close()
     except:
-        raise NonRecoverableError("Failures while creating or using {}".
+        raise NonRecoverableError("Failures while creating or using {0}".
             format(constants.default_path_to_local_azure_token_file))
 
     ctx.instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = token
@@ -93,7 +93,7 @@ def get_auth_token(use_client_file=True, **kwargs):
         lock.acquire()
         token, token_expires = _get_token_from_file(config_path)
     except:
-        err_message = "Failures while locking or using {}".format(config_path)
+        err_message = "Failures while locking or using {0}".format(config_path)
         ctx.logger.debug(err_message)
         lock.release()
         raise NonRecoverableError(err_message)
@@ -165,11 +165,11 @@ def get_credentials():
 
 
 def _set_token_from_local_file(current_instance):
-    ctx.logger.info("{} exists".format(constants.default_path_to_local_azure_token_file))
+    ctx.logger.info("{0} exists".format(constants.default_path_to_local_azure_token_file))
     token, token_expires = _get_token_from_file(constants.default_path_to_local_azure_token_file)
-    ctx.logger.info("get_auth_token expiry is {} ".format(token_expires))
+    ctx.logger.info("get_auth_token expiry is {0} ".format(token_expires))
     current_instance.runtime_properties[constants.AUTH_TOKEN_VALUE] = token
     current_instance.runtime_properties[constants.AUTH_TOKEN_EXPIRY] = token_expires
-    ctx.logger.info("get_auth_token token1 is {} ".format(token))
+    ctx.logger.info("get_auth_token token1 is {0} ".format(token))
     return token
 

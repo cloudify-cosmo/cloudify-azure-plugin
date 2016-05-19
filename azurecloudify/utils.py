@@ -169,7 +169,7 @@ def write_target_runtime_properties_to_file(required_keys, prefixed_keys=None, n
         ctx.logger.info("current_runtime_file_path is {0}".format(current_runtime_file_path))
         lock = LockFile(current_runtime_file_path)
         lock.acquire()
-        ctx.logger.info("{} is locked".format(lock.path))
+        ctx.logger.info("{0} is locked".format(lock.path))
         with open(current_runtime_file_path, 'a') as f:
             for curr_runtime_property in ctx.target.instance.runtime_properties:
                 orig_runtime_property = curr_runtime_property
@@ -187,12 +187,12 @@ def write_target_runtime_properties_to_file(required_keys, prefixed_keys=None, n
                                 f.write(current_line)
         f.close()
     except:
-        ctx.logger.info("Failures while locking or using {}".format(current_runtime_file_path))
+        ctx.logger.info("Failures while locking or using {0}".format(current_runtime_file_path))
         lock.release()
-        raise NonRecoverableError("Failures while locking or using {}".format(current_runtime_file_path))
+        raise NonRecoverableError("Failures while locking or using {0}".format(current_runtime_file_path))
 
     lock.release()
-    ctx.logger.info("{} is released".format(current_runtime_file_path))
+    ctx.logger.info("{0} is released".format(current_runtime_file_path))
 
 
 def set_runtime_properties_from_file():
@@ -207,7 +207,7 @@ def set_runtime_properties_from_file():
                 ctx.instance.runtime_properties[current_key] = current_value
         f.close()
     except:
-        raise NonRecoverableError("Failures trying to use {}".format(current_runtime_file_path))
+        raise NonRecoverableError("Failures trying to use {0}".format(current_runtime_file_path))
 
 
 def delete_runtime_properties_file():

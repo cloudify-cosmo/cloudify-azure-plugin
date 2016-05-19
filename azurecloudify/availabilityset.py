@@ -91,7 +91,7 @@ def create_availability_set(**_):
         ctx.instance.runtime_properties[constants.AVAILABILTY_SET_KEY] = availability_set_name
     except:
         ctx.logger.info("Availabilty set {0} could not be created".format(availability_set_name))
-        raise NonRecoverableError("Availabilty Set {} could not be created".format(availability_set_name))
+        raise NonRecoverableError("Availabilty Set {0} could not be created".format(availability_set_name))
             
 """
            
@@ -140,7 +140,7 @@ def _get_availability_set_name(availability_set_name):
     if constants.RESOURCE_GROUP_KEY in ctx.instance.runtime_properties:
         resource_group_name = ctx.instance.runtime_properties[constants.RESOURCE_GROUP_KEY]
     else:
-        raise RecoverableError("{} is not in availability set runtime_properties yet".format(constants.RESOURCE_GROUP_KEY))
+        raise RecoverableError("{0} is not in availability set runtime_properties yet".format(constants.RESOURCE_GROUP_KEY))
 
     url = constants.azure_url+'/subscriptions/'+subscription_id+'/resourceGroups/'+resource_group_name+'/providers/Microsoft.Compute/availabilitySets?api-version='+constants.api_version
 
