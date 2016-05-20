@@ -112,10 +112,15 @@ class OAuth2(object):
                 self.credentials.tenant_id
             ), data=payload)
             # Expecting valid JSON response
-            data = res.json()
-            if not data or not isinstance(data, dict):
+            try:
+                if res.text:
+                    data = res.json()
+                    if not isinstance(data, dict):
+                        raise exceptions.UnexpectedResponse(
+                            'Expected response data of type JSON object')
+            except ValueError:
                 raise exceptions.UnexpectedResponse(
-                    'Missing or malformed response data', data)
+                    'Malformed, non-JSON response data')
         self.log.debug('Access token request response: '
                        '(status={0}, data={1})'.format(
                            res.status_code,
@@ -123,7 +128,7 @@ class OAuth2(object):
         # Check for 401 Unauthorized
         if res.status_code == 401:
             # We received an explicit credentials rejection
-            if 'error' in data and data['error'] == 'invalid_client':
+            if data and 'error' in data and data['error'] == 'invalid_client':
                 raise exceptions.InvalidCredentials(
                     'Azure rejected the provided credentials', data)
             # All other rejection reason will be caught here
@@ -134,7 +139,7 @@ class OAuth2(object):
                 'Bad response status code: {0}'
                 .format(res.status_code))
         # Expecting an access_token object
-        if 'access_token' not in data:
+        if not data or 'access_token' not in data:
             raise exceptions.UnexpectedResponse(
                 'Access token not present in response', data)
         return data
