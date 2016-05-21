@@ -42,7 +42,7 @@ class Resource(object):
         within a Cloudify Lifecycle Operation
 
     :param string name: Human-readable name of the child resource
-    :param string endpoint: Parital endpoint for making resource requests
+    :param string endpoint: Partial endpoint for making resource requests
     :param string api_version: API version to use for all requests
     :param `logging.Logger` logger:
         Parent logger for the class to use. Defaults to `ctx.logger`
@@ -61,7 +61,7 @@ class Resource(object):
         self.log = utils.create_child_logger(
             'resources.{0}'.format(name.replace(' ', '')),
             plogger=logger)
-        # Set up labelling
+        # Set up labeling
         self.name = name
         # Build the partial endpoint
         self.endpoint = endpoint

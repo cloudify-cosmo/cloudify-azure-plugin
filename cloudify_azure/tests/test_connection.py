@@ -50,7 +50,7 @@ class ConnectionTestCase(unittest.TestCase):
 
         self.log = logging.getLogger('tests.ConnectionTestCase')
         stream = logging.StreamHandler(stdout)
-        stream.setLevel(logging.DEBUG)
+        stream.setLevel(logging.INFO)
         self.log.addHandler(stream)
         current_ctx.set(self.ctx)
 
