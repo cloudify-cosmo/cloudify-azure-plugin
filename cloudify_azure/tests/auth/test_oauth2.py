@@ -40,7 +40,7 @@ class OAuth2TestCase(unittest.TestCase):
                                        properties={})
         self.log = logging.getLogger('tests.OAuth2TestCase')
         stream = logging.StreamHandler(stdout)
-        stream.setLevel(logging.DEBUG)
+        stream.setLevel(logging.INFO)
         self.log.addHandler(stream)
         self.credentials = oauth2.AzureCredentials(
             tenant_id='123456',
