@@ -527,11 +527,8 @@ def get_credentials(_ctx=ctx):
     ctx.logger.debug('config_path: {0}'.format(f_config_path))
     if path.exists(f_config_path):
         f_creds = get_credentials_from_file(f_config_path)
-    ctx.logger.debug('f_creds: {0}'.format(f_creds))
     n_creds = get_credentials_from_node(_ctx=_ctx)
-    ctx.logger.debug('n_creds: {0}'.format(n_creds))
     creds = dict_update(f_creds, n_creds)
-    ctx.logger.debug('creds: {0}'.format(creds))
     return AzureCredentials(**creds)
 
 
@@ -549,8 +546,6 @@ def get_credentials_from_file(config_path=constants.CONFIG_PATH):
     ]
     config = SafeConfigParser()
     config.read(config_path)
-    ctx.logger.debug('Credentials: {0}'.format(
-        dict(config.items('Credentials'))))
     return {k: config.get('Credentials', k) for k in cred_keys}
 
 
