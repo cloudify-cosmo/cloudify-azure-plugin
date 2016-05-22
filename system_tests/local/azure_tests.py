@@ -50,6 +50,8 @@ class AzureSystemTests(TestCase):
         if not inputs:
             inputs = self.clean_inputs
 
+        self.logger.info('INPUTS: {}'.format(inputs))
+
         # setup local workflow execution environment
         self.localenv = local.init_env(
             blueprint_path,
@@ -138,9 +140,15 @@ class AzureSystemTests(TestCase):
 
     @property
     def short_test_id(self):
-        id = self.test_id.replace('-', '')
+        bad_chars = [
+            '`', '~', '!', '@', '#', '$', '%', '^', '&', '*',
+            '(', ')', '=', '+', '_', '[', ']', '{', '}', '\\',
+            '|', ';', ':', '.', '\'', ',', '<', '>', '/', '?', '-']
+        id = self.test_id.translate(None, ''.join(bad_chars))
         id = id.replace('2016', '')
-        return id.replace('systemtest', 'st')
+        id = id.replace('test', '')
+        id = id.replace('local', '')
+        return id.replace('system', '')
 
     def resources_in_group(self):
         return [r for r in

@@ -179,6 +179,7 @@ class Resource(object):
             return
         # HTTP 400 (BAD_REQUEST) - We're sending bad data
         elif res.status_code == httplib.BAD_REQUEST:
+            self.ctx.logger.info(str(res.content))
             raise UnexpectedResponse(
                 'Recieved HTTP 400 BAD REQUEST', res.json())
         # HTTP 409 (CONFLICT) - Operation failed

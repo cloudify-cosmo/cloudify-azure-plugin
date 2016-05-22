@@ -31,7 +31,8 @@ setup(
     description='Microsoft Azure plugin for Cloudify',
     install_requires=[
         'cloudify-plugins-common>=3.3.1',
-        'requests'
+        'requests',
+        'pyyaml==3.10'
     ],
     tests_require=[
         'azure==v2.0.0rc1'

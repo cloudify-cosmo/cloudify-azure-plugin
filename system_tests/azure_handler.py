@@ -231,10 +231,18 @@ class AzureHandler(BaseHandler):
 
     def __init__(self, env):
         super(AzureHandler, self).__init__(env)
-        self.session_password = ''.join(
-            choice(string.letters + string.digits)
-            for _ in range(16)
-        )
+
+        def _password():
+            while True:
+                password = ''.join(choice(string.letters + string.digits)
+                                   for _ in range(16))
+                if not any(char.isdigit() for char in list(password)) \
+                        or not any(char.isupper() for char in list(password))\
+                        or not any(char.islower() for char in list(password)):
+                    continue
+                return password
+
+        self.session_password = _password()
 
     @property
     def password(self):
@@ -358,7 +366,7 @@ class AzureHandler(BaseHandler):
                 name = current_resource.get('name')
                 resource_type = current_resource.get('type')
                 resource_group_name = current_resource.get('resource_group_name')
-                if 'tamir' in name or 'tram' in name:
+                if 'tamir' in name or 'ear' in name:
                     continue
                 with self._handled_exception(name, failed, resource_type):
                     self._delete_resource(current_resource)
