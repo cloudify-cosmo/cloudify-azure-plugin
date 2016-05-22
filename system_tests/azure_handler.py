@@ -116,6 +116,14 @@ class AzureCleanupContext(BaseHandler.CleanupContext):
 class CloudifyAzureInputsConfigReader(BaseCloudifyInputsConfigReader):
 
     @property
+    def resource_prefix(self):
+        return self.config['resource_prefix']
+
+    @property
+    def resource_suffix(self):
+        return self.config['resource_suffix']
+
+    @property
     def subscription_id(self):
         return self.config['subscription_id']
 

@@ -42,9 +42,15 @@ class AzureNodeCellarTest(nodecellar_test.NodecellarAppTest):
 
     @property
     def short_test_id(self):
-        id = self.test_id.replace('-', '')
+        bad_chars = [
+            '`', '~', '!', '@', '#', '$', '%', '^', '&', '*',
+            '(', ')', '=', '+', '_', '[', ']', '{', '}', '\\',
+            '|', ';', ':', '.', '\'', ',', '<', '>', '/', '?', '-']
+        id = self.test_id.translate(None, ''.join(bad_chars))
         id = id.replace('2016', '')
-        return id.replace('systemtest', 'st')
+        id = id.replace('test', '')
+        id = id.replace('local', '')
+        return id.replace('system', '')
 
     def test_aws_nodecellar(self):
         self._test_nodecellar_impl('azure-blueprint.yaml')
