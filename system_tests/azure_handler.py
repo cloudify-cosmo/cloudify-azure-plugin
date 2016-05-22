@@ -364,7 +364,8 @@ class AzureHandler(BaseHandler):
             'networkSecurityGroups': {},
             'networkInterfaces': {},
             'virtualMachines': {},
-            'routeTables': {}
+            'routeTables': {},
+            'availabilitySets': {}
         }
 
         for resource_name in resources_to_remove.keys():
