@@ -1,0 +1,21 @@
+tosca_definitions_version: cloudify_dsl_1_2
+
+imports:
+- http://www.getcloudify.org/spec/cloudify/3.3.1/types.yaml
+- plugin.yaml
+
+dsl_definitions:
+  azure_config: &azure_config
+    subscription_id: 12345-12345-12345
+    tenant_id: 123456
+    client_id: 1234567890
+    client_secret: 12345-12345-12345-12345
+
+node_templates:
+  resource_group:
+    type: cloudify.azure.nodes.ResourceGroup
+    properties:
+      name: testrg
+      location: eastus
+      azure_config: *azure_config
+      retry_after: 1

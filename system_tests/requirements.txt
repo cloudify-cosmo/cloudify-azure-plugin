@@ -1,0 +1,3 @@
+msrest
+msrestazure
+-e git+https://github.com/Azure/azure-sdk-for-python@v2.0.0rc1#egg=azure
