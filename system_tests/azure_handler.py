@@ -347,10 +347,13 @@ class AzureHandler(BaseHandler):
 
         after = copy.deepcopy(after)
 
-        return {
-            prop: self._remove_keys(after[prop], before[prop].keys())
-            for prop in before.keys()
-        }
+        delta = {}
+
+        for prop in before.keys():
+            value = self._remove_keys(after[prop], before[prop].keys())
+            delta.update({prop: value})
+
+        return delta
 
     def remove_azure_resources(self, resources_to_remove):
 

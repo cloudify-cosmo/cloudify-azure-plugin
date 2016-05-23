@@ -523,8 +523,6 @@ def get_credentials(_ctx=ctx):
     f_config_path = environ.get(constants.CONFIG_PATH_ENV_VAR_NAME,
                                 constants.CONFIG_PATH)
 
-    ctx.logger.debug('os_env: {0}'.format(environ))
-    ctx.logger.debug('config_path: {0}'.format(f_config_path))
     if path.exists(f_config_path):
         f_creds = get_credentials_from_file(f_config_path)
     n_creds = get_credentials_from_node(_ctx=_ctx)
