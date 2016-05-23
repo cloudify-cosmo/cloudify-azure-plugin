@@ -350,7 +350,15 @@ class AzureHandler(BaseHandler):
         delta = {}
 
         for prop in before.keys():
-            value = self._remove_keys(after[prop], before[prop].keys())
+            try:
+                value = self._remove_keys(after[prop], before[prop].keys())
+            except KeyError as e:
+                self.logger.info(
+                    'Unable to remove resource due to error: {0}'.format(
+                        str(e)
+                    )
+                )
+                continue
             delta.update({prop: value})
 
         return delta

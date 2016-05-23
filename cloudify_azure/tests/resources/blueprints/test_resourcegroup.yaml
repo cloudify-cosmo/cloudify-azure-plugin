@@ -18,3 +18,4 @@ node_templates:
       name: testrg
       location: eastus
       azure_config: *azure_config
+      retry_after: 1
