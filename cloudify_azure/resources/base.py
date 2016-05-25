@@ -182,7 +182,9 @@ class Resource(object):
             return
         # HTTP 400 (BAD_REQUEST) - We're sending bad data
         elif res.status_code == httplib.BAD_REQUEST:
-            self.ctx.logger.info(str(res.content))
+            self.log.info('BAD REQUEST')
+            self.log.info('headers: {}'.format(str(headers)))
+            self.log.info('response: {}'.format(str(res)))
             raise UnexpectedResponse(
                 'Recieved HTTP 400 BAD REQUEST', res.json())
         # HTTP 409 (CONFLICT) - Operation failed
@@ -243,6 +245,9 @@ class Resource(object):
             return
         # HTTP 400 (BAD_REQUEST) - We're sending bad data
         elif res.status_code == httplib.BAD_REQUEST:
+            self.log.info('BAD REQUEST')
+            self.log.info('headers: {}'.format(str(headers)))
+            self.log.info('response: {}'.format(str(res)))
             raise UnexpectedResponse(
                 'Recieved HTTP 400 BAD REQUEST', res.json())
         # HTTP 409 (CONFLICT) - Operation failed
@@ -292,6 +297,9 @@ class Resource(object):
                 retry_after=self.get_retry_after(headers))
         # HTTP 400 (BAD_REQUEST) - We're sending bad data
         elif res.status_code == httplib.BAD_REQUEST:
+            self.log.info('BAD REQUEST')
+            self.log.info('headers: {}'.format(str(headers)))
+            self.log.info('response: {}'.format(str(res)))
             raise UnexpectedResponse(
                 'Recieved HTTP 400 BAD REQUEST', res.json())
         # HTTP 409 (CONFLICT) - Operation failed
