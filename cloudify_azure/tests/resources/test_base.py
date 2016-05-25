@@ -122,7 +122,7 @@ class ResourcesBaseTestCase(unittest.TestCase):
             'virtualMachines')
         headers = {
             'x-ms-request-id': 'test-id-string',
-            'retry-after': '15'
+            'retry-after': '1'
         }
         self.mock_endpoints(mock, endpoint, res_name,
                             json={'response': 'ok'},
@@ -153,7 +153,7 @@ class ResourcesBaseTestCase(unittest.TestCase):
             'virtualMachines')
         headers = {
             'location': 'https://test.com/test',
-            'retry-after': '15'
+            'retry-after': '1'
         }
         self.mock_endpoints(mock, endpoint, res_name,
                             json={'response': 'ok'},
@@ -185,7 +185,7 @@ class ResourcesBaseTestCase(unittest.TestCase):
         headers = {
             'location': 'https://test.com/test',
             'x-ms-request-id': 'test-id-string',
-            'retry-after': '15'
+            'retry-after': '1'
         }
         self.mock_endpoints(mock, endpoint, res_name,
                             json={'response': 'ok'},

@@ -1,0 +1,231 @@
+tosca_definitions_version: cloudify_dsl_1_2
+
+imports:
+- http://www.getcloudify.org/spec/cloudify/3.3.1/types.yaml
+- plugin.yaml
+
+dsl_definitions:
+  azure_config: &azure_config
+    subscription_id: 12345-12345-12345
+    tenant_id: 123456
+    client_id: 1234567890
+    client_secret: 12345-12345-12345-12345
+
+node_templates:
+  resource_group:
+    type: cloudify.azure.nodes.ResourceGroup
+    properties:
+      name: mockrg
+      location: eastus
+      azure_config: *azure_config
+      use_external_resource: true
+      
+  virtual_network:
+    type: cloudify.azure.nodes.network.VirtualNetwork
+    properties:
+      resource_group_name: mockrg
+      name: mockvnet
+      azure_config: *azure_config
+      location: eastus
+      use_external_resource: true
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_resource_group
+      target: resource_group
+      
+  subnet:
+    type: cloudify.azure.nodes.network.Subnet
+    properties:
+      resource_group_name: mockrg
+      name: mocksubnet
+      azure_config: *azure_config
+      use_external_resource: true
+      location: eastus
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_virtual_network
+      target: virtual_network
+      
+  network_security_group:
+    type: cloudify.azure.nodes.network.NetworkSecurityGroup
+    properties:
+      name: mocknsg
+      azure_config: *azure_config
+      location: eastus
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_resource_group
+      target: resource_group
+      
+  route_table:
+    type: cloudify.azure.nodes.network.RouteTable
+    properties:
+      name: mockroutetable
+      azure_config: *azure_config
+      location: eastus
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_resource_group
+      target: resource_group
+      
+  route:
+    type: cloudify.azure.nodes.network.Route
+    properties:
+      name: mockroute
+      azure_config: *azure_config
+      location: eastus
+      resource_config:
+        addressPrefix: 0.0.0.0/0
+        nextHopType: Internet
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_route_table
+      target: route_table
+      
+  network_security_rule:
+    type: cloudify.azure.nodes.network.NetworkSecurityRule
+    properties:
+      name: mocknsr
+      location: eastus
+      azure_config: *azure_config
+      network_security_group_name: mocknsg
+      resource_config:
+        description: RDP access
+        protocol: Tcp
+        sourcePortRange: '*'
+        destinationPortRange: 3389
+        sourceAddressPrefix: '*'
+        destinationAddressPrefix: '*'
+        priority: 100
+        access: Allow
+        direction: Inbound
+    relationships:
+    - type: cloudify.azure.relationships.nic_connected_to_network_security_group
+      target: network_security_group
+    - type: cloudify.azure.relationships.contained_in_resource_group
+      target: resource_group
+  
+      
+  nic_public_ip:
+    type: cloudify.azure.nodes.network.PublicIPAddress
+    properties:
+      name: mocknicpip
+      location: eastus
+      azure_config: *azure_config
+      resource_config:
+        publicIPAllocationMethod: Static
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_resource_group
+      target: resource_group
+      
+  nic_ip:
+    type: cloudify.azure.nodes.network.IPConfiguration
+    properties:
+      name: mocknicip
+      location: eastus
+      azure_config: *azure_config
+      resource_config:
+        privateIPAllocationMethod: Dynamic
+    relationships:
+    - type: cloudify.azure.relationships.ip_configuration_connected_to_subnet
+      target: subnet
+    - type: cloudify.azure.relationships.ip_configuration_connected_to_public_ip
+      target: nic_public_ip
+   
+  nic:
+    type: cloudify.azure.nodes.network.NetworkInterfaceCard
+    properties:
+      resource_group_name: mockrg
+      name: mocknic
+      azure_config: *azure_config
+      location: eastus
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_resource_group
+      target: resource_group
+    - type: cloudify.azure.relationships.connected_to_ip_configuration
+      target: nic_ip
+    - type: cloudify.azure.relationships.nic_connected_to_network_security_group
+      target: network_security_group
+    - type: cloudify.azure.relationships.nic_connected_to_lb_be_pool
+      target: load_balancer_backend_pool
+      
+  lb_public_ip:
+    type: cloudify.azure.nodes.network.PublicIPAddress
+    properties:
+      name: mocklbpip
+      azure_config: *azure_config
+      location: eastus
+      resource_config:
+        publicIPAllocationMethod: Static
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_resource_group
+      target: resource_group
+      
+  lb_ip_cfg:
+    type: cloudify.azure.nodes.network.IPConfiguration
+    properties:
+      name: mocklbip
+      azure_config: *azure_config
+      location: eastus
+      resource_config:
+        privateIPAllocationMethod: Dynamic
+    relationships:
+    - type: cloudify.azure.relationships.ip_configuration_connected_to_subnet
+      target: subnet
+    - type: cloudify.azure.relationships.ip_configuration_connected_to_public_ip
+      target: lb_public_ip
+      
+  load_balancer:
+    type: cloudify.azure.nodes.network.LoadBalancer
+    properties:
+      resource_group_name: mockrg
+      name: mocklb
+      azure_config: *azure_config
+      location: eastus
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_resource_group
+      target: resource_group
+    - type: cloudify.azure.relationships.connected_to_ip_configuration
+      target: lb_ip_cfg
+      
+  load_balancer_backend_pool:
+    type: cloudify.azure.nodes.network.LoadBalancer.BackendAddressPool
+    properties:
+      name: mocklbbepool
+      azure_config: *azure_config
+      location: eastus
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_load_balancer
+      target: load_balancer
+      
+  load_balancer_probe:
+    type: cloudify.azure.nodes.network.LoadBalancer.Probe
+    properties:
+      name: mocklbprobe
+      azure_config: *azure_config
+      location: eastus
+      resource_config:
+        protocol: Http
+        port: 8080
+        requestPath: index.html
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_load_balancer
+      target: load_balancer
+    # Ensure serial operations
+    - type: cloudify.relationships.depends_on
+      target: load_balancer_backend_pool
+      
+  load_balancer_rule:
+    type: cloudify.azure.nodes.network.LoadBalancer.Rule
+    properties:
+      name: mocklbrule
+      azure_config: *azure_config
+      location: eastus
+      resource_config:
+        protocol: Tcp
+        backendPort: 8080
+        frontendPort: 80
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_load_balancer
+      target: load_balancer
+    - type: cloudify.azure.relationships.connected_to_ip_configuration
+      target: lb_ip_cfg
+    - type: cloudify.azure.relationships.connected_to_lb_be_pool
+      target: load_balancer_backend_pool
+    - type: cloudify.azure.relationships.connected_to_lb_probe
+      target: load_balancer_probe

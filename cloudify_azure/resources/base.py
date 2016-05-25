@@ -110,6 +110,9 @@ class Resource(object):
             return res.json()
         # If Azure sent a 400, we're sending bad data
         if res.status_code == httplib.BAD_REQUEST:
+            self.log.info('BAD REQUEST')
+            self.log.info('headers: {}'.format(str(headers)))
+            self.log.info('response: {}'.format(str(res)))
             raise UnexpectedResponse(
                 'Recieved HTTP 400 BAD REQUEST', res.json())
         # If Azure sent a 404, the resource doesn't exist (yet?)

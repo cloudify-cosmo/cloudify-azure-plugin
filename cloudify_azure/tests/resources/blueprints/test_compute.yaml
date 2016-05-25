@@ -1,0 +1,186 @@
+tosca_definitions_version: cloudify_dsl_1_2
+
+
+imports:
+- http://www.getcloudify.org/spec/cloudify/3.3.1/types.yaml
+- plugin.yaml
+
+
+inputs:
+  # Virtual Machine information
+  vm_size:
+    type: string
+    default: Standard_A2
+  vm_os_family:
+    type: string
+    default: linux
+  vm_image_publisher:
+    type: string
+    default: Canonical
+  vm_image_offer:
+    type: string
+    default: UbuntuServer
+  vm_image_sku:
+    type: string
+    default: 14.04.4-LTS
+  vm_image_version:
+    type: string
+    default: 14.04.201604060
+  vm_os_username:
+    description: >
+      Username to create as the VM's administrator user
+    type: string
+    default: cloudify
+  vm_os_password:
+    description: >
+      Password to use for the VM's administrator user
+    type: string
+    default: Cl0ud1fy!
+  vm_os_pubkeys:
+    description: the public key
+    default:
+    - path: {concat:[ '/home/', { get_input: vm_os_username }, '/.ssh/authorized_keys' ]}
+      keyData:
+        "ssh-rsa AAAAA3----MOCK----aabbzz"
+
+
+dsl_definitions:
+  azure_config: &azure_config
+    subscription_id: 12345-12345-12345
+    tenant_id: 123456
+    client_id: 1234567890
+    client_secret: 12345-12345-12345-12345
+
+
+node_templates:
+  resource_group:
+    type: cloudify.azure.nodes.ResourceGroup
+    properties:
+      name: mockrg
+      location: eastus
+      azure_config: *azure_config
+      use_external_resource: true
+      
+  storage_account:
+    type: cloudify.azure.nodes.storage.StorageAccount
+    properties:
+      name: mocksa
+      azure_config: *azure_config
+      location: eastus
+      resource_config:
+        accountType: Standard_LRS
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_resource_group
+      target: resource_group
+      
+  virtual_network:
+    type: cloudify.azure.nodes.network.VirtualNetwork
+    properties:
+      resource_group_name: mockrg
+      name: mockvnet
+      azure_config: *azure_config
+      location: eastus
+      use_external_resource: true
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_resource_group
+      target: resource_group
+      
+  subnet:
+    type: cloudify.azure.nodes.network.Subnet
+    properties:
+      resource_group_name: mockrg
+      name: mocksubnet
+      azure_config: *azure_config
+      use_external_resource: true
+      location: eastus
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_virtual_network
+      target: virtual_network
+      
+  nic_public_ip:
+    type: cloudify.azure.nodes.network.PublicIPAddress
+    properties:
+      name: mocknicpip
+      location: eastus
+      azure_config: *azure_config
+      resource_config:
+        publicIPAllocationMethod: Static
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_resource_group
+      target: resource_group
+      
+  nic_ip:
+    type: cloudify.azure.nodes.network.IPConfiguration
+    properties:
+      name: mocknicip
+      location: eastus
+      azure_config: *azure_config
+      resource_config:
+        privateIPAllocationMethod: Dynamic
+    relationships:
+    - type: cloudify.azure.relationships.ip_configuration_connected_to_subnet
+      target: subnet
+    - type: cloudify.azure.relationships.ip_configuration_connected_to_public_ip
+      target: nic_public_ip
+   
+  nic:
+    type: cloudify.azure.nodes.network.NetworkInterfaceCard
+    properties:
+      resource_group_name: mockrg
+      name: mocknic
+      azure_config: *azure_config
+      location: eastus
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_resource_group
+      target: resource_group
+    - type: cloudify.azure.relationships.connected_to_ip_configuration
+      target: nic_ip
+         
+  availability_set:
+    type: cloudify.azure.nodes.compute.AvailabilitySet
+    properties:
+      name: mockavailset
+      azure_config: *azure_config
+      location: eastus
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_resource_group
+      target: resource_group
+         
+  vm:
+    type: cloudify.azure.nodes.compute.VirtualMachine
+    properties:
+      name: mockvm
+      azure_config: *azure_config
+      location: eastus
+      os_family: { get_input: vm_os_family }
+      resource_config:
+          hardwareProfile:
+            vmSize: { get_input: vm_size }
+          storageProfile:
+            imageReference:
+              publisher: { get_input: vm_image_publisher }
+              offer: { get_input: vm_image_offer }
+              sku: { get_input: vm_image_sku }
+              version: { get_input: vm_image_version }
+          osProfile:
+            computerName: { get_property: [SELF, name] }
+            adminUsername: { get_input: vm_os_username }
+            adminPassword: { get_input: vm_os_password }
+            linuxConfiguration:
+              ssh:
+                publicKeys: { get_input: vm_os_pubkeys }
+              disablePasswordAuthentication: true
+      agent_config:
+        user: { get_input: vm_os_username }
+        password: { get_input: vm_os_password }
+        install_method: none
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_resource_group
+      target: resource_group
+    - type: cloudify.azure.relationships.connected_to_storage_account
+      target: storage_account
+    - type: cloudify.azure.relationships.connected_to_availability_set
+      target: availability_set
+    - type: cloudify.azure.relationships.connected_to_nic
+      target: nic
+ 

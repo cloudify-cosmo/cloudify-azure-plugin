@@ -31,7 +31,7 @@ from cloudify_azure import constants
 # pylint: disable=R0913
 
 
-class TestServer(unittest.TestCase):
+class TestResourceGroup(unittest.TestCase):
     '''Tests Resource Group interface'''
     blueprint_path = path.join('blueprints',
                                'test_resourcegroup.yaml')
@@ -79,7 +79,8 @@ class TestServer(unittest.TestCase):
                     constants.API_VER_RESOURCES)),
             headers={
                 'location': self.mock_retry_url,
-                'x-ms-request-id': '123412341234'
+                'x-ms-request-id': '123412341234',
+                'retry-after': '1'
             },
             status_code=httplib.ACCEPTED
         )
