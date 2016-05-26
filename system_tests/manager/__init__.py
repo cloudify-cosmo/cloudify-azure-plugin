@@ -18,7 +18,7 @@ from cosmo_tester.framework.testenv import bootstrap, teardown
 
 
 def setUp():
-    bootstrap(task_retries=15)
+    bootstrap(task_retries=20)
 
 
 def tearDown():
