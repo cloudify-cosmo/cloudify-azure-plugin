@@ -26,6 +26,8 @@ from cosmo_tester.framework.handlers import (
 
 API_VERSION = '2016-03-30'
 STORAGE_API_VERSION = '2015-06-15'
+DELETING = 'Deleting'
+
 
 class AzureCleanupContext(BaseHandler.CleanupContext):
 
@@ -313,7 +315,27 @@ class AzureHandler(BaseHandler):
         )
 
     def _all_resources(self):
-        return self.resource_client.resources.list(filter="location eq '{0}'".format(self.env.location))
+        all_resource_groups = self.resource_client.resource_groups.list()
+        all_resources = self.resource_client.resources.list(filter="location eq '{0}'".format(self.env.location))
+        not_deleted_resources = {}
+        for r in all_resources:
+            try:
+                blank, sub, sub_id, rg, rg_name, pvd, pvd_name, r_type, r_name = r.id.split('/')
+            except ValueError:
+                self.logger.info('Not registering this resource: {}'.format(r.id))
+                continue
+            rg = [rg for rg in all_resource_groups if rg_name in rg.name][0]
+            if DELETING not in rg.properties.provisioning_state:
+                not_deleted_resources.update(
+                    {
+                        r_name: {
+                            'name': r_name,
+                            'resource_group_name': rg_name,
+                            'provider_namespace': pvd_name,
+                            'type': r_type
+                        }
+                    }            )
+        return not_deleted_resources
 
     def _delete_resource_group(self, resource_group_name):
         return self.resource_client.resource_groups.delete(resource_group_name)
@@ -336,22 +358,6 @@ class AzureHandler(BaseHandler):
     def azure_infra_state(self):
 
         current_state = dict()
-        all_resources = self._all_resources()
-        for r in all_resources:
-            try:
-                blank, sub, sub_id, rg, rg_name, pvd, pvd_name, r_type, r_name = r.id.split('/')
-            except ValueError:
-                self.logger.info('Not registering this resource: {}'.format(r.id))
-                continue
-            resource = {
-                r_name: {
-                    'name': r_name,
-                    'resource_group_name': rg_name,
-                    'provider_namespace': pvd_name,
-                    'type': r_type
-                }
-            }
-            current_state.update(resource)
         self.logger.info('infra current_state = {0}'.format(current_state))
         return current_state
 
