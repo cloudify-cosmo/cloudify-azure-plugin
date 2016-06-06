@@ -43,7 +43,7 @@ class AzureCleanupContext(BaseHandler.CleanupContext):
 
         failed_to_remove = {}
 
-        for segment in range(12):
+        for segment in range(3):
             failed_to_remove = \
                 env.handler.remove_azure_resources(resources)
             if not failed_to_remove:
@@ -61,7 +61,7 @@ class AzureCleanupContext(BaseHandler.CleanupContext):
 
         if self.skip_cleanup:
             self.logger.warn('[{0}] SKIPPING cleanup: of the resources: {1}'
-                             .format(self.context_name,resources_to_teardown))
+                             .format(self.context_name, resources_to_teardown))
             return
 
         self.clean_resources(self.env, resources_to_teardown)

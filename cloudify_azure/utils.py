@@ -582,7 +582,7 @@ def secure_logging_content(content, secure_keywords=constants.SECURE_KW):
         elif type(clean_me) is dict:
             for key, value in clean_me.items():
                 if type(key) is str and key in secure_keywords:
-                    clean_me[key] = '__'
+                    clean_me[key] = '*'
                 else:
                     clean(value)
         return clean_me

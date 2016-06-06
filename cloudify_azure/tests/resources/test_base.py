@@ -50,6 +50,9 @@ class ResourcesBaseTestCase(unittest.TestCase):
         self.ctx = MockCloudifyContext(node_id='test_resources_base',
                                        node_name='ResourcesBaseTestCase',
                                        runtime_properties={},
+                                       operation={
+                                           'retry_number': 0
+                                       },
                                        properties=self.node_properties)
 
         self.log = logging.getLogger('tests.ResourcesBaseTestCase')
@@ -166,9 +169,7 @@ class ResourcesBaseTestCase(unittest.TestCase):
             logger=self.log)
         self.assertEqual(res.name, name)
         self.assertEqual(res.endpoint, endpoint)
-        self.assertRaises(
-            RecoverableError,
-            res.get, name=res_name)
+        res.get(name=res_name)
         self.assertEqual(
             self.ctx.instance.runtime_properties.get('async_op'),
             headers)
@@ -198,9 +199,7 @@ class ResourcesBaseTestCase(unittest.TestCase):
             logger=self.log)
         self.assertEqual(res.name, name)
         self.assertEqual(res.endpoint, endpoint)
-        self.assertRaises(
-            RecoverableError,
-            res.get, name=res_name)
+        res.get(name=res_name)
         self.assertEqual(
             self.ctx.instance.runtime_properties.get('async_op'),
             headers)
