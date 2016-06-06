@@ -41,8 +41,6 @@ class AzureSystemTests(TestCase):
         if not inputs:
             inputs = self.clean_inputs
 
-        self.logger.info('INPUTS: {}'.format(inputs))
-
         # setup local workflow execution environment
         self.localenv = local.init_env(
             blueprint_path,
@@ -69,14 +67,17 @@ class AzureSystemTests(TestCase):
             'retry_after': self.env.retry_after,
             'standard_a2_size': self.env.standard_a2_size,
             'os_family_linux': self.env.os_family_linux,
-            'image_publisher_ubuntu_trusty': self.env.image_publisher_ubuntu_trusty,
+            'image_publisher_ubuntu_trusty':
+                self.env.image_publisher_ubuntu_trusty,
             'image_offer_ubuntu_trusty': self.env.image_offer_ubuntu_trusty,
             'image_sku_ubuntu_trusty': self.env.image_sku_ubuntu_trusty,
-            'image_version_ubuntu_trusty': self.env.image_version_ubuntu_trusty,
+            'image_version_ubuntu_trusty':
+                self.env.image_version_ubuntu_trusty,
             'username_ubuntu_trusty': self.env.username_ubuntu_trusty,
             'password': self.env.password,
             'authorized_keys_ubuntu': self.env.authorized_keys_ubuntu,
-            'image_publisher_centos_final': self.env.image_publisher_centos_final,
+            'image_publisher_centos_final':
+                self.env.image_publisher_centos_final,
             'image_offer_centos_final': self.env.image_offer_centos_final,
             'image_sku_centos_final': self.env.image_sku_centos_final,
             'image_version_centos_final': self.env.image_version_centos_final,

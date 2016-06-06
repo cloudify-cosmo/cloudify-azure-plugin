@@ -93,7 +93,8 @@ class Resource(object):
             url=url)
         # Convert headers from CaseInsensitiveDict to Dict
         headers = dict(res.headers)
-        self.log.debug('headers: {0}'.format(headers))
+        self.log.debug('headers: {0}'.format(
+            utils.secure_logging_content(headers)))
         # Check the response
         # HTTP 202 (ACCEPTED) - The operation has started but is asynchronous
         if res.status_code == httplib.ACCEPTED:
@@ -110,9 +111,7 @@ class Resource(object):
             return res.json()
         # If Azure sent a 400, we're sending bad data
         if res.status_code == httplib.BAD_REQUEST:
-            self.log.info('BAD REQUEST')
-            self.log.info('headers: {}'.format(str(headers)))
-            self.log.info('response: {}'.format(str(res.content)))
+            self.log.info('BAD REQUEST: response: {}'.format(res.content))
             raise UnexpectedResponse(
                 'Recieved HTTP 400 BAD REQUEST', res.json())
         # If Azure sent a 404, the resource doesn't exist (yet?)
@@ -148,7 +147,8 @@ class Resource(object):
             json=params)
         # Convert headers from CaseInsensitiveDict to Dict
         headers = dict(res.headers)
-        self.log.debug('headers: {0}'.format(headers))
+        self.log.debug('headers: {0}'.format(
+            utils.secure_logging_content(headers)))
         # Check the response
         # HTTP 201 (CREATED) - The operation succeeded
         if res.status_code == httplib.CREATED:
@@ -182,9 +182,7 @@ class Resource(object):
             return
         # HTTP 400 (BAD_REQUEST) - We're sending bad data
         elif res.status_code == httplib.BAD_REQUEST:
-            self.log.info('BAD REQUEST')
-            self.log.info('headers: {}'.format(str(headers)))
-            self.log.info('response: {}'.format(str(res.content)))
+            self.log.info('BAD REQUEST: response: {}'.format(res.content))
             raise UnexpectedResponse(
                 'Recieved HTTP 400 BAD REQUEST', res.json())
         # HTTP 409 (CONFLICT) - Operation failed
@@ -226,7 +224,8 @@ class Resource(object):
             json=params)
         # Convert headers from CaseInsensitiveDict to Dict
         headers = dict(res.headers)
-        self.log.debug('headers: {0}'.format(headers))
+        self.log.debug('headers: {0}'.format(
+            utils.secure_logging_content(headers)))
         # Check the response
         # HTTP 202 (ACCEPTED) - The operation has started but is asynchronous
         if res.status_code == httplib.ACCEPTED:
@@ -245,9 +244,7 @@ class Resource(object):
             return
         # HTTP 400 (BAD_REQUEST) - We're sending bad data
         elif res.status_code == httplib.BAD_REQUEST:
-            self.log.info('BAD REQUEST')
-            self.log.info('headers: {}'.format(str(headers)))
-            self.log.info('response: {}'.format(str(res.content)))
+            self.log.info('BAD REQUEST: response: {}'.format(res.content))
             raise UnexpectedResponse(
                 'Recieved HTTP 400 BAD REQUEST', res.json())
         # HTTP 409 (CONFLICT) - Operation failed
@@ -278,7 +275,8 @@ class Resource(object):
             url='{0}/{1}'.format(self.endpoint, name))
         # Convert headers from CaseInsensitiveDict to Dict
         headers = dict(res.headers)
-        self.log.debug('headers: {0}'.format(headers))
+        self.log.debug('headers: {0}'.format(
+            utils.secure_logging_content(headers)))
         # HTTP 200 (OK) - The operation is successful and complete
         if res.status_code == httplib.OK:
             return
@@ -297,9 +295,7 @@ class Resource(object):
                 retry_after=self.get_retry_after(headers))
         # HTTP 400 (BAD_REQUEST) - We're sending bad data
         elif res.status_code == httplib.BAD_REQUEST:
-            self.log.info('BAD REQUEST')
-            self.log.info('headers: {}'.format(str(headers)))
-            self.log.info('response: {}'.format(str(res.content)))
+            self.log.info('BAD REQUEST: response: {}'.format(res.content))
             raise UnexpectedResponse(
                 'Recieved HTTP 400 BAD REQUEST', res.json())
         # HTTP 409 (CONFLICT) - Operation failed
@@ -333,7 +329,8 @@ class Resource(object):
                                   url=op_url)
         # Convert headers from CaseInsensitiveDict to Dict
         headers = dict(res.headers)
-        self.log.debug('headers: {0}'.format(headers))
+        self.log.debug('headers: {0}'.format(
+            utils.secure_logging_content(headers)))
         self.ctx.instance.runtime_properties['async_op'] = None
         # HTTP 200 (OK) - Operation is successful and complete
         if res.status_code == httplib.OK:

@@ -22,7 +22,7 @@ class AzureNodeCellarTest(nodecellar_test.NodecellarAppTest):
 
     @property
     def repo_branch(self):
-        return 'CFY-5203-v1.4'
+        return 'master'
 
     @property
     def host_expected_runtime_properties(self):
@@ -65,9 +65,12 @@ class AzureNodeCellarTest(nodecellar_test.NodecellarAppTest):
             'location': self.env.location,
             'resource_prefix': self.short_test_id,
             'resource_suffix': '',
-            'mgr_resource_group_name': '{0}rg{1}'.format(self.env.resource_prefix, self.env.resource_suffix),
-            'mgr_virtual_network_name': '{0}vnet{1}'.format(self.env.resource_prefix, self.env.resource_suffix),
-            'mgr_subnet_name': '{0}subnet{1}'.format(self.env.resource_prefix, self.env.resource_suffix),
+            'mgr_resource_group_name': '{0}rg{1}'.format(
+                self.env.resource_prefix, self.env.resource_suffix),
+            'mgr_virtual_network_name': '{0}vnet{1}'.format(
+                self.env.resource_prefix, self.env.resource_suffix),
+            'mgr_subnet_name': '{0}subnet{1}'.format(
+                self.env.resource_prefix, self.env.resource_suffix),
             'vm_size': self.env.standard_a2_size,
             'vm_os_family': self.env.os_family_linux,
             'vm_image_publisher': self.env.image_publisher_ubuntu_trusty,

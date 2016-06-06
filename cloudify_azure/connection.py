@@ -103,7 +103,8 @@ class AzureConnection(object):
             params['api-version'] = params.get('api-version', self.api_version)
             kwargs['params'] = params
         # Log the request details
-        self.log.info('request({0})'.format(kwargs))
+        self.log.info('request({0})'.format(utils.secure_logging_content(
+            kwargs)))
         res = self.session.request(**kwargs)
         # Only get data if there's data to be gotten
         data = None

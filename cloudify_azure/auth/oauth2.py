@@ -28,7 +28,8 @@ import json
 # For credentials structuring
 from collections import namedtuple
 # Exception handling, constants, logging
-from cloudify_azure import constants, exceptions
+from cloudify_azure import \
+    (constants, exceptions)
 # Context
 from cloudify import ctx
 
@@ -58,6 +59,7 @@ class OAuth2(object):
     :param `logging.Logger` logger:
         Logger for the class to use. Defaults to `ctx.logger`
     '''
+
     def __init__(self, credentials, logger=None, _ctx=ctx):
         # Set the active context
         self.ctx = _ctx
@@ -92,8 +94,6 @@ class OAuth2(object):
             'resource': constants.OAUTH2_MGMT_RESOURCE
         }
         data = dict()
-        self.log.debug('Requesting access token. Payload: {0}'
-                       .format(payload))
         # Build a session object with some fault tolerance
         # Retry up to 10 times with increasing backoff time
         # up to 120 seconds.
