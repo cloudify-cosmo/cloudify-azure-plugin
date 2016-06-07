@@ -61,7 +61,7 @@ class AzureCleanupContext(BaseHandler.CleanupContext):
 
         if self.skip_cleanup:
             self.logger.warn('[{0}] SKIPPING cleanup: of the resources: {1}'
-                             .format(self.context_name, resources_to_teardown))
+                             .format(self.context_name,resources_to_teardown))
             return
 
         self.clean_resources(self.env, resources_to_teardown)
@@ -316,13 +316,16 @@ class AzureHandler(BaseHandler):
 
     def _all_resources(self):
         all_resource_groups = self.resource_client.resource_groups.list()
-        all_resources = self.resource_client.resources.list(filter="location eq '{0}'".format(self.env.location))
+        all_resources = self.resource_client.resources.list(
+            filter="location eq '{0}'".format(self.env.location))
         not_deleted_resources = {}
         for r in all_resources:
             try:
-                blank, sub, sub_id, rg, rg_name, pvd, pvd_name, r_type, r_name = r.id.split('/')
+                _blank, _sub, sub_id, _rg, rg_name, _pvd, \
+                    pvd_name, r_type, r_name = r.id.split('/')
             except ValueError:
-                self.logger.info('Not registering this resource: {}'.format(r.id))
+                self.logger.info(
+                    'Not registering this resource: {}'.format(r.id))
                 continue
             rg = [rg for rg in all_resource_groups if rg_name in rg.name][0]
             if DELETING not in rg.properties.provisioning_state:
@@ -334,7 +337,7 @@ class AzureHandler(BaseHandler):
                             'provider_namespace': pvd_name,
                             'type': r_type
                         }
-                    }            )
+                    })
         return not_deleted_resources
 
     def _delete_resource_group(self, resource_group_name):
@@ -345,7 +348,9 @@ class AzureHandler(BaseHandler):
         resource_provider_namespace = r.get('provider_namespace')
         resource_type = r.get('type')
         resource_name = r.get('name')
-        api_version = STORAGE_API_VERSION if 'storageAccounts' in resource_type else API_VERSION
+        api_version = \
+            STORAGE_API_VERSION if 'storageAccounts' in \
+                                   resource_type else API_VERSION
         return self.resource_client.resources.delete(
             resource_group_name=resource_group_name,
             resource_provider_namespace=resource_provider_namespace,
@@ -399,14 +404,17 @@ class AzureHandler(BaseHandler):
 
         for resource_name in resources_to_remove.keys():
             current_resource = current_state.get(resource_name)
-            self.logger.info('remove current_resource == {0}'.format(current_resource))
+            self.logger.info(
+                'remove current_resource == {0}'.format(current_resource))
             if current_resource:
                 name = current_resource.get('name')
                 resource_type = current_resource.get('type')
-                resource_group_name = current_resource.get('resource_group_name')
+                resource_group_name = current_resource.get(
+                    'resource_group_name')
                 with self._handled_exception(name, failed, resource_type):
                     self._delete_resource(current_resource)
-                with self._handled_exception(resource_group_name, failed, 'resource_group'):
+                with self._handled_exception(
+                        resource_group_name, failed, 'resource_group'):
                     self._delete_resource_group(resource_group_name)
 
         return failed

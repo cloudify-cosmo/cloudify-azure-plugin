@@ -70,3 +70,6 @@ REL_VMX_CONTAINED_IN_VM = \
     'cloudify.azure.relationships.vmx_contained_in_vm'
 REL_LB_CONNECTED_TO_NIC = \
     'cloudify.azure.relationships.lb_connected_to_nic'
+
+SECURE_KW = ['client_id', 'client_secret', 'username',
+             'adminUsername', 'adminPassword', 'keyData']

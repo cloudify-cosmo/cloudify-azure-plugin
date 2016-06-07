@@ -18,6 +18,8 @@
     Microsoft Azure plugin for Cloudify helper utilities
 '''
 
+# Deep Copy
+from copy import deepcopy
 # OS path
 from os import path, environ
 # Dict updating
@@ -569,3 +571,21 @@ def get_subscription_id(_ctx=ctx):
         the provider context
     '''
     return get_credentials(_ctx=_ctx).subscription_id
+
+
+def secure_logging_content(content, secure_keywords=constants.SECURE_KW):
+
+    def clean(clean_me, secure_keywords=secure_keywords):
+        if type(clean_me) is list:
+            for li in clean_me:
+                clean_me[clean_me.index(li)] = clean(li)
+        elif type(clean_me) is dict:
+            for key, value in clean_me.items():
+                if type(key) is str and key in secure_keywords:
+                    clean_me[key] = '__'
+                else:
+                    clean(value)
+        return clean_me
+
+    content_copy = deepcopy(content)
+    return clean(content_copy)
