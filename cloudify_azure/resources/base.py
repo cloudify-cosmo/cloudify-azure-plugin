@@ -102,8 +102,8 @@ class Resource(object):
                 raise RecoverableError(
                     'HTTP 202 ACCEPTED but no Location header present')
             self.ctx.instance.runtime_properties['async_op'] = headers
-            raise RecoverableError(
-                'Operation "{0}" started'
+            return ctx.operation.retry(
+                'Operation: "{0}" started'
                 .format(self.get_operation_id(headers)),
                 retry_after=self.get_retry_after(headers))
         # HTTP 200 (OK) - The resource already exists
@@ -154,8 +154,8 @@ class Resource(object):
         if res.status_code == httplib.CREATED:
             if headers.get('azure-asyncoperation'):
                 self.ctx.instance.runtime_properties['async_op'] = headers
-                raise RecoverableError(
-                    'Operation "{0}" started'
+                return ctx.operation.retry(
+                    'Operation: "{0}" started'
                     .format(self.get_operation_id(headers)),
                     retry_after=self.get_retry_after(headers))
             return
@@ -165,16 +165,16 @@ class Resource(object):
                 raise RecoverableError(
                     'HTTP 202 ACCEPTED but no Location header present')
             self.ctx.instance.runtime_properties['async_op'] = headers
-            raise RecoverableError(
-                'Operation "{0}" started'
+            return ctx.operation.retry(
+                'Operation: "{0}" started'
                 .format(self.get_operation_id(headers)),
                 retry_after=self.get_retry_after(headers))
         # HTTP 200 (OK) - The resource already exists
         elif res.status_code == httplib.OK:
             if headers.get('azure-asyncoperation'):
                 self.ctx.instance.runtime_properties['async_op'] = headers
-                raise RecoverableError(
-                    'Operation "{0}" started'
+                return ctx.operation.retry(
+                    'Operation: "{0}" started'
                     .format(self.get_operation_id(headers)),
                     retry_after=self.get_retry_after(headers))
             self.log.warn('{0} already exists. Using resource.'
@@ -182,7 +182,8 @@ class Resource(object):
             return
         # HTTP 400 (BAD_REQUEST) - We're sending bad data
         elif res.status_code == httplib.BAD_REQUEST:
-            self.log.info('BAD REQUEST: response: {}'.format(res.content))
+            self.log.info('BAD REQUEST: response: {}'.format(
+                utils.secure_logging_content(res.content)))
             raise UnexpectedResponse(
                 'Recieved HTTP 400 BAD REQUEST', res.json())
         # HTTP 409 (CONFLICT) - Operation failed
@@ -233,8 +234,8 @@ class Resource(object):
                 raise RecoverableError(
                     'HTTP 202 ACCEPTED but no Location header present')
             self.ctx.instance.runtime_properties['async_op'] = headers
-            raise RecoverableError(
-                'Operation "{0}" started'
+            return ctx.operation.retry(
+                'Operation: "{0}" started'
                 .format(self.get_operation_id(headers)),
                 retry_after=self.get_retry_after(headers))
         # HTTP 200 (OK) - The resource already exists
@@ -244,7 +245,8 @@ class Resource(object):
             return
         # HTTP 400 (BAD_REQUEST) - We're sending bad data
         elif res.status_code == httplib.BAD_REQUEST:
-            self.log.info('BAD REQUEST: response: {}'.format(res.content))
+            self.log.info('BAD REQUEST: response: {}'.format(
+                utils.secure_logging_content(res.content)))
             raise UnexpectedResponse(
                 'Recieved HTTP 400 BAD REQUEST', res.json())
         # HTTP 409 (CONFLICT) - Operation failed
@@ -289,13 +291,14 @@ class Resource(object):
                 raise RecoverableError(
                     'HTTP 202 ACCEPTED but no Location header present')
             self.ctx.instance.runtime_properties['async_op'] = headers
-            raise RecoverableError(
-                'Operation "{0}" started'
+            return ctx.operation.retry(
+                'Operation: "{0}" started'
                 .format(self.get_operation_id(headers)),
                 retry_after=self.get_retry_after(headers))
         # HTTP 400 (BAD_REQUEST) - We're sending bad data
         elif res.status_code == httplib.BAD_REQUEST:
-            self.log.info('BAD REQUEST: response: {}'.format(res.content))
+            self.log.info('BAD REQUEST: response: {}'.format(
+                utils.secure_logging_content(res.content)))
             raise UnexpectedResponse(
                 'Recieved HTTP 400 BAD REQUEST', res.json())
         # HTTP 409 (CONFLICT) - Operation failed
@@ -334,9 +337,9 @@ class Resource(object):
         self.ctx.instance.runtime_properties['async_op'] = None
         # HTTP 200 (OK) - Operation is successful and complete
         if res.status_code == httplib.OK:
-            if res.json().get('status') == 'InProgress':
-                raise RecoverableError(
-                    'Operation "{0}" still pending'
+            if self.validate_res_json(res) == 'InProgress':
+                return ctx.operation.retry(
+                    'Operation: "{0}" still pending'
                     .format(self.get_operation_id(headers)),
                     retry_after=self.get_retry_after(headers))
             return
@@ -346,8 +349,8 @@ class Resource(object):
                 raise RecoverableError(
                     'HTTP 202 ACCEPTED but no Location header present')
             self.ctx.instance.runtime_properties['async_op'] = headers
-            raise RecoverableError(
-                'Operation "{0}" still pending'
+            return ctx.operation.retry(
+                'Operation: "{0}" still pending'
                 .format(self.get_operation_id(headers)),
                 retry_after=self.get_retry_after(headers))
         # HTTP 409 (CONFLICT) - Operation failed
@@ -359,11 +362,11 @@ class Resource(object):
         elif res.status_code == httplib.INTERNAL_SERVER_ERROR:
             # Preserve op_info in case it's really just a time-out
             self.ctx.instance.runtime_properties['async_op'] = op_info
-            raise RecoverableError(
-                'Operation "{0}" reported a time-out'
+            return ctx.operation.retry(
+                'Operation: "{0}" still pending'
                 .format(self.get_operation_id(headers)),
                 retry_after=self.get_retry_after(headers))
-        res.raise_on_status()
+        res.raise_for_status()
 
     def get_retry_after(self, headers):
         '''
@@ -375,6 +378,14 @@ class Resource(object):
         '''
         return utils.get_retry_after(_ctx=self.ctx) or \
             int(headers.get('retry-after', 60))
+
+    @staticmethod
+    def validate_res_json(res):
+        try:
+            return res.json().get('status')
+        except ValueError:
+            res.raise_for_status()
+        return
 
     @staticmethod
     def get_operation_id(headers):

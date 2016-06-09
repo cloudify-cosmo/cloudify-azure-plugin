@@ -96,10 +96,13 @@ class AzureSystemTests(TestCase):
         self.assertEquals(len(self.resources_in_group()), 21)
 
     def post_uninstall_assertions(self):
-        self.assertNotIn(
-            self.resource_group.properties.provisioning_state,
-            'Succeeded'
-        )
+
+        try:
+            output = self.resource_group.properties.provisioning_state
+        except AttributeError:
+            output = '*'
+
+        self.assertNotIn(output, 'Succeeded')
 
     def test_local(self):
 
@@ -132,12 +135,18 @@ class AzureSystemTests(TestCase):
 
     @property
     def resource_group(self):
-        return self.azure_client.resource_groups.get(
-            '{0}{1}'.format(
-                self.short_test_id,
-                'rg'
+
+        from azure.common.exceptions import CloudError
+
+        try:
+            return self.azure_client.resource_groups.get(
+                '{0}{1}'.format(
+                    self.short_test_id,
+                    'rg'
+                )
             )
-        )
+        except CloudError:
+            return None
 
     @property
     def short_test_id(self):
