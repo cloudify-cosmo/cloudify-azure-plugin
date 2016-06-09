@@ -5,7 +5,7 @@
 plugins:
   pkg:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/master.zip
+    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/1.4.zip
     package_name: cloudify-azure-plugin
     package_version: '1.4'
 
@@ -1039,7 +1039,7 @@ node_types:
               default: powershell -ExecutionPolicy Unrestricted -file ps_enable_winrm_http.ps1
             file_uris:
               default:
-              - https://raw.githubusercontent.com/01000101/cloudify-azure-plugin/rebuild/scripts/ps_enable_winrm_http.ps1
+              - https://raw.githubusercontent.com/cloudify-cosmo/cloudify-azure-plugin/1.4/scripts/ps_enable_winrm_http.ps1
         delete: pkg.cloudify_azure.resources.compute.virtualmachine.delete
         
   cloudify.azure.nodes.compute.VirtualMachineExtension:

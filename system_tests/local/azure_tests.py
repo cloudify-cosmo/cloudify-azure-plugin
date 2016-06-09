@@ -108,7 +108,7 @@ class AzureSystemTests(TestCase):
 
         self.localenv.execute('install', task_retries=40)
         self.post_install_assertions()
-        self.localenv.execute('uninstall', task_retries=5)
+        self.localenv.execute('uninstall', task_retries=40)
         self.post_uninstall_assertions()
 
     @property
