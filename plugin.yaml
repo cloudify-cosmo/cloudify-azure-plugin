@@ -5,7 +5,7 @@
 plugins:
   pkg:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/master.zip
+    source: https://github.com/01000101/cloudify-azure-plugin/archive/scaling.zip
     package_name: cloudify-azure-plugin
     package_version: '1.4'
 
@@ -44,6 +44,32 @@ data_types:
           or generated in the same location as your client ID.
         type: string
         required: false
+      scale_name_separator:
+        description: >
+          When scaling resources, a unique name must be sent to
+          the Azure API. Since names are left to the user to
+          manage (the service does not generate unique IDs),
+          this plugin will attempt to append characters or
+          numbers to the end of the resource name when resources
+          are scaled out. This value should be a character, or
+          characters, that will separate the base name from the
+          generated unique characters.  For instance, if the
+          base name of a resource is "myvm", the separator is
+          set to "_", and a scale workflow attempts to create
+          another resource, the resulting name could be
+          something like "myvm_1". This field can be left blank.
+        type: string
+        required: false
+        default: "_"
+      scale_name_suffix_chars:
+        description: >
+          A string of characters (ASCII) to be used when
+          generating unique suffix data when scaling resources.
+          See "scale_name_separator" for more information.
+        type: string
+        required: true
+        default: "1234567890"
+
 
   cloudify.datatypes.azure.storage.StorageAccountConfig:
     description: >
@@ -332,7 +358,7 @@ node_types:
           80 characters long. It can contain only alphanumeric characters,
           dash, underscore, opening parenthesis, closing parenthesis,
           and period. The name cannot end with a period.
-        required: true
+        required: false
       location:
         type: string
         description: >
@@ -374,7 +400,7 @@ node_types:
           Name for the resource. Storage account name must be between
           3 and 24 characters in length and use numbers and lower-case
           letters only.
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -426,7 +452,7 @@ node_types:
         type: string
         description: >
           Name for the resource. 
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -478,7 +504,7 @@ node_types:
         type: string
         description: >
           Name for the resource. 
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -530,7 +556,7 @@ node_types:
         type: string
         description: >
           Name for the resource. 
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -589,7 +615,7 @@ node_types:
         type: string
         description: >
           Name for the resource. 
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -648,7 +674,7 @@ node_types:
         type: string
         description: >
           Name for the resource. 
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -700,7 +726,7 @@ node_types:
         type: string
         description: >
           Name for the resource. 
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -759,7 +785,7 @@ node_types:
         type: string
         description: >
           Name for the resource. 
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -811,7 +837,7 @@ node_types:
         type: string
         description: >
           Name for the resource. 
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -851,7 +877,10 @@ node_types:
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
-        
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create: pkg.cloudify_azure.resources.network.ipconfiguration.create
+
   cloudify.azure.nodes.network.PublicIPAddress:
     derived_from: cloudify.nodes.Root
     properties:
@@ -859,7 +888,7 @@ node_types:
         type: string
         description: >
           Name for the resource. 
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -911,7 +940,7 @@ node_types:
         type: string
         description: >
           Name for the resource.
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -963,7 +992,7 @@ node_types:
         type: string
         description: >
           Name for the resource.
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -1039,7 +1068,7 @@ node_types:
               default: powershell -ExecutionPolicy Unrestricted -file ps_enable_winrm_http.ps1
             file_uris:
               default:
-              - https://raw.githubusercontent.com/01000101/cloudify-azure-plugin/rebuild/scripts/ps_enable_winrm_http.ps1
+              - https://raw.githubusercontent.com/cloudify-cosmo/cloudify-azure-plugin/1.4/scripts/ps_enable_winrm_http.ps1
         delete: pkg.cloudify_azure.resources.compute.virtualmachine.delete
         
   cloudify.azure.nodes.compute.VirtualMachineExtension:
@@ -1049,7 +1078,7 @@ node_types:
         type: string
         description: >
           Name for the resource. 
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -1108,7 +1137,7 @@ node_types:
         type: string
         description: >
           Name for the resource. 
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -1160,7 +1189,7 @@ node_types:
         type: string
         description: >
           Name for the resource. 
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -1210,7 +1239,7 @@ node_types:
         type: string
         description: >
           Name for the resource. 
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -1265,7 +1294,7 @@ node_types:
         type: string
         description: >
           Name for the resource. 
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -1320,7 +1349,7 @@ node_types:
         type: string
         description: >
           Name for the resource. 
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >

@@ -94,7 +94,7 @@ class BackendAddressPool(Resource):
         resource_group = resource_group or \
             utils.get_resource_group(_ctx=_ctx)
         load_balancer_name = load_balancer_name or \
-            utils.get_resource_name(
+            utils.get_resource_name_ref(
                 constants.REL_CONTAINED_IN_LB,
                 'load_balancer_name',
                 _ctx=_ctx)
@@ -135,7 +135,7 @@ class Probe(Resource):
         resource_group = resource_group or \
             utils.get_resource_group(_ctx=_ctx)
         load_balancer_name = load_balancer_name or \
-            utils.get_resource_name(
+            utils.get_resource_name_ref(
                 constants.REL_CONTAINED_IN_LB,
                 'load_balancer_name',
                 _ctx=_ctx)
@@ -176,7 +176,7 @@ class FrontendIPConfiguration(Resource):
         resource_group = resource_group or \
             utils.get_resource_group(_ctx=_ctx)
         load_balancer_name = load_balancer_name or \
-            utils.get_resource_name(
+            utils.get_resource_name_ref(
                 constants.REL_CONTAINED_IN_LB,
                 'load_balancer_name',
                 _ctx=_ctx)

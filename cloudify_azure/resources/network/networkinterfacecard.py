@@ -74,7 +74,7 @@ def get_connected_nsg():
     for rel in ctx.instance.relationships:
         if constants.REL_NIC_CONNECTED_TO_NSG in rel.type_hierarchy:
             nsg = NetworkSecurityGroup(_ctx=rel.target)
-            nsg_name = rel.target.node.properties.get('name')
+            nsg_name = utils.get_resource_name(rel.target)
     return {
         'id': '/subscriptions/{0}{1}/{2}'.format(
             utils.get_subscription_id(_ctx=nsg.ctx),

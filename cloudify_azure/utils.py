@@ -24,6 +24,8 @@ from copy import deepcopy
 from os import path, environ
 # Dict updating
 from collections import Mapping
+# UUID
+from uuid import uuid4
 # Config parser
 from ConfigParser import SafeConfigParser
 # Logger, default context
@@ -45,6 +47,17 @@ def dict_update(orig, updates):
     return orig
 
 
+def get_resource_name(_ctx=ctx):
+    '''
+        Finds a resource's name
+
+    :returns: The resource's name or None
+    :rtype: string
+    '''
+    return _ctx.instance.runtime_properties.get('name') or \
+        _ctx.node.properties.get('name')
+
+
 def task_resource_create(resource, params,
                          name=None, use_external=None,
                          _ctx=ctx):
@@ -64,19 +77,37 @@ def task_resource_create(resource, params,
              :exc:`requests.RequestException`
     '''
     # Get the resource name
-    name = name or _ctx.node.properties.get('name')
+    name = name or get_resource_name(_ctx)
     # Get use_external_resource boolean
     if use_external is None:
         use_external = _ctx.node.properties.get('use_external_resource')
     # Check for existing resources
     if use_external:
         return resource.get(name)
+    # Generate a new name (if needed)
+    name = generate_resource_name(resource, name=name, _ctx=_ctx)
     # Handle pending asynchrnous operations
     if _ctx.instance.runtime_properties.get('async_op'):
         return resource.operation_complete(
             _ctx.instance.runtime_properties.get('async_op'))
     # Create a new resource
     resource.create(name, params)
+
+
+def generate_resource_name(resource, name=None, _ctx=ctx):
+    '''Generates a resource name (if needed)'''
+    # Get the resource name
+    name = name or get_resource_name(_ctx)
+    # Generate a new name (if needed)
+    if not name:
+        for _ in xrange(0, 10):
+            name = str(uuid4())
+            # Check if we have a duplicate name
+            if not resource.exists(name):
+                break
+    # Set the new name in the runtime properties
+    _ctx.instance.runtime_properties['name'] = name
+    return name
 
 
 def task_resource_update(resource, params,
@@ -98,7 +129,7 @@ def task_resource_update(resource, params,
              :exc:`requests.RequestException`
     '''
     # Get the resource name
-    name = name or _ctx.node.properties.get('name')
+    name = name or get_resource_name(_ctx)
     # Get use_external_resource boolean
     if use_external is None:
         use_external = _ctx.node.properties.get('use_external_resource')
@@ -127,7 +158,7 @@ def task_resource_delete(resource, name=None,
              :exc:`requests.RequestException`
     '''
     # Get the resource name
-    name = name or _ctx.node.properties.get('name')
+    name = name or get_resource_name(_ctx)
     # Get use_external_resource boolean
     if use_external is None:
         use_external = _ctx.node.properties.get('use_external_resource')
@@ -153,7 +184,7 @@ def get_resource_config(_ctx=ctx):
     return _ctx.node.properties.get('resource_config')
 
 
-def get_resource_name(rel, prop=None, _ctx=ctx):
+def get_resource_name_ref(rel, prop=None, _ctx=ctx):
     '''
         Finds the resource associated with the current node. This
         method searches both by node properties (priority) or by
@@ -164,7 +195,7 @@ def get_resource_name(rel, prop=None, _ctx=ctx):
     '''
     if prop:
         prop = _ctx.node.properties.get(prop)
-    return prop or get_ancestor_property(_ctx.instance, 'name', rel)
+    return prop or get_ancestor_name(_ctx.instance, rel)
 
 
 def get_resource_group(_ctx=ctx):
@@ -177,8 +208,8 @@ def get_resource_group(_ctx=ctx):
     :rtype: string
     '''
     return _ctx.node.properties.get('resource_group_name') or \
-        get_ancestor_property(
-            _ctx.instance, 'name', constants.REL_CONTAINED_IN_RG)
+        get_ancestor_name(
+            _ctx.instance, constants.REL_CONTAINED_IN_RG)
 
 
 def get_virtual_network(_ctx=ctx):
@@ -191,8 +222,8 @@ def get_virtual_network(_ctx=ctx):
     :rtype: string
     '''
     return _ctx.node.properties.get('virtual_network_name') or \
-        get_ancestor_property(
-            _ctx.instance, 'name', constants.REL_CONTAINED_IN_VN)
+        get_ancestor_name(
+            _ctx.instance, constants.REL_CONTAINED_IN_VN)
 
 
 def get_subnet(_ctx=ctx):
@@ -205,8 +236,8 @@ def get_subnet(_ctx=ctx):
     :rtype: string
     '''
     return _ctx.node.properties.get('subnet_name') or \
-        get_ancestor_property(
-            _ctx.instance, 'name', constants.REL_IPC_CONNECTED_TO_SUBNET)
+        get_ancestor_name(
+            _ctx.instance, constants.REL_IPC_CONNECTED_TO_SUBNET)
 
 
 def get_route_table(_ctx=ctx):
@@ -219,8 +250,8 @@ def get_route_table(_ctx=ctx):
     :rtype: string
     '''
     return _ctx.node.properties.get('route_table_name') or \
-        get_ancestor_property(
-            _ctx.instance, 'name', constants.REL_CONTAINED_IN_RT)
+        get_ancestor_name(
+            _ctx.instance, constants.REL_CONTAINED_IN_RT)
 
 
 def get_network_security_group(_ctx=ctx,
@@ -234,8 +265,8 @@ def get_network_security_group(_ctx=ctx,
     :rtype: string
     '''
     return _ctx.node.properties.get('network_security_group_name') or \
-        get_ancestor_property(
-            _ctx.instance, 'name', rel_type)
+        get_ancestor_name(
+            _ctx.instance, rel_type)
 
 
 def create_child_logger(name,
@@ -393,6 +424,27 @@ def get_ancestor_property(inst, prop, rel_type):
     return parent.node.properties.get(prop)
 
 
+def get_ancestor_name(inst, rel_type):
+    '''
+        Gets the name of an ancestor (recursive search)
+
+    :param `cloudify.context.NodeInstanceContext` inst: Cloudify instance
+    :param string rel_type: Relationship type
+    :returns: Ancestor resource name or None
+    '''
+    # Find a parent of a specific type
+    parent = get_parent(inst, rel_type=rel_type)
+    if not parent:
+        # Find a parent of any type
+        parent = get_parent(inst)
+        if not parent:
+            return None
+        # Keep searching
+        return get_ancestor_name(parent.instance, rel_type)
+    # We found a match
+    return get_resource_name(parent)
+
+
 def get_full_id_reference(resource, api_fmt=True, _ctx=ctx):
     '''
         Creates a full, usable Azure ID reference
@@ -407,7 +459,7 @@ def get_full_id_reference(resource, api_fmt=True, _ctx=ctx):
     '''
     subscription_id = get_subscription_id(_ctx=_ctx)
     iface = resource(_ctx=_ctx)
-    name = _ctx.node.properties.get('name')
+    name = get_resource_name(_ctx)
     resid = '/subscriptions/{0}{1}/{2}'.format(
         subscription_id,
         iface.endpoint,
@@ -457,7 +509,7 @@ def get_rel_id_reference(resource, rel_type, api_fmt=True, _ctx=ctx):
     for rel in _ctx.instance.relationships:
         if rel_type in rel.type_hierarchy:
             iface = resource(_ctx=rel.target)
-            name = rel.target.node.properties.get('name')
+            name = get_resource_name(rel.target)
             resid = '/subscriptions/{0}{1}/{2}'.format(
                 subscription_id,
                 iface.endpoint,
@@ -480,7 +532,7 @@ def get_rel_node_name(rel_type, _ctx=ctx):
     '''
     for rel in _ctx.instance.relationships:
         if rel_type in rel.type_hierarchy:
-            return rel.target.node.properties.get('name')
+            return get_resource_name(rel.target)
     return None
 
 
@@ -503,7 +555,7 @@ def get_rel_id_references(resource, rel_type, api_fmt=True, _ctx=ctx):
     for rel in _ctx.instance.relationships:
         if rel_type in rel.type_hierarchy:
             iface = resource(_ctx=rel.target)
-            name = rel.target.node.properties.get('name')
+            name = get_resource_name(rel.target)
             resid = '/subscriptions/{0}{1}/{2}'.format(
                 subscription_id,
                 iface.endpoint,

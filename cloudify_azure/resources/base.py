@@ -312,6 +312,43 @@ class Resource(object):
                 'Expected HTTP status code {0}, recieved {1}'
                 .format(httplib.CREATED, res.status_code))
 
+    def exists(self, name=None):
+        '''
+            Determines if a resource exists or not
+
+        :param string name: Name of the existing resource
+        :returns: True if resource exists, False if it doesn't
+        :rtype: boolean
+        :raises: :exc:`cloudify_azure.exceptions.UnexpectedResponse`,
+                 :exc:`requests.RequestException`
+        '''
+        self.log.info('Checking {0} "{1}"'.format(self.name, name))
+        # Make the request
+        if name:
+            url = '{0}/{1}'.format(self.endpoint, name)
+        else:
+            url = self.endpoint
+        res = self.client.request(
+            method='get',
+            url=url)
+        # Convert headers from CaseInsensitiveDict to Dict
+        headers = dict(res.headers)
+        self.log.debug('headers: {0}'.format(
+            utils.secure_logging_content(headers)))
+        # Check the response
+        # HTTP 202 (ACCEPTED) - An asynchronous operation has started
+        if res.status_code == httplib.ACCEPTED:
+            return True
+        # HTTP 200 (OK) - The resource already exists
+        elif res.status_code == httplib.OK:
+            return True
+        # If Azure sent a 404, the resource doesn't exist (yet?)
+        if res.status_code == httplib.NOT_FOUND:
+            return False
+        raise UnexpectedResponse(
+            'Recieved unexpected HTTP ({0}) response'
+            .format(res.status_code), res.json())
+
     def operation_complete(self, op_info):
         '''
             Checks the status of an asynchronous operation
@@ -381,6 +418,7 @@ class Resource(object):
 
     @staticmethod
     def validate_res_json(res):
+        '''Validates that a status exists'''
         try:
             return res.json().get('status')
         except ValueError:

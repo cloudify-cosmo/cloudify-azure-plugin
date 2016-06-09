@@ -25,25 +25,27 @@ inputs:
   resource_prefix:
     default: cfy
   resource_suffix:
-    default: 10
+    default: 1
   # Azure account information
+  subscription_id:
+    type: string
+    required: true
+  tenant_id:
+    type: string
+    required: true
+  client_id:
+    type: string
+    required: true
+  client_secret:
+    type: string
+    required: true
   location:
     type: string
     required: true
     default: eastus
   retry_after:
     type: integer
-    default: 60
-  # Existing manager resources
-  mgr_resource_group_name:
-    type: string
-    required: true
-  mgr_virtual_network_name:
-    type: string
-    required: true
-  mgr_subnet_name:
-    type: string
-    required: true
+    default: 45
   # Virtual Machine information
   vm_size: 
     type: string
@@ -90,12 +92,21 @@ inputs:
     default: 80
 
 
+dsl_definitions:
+  azure_configuration: &azure_configuration
+    subscription_id: { get_input: subscription_id }
+    tenant_id: { get_input: tenant_id }
+    client_id: { get_input: client_id }
+    client_secret: { get_input: client_secret }
+    
+
 node_templates:
   resource_group:
     type: cloudify.azure.nodes.ResourceGroup
     properties:
       name: {concat:[{get_input: resource_prefix},rg,{get_input: resource_suffix}]}
       location: { get_input: location }
+      azure_config: *azure_configuration
       
   storage_account:
     type: cloudify.azure.nodes.storage.StorageAccount
@@ -105,6 +116,7 @@ node_templates:
       retry_after: { get_input: retry_after }
       resource_config:
         accountType: Standard_LRS
+      azure_config: *azure_configuration
     relationships:
     - type: cloudify.azure.relationships.contained_in_resource_group
       target: resource_group
@@ -112,10 +124,9 @@ node_templates:
   virtual_network:
     type: cloudify.azure.nodes.network.VirtualNetwork
     properties:
-      resource_group_name: { get_input: mgr_resource_group_name }
-      name: { get_input: mgr_virtual_network_name }
-      use_external_resource: true
+      name: {concat:[{get_input: resource_prefix},vnet,{get_input: resource_suffix}]}
       location: { get_input: location }
+      azure_config: *azure_configuration
     relationships:
     - type: cloudify.azure.relationships.contained_in_resource_group
       target: resource_group
@@ -123,10 +134,9 @@ node_templates:
   subnet:
     type: cloudify.azure.nodes.network.Subnet
     properties:
-      resource_group_name: { get_input: mgr_resource_group_name }
-      name: { get_input: mgr_subnet_name }
-      use_external_resource: true
+      name: {concat:[{get_input: resource_prefix},subnet,{get_input: resource_suffix}]}
       location: { get_input: location }
+      azure_config: *azure_configuration
     relationships:
     - type: cloudify.azure.relationships.contained_in_virtual_network
       target: virtual_network
@@ -161,6 +171,7 @@ node_templates:
             priority: 200
             access: Allow
             direction: Inbound
+      azure_config: *azure_configuration
     relationships:
     - type: cloudify.azure.relationships.contained_in_resource_group
       target: resource_group
@@ -171,6 +182,7 @@ node_templates:
       name: {concat:[{get_input: resource_prefix},availset,{get_input: resource_suffix}]}
       location: { get_input: location }
       retry_after: { get_input: retry_after }
+      azure_config: *azure_configuration
     relationships:
     - type: cloudify.azure.relationships.contained_in_resource_group
       target: resource_group
@@ -202,6 +214,7 @@ node_templates:
         user: { get_input: vm_os_username }
         password: { get_input: vm_os_password }
         install_method: remote
+      azure_config: *azure_configuration
     relationships:
     - type: cloudify.azure.relationships.contained_in_resource_group
       target: resource_group
@@ -220,6 +233,7 @@ node_templates:
       retry_after: { get_input: retry_after }
       resource_config:
         publicIPAllocationMethod: Static
+      azure_config: *azure_configuration
     relationships:
     - type: cloudify.azure.relationships.contained_in_resource_group
       target: resource_group
@@ -232,6 +246,7 @@ node_templates:
       retry_after: { get_input: retry_after }
       resource_config:
         privateIPAllocationMethod: Dynamic
+      azure_config: *azure_configuration
     relationships:
     - type: cloudify.azure.relationships.ip_configuration_connected_to_subnet
       target: subnet
@@ -244,6 +259,7 @@ node_templates:
       name: {concat:[{get_input: resource_prefix},vm1nic,{get_input: resource_suffix}]}
       location: { get_input: location }
       retry_after: { get_input: retry_after }
+      azure_config: *azure_configuration
     relationships:
     - type: cloudify.azure.relationships.contained_in_resource_group
       target: resource_group
@@ -270,6 +286,7 @@ node_templates:
           Properties:
             MachineName: { get_property: [vm1, name] }
             WebServerPort: { get_input: webserver_port }
+      azure_config: *azure_configuration
     relationships:
     - type: cloudify.azure.relationships.vmx_contained_in_vm
       target: vm1
@@ -309,6 +326,7 @@ node_templates:
         user: { get_input: vm_os_username }
         password: { get_input: vm_os_password }
         install_method: remote
+      azure_config: *azure_configuration
     relationships:
     - type: cloudify.azure.relationships.contained_in_resource_group
       target: resource_group
@@ -327,6 +345,7 @@ node_templates:
       retry_after: { get_input: retry_after }
       resource_config:
         publicIPAllocationMethod: Static
+      azure_config: *azure_configuration
     relationships:
     - type: cloudify.azure.relationships.contained_in_resource_group
       target: resource_group
@@ -339,6 +358,7 @@ node_templates:
       retry_after: { get_input: retry_after }
       resource_config:
         privateIPAllocationMethod: Dynamic
+      azure_config: *azure_configuration
     relationships:
     - type: cloudify.azure.relationships.ip_configuration_connected_to_subnet
       target: subnet
@@ -351,6 +371,7 @@ node_templates:
       name: {concat:[{get_input: resource_prefix},vm2nic,{get_input: resource_suffix}]}
       location: { get_input: location }
       retry_after: { get_input: retry_after }
+      azure_config: *azure_configuration
     relationships:
     - type: cloudify.azure.relationships.contained_in_resource_group
       target: resource_group
@@ -377,6 +398,7 @@ node_templates:
           Properties:
             MachineName: { get_property: [vm2, name] }
             WebServerPort: { get_input: webserver_port }
+      azure_config: *azure_configuration
     relationships:
     - type: cloudify.azure.relationships.vmx_contained_in_vm
       target: vm2
@@ -398,6 +420,7 @@ node_templates:
       retry_after: { get_input: retry_after }
       resource_config:
         publicIPAllocationMethod: Static
+      azure_config: *azure_configuration
     relationships:
     - type: cloudify.azure.relationships.contained_in_resource_group
       target: resource_group
@@ -410,6 +433,7 @@ node_templates:
       retry_after: { get_input: retry_after }
       resource_config:
         privateIPAllocationMethod: Dynamic
+      azure_config: *azure_configuration
     relationships:
     - type: cloudify.azure.relationships.ip_configuration_connected_to_subnet
       target: subnet
@@ -422,6 +446,7 @@ node_templates:
       name: {concat:[{get_input: resource_prefix},lb,{get_input: resource_suffix}]}
       location: { get_input: location }
       retry_after: { get_input: retry_after }
+      azure_config: *azure_configuration
     relationships:
     - type: cloudify.azure.relationships.contained_in_resource_group
       target: resource_group
@@ -434,6 +459,7 @@ node_templates:
       name: lbbepool
       location: { get_input: location }
       retry_after: { get_input: retry_after }
+      azure_config: *azure_configuration
     relationships:
     - type: cloudify.azure.relationships.contained_in_load_balancer
       target: load_balancer
@@ -448,6 +474,7 @@ node_templates:
         protocol: Http
         port: { get_input: webserver_port }
         requestPath: index.html
+      azure_config: *azure_configuration
     relationships:
     - type: cloudify.azure.relationships.contained_in_load_balancer
       target: load_balancer
@@ -465,6 +492,7 @@ node_templates:
         protocol: Tcp
         backendPort: { get_input: webserver_port }
         frontendPort: { get_input: loadbalancer_port }
+      azure_config: *azure_configuration
     relationships:
     - type: cloudify.azure.relationships.contained_in_load_balancer
       target: load_balancer
