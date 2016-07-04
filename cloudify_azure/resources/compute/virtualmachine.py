@@ -147,11 +147,24 @@ def create(**_):
         'dataDisks': datadisks
     }
     # Build the network profile
-    network_profile = {
-        'networkInterfaces': utils.get_rel_id_references(
+    network_interfaces = list()
+    net_rels = utils.get_relationships_by_type(
+        ctx.instance.relationships,
+        constants.REL_CONNECTED_TO_NIC)
+    ctx.logger.info('net_rels: {0}'.format(net_rels))
+    for net_rel in net_rels:
+        # Get the NIC resource ID
+        network_interface = utils.get_full_id_reference(
             NetworkInterfaceCard,
-            constants.REL_CONNECTED_TO_NIC
-        )
+            _ctx=net_rel.target)
+        # If more than one NIC is attached, set the Primary property
+        if len(net_rels) > 1:
+            network_interface['properties'] = {
+                'primary': net_rel.target.node.properties.get('primary')
+            }
+        network_interfaces.append(network_interface)
+    network_profile = {
+        'networkInterfaces': network_interfaces
     }
     # Build the OS profile
     os_family = ctx.node.properties.get('os_family', '').lower()
@@ -186,6 +199,7 @@ def create(**_):
         {
             'location': ctx.node.properties.get('location'),
             'tags': ctx.node.properties.get('tags'),
+            'plan': ctx.node.properties.get('plan'),
             'properties': utils.dict_update(
                 utils.get_resource_config(),
                 {
