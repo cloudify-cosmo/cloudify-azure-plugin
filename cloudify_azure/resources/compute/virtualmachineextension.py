@@ -67,10 +67,10 @@ class VirtualMachineExtension(Resource):
 
 
 @operation
-def create(**_):
+def create(resource_config, **_):
     '''Uses an existing, or creates a new, Virtual Machine Extension'''
     # Work around for the reserved "type" name
-    props = utils.get_resource_config()
+    props = resource_config
     if 'ext_type' in props:
         props['type'] = props['ext_type']
         del props['ext_type']

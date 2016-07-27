@@ -94,14 +94,26 @@ def task_resource_create(resource, params,
     resource.create(name, params)
 
 
-def generate_resource_name(resource, name=None, _ctx=ctx):
-    '''Generates a resource name (if needed)'''
+def generate_resource_name(resource, generator=None, name=None, _ctx=ctx):
+    '''
+        Generates a resource name (if needed)
+
+    :param `cloudify_azure.resources.base.Resource` resource:
+        The resource interface object to generate a name for.
+    :param `function` generator: The unique string generator to use. This
+        must be a function that does not take any parameters.
+    :param string name: The resource name to use. If None, it will
+        be generated.
+    '''
     # Get the resource name
     name = name or get_resource_name(_ctx)
     # Generate a new name (if needed)
     if not name:
         for _ in xrange(0, 10):
-            name = str(uuid4())
+            if generator:
+                name = generator()
+            else:
+                name = str(uuid4())
             # Check if we have a duplicate name
             if not resource.exists(name):
                 break

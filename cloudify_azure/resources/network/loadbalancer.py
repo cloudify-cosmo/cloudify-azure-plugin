@@ -199,7 +199,7 @@ def create(**_):
     '''Uses an existing, or creates a new, Load Balancer'''
     # Get the Frontend IP Configuration
     # Despite the Azure docs show this as a dict, it's really a list
-    fe_ip_cfg = get_ip_configurations()
+    fe_ip_cfg = get_ip_configurations(rel=constants.REL_CONNECTED_TO_IPC)
     ctx.logger.debug('fe_ip_cfg: {0}'.format(fe_ip_cfg))
     if not len(fe_ip_cfg):
         raise NonRecoverableError(
@@ -224,7 +224,7 @@ def create(**_):
         })
     # Get an interface to the Load Balancer
     lb_iface = LoadBalancer()
-    lb_data = lb_iface.get(ctx.node.properties.get('name'))
+    lb_data = lb_iface.get(utils.get_resource_name())
     # Get the ID of the Frontend IP Configuration
     for fe_ipc_data in lb_data.get('properties', dict()).get(
             'frontendIPConfigurations', list()):
@@ -268,9 +268,10 @@ def create_backend_pool(**_):
         ctx.instance.relationships,
         constants.REL_CONTAINED_IN_LB)
     lb_props = lb_rel.target.node.properties
+    lb_name = utils.get_resource_name(lb_rel.target)
     lb_iface = LoadBalancer()
     # Get the existing pools
-    lb_data = lb_iface.get(lb_props.get('name'))
+    lb_data = lb_iface.get(lb_name)
     lb_pools = lb_data.get('properties', dict()).get(
         'backendAddressPools', list())
     lb_pools.append({'name': ctx.node.properties.get('name')})
@@ -282,7 +283,7 @@ def create_backend_pool(**_):
                 'backendAddressPools': lb_pools
             }
         },
-        name=lb_props.get('name'),
+        name=lb_name,
         use_external=lb_props.get('use_external_resource'))
 
 
@@ -294,9 +295,10 @@ def delete_backend_pool(**_):
         ctx.instance.relationships,
         constants.REL_CONTAINED_IN_LB)
     lb_props = lb_rel.target.node.properties
+    lb_name = utils.get_resource_name(lb_rel.target)
     lb_iface = LoadBalancer(_ctx=lb_rel.target)
     # Get the existing pools
-    lb_data = lb_iface.get(lb_props.get('name'))
+    lb_data = lb_iface.get(lb_name)
     lb_pools = lb_data.get('properties', dict()).get(
         'backendAddressPools', list())
     for idx, pool in enumerate(lb_pools):
@@ -310,7 +312,7 @@ def delete_backend_pool(**_):
                 'backendAddressPools': lb_pools
             }
         },
-        name=lb_props.get('name'),
+        name=lb_name,
         use_external=lb_props.get('use_external_resource'))
 
 
@@ -322,9 +324,10 @@ def create_probe(**_):
         ctx.instance.relationships,
         constants.REL_CONTAINED_IN_LB)
     lb_props = lb_rel.target.node.properties
+    lb_name = utils.get_resource_name(lb_rel.target)
     lb_iface = LoadBalancer()
     # Get the existing probes
-    lb_data = lb_iface.get(lb_props.get('name'))
+    lb_data = lb_iface.get(lb_name)
     lb_probes = lb_data.get('properties', dict()).get(
         'probes', list())
     lb_probes.append({
@@ -339,7 +342,7 @@ def create_probe(**_):
                 'probes': lb_probes
             }
         },
-        name=lb_props.get('name'),
+        name=lb_name,
         use_external=lb_props.get('use_external_resource'))
 
 
@@ -351,9 +354,10 @@ def delete_probe(**_):
         ctx.instance.relationships,
         constants.REL_CONTAINED_IN_LB)
     lb_props = lb_rel.target.node.properties
+    lb_name = utils.get_resource_name(lb_rel.target)
     lb_iface = LoadBalancer(_ctx=lb_rel.target)
     # Get the existing probes
-    lb_data = lb_iface.get(lb_props.get('name'))
+    lb_data = lb_iface.get(lb_name)
     lb_probes = lb_data.get('properties', dict()).get(
         'probes', list())
     for idx, probe in enumerate(lb_probes):
@@ -367,7 +371,7 @@ def delete_probe(**_):
                 'probes': lb_probes
             }
         },
-        name=lb_props.get('name'),
+        name=lb_name,
         use_external=lb_props.get('use_external_resource'))
 
 
@@ -379,11 +383,12 @@ def create_incoming_nat_rule(**_):
         ctx.instance.relationships,
         constants.REL_CONTAINED_IN_LB)
     lb_props = lb_rel.target.node.properties
+    lb_name = utils.get_resource_name(lb_rel.target)
     lb_iface = LoadBalancer()
     # Get the resource config
     res_cfg = utils.get_resource_config()
     # Get the existing rules
-    lb_data = lb_iface.get(lb_props.get('name'))
+    lb_data = lb_iface.get(lb_name)
     lb_rules = lb_data.get('properties', dict()).get(
         'inboundNatRules', list())
     # Get the Load Balancer Frontend IP Configuration
@@ -404,7 +409,7 @@ def create_incoming_nat_rule(**_):
                 'inboundNatRules': lb_rules
             }
         },
-        name=lb_props.get('name'),
+        name=lb_name,
         use_external=lb_props.get('use_external_resource'))
 
 
@@ -416,9 +421,10 @@ def delete_incoming_nat_rule(**_):
         ctx.instance.relationships,
         constants.REL_CONTAINED_IN_LB)
     lb_props = lb_rel.target.node.properties
+    lb_name = utils.get_resource_name(lb_rel.target)
     lb_iface = LoadBalancer(_ctx=lb_rel.target)
     # Get the existing probes
-    lb_data = lb_iface.get(lb_props.get('name'))
+    lb_data = lb_iface.get(lb_name)
     lb_rules = lb_data.get('properties', dict()).get(
         'inboundNatRules', list())
     for idx, rule in enumerate(lb_rules):
@@ -432,7 +438,7 @@ def delete_incoming_nat_rule(**_):
                 'inboundNatRules': lb_rules
             }
         },
-        name=lb_props.get('name'),
+        name=lb_name,
         use_external=lb_props.get('use_external_resource'))
 
 
@@ -446,8 +452,9 @@ def create_rule(**_):
         ctx.instance.relationships,
         constants.REL_CONTAINED_IN_LB)
     lb_props = lb_rel.target.node.properties
+    lb_name = utils.get_resource_name(lb_rel.target)
     lb_iface = LoadBalancer()
-    lb_data = lb_iface.get(lb_props.get('name'))
+    lb_data = lb_iface.get(lb_name)
     # Get the Load Balancer Backend Pool
     lb_be_pool_id = utils.get_rel_id_reference(
         BackendAddressPool, constants.REL_CONNECTED_TO_LB_BE_POOL)
@@ -477,7 +484,7 @@ def create_rule(**_):
                 'loadBalancingRules': lb_rules
             }
         },
-        name=lb_props.get('name'),
+        name=lb_name,
         use_external=lb_props.get('use_external_resource'))
 
 
@@ -489,9 +496,10 @@ def delete_rule(**_):
         ctx.instance.relationships,
         constants.REL_CONTAINED_IN_LB)
     lb_props = lb_rel.target.node.properties
+    lb_name = utils.get_resource_name(lb_rel.target)
     lb_iface = LoadBalancer(_ctx=lb_rel.target)
     # Get the existing rules
-    lb_data = lb_iface.get(lb_props.get('name'))
+    lb_data = lb_iface.get(lb_name)
     lb_rules = lb_data.get('properties', dict()).get(
         'loadBalancingRules', list())
     for idx, rule in enumerate(lb_rules):
@@ -505,7 +513,7 @@ def delete_rule(**_):
                 'loadBalancingRules': lb_rules
             }
         },
-        name=lb_props.get('name'),
+        name=lb_name,
         use_external=lb_props.get('use_external_resource'))
 
 
@@ -521,8 +529,7 @@ def attach_nic_to_backend_pool(**_):
     # Get an interface to the Network Interface Card
     nic_iface = NetworkInterfaceCard(_ctx=ctx.source)
     # Get the existing NIC IPConfigurations
-    nic_data = nic_iface.get(
-        ctx.source.node.properties.get('name'))
+    nic_data = nic_iface.get(utils.get_resource_name(ctx.source))
     nic_ip_cfgs = nic_data.get('properties', dict()).get(
         'ipConfigurations', list())
     # Add the Backend Pool to the NIC IPConfigurations
@@ -554,8 +561,7 @@ def detach_nic_from_backend_pool(**_):
     # Get an interface to the Network Interface Card
     nic_iface = NetworkInterfaceCard(_ctx=ctx.source)
     # Get the existing NIC IPConfigurations
-    nic_data = nic_iface.get(
-        ctx.source.node.properties.get('name'))
+    nic_data = nic_iface.get(utils.get_resource_name(ctx.source))
     nic_ip_cfgs = nic_data.get('properties', dict()).get(
         'ipConfigurations', list())
     # Remove the Backend Pool from the NIC IPConfigurations

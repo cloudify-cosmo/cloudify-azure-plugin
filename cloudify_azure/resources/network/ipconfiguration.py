@@ -30,12 +30,8 @@
     IP Configuration node(s) that connects to them, then create a Network
     Interface Card which connects to the IP Configuration(s).
 '''
-# UUID
-from uuid import uuid4
 # Node properties and logger
 from cloudify import ctx
-# Lifecycle operation decorator
-from cloudify.decorators import operation
 # Base resource class
 from cloudify_azure.resources.base import Resource
 # Logger, API version
@@ -88,25 +84,8 @@ class IPConfiguration(Resource):
             _ctx=_ctx)
 
 
-@operation
-def create(**_):
-    '''Uses an existing, or creates a new, IPConfiguration'''
-    resource = Subnet()
-    # Get the resource name
-    name = utils.get_resource_name()
-    # Generate a new name (if needed)
-    if not name:
-        for _ in xrange(0, 10):
-            name = str(uuid4())
-            # Check if we have a duplicate name
-            if not resource.exists(name):
-                break
-    # Set the new name in the runtime properties
-    ctx.instance.runtime_properties['name'] = name
-
-
 def get_ip_configurations(_ctx=ctx,
-                          rel=constants.REL_CONNECTED_TO_IPC):
+                          rel=constants.REL_NIC_CONNECTED_TO_IPC):
     '''
         Finds all IP Configurations associated with the current node.
         This method searches for any IP Configuration-specific

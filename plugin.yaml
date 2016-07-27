@@ -5,7 +5,7 @@
 plugins:
   pkg:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/1.4.zip
+    source: https://github.com/01000101/cloudify-azure-plugin/archive/scaling.zip
     package_name: cloudify-azure-plugin
     package_version: '1.4'
 
@@ -246,25 +246,6 @@ data_types:
         required: true
       osProfile:
         required: true
-        
-  cloudify.datatypes.azure.compute.VirtualMachineExtensionConfig:
-    description: >
-      See https://msdn.microsoft.com/en-us/library/azure/mt163624.aspx
-    properties:
-      publisher:
-        type: string
-        required: true
-      ext_type:
-        description: >
-          Since "type" is a reserved name, "ext_type" maps to "type"
-        type: string
-        required: true
-      typeHandlerVersion:
-        type: string
-        required: true
-        default: 1.4
-      settings:
-        required: false
   
   cloudify.datatypes.azure.network.LoadBalancerConfig:
     description: >
@@ -828,6 +809,7 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         create: pkg.cloudify_azure.resources.network.networkinterfacecard.create
+        configure: pkg.cloudify_azure.resources.network.networkinterfacecard.configure
         delete: pkg.cloudify_azure.resources.network.networkinterfacecard.delete
         
   cloudify.azure.nodes.network.IPConfiguration:
@@ -877,9 +859,6 @@ node_types:
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
-    interfaces:
-      cloudify.interfaces.lifecycle:
-        create: pkg.cloudify_azure.resources.network.ipconfiguration.create
 
   cloudify.azure.nodes.network.PublicIPAddress:
     derived_from: cloudify.nodes.Root
@@ -1102,11 +1081,6 @@ node_types:
         description: >
           Specifies a dictionary of one or more name and value pairs that describe a tag
         required: false
-      resource_config:
-        description: >
-          A dictionary of values to pass as properties when creating the resource
-        type: cloudify.datatypes.azure.compute.VirtualMachineExtensionConfig
-        required: false
       use_external_resource:
         description: >
           Indicate whether the resource exists or if Cloudify should create the resource
@@ -1127,7 +1101,25 @@ node_types:
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: pkg.cloudify_azure.resources.compute.virtualmachineextension.create
+        create:
+          implementation: pkg.cloudify_azure.resources.compute.virtualmachineextension.create
+          inputs:
+            resource_config:
+              default:
+                publisher:
+                  type: string
+                  required: true
+                ext_type:
+                  description: >
+                    Since "type" is a reserved name, "ext_type" maps to "type"
+                  type: string
+                  required: true
+                typeHandlerVersion:
+                  type: string
+                  required: true
+                  default: 1.4
+                settings:
+                  required: false
         delete: pkg.cloudify_azure.resources.compute.virtualmachineextension.delete
         
   cloudify.azure.nodes.network.LoadBalancer:
@@ -1430,7 +1422,13 @@ relationships:
         
   cloudify.azure.relationships.nic_connected_to_network_security_group:
     derived_from: cloudify.relationships.connected_to
-             
+    
+  cloudify.azure.relationships.nic_connected_to_ip_configuration:
+    derived_from: cloudify.relationships.connected_to
+    source_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        preconfigure: pkg.cloudify_azure.resources.network.networkinterfacecard.attach_ip_configuration
+  
   cloudify.azure.relationships.ip_configuration_connected_to_subnet:
     derived_from: cloudify.relationships.connected_to
     
@@ -1440,13 +1438,13 @@ relationships:
   cloudify.azure.relationships.connected_to_storage_account:
     derived_from: cloudify.relationships.connected_to
     
+  cloudify.azure.relationships.connected_to_nic:
+    derived_from: cloudify.relationships.connected_to
+    
   cloudify.azure.relationships.connected_to_availability_set:
     derived_from: cloudify.relationships.connected_to
 
   cloudify.azure.relationships.connected_to_ip_configuration:
-    derived_from: cloudify.relationships.connected_to
-
-  cloudify.azure.relationships.connected_to_nic:
     derived_from: cloudify.relationships.connected_to
   
   cloudify.azure.relationships.connected_to_lb_be_pool:

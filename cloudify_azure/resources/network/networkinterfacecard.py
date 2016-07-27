@@ -31,6 +31,8 @@ from cloudify_azure.resources.network.ipconfiguration \
     import get_ip_configurations
 from cloudify_azure.resources.network.networksecuritygroup \
     import NetworkSecurityGroup
+from cloudify_azure.resources.network.ipconfiguration \
+    import IPConfiguration
 
 # pylint: disable=R0913
 
@@ -86,6 +88,23 @@ def get_connected_nsg():
 @operation
 def create(**_):
     '''Uses an existing, or creates a new, Network Interface Card'''
+    utils.generate_resource_name(NetworkInterfaceCard())
+
+
+@operation
+def configure(**_):
+    '''
+        Uses an existing, or creates a new, Network Interface Card
+
+    .. warning::
+        The "configure" operation is actually the second half of
+        the "create" operation. This is necessary since IP
+        Configuration nodes are treated as separate, stand-alone
+        types and must be "connected" to the NIC before
+        it's actually created.  The actual "create" operation
+        simply assigns a UUID for the node and the "configure"
+        operation creates the object
+    '''
     # Create a resource (if necessary)
     utils.task_resource_create(
         NetworkInterfaceCard(),
@@ -107,3 +126,13 @@ def delete(**_):
     # Delete the resource
     utils.task_resource_delete(
         NetworkInterfaceCard())
+
+
+@operation
+def attach_ip_configuration(**_):
+    '''Generates a usable UUID for the NIC's IP Configuration'''
+    # Generate the IPConfiguration's name
+    utils.generate_resource_name(IPConfiguration(
+        network_interface_card=utils.get_resource_name(_ctx=ctx.source),
+        _ctx=ctx.target
+    ), _ctx=ctx.target)

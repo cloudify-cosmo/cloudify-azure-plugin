@@ -1,4 +1,4 @@
-tosca_definitions_version: cloudify_dsl_1_2
+tosca_definitions_version: cloudify_dsl_1_3
 
 description: >
   This blueprint defines two Azure VMs (within an Availability Set) connected
@@ -17,8 +17,8 @@ description: >
   Machine Extensions (Desired State Configuration).
 
 imports:
-- http://www.getcloudify.org/spec/cloudify/3.3.1/types.yaml
-- https://raw.githubusercontent.com/cloudify-cosmo/cloudify-azure-plugin/master/plugin.yaml
+- http://www.getcloudify.org/spec/cloudify/3.4/types.yaml
+- https://raw.githubusercontent.com/01000101/cloudify-azure-plugin/scaling/plugin.yaml
 
 
 inputs:
@@ -46,6 +46,19 @@ inputs:
   retry_after:
     type: integer
     default: 45
+  # Existing manager resources
+  mgr_resource_group_name:
+    type: string
+    required: true
+  mgr_storage_account_name:
+    type: string
+    required: true
+  mgr_virtual_network_name:
+    type: string
+    required: true
+  mgr_subnet_name:
+    type: string
+    required: true
   # Virtual Machine information
   vm_size: 
     type: string
@@ -90,6 +103,8 @@ inputs:
   loadbalancer_port:
     description: The external Azure Load Balancer port
     default: 80
+  webserver_ps1_url:
+    default: https://github.com/01000101/cloudify-azure-plugin/raw/scaling/examples/resources/windows-iis-webapp.ps1.zip
 
 
 dsl_definitions:
@@ -111,32 +126,26 @@ node_templates:
   storage_account:
     type: cloudify.azure.nodes.storage.StorageAccount
     properties:
-      name: {concat:[{get_input: resource_prefix},sa,{get_input: resource_suffix}]}
+      resource_group_name: { get_input: mgr_resource_group_name }
+      name: { get_input: mgr_storage_account_name }
+      use_external_resource: true
       location: { get_input: location }
-      retry_after: { get_input: retry_after }
-      resource_config:
-        accountType: Standard_LRS
-      azure_config: *azure_configuration
-    relationships:
-    - type: cloudify.azure.relationships.contained_in_resource_group
-      target: resource_group
   
   virtual_network:
     type: cloudify.azure.nodes.network.VirtualNetwork
     properties:
-      name: {concat:[{get_input: resource_prefix},vnet,{get_input: resource_suffix}]}
+      resource_group_name: { get_input: mgr_resource_group_name }
+      name: { get_input: mgr_virtual_network_name }
+      use_external_resource: true
       location: { get_input: location }
-      azure_config: *azure_configuration
-    relationships:
-    - type: cloudify.azure.relationships.contained_in_resource_group
-      target: resource_group
       
   subnet:
     type: cloudify.azure.nodes.network.Subnet
     properties:
-      name: {concat:[{get_input: resource_prefix},subnet,{get_input: resource_suffix}]}
+      resource_group_name: { get_input: mgr_resource_group_name }
+      name: { get_input: mgr_subnet_name }
+      use_external_resource: true
       location: { get_input: location }
-      azure_config: *azure_configuration
     relationships:
     - type: cloudify.azure.relationships.contained_in_virtual_network
       target: virtual_network
@@ -144,7 +153,6 @@ node_templates:
   network_security_group:
     type: cloudify.azure.nodes.network.NetworkSecurityGroup
     properties:
-      name: {concat:[{get_input: resource_prefix},nsg,{get_input: resource_suffix}]}
       location: { get_input: location }
       retry_after: { get_input: retry_after }
       resource_config:
@@ -160,6 +168,17 @@ node_templates:
             priority: 100
             access: Allow
             direction: Inbound
+        - name: nsr_winrm
+          properties:
+            description: WinRM access
+            protocol: Tcp
+            sourcePortRange: '*'
+            destinationPortRange: 5985-5986
+            sourceAddressPrefix: '*'
+            destinationAddressPrefix: '*'
+            priority: 200
+            access: Allow
+            direction: Inbound
         - name: nsr_webapp
           properties:
             description: Webapp access
@@ -168,7 +187,7 @@ node_templates:
             destinationPortRange: { get_input: webserver_port }
             sourceAddressPrefix: '*'
             destinationAddressPrefix: '*'
-            priority: 200
+            priority: 300
             access: Allow
             direction: Inbound
       azure_config: *azure_configuration
@@ -179,7 +198,6 @@ node_templates:
   availability_set:
     type: cloudify.azure.nodes.compute.AvailabilitySet
     properties:
-      name: {concat:[{get_input: resource_prefix},availset,{get_input: resource_suffix}]}
       location: { get_input: location }
       retry_after: { get_input: retry_after }
       azure_config: *azure_configuration
@@ -187,10 +205,9 @@ node_templates:
     - type: cloudify.azure.relationships.contained_in_resource_group
       target: resource_group
 
-  vm1:
+  vm:
     type: cloudify.azure.nodes.compute.VirtualMachine
     properties:
-      name: {concat:[{get_input: resource_prefix},vm1,{get_input: resource_suffix}]}
       location: { get_input: location }
       retry_after: { get_input: retry_after }
       os_family: { get_input: vm_os_family }
@@ -203,13 +220,10 @@ node_templates:
             offer: { get_input: vm_image_offer }
             sku: { get_input: vm_image_sku }
             version: { get_input: vm_image_version }
-          dataDisks:
-          - diskSizeGB: 2
-          - diskSizeGB: 1
         osProfile:
-          computerName: { get_property: [SELF, name] }
           adminUsername: { get_input: vm_os_username }
           adminPassword: { get_input: vm_os_password }
+      use_public_ip: true
       agent_config:
         user: { get_input: vm_os_username }
         password: { get_input: vm_os_password }
@@ -223,12 +237,11 @@ node_templates:
     - type: cloudify.azure.relationships.connected_to_availability_set
       target: availability_set
     - type: cloudify.azure.relationships.connected_to_nic
-      target: vm1_nic
+      target: vm_nic
      
-  vm1_public_ip:
+  vm_public_ip:
     type: cloudify.azure.nodes.network.PublicIPAddress
     properties:
-      name: {concat:[{get_input: resource_prefix},vm1pip,{get_input: resource_suffix}]}
       location: { get_input: location }
       retry_after: { get_input: retry_after }
       resource_config:
@@ -238,25 +251,25 @@ node_templates:
     - type: cloudify.azure.relationships.contained_in_resource_group
       target: resource_group
      
-  vm1_nic_ip_cfg:
+  vm_nic_ip_cfg:
     type: cloudify.azure.nodes.network.IPConfiguration
     properties:
-      name: {concat:[{get_input: resource_prefix},vm1ip,{get_input: resource_suffix}]}
       location: { get_input: location }
       retry_after: { get_input: retry_after }
       resource_config:
         privateIPAllocationMethod: Dynamic
       azure_config: *azure_configuration
     relationships:
+    - type: cloudify.azure.relationships.contained_in_resource_group
+      target: resource_group
     - type: cloudify.azure.relationships.ip_configuration_connected_to_subnet
       target: subnet
     - type: cloudify.azure.relationships.ip_configuration_connected_to_public_ip
-      target: vm1_public_ip
+      target: vm_public_ip
    
-  vm1_nic:
+  vm_nic:
     type: cloudify.azure.nodes.network.NetworkInterfaceCard
     properties:
-      name: {concat:[{get_input: resource_prefix},vm1nic,{get_input: resource_suffix}]}
       location: { get_input: location }
       retry_after: { get_input: retry_after }
       azure_config: *azure_configuration
@@ -265,157 +278,48 @@ node_templates:
       target: resource_group
     - type: cloudify.azure.relationships.nic_connected_to_network_security_group
       target: network_security_group
-    - type: cloudify.azure.relationships.connected_to_ip_configuration
-      target: vm1_nic_ip_cfg
+    - type: cloudify.azure.relationships.nic_connected_to_ip_configuration
+      target: vm_nic_ip_cfg
     - type: cloudify.azure.relationships.nic_connected_to_lb_be_pool
       target: load_balancer_backend_pool
 
-  vm1_webserver:
+  vm_webserver:
     type: cloudify.azure.nodes.compute.VirtualMachineExtension
     properties:
-      name: vm1_webserver
+      name: vm_webserver
       location: { get_input: location }
       retry_after: { get_input: retry_after }
-      resource_config:
-        publisher: Microsoft.Powershell
-        ext_type: DSC
-        typeHandlerVersion: '2.8'
-        settings:
-          ModulesUrl: https://github.com/01000101/cloudify-azure-plugin/raw/rebuild/examples/resources/windows-iis-webapp.ps1.zip
-          ConfigurationFunction: windows-iis-webapp.ps1\CloudifyExample
-          Properties:
-            MachineName: { get_property: [vm1, name] }
-            WebServerPort: { get_input: webserver_port }
       azure_config: *azure_configuration
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          inputs:
+            resource_config:
+              publisher: Microsoft.Powershell
+              ext_type: DSC
+              typeHandlerVersion: '2.19'
+              settings:
+                ModulesUrl: { get_input: webserver_ps1_url }
+                ConfigurationFunction: windows-iis-webapp.ps1\CloudifyExample
+                Properties:
+                  WebServerPort: { get_input: webserver_port }
+                  MachineName: { get_attribute: [vm, name] }
     relationships:
     - type: cloudify.azure.relationships.vmx_contained_in_vm
-      target: vm1
+      target: vm
       
-  vm1_webapp:
+  vm_webapp:
     type: cloudify.nodes.ApplicationModule
     interfaces:
       cloudify.interfaces.lifecycle:
         start: scripts/configure.py
     relationships:
     - type: cloudify.relationships.contained_in
-      target: vm1_webserver
-
-  vm2:
-    type: cloudify.azure.nodes.compute.VirtualMachine
-    properties:
-      name: {concat:[{get_input: resource_prefix},vm2,{get_input: resource_suffix}]}
-      location: { get_input: location }
-      retry_after: { get_input: retry_after }
-      os_family: { get_input: vm_os_family }
-      resource_config:
-        hardwareProfile:
-          vmSize: { get_input: vm_size }
-        storageProfile:
-          imageReference:
-            publisher: { get_input: vm_image_publisher }
-            offer: { get_input: vm_image_offer }
-            sku: { get_input: vm_image_sku }
-            version: { get_input: vm_image_version }
-          dataDisks:
-          - diskSizeGB: 2
-        osProfile:
-          computerName: { get_property: [SELF, name] }
-          adminUsername: { get_input: vm_os_username }
-          adminPassword: { get_input: vm_os_password }
-      agent_config:
-        user: { get_input: vm_os_username }
-        password: { get_input: vm_os_password }
-        install_method: remote
-      azure_config: *azure_configuration
-    relationships:
-    - type: cloudify.azure.relationships.contained_in_resource_group
-      target: resource_group
-    - type: cloudify.azure.relationships.connected_to_storage_account
-      target: storage_account
-    - type: cloudify.azure.relationships.connected_to_availability_set
-      target: availability_set
-    - type: cloudify.azure.relationships.connected_to_nic
-      target: vm2_nic
-     
-  vm2_public_ip:
-    type: cloudify.azure.nodes.network.PublicIPAddress
-    properties:
-      name: {concat:[{get_input: resource_prefix},vm2pip,{get_input: resource_suffix}]}
-      location: { get_input: location }
-      retry_after: { get_input: retry_after }
-      resource_config:
-        publicIPAllocationMethod: Static
-      azure_config: *azure_configuration
-    relationships:
-    - type: cloudify.azure.relationships.contained_in_resource_group
-      target: resource_group
-     
-  vm2_nic_ip_cfg:
-    type: cloudify.azure.nodes.network.IPConfiguration
-    properties:
-      name: {concat:[{get_input: resource_prefix},vm2ip,{get_input: resource_suffix}]}
-      location: { get_input: location }
-      retry_after: { get_input: retry_after }
-      resource_config:
-        privateIPAllocationMethod: Dynamic
-      azure_config: *azure_configuration
-    relationships:
-    - type: cloudify.azure.relationships.ip_configuration_connected_to_subnet
-      target: subnet
-    - type: cloudify.azure.relationships.ip_configuration_connected_to_public_ip
-      target: vm2_public_ip
-   
-  vm2_nic:
-    type: cloudify.azure.nodes.network.NetworkInterfaceCard
-    properties:
-      name: {concat:[{get_input: resource_prefix},vm2nic,{get_input: resource_suffix}]}
-      location: { get_input: location }
-      retry_after: { get_input: retry_after }
-      azure_config: *azure_configuration
-    relationships:
-    - type: cloudify.azure.relationships.contained_in_resource_group
-      target: resource_group
-    - type: cloudify.azure.relationships.nic_connected_to_network_security_group
-      target: network_security_group
-    - type: cloudify.azure.relationships.connected_to_ip_configuration
-      target: vm2_nic_ip_cfg
-    - type: cloudify.azure.relationships.nic_connected_to_lb_be_pool
-      target: load_balancer_backend_pool
-
-  vm2_webserver:
-    type: cloudify.azure.nodes.compute.VirtualMachineExtension
-    properties:
-      name: vm2_webserver
-      location: { get_input: location }
-      retry_after: { get_input: retry_after }
-      resource_config:
-        publisher: Microsoft.Powershell
-        ext_type: DSC
-        typeHandlerVersion: '2.8'
-        settings:
-          ModulesUrl: https://github.com/01000101/cloudify-azure-plugin/raw/rebuild/examples/resources/windows-iis-webapp.ps1.zip
-          ConfigurationFunction: windows-iis-webapp.ps1\CloudifyExample
-          Properties:
-            MachineName: { get_property: [vm2, name] }
-            WebServerPort: { get_input: webserver_port }
-      azure_config: *azure_configuration
-    relationships:
-    - type: cloudify.azure.relationships.vmx_contained_in_vm
-      target: vm2
-      
-  vm2_webapp:
-    type: cloudify.nodes.ApplicationModule
-    interfaces:
-      cloudify.interfaces.lifecycle:
-        start: scripts/configure.py
-    relationships:
-    - type: cloudify.relationships.contained_in
-      target: vm2_webserver
+      target: vm_webserver
       
   lb_public_ip:
     type: cloudify.azure.nodes.network.PublicIPAddress
     properties:
-      name: {concat:[{get_input: resource_prefix},lbpip,{get_input: resource_suffix}]}
       location: { get_input: location }
       retry_after: { get_input: retry_after }
       resource_config:
@@ -428,7 +332,7 @@ node_templates:
   lb_ip_cfg:
     type: cloudify.azure.nodes.network.IPConfiguration
     properties:
-      name: {concat:[{get_input: resource_prefix},lbip,{get_input: resource_suffix}]}
+      name: lbfeip
       location: { get_input: location }
       retry_after: { get_input: retry_after }
       resource_config:
@@ -443,7 +347,6 @@ node_templates:
   load_balancer:
     type: cloudify.azure.nodes.network.LoadBalancer
     properties:
-      name: {concat:[{get_input: resource_prefix},lb,{get_input: resource_suffix}]}
       location: { get_input: location }
       retry_after: { get_input: retry_after }
       azure_config: *azure_configuration
@@ -504,6 +407,19 @@ node_templates:
       target: load_balancer_probe
 
 
+groups:
+  vm_and_ips:
+    members: [vm, vm_nic, vm_public_ip, vm_nic_ip_cfg, vm_webserver, vm_webapp]
+    
+
+policies:
+  scale_policy1:
+    type: cloudify.policies.scaling
+    properties:
+      default_instances: 2
+    targets: [vm_and_ips]
+
+
 outputs:
   webapp_ip:
     value: { get_attribute: [ load_balancer, public_ip ] }
@@ -511,11 +427,3 @@ outputs:
     value: { get_input: loadbalancer_port }
   webapp_endpoint:
     value: { concat: [ 'http://', { get_attribute: [ load_balancer, public_ip ] }, ':',  { get_input: loadbalancer_port } ] }
-  vm1_public_ip:
-    value: { get_attribute: [ vm1, public_ip ] }
-  vm1_private_ip:
-    value: { get_attribute: [ vm1, ip ] }
-  vm2_public_ip:
-    value: { get_attribute: [ vm2, public_ip ] }
-  vm2_private_ip:
-    value: { get_attribute: [ vm2, ip ] }

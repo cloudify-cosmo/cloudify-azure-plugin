@@ -20,6 +20,8 @@
 
 # Deep object copying
 from copy import deepcopy
+# Random string
+import random, string
 # Node properties and logger
 from cloudify import ctx
 # Life-cycle operation decorator
@@ -132,12 +134,19 @@ def build_datadisks_profile(usr_datadisks):
     return datadisks
 
 
+def vm_name_generator():
+    '''Generates a unique VM resource name'''
+    return ''.join(random.choice(string.lowercase) for i in range(15))
+
+
 @operation
 def create(**_):
     '''Uses an existing, or creates a new, Virtual Machine'''
     # Generate a resource name (if needed)
-    utils.generate_resource_name(VirtualMachine())
-    res_cfg = utils.get_resource_config()
+    utils.generate_resource_name(
+        VirtualMachine(),
+        generator=vm_name_generator)
+    res_cfg = utils.get_resource_config() or dict()
     # Build storage profile
     osdisk = build_osdisk_profile(
         res_cfg.get('storageProfile', dict()).get('osDisk', dict()))
@@ -182,7 +191,9 @@ def create(**_):
         }
     # Set the computerName if it's not set already
     os_profile['computerName'] = \
-        ctx.node.properties.get('computerName', utils.get_resource_name())
+        res_cfg.get(
+            'osProfile', dict()
+        ).get('computerName', utils.get_resource_name())
     # Create a resource (if necessary)
     utils.task_resource_create(
         VirtualMachine(),
