@@ -152,8 +152,7 @@ data_types:
       ipConfigurations:
         required: false
       dnsSettings:
-        required: false
-        
+        required: false      
   
   cloudify.datatypes.azure.network.IPConfigurationConfig:
     properties:
@@ -776,6 +775,11 @@ node_types:
         description: >
           Specifies a dictionary of one or more name and value pairs that describe a tag
         required: false
+      primary:
+        description: >
+          When using multiple Network Interfaces, a primary must be set
+        required: false
+        default: false
       resource_config:
         description: >
           A dictionary of values to pass as properties when creating the resource
@@ -985,6 +989,11 @@ node_types:
       tags:
         description: >
           Specifies a dictionary of one or more name and value pairs that describe a tag
+        required: false
+      plan:
+        description: >
+          Specifies information about the marketplace image used to create the virtual
+          machine. This element is only used for marketplace images.
         required: false
       resource_config:
         description: >
@@ -1435,4 +1444,3 @@ relationships:
       cloudify.interfaces.relationship_lifecycle:
         establish: pkg.cloudify_azure.resources.network.loadbalancer.attach_nic_to_backend_pool
         unlink: pkg.cloudify_azure.resources.network.loadbalancer.detach_nic_from_backend_pool
-        
