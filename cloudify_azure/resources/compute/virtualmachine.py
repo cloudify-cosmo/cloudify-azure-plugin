@@ -22,6 +22,8 @@
 from copy import deepcopy
 # Node properties and logger
 from cloudify import ctx
+# Exception handling
+from cloudify.exceptions import NonRecoverableError
 # Life-cycle operation decorator
 from cloudify.decorators import operation
 # Base resource class
@@ -133,20 +135,14 @@ def build_datadisks_profile(usr_datadisks):
     return datadisks
 
 
-@operation
-def create(**_):
-    '''Uses an existing, or creates a new, Virtual Machine'''
-    res_cfg = utils.get_resource_config()
-    # Build storage profile
-    osdisk = build_osdisk_profile(
-        res_cfg.get('storageProfile', dict()).get('osDisk', dict()))
-    datadisks = build_datadisks_profile(
-        res_cfg.get('storageProfile', dict()).get('dataDisks', list()))
-    storage_profile = {
-        'osDisk': osdisk,
-        'dataDisks': datadisks
-    }
-    # Build the network profile
+def build_network_profile():
+    '''
+        Creates a networkProfile object complete with
+        a list of networkInterface objects
+
+    :returns: networkProfile object
+    :rtype: dict
+    '''
     network_interfaces = list()
     net_rels = utils.get_relationships_by_type(
         ctx.instance.relationships,
@@ -163,9 +159,32 @@ def create(**_):
                 'primary': net_rel.target.node.properties.get('primary')
             }
         network_interfaces.append(network_interface)
-    network_profile = {
+    # Check for a primary interface if multiple NICs are used
+    if len(network_interfaces) > 1:
+        if not len([x for x in network_interfaces if x['primary']]):
+            raise NonRecoverableError(
+                'Exactly one "primary" network interface must be specified '
+                'if multiple NetworkInterfaceCard nodes are used')
+    return {
         'networkInterfaces': network_interfaces
     }
+
+
+@operation
+def create(**_):
+    '''Uses an existing, or creates a new, Virtual Machine'''
+    res_cfg = utils.get_resource_config()
+    # Build storage profile
+    osdisk = build_osdisk_profile(
+        res_cfg.get('storageProfile', dict()).get('osDisk', dict()))
+    datadisks = build_datadisks_profile(
+        res_cfg.get('storageProfile', dict()).get('dataDisks', list()))
+    storage_profile = {
+        'osDisk': osdisk,
+        'dataDisks': datadisks
+    }
+    # Build the network profile
+    network_profile = build_network_profile()
     # Build the OS profile
     os_family = ctx.node.properties.get('os_family', '').lower()
     os_profile = dict()
