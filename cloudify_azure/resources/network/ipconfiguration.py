@@ -30,7 +30,6 @@
     IP Configuration node(s) that connects to them, then create a Network
     Interface Card which connects to the IP Configuration(s).
 '''
-
 # Node properties and logger
 from cloudify import ctx
 # Base resource class
@@ -86,7 +85,7 @@ class IPConfiguration(Resource):
 
 
 def get_ip_configurations(_ctx=ctx,
-                          rel=constants.REL_CONNECTED_TO_IPC):
+                          rel=constants.REL_NIC_CONNECTED_TO_IPC):
     '''
         Finds all IP Configurations associated with the current node.
         This method searches for any IP Configuration-specific
@@ -130,7 +129,7 @@ def build_ip_configuration(ipc):
 
     # Build a partial config and update it with properties config
     return utils.dict_update({
-        'name': ipc.node.properties.get('name'),
+        'name': utils.get_resource_name(ipc),
         'properties': {
             'subnet': subnet,
             'publicIPAddress': pubip

@@ -20,6 +20,9 @@
 
 # Deep object copying
 from copy import deepcopy
+# Random string
+import random
+import string
 # Node properties and logger
 from cloudify import ctx
 # Life-cycle operation decorator
@@ -85,8 +88,7 @@ def build_osdisk_profile(usr_osdisk=None):
     if isinstance(usr_osdisk, dict):
         osdisk = deepcopy(usr_osdisk)
     # Generate disk name if one wasn't provided
-    osdisk['name'] = osdisk.get('name') or \
-        '{0}_osdisk'.format(ctx.node.properties.get('name'))
+    osdisk['name'] = osdisk.get('name') or utils.get_resource_name()
     # If no disk URI was specified, generate one
     if not osdisk.get('vhd', dict()).get('uri'):
         osdisk['vhd'] = {
@@ -117,7 +119,7 @@ def build_datadisks_profile(usr_datadisks):
         datadisk = deepcopy(usr_datadisk)
         # Generate disk name if one wasn't provided
         datadisk['name'] = datadisk.get('name') or \
-            '{0}_datadisk_{1}'.format(ctx.node.properties.get('name'), idx)
+            '{0}-{1}'.format(utils.get_resource_name(), idx)
         # If no disk URI was specified, generate one
         if not datadisk.get('vhd', dict()).get('uri'):
             datadisk['vhd'] = {
@@ -133,10 +135,19 @@ def build_datadisks_profile(usr_datadisks):
     return datadisks
 
 
+def vm_name_generator():
+    '''Generates a unique VM resource name'''
+    return ''.join(random.choice(string.lowercase) for i in range(15))
+
+
 @operation
 def create(**_):
     '''Uses an existing, or creates a new, Virtual Machine'''
-    res_cfg = utils.get_resource_config()
+    # Generate a resource name (if needed)
+    utils.generate_resource_name(
+        VirtualMachine(),
+        generator=vm_name_generator)
+    res_cfg = utils.get_resource_config() or dict()
     # Build storage profile
     osdisk = build_osdisk_profile(
         res_cfg.get('storageProfile', dict()).get('osDisk', dict()))
@@ -179,7 +190,11 @@ def create(**_):
             },
             'windowsConfiguration': None
         }
-
+    # Set the computerName if it's not set already
+    os_profile['computerName'] = \
+        res_cfg.get(
+            'osProfile', dict()
+        ).get('computerName', utils.get_resource_name())
     # Create a resource (if necessary)
     utils.task_resource_create(
         VirtualMachine(),
@@ -209,7 +224,7 @@ def configure(command_to_execute, file_uris, **_):
         # This entire function can be overridden from the plugin
         utils.task_resource_create(
             VirtualMachineExtension(
-                virtual_machine=ctx.node.properties.get('name')
+                virtual_machine=utils.get_resource_name()
             ),
             {
                 'location': ctx.node.properties.get('location'),
@@ -235,7 +250,7 @@ def configure(command_to_execute, file_uris, **_):
         return
     # Get the NIC data from the API directly (because of IPConfiguration)
     nic = NetworkInterfaceCard(_ctx=rel_nic.target)
-    nic_data = nic.get(rel_nic.target.node.properties.get('name'))
+    nic_data = nic.get(utils.get_resource_name(rel_nic.target))
     # Iterate over each IPConfiguration entry
     for ip_cfg in nic_data.get(
             'properties', dict()).get(
@@ -277,3 +292,76 @@ def delete(**_):
     # Delete the resource
     utils.task_resource_delete(
         VirtualMachine())
+
+
+@operation
+def attach_data_disk(lun, **_):
+    '''Attaches a data disk'''
+    vm_iface = VirtualMachine(_ctx=ctx.source)
+    vm_state = vm_iface.get(name=utils.get_resource_name(_ctx=ctx.source))
+    data_disks = vm_state.get(
+        'properties', dict()).get(
+            'storageProfile', dict()).get(
+                'dataDisks', list())
+    # Get the createOption
+    create_opt = 'Empty'
+    if ctx.target.node.properties.get('use_external_resource', False):
+        create_opt = 'Attach'
+    # Add the disk to the list
+    data_disks.append({
+        'name': utils.get_resource_name(_ctx=ctx.target),
+        'lun': lun,
+        'diskSizeGB': ctx.target.instance.runtime_properties['diskSizeGB'],
+        'vhd': {
+            'uri': ctx.target.instance.runtime_properties['uri']
+        },
+        'createOption': create_opt,
+        'caching': 'None'
+    })
+    ctx.logger.info('async_op: {0}'.format(
+        ctx.source.instance.runtime_properties.get('async_op')))
+    # Update the VM
+    utils.task_resource_update(
+        VirtualMachine(_ctx=ctx.source),
+        {
+            'location': ctx.source.node.properties.get('location'),
+            'properties': {
+                'storageProfile': {
+                    'dataDisks': data_disks
+                }
+            }
+        },
+        force=True,
+        _ctx=ctx.source
+    )
+
+
+@operation
+def detach_data_disk(**_):
+    '''Detaches a data disk'''
+    vm_iface = VirtualMachine(_ctx=ctx.source)
+    vm_state = vm_iface.get(name=utils.get_resource_name(_ctx=ctx.source))
+    data_disks = [
+        x for x in vm_state.get(
+            'properties', dict()).get(
+                'storageProfile', dict()).get(
+                    'dataDisks', list())
+        if x.get('vhd', dict()).get('uri') !=
+        ctx.target.instance.runtime_properties['uri']
+    ]
+    ctx.logger.info('async_op: {0}'.format(
+        ctx.source.instance.runtime_properties.get('async_op')))
+    # Update the VM
+    utils.task_resource_update(
+        VirtualMachine(_ctx=ctx.source),
+        {
+            'location': ctx.source.node.properties.get('location'),
+            'properties': {
+                'storageProfile': {
+                    'dataDisks': data_disks
+                }
+            }
+        },
+        force=True,
+        _ctx=ctx.source
+    )

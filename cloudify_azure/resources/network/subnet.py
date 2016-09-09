@@ -98,7 +98,7 @@ def delete(**_):
 def attach_network_security_group(**_):
     '''Attaches a Network Security Group (source) to the Subnet (target)'''
     nsg = NetworkSecurityGroup(_ctx=ctx.source)
-    nsg_name = ctx.source.node.properties.get('name')
+    nsg_name = utils.get_resource_name(ctx.source)
     # Attach
     utils.task_resource_update(
         Subnet(_ctx=ctx.target), {
@@ -129,7 +129,7 @@ def detach_network_security_group(**_):
 def attach_route_table(**_):
     '''Attaches a Route Table (source) to the Subnet (target)'''
     rtbl = RouteTable(_ctx=ctx.source)
-    rtbl_name = ctx.source.node.properties.get('name')
+    rtbl_name = utils.get_resource_name(ctx.source)
     # Attach
     utils.task_resource_update(
         Subnet(_ctx=ctx.target), {

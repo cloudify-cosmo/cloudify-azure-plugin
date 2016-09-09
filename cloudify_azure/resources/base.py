@@ -240,6 +240,12 @@ class Resource(object):
                 retry_after=self.get_retry_after(headers))
         # HTTP 200 (OK) - The resource already exists
         elif res.status_code == httplib.OK:
+            if headers.get('azure-asyncoperation'):
+                self.ctx.instance.runtime_properties['async_op'] = headers
+                return ctx.operation.retry(
+                    'Operation: "{0}" started'
+                    .format(self.get_operation_id(headers)),
+                    retry_after=self.get_retry_after(headers))
             self.log.warn('{0} already exists. Using resource.'
                           .format(self.name))
             return
@@ -312,6 +318,43 @@ class Resource(object):
                 'Expected HTTP status code {0}, recieved {1}'
                 .format(httplib.CREATED, res.status_code))
 
+    def exists(self, name=None):
+        '''
+            Determines if a resource exists or not
+
+        :param string name: Name of the existing resource
+        :returns: True if resource exists, False if it doesn't
+        :rtype: boolean
+        :raises: :exc:`cloudify_azure.exceptions.UnexpectedResponse`,
+                 :exc:`requests.RequestException`
+        '''
+        self.log.info('Checking {0} "{1}"'.format(self.name, name))
+        # Make the request
+        if name:
+            url = '{0}/{1}'.format(self.endpoint, name)
+        else:
+            url = self.endpoint
+        res = self.client.request(
+            method='get',
+            url=url)
+        # Convert headers from CaseInsensitiveDict to Dict
+        headers = dict(res.headers)
+        self.log.debug('headers: {0}'.format(
+            utils.secure_logging_content(headers)))
+        # Check the response
+        # HTTP 202 (ACCEPTED) - An asynchronous operation has started
+        if res.status_code == httplib.ACCEPTED:
+            return True
+        # HTTP 200 (OK) - The resource already exists
+        elif res.status_code == httplib.OK:
+            return True
+        # If Azure sent a 404, the resource doesn't exist (yet?)
+        if res.status_code == httplib.NOT_FOUND:
+            return False
+        raise UnexpectedResponse(
+            'Recieved unexpected HTTP ({0}) response'
+            .format(res.status_code), res.json())
+
     def operation_complete(self, op_info):
         '''
             Checks the status of an asynchronous operation
@@ -334,7 +377,6 @@ class Resource(object):
         headers = dict(res.headers)
         self.log.debug('headers: {0}'.format(
             utils.secure_logging_content(headers)))
-        self.ctx.instance.runtime_properties['async_op'] = None
         # HTTP 200 (OK) - Operation is successful and complete
         if res.status_code == httplib.OK:
             if self.validate_res_json(res) == 'InProgress':
@@ -342,9 +384,12 @@ class Resource(object):
                     'Operation: "{0}" still pending'
                     .format(self.get_operation_id(headers)),
                     retry_after=self.get_retry_after(headers))
+            self.ctx.instance.runtime_properties['async_op'] = None
             return
+        # Clear the async state
+        self.ctx.instance.runtime_properties['async_op'] = None
         # HTTP 202 (ACCEPTED) - Operation is still pending
-        elif res.status_code == httplib.ACCEPTED:
+        if res.status_code == httplib.ACCEPTED:
             if not headers.get('location'):
                 raise RecoverableError(
                     'HTTP 202 ACCEPTED but no Location header present')
@@ -381,6 +426,7 @@ class Resource(object):
 
     @staticmethod
     def validate_res_json(res):
+        '''Validates that a status exists'''
         try:
             return res.json().get('status')
         except ValueError:

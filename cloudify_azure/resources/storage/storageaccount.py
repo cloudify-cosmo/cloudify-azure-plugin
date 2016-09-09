@@ -18,8 +18,14 @@
     Microsoft Azure Storage Account interface
 '''
 
+import httplib
+# Random string
+import random
+import string
 # Node properties and logger
 from cloudify import ctx
+# Exception handling
+from cloudify.exceptions import RecoverableError
 # Base resource class
 from cloudify_azure.resources.base import Resource
 # Lifecycle operation decorator
@@ -59,10 +65,49 @@ class StorageAccount(Resource):
             logger=logger,
             _ctx=_ctx)
 
+    def list_keys(self, name=None):
+        '''
+            Calls /listKeys
+
+        :param string name: Name of the existing resource
+        :returns: Response data from the Azure API call
+        :rtype: dict
+        :raises: :exc:`cloudify.exceptions.RecoverableError`
+        '''
+        # Get the resource name
+        name = name or utils.get_resource_name(self.ctx)
+        url = '{0}/{1}/listKeys'.format(self.endpoint, name)
+        res = self.client.request(
+            method='post',
+            url=url)
+        if res.status_code != httplib.OK:
+            raise RecoverableError(
+                'Unexpected status returned after calling '
+                '/listKeys. Status={0}'.format(res.status_code))
+        keys = res.json()
+        ret = list()
+        for key in keys:
+            ret.append({
+                'name': key,
+                'key': keys[key]
+            })
+        self.log.debug('keys: {0}'.format(keys))
+        return ret
+
+
+def sa_name_generator():
+    '''Generates a unique SA resource name'''
+    return ''.join(random.choice(
+        string.ascii_lowercase + string.digits) for i in range(3, 24))
+
 
 @operation
 def create(**_):
     '''Uses an existing, or creates a new, Storage Account'''
+    # Generate a resource name (if needed)
+    utils.generate_resource_name(
+        StorageAccount(),
+        generator=sa_name_generator)
     # Create a resource (if necessary)
     utils.task_resource_create(
         StorageAccount(),
