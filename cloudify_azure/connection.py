@@ -110,7 +110,7 @@ class AzureConnection(object):
         data = None
         if res.text:
             data = res.json()
-        self.log.debug('request response: '
+        self.log.debug('response: '
                        '(status={0}, data={1})'.format(
                            res.status_code,
                            json.dumps(data, indent=2)))

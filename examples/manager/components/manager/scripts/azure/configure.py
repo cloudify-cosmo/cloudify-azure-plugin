@@ -1,30 +1,17 @@
-# #######
-# Copyright (c) 2016 GigaSpaces Technologies Ltd. All rights reserved
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#        http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-#    * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#    * See the License for the specific language governing permissions and
-#    * limitations under the License.
-'''
-    scripts.azure.configure
-    ~~~~~~~~~~~~~~~~~~~~~~~
-    Cloudify Manager configure script that creates a provider
-    context configuration file for user deployments to use
-'''
+#!/usr/bin/env python
 
 # Built-in Imports
 import tempfile
 from ConfigParser import ConfigParser
 import os
-# Third Party Imports
-import fabric.api
+from os.path import join, dirname
+
+from cloudify import ctx
+# Import utilities
+ctx.download_resource(
+    join('components', 'utils.py'),
+    join(dirname(__file__), 'utils.py'))
+import utils  # NOQA
 
 
 def configure_manager(manager_config_path,
@@ -50,8 +37,24 @@ def configure_manager(manager_config_path,
     with open(temp_config, 'w') as temp_config_file:
         config.write(temp_config_file)
 
-    fabric.api.sudo('mkdir -p {0}'.
-                    format(os.path.dirname(manager_config_path)))
-    fabric.api.put(temp_config,
-                   manager_config_path,
-                   use_sudo=True)
+    utils.mkdir(os.path.dirname(manager_config_path), use_sudo=True)
+    utils.move(temp_config, manager_config_path)
+
+    # Install prerequisites for the azure-storage Python package
+    utils.yum_install('gcc', service_name='azure-storage')
+    utils.yum_install('python-devel', service_name='azure-storage')
+    utils.yum_install('openssl-devel', service_name='azure-storage')
+    utils.yum_install('libffi-devel', service_name='azure-storage')
+    utils.yum_install('python-cffi', service_name='azure-storage')
+
+
+configure_manager(
+    manager_config_path=os.environ.get('MGR_CONFIG_PATH'),
+    manager_config={
+        'subscription_id': os.environ.get('MGR_SUBSCRIPTION_ID'),
+        'tenant_id': os.environ.get('MGR_TENANT_ID'),
+        'client_id': os.environ.get('MGR_CLIENT_ID'),
+        'client_secret': os.environ.get('MGR_CLIENT_SECRET'),
+        'location': os.environ.get('MGR_LOCATION')
+    }
+)
