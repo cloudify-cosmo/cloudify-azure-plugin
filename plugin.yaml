@@ -5,9 +5,9 @@
 plugins:
   pkg:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/master.zip
+    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/1.4.1.dev0.zip
     package_name: cloudify-azure-plugin
-    package_version: '1.4'
+    package_version: '1.4.1.dev0'
 
 data_types:
   cloudify.datatypes.azure.Config:
@@ -44,6 +44,32 @@ data_types:
           or generated in the same location as your client ID.
         type: string
         required: false
+      scale_name_separator:
+        description: >
+          When scaling resources, a unique name must be sent to
+          the Azure API. Since names are left to the user to
+          manage (the service does not generate unique IDs),
+          this plugin will attempt to append characters or
+          numbers to the end of the resource name when resources
+          are scaled out. This value should be a character, or
+          characters, that will separate the base name from the
+          generated unique characters.  For instance, if the
+          base name of a resource is "myvm", the separator is
+          set to "_", and a scale workflow attempts to create
+          another resource, the resulting name could be
+          something like "myvm_1". This field can be left blank.
+        type: string
+        required: false
+        default: "_"
+      scale_name_suffix_chars:
+        description: >
+          A string of characters (ASCII) to be used when
+          generating unique suffix data when scaling resources.
+          See "scale_name_separator" for more information.
+        type: string
+        required: true
+        default: "1234567890"
+
 
   cloudify.datatypes.azure.storage.StorageAccountConfig:
     description: >
@@ -219,25 +245,6 @@ data_types:
         required: true
       osProfile:
         required: true
-        
-  cloudify.datatypes.azure.compute.VirtualMachineExtensionConfig:
-    description: >
-      See https://msdn.microsoft.com/en-us/library/azure/mt163624.aspx
-    properties:
-      publisher:
-        type: string
-        required: true
-      ext_type:
-        description: >
-          Since "type" is a reserved name, "ext_type" maps to "type"
-        type: string
-        required: true
-      typeHandlerVersion:
-        type: string
-        required: true
-        default: 1.4
-      settings:
-        required: false
   
   cloudify.datatypes.azure.network.LoadBalancerConfig:
     description: >
@@ -331,7 +338,7 @@ node_types:
           80 characters long. It can contain only alphanumeric characters,
           dash, underscore, opening parenthesis, closing parenthesis,
           and period. The name cannot end with a period.
-        required: true
+        required: false
       location:
         type: string
         description: >
@@ -373,7 +380,7 @@ node_types:
           Name for the resource. Storage account name must be between
           3 and 24 characters in length and use numbers and lower-case
           letters only.
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -425,7 +432,7 @@ node_types:
         type: string
         description: >
           Name for the resource. 
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -477,7 +484,7 @@ node_types:
         type: string
         description: >
           Name for the resource. 
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -529,7 +536,7 @@ node_types:
         type: string
         description: >
           Name for the resource. 
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -588,7 +595,7 @@ node_types:
         type: string
         description: >
           Name for the resource. 
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -647,7 +654,7 @@ node_types:
         type: string
         description: >
           Name for the resource. 
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -699,7 +706,7 @@ node_types:
         type: string
         description: >
           Name for the resource. 
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -758,7 +765,7 @@ node_types:
         type: string
         description: >
           Name for the resource. 
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -806,6 +813,7 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         create: pkg.cloudify_azure.resources.network.networkinterfacecard.create
+        configure: pkg.cloudify_azure.resources.network.networkinterfacecard.configure
         delete: pkg.cloudify_azure.resources.network.networkinterfacecard.delete
         
   cloudify.azure.nodes.network.IPConfiguration:
@@ -815,7 +823,7 @@ node_types:
         type: string
         description: >
           Name for the resource. 
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -855,7 +863,7 @@ node_types:
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
-        
+
   cloudify.azure.nodes.network.PublicIPAddress:
     derived_from: cloudify.nodes.Root
     properties:
@@ -863,7 +871,7 @@ node_types:
         type: string
         description: >
           Name for the resource. 
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -915,7 +923,7 @@ node_types:
         type: string
         description: >
           Name for the resource.
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -967,7 +975,7 @@ node_types:
         type: string
         description: >
           Name for the resource.
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -1048,7 +1056,7 @@ node_types:
               default: powershell -ExecutionPolicy Unrestricted -file ps_enable_winrm_http.ps1
             file_uris:
               default:
-              - https://raw.githubusercontent.com/01000101/cloudify-azure-plugin/rebuild/scripts/ps_enable_winrm_http.ps1
+              - https://raw.githubusercontent.com/cloudify-cosmo/cloudify-azure-plugin/1.4/scripts/ps_enable_winrm_http.ps1
         delete: pkg.cloudify_azure.resources.compute.virtualmachine.delete
         
   cloudify.azure.nodes.compute.VirtualMachineExtension:
@@ -1058,7 +1066,7 @@ node_types:
         type: string
         description: >
           Name for the resource. 
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -1082,11 +1090,6 @@ node_types:
         description: >
           Specifies a dictionary of one or more name and value pairs that describe a tag
         required: false
-      resource_config:
-        description: >
-          A dictionary of values to pass as properties when creating the resource
-        type: cloudify.datatypes.azure.compute.VirtualMachineExtensionConfig
-        required: false
       use_external_resource:
         description: >
           Indicate whether the resource exists or if Cloudify should create the resource
@@ -1107,7 +1110,25 @@ node_types:
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: pkg.cloudify_azure.resources.compute.virtualmachineextension.create
+        create:
+          implementation: pkg.cloudify_azure.resources.compute.virtualmachineextension.create
+          inputs:
+            resource_config:
+              default:
+                publisher:
+                  type: string
+                  required: true
+                ext_type:
+                  description: >
+                    Since "type" is a reserved name, "ext_type" maps to "type"
+                  type: string
+                  required: true
+                typeHandlerVersion:
+                  type: string
+                  required: true
+                  default: 1.4
+                settings:
+                  required: false
         delete: pkg.cloudify_azure.resources.compute.virtualmachineextension.delete
         
   cloudify.azure.nodes.network.LoadBalancer:
@@ -1117,7 +1138,7 @@ node_types:
         type: string
         description: >
           Name for the resource. 
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -1169,7 +1190,7 @@ node_types:
         type: string
         description: >
           Name for the resource. 
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -1219,7 +1240,7 @@ node_types:
         type: string
         description: >
           Name for the resource. 
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -1274,7 +1295,7 @@ node_types:
         type: string
         description: >
           Name for the resource. 
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -1329,7 +1350,7 @@ node_types:
         type: string
         description: >
           Name for the resource. 
-        required: true
+        required: false
       resource_group_name:
         type: string
         description: >
@@ -1410,7 +1431,13 @@ relationships:
         
   cloudify.azure.relationships.nic_connected_to_network_security_group:
     derived_from: cloudify.relationships.connected_to
-             
+    
+  cloudify.azure.relationships.nic_connected_to_ip_configuration:
+    derived_from: cloudify.relationships.connected_to
+    source_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        preconfigure: pkg.cloudify_azure.resources.network.networkinterfacecard.attach_ip_configuration
+  
   cloudify.azure.relationships.ip_configuration_connected_to_subnet:
     derived_from: cloudify.relationships.connected_to
     
@@ -1420,13 +1447,13 @@ relationships:
   cloudify.azure.relationships.connected_to_storage_account:
     derived_from: cloudify.relationships.connected_to
     
+  cloudify.azure.relationships.connected_to_nic:
+    derived_from: cloudify.relationships.connected_to
+    
   cloudify.azure.relationships.connected_to_availability_set:
     derived_from: cloudify.relationships.connected_to
 
   cloudify.azure.relationships.connected_to_ip_configuration:
-    derived_from: cloudify.relationships.connected_to
-
-  cloudify.azure.relationships.connected_to_nic:
     derived_from: cloudify.relationships.connected_to
   
   cloudify.azure.relationships.connected_to_lb_be_pool:

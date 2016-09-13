@@ -50,6 +50,8 @@ REL_CONTAINED_IN_LB = \
     'cloudify.azure.relationships.contained_in_load_balancer'
 REL_NIC_CONNECTED_TO_NSG = \
     'cloudify.azure.relationships.nic_connected_to_network_security_group'
+REL_NIC_CONNECTED_TO_IPC = \
+    'cloudify.azure.relationships.nic_connected_to_ip_configuration'
 REL_IPC_CONNECTED_TO_SUBNET = \
     'cloudify.azure.relationships.ip_configuration_connected_to_subnet'
 REL_IPC_CONNECTED_TO_PUBIP = \
