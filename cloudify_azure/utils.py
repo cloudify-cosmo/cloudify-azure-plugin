@@ -638,14 +638,15 @@ def get_subscription_id(_ctx=ctx):
 
 
 def secure_logging_content(content, secure_keywords=constants.SECURE_KW):
-
+    '''Scrubs logging calls containing potentially sensitive information'''
     def clean(clean_me, secure_keywords=secure_keywords):
-        if type(clean_me) is list:
-            for li in clean_me:
-                clean_me[clean_me.index(li)] = clean(li)
-        elif type(clean_me) is dict:
+        '''Srubs potentially sensitive data from a list or dict'''
+        if isinstance(clean_me, list):
+            for obj in clean_me:
+                clean_me[clean_me.index(obj)] = clean(obj)
+        elif isinstance(clean_me, dict):
             for key, value in clean_me.items():
-                if type(key) is str and key in secure_keywords:
+                if isinstance(key, str) and key in secure_keywords:
                     clean_me[key] = '*'
                 else:
                     clean(value)
