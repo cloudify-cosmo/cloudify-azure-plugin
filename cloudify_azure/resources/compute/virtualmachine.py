@@ -150,8 +150,7 @@ def build_network_profile():
         ctx.instance.relationships,
         constants.REL_CONNECTED_TO_NIC)
     ctx.logger.info('net_rels: {0}'.format(
-        [net_rel.target.node.id for net_rel in net_rels])
-    )
+        [net_rel.target.node.id for net_rel in net_rels]))
     for net_rel in net_rels:
         # Get the NIC resource ID
         network_interface = utils.get_full_id_reference(
@@ -165,7 +164,9 @@ def build_network_profile():
         network_interfaces.append(network_interface)
     # Check for a primary interface if multiple NICs are used
     if len(network_interfaces) > 1:
-        if not len([x for x in network_interfaces if x['properties']['primary']]):
+        if not len([
+                x for x in network_interfaces
+                if x['properties']['primary']]):
             raise NonRecoverableError(
                 'Exactly one "primary" network interface must be specified '
                 'if multiple NetworkInterfaceCard nodes are used')
