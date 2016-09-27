@@ -149,7 +149,7 @@ def build_network_profile():
     net_rels = utils.get_relationships_by_type(
         ctx.instance.relationships,
         constants.REL_CONNECTED_TO_NIC)
-    ctx.logger.info('net_rels: {0}'.format(
+    ctx.logger.debug('net_rels: {0}'.format(
         [net_rel.target.node.id for net_rel in net_rels]))
     for net_rel in net_rels:
         # Get the NIC resource ID
