@@ -307,7 +307,7 @@ node_templates:
       target: resourcegroup
     - type: cloudify.azure.relationships.nic_connected_to_network_security_group
       target: networksecuritygroup
-    - type: cloudify.azure.relationships.connected_to_ip_configuration
+    - type: cloudify.azure.relationships.nic_connected_to_ip_configuration
       target: ubuntuipconfig
 
   ubuntuhost:
@@ -388,7 +388,7 @@ node_templates:
       target: resourcegroup
     - type: cloudify.azure.relationships.nic_connected_to_network_security_group
       target: networksecuritygroup
-    - type: cloudify.azure.relationships.connected_to_ip_configuration
+    - type: cloudify.azure.relationships.nic_connected_to_ip_configuration
       target: centosipconfig
 
   centoshost:
@@ -570,7 +570,7 @@ node_templates:
       target: resourcegroup
     - type: cloudify.azure.relationships.nic_connected_to_network_security_group
       target: networksecuritygroup
-    - type: cloudify.azure.relationships.connected_to_ip_configuration
+    - type: cloudify.azure.relationships.nic_connected_to_ip_configuration
       target: windowsvm1nicipcfg
     - type: cloudify.azure.relationships.nic_connected_to_lb_be_pool
       target: loadbalancerbackendpool
@@ -652,7 +652,7 @@ node_templates:
       target: resourcegroup
     - type: cloudify.azure.relationships.nic_connected_to_network_security_group
       target: networksecuritygroup
-    - type: cloudify.azure.relationships.connected_to_ip_configuration
+    - type: cloudify.azure.relationships.nic_connected_to_ip_configuration
       target: windowsvm2nicipcfg
     - type: cloudify.azure.relationships.nic_connected_to_lb_be_pool
       target: loadbalancerbackendpool
