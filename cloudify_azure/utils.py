@@ -24,6 +24,8 @@ from copy import deepcopy
 from os import path, environ
 # Dict updating
 from collections import Mapping
+# Time format
+from datetime import datetime
 # UUID
 from uuid import uuid4
 # Config parser
@@ -123,7 +125,8 @@ def generate_resource_name(resource, generator=None, name=None, _ctx=ctx):
 
 
 def task_resource_update(resource, params,
-                         name=None, use_external=None,
+                         name=None,
+                         force=False,
                          _ctx=ctx):
     '''
         Updates an existing Microsoft Azure resource and
@@ -142,19 +145,15 @@ def task_resource_update(resource, params,
     '''
     # Get the resource name
     name = name or get_resource_name(_ctx)
-    # Get use_external_resource boolean
-    if use_external is None:
-        use_external = _ctx.node.properties.get('use_external_resource')
     # Handle pending asynchrnous operations
     if _ctx.instance.runtime_properties.get('async_op'):
         return resource.operation_complete(
             _ctx.instance.runtime_properties.get('async_op'))
     # Update an existing resource
-    resource.update(name, params)
+    resource.update(name, params, force=force)
 
 
-def task_resource_delete(resource, name=None,
-                         use_external=None, _ctx=ctx):
+def task_resource_delete(resource, name=None, _ctx=ctx):
     '''
         Deletes a Microsoft Azure resource and
         polls, if necessary, until the operation
@@ -171,9 +170,6 @@ def task_resource_delete(resource, name=None,
     '''
     # Get the resource name
     name = name or get_resource_name(_ctx)
-    # Get use_external_resource boolean
-    if use_external is None:
-        use_external = _ctx.node.properties.get('use_external_resource')
     # Check for existing resources
     if _ctx.node.properties.get('use_external_resource'):
         return resource.get(name)
@@ -222,6 +218,20 @@ def get_resource_group(_ctx=ctx):
     return _ctx.node.properties.get('resource_group_name') or \
         get_ancestor_name(
             _ctx.instance, constants.REL_CONTAINED_IN_RG)
+
+
+def get_storage_account(_ctx=ctx):
+    '''
+        Finds the Storage Account associated with the current node. This
+        method searches both by node properties (priority) or by
+        node relationships
+
+    :returns: Storage Account name
+    :rtype: string
+    '''
+    return _ctx.node.properties.get('storage_account_name') or \
+        get_ancestor_name(
+            _ctx.instance, constants.REL_CONTAINED_IN_SA)
 
 
 def get_virtual_network(_ctx=ctx):
@@ -638,14 +648,15 @@ def get_subscription_id(_ctx=ctx):
 
 
 def secure_logging_content(content, secure_keywords=constants.SECURE_KW):
-
+    '''Scrubs logging calls containing potentially sensitive information'''
     def clean(clean_me, secure_keywords=secure_keywords):
-        if type(clean_me) is list:
-            for li in clean_me:
-                clean_me[clean_me.index(li)] = clean(li)
-        elif type(clean_me) is dict:
+        '''Srubs potentially sensitive data from a list or dict'''
+        if isinstance(clean_me, list):
+            for obj in clean_me:
+                clean_me[clean_me.index(obj)] = clean(obj)
+        elif isinstance(clean_me, dict):
             for key, value in clean_me.items():
-                if type(key) is str and key in secure_keywords:
+                if isinstance(key, str) and key in secure_keywords:
                     clean_me[key] = '*'
                 else:
                     clean(value)
@@ -653,3 +664,11 @@ def secure_logging_content(content, secure_keywords=constants.SECURE_KW):
 
     content_copy = deepcopy(content)
     return clean(content_copy)
+
+
+def get_rfc1123_date():
+    '''
+        Azure Storage headers use RFC 1123 for date representation.
+        See https://msdn.microsoft.com/en-us/library/azure/dd135714.aspx
+    '''
+    return datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')

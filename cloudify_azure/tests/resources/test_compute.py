@@ -82,6 +82,7 @@ class TestCompute(unittest.TestCase):
         '''Mock storage endpoints'''
         tutils.mock_storage_endpoints(mock, self.params,
                                       'storageAccounts', 'mocksa')
+        tutils.mock_storageaccount_endpoint(mock, self.params)
 
     @requests_mock.Mocker(real_http=True)
     @workflow_test(blueprint_path, copy_plugin_yaml=True)

@@ -240,6 +240,12 @@ class Resource(object):
                 retry_after=self.get_retry_after(headers))
         # HTTP 200 (OK) - The resource already exists
         elif res.status_code == httplib.OK:
+            if headers.get('azure-asyncoperation'):
+                self.ctx.instance.runtime_properties['async_op'] = headers
+                return ctx.operation.retry(
+                    'Operation: "{0}" started'
+                    .format(self.get_operation_id(headers)),
+                    retry_after=self.get_retry_after(headers))
             self.log.warn('{0} already exists. Using resource.'
                           .format(self.name))
             return
@@ -371,7 +377,6 @@ class Resource(object):
         headers = dict(res.headers)
         self.log.debug('headers: {0}'.format(
             utils.secure_logging_content(headers)))
-        self.ctx.instance.runtime_properties['async_op'] = None
         # HTTP 200 (OK) - Operation is successful and complete
         if res.status_code == httplib.OK:
             if self.validate_res_json(res) == 'InProgress':
@@ -379,9 +384,12 @@ class Resource(object):
                     'Operation: "{0}" still pending'
                     .format(self.get_operation_id(headers)),
                     retry_after=self.get_retry_after(headers))
+            self.ctx.instance.runtime_properties['async_op'] = None
             return
+        # Clear the async state
+        self.ctx.instance.runtime_properties['async_op'] = None
         # HTTP 202 (ACCEPTED) - Operation is still pending
-        elif res.status_code == httplib.ACCEPTED:
+        if res.status_code == httplib.ACCEPTED:
             if not headers.get('location'):
                 raise RecoverableError(
                     'HTTP 202 ACCEPTED but no Location header present')

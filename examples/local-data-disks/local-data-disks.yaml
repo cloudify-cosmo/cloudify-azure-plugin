@@ -1,20 +1,12 @@
 tosca_definitions_version: cloudify_dsl_1_3
 
 description: >
-  This blueprint describes an Azure single-tier application that is
-  horizontally scalable.  In order to scale this out, one must run a
-  "scale" execution after initial deployment.  For example, to scale
-  up to 3 total (1 + 2) instances, the following command can be used:
-  
-  cfy executions start \
-  -w scale \
-  -p '{"delta": 2, "scalable_entity_name": "vm_and_ips"}' \
-  -d poc01
+  This blueprint creates a generic Linux VM utilizing
+  the DataDisk and OSDisk types
 
 imports:
   - http://www.getcloudify.org/spec/cloudify/3.4/types.yaml
-  - http://www.getcloudify.org/spec/diamond-plugin/1.3.4/plugin.yaml
-  - https://raw.githubusercontent.com/01000101/cloudify-azure-plugin/scaling/plugin.yaml
+  - https://raw.githubusercontent.com/01000101/cloudify-azure-plugin/data-disks/plugin.yaml
 
 #####################################################################################
 # inputs section allows the user to use same
@@ -30,7 +22,7 @@ inputs:
     default: cfy
 
   resource_suffix:
-    default: 11
+    default: 12
 
   # Azure account information
 
@@ -159,6 +151,22 @@ node_templates:
       target: availability_set
     - type: cloudify.azure.relationships.connected_to_nic
       target: host_nic
+    - type: cloudify.azure.relationships.vm_connected_to_datadisk
+      target: data_disk_0
+      source_interfaces:
+        cloudify.interfaces.relationship_lifecycle:
+          establish:
+            implementation: pkg.cloudify_azure.resources.compute.virtualmachine.attach_data_disk
+            inputs:
+              lun: 0
+    - type: cloudify.azure.relationships.vm_connected_to_datadisk
+      target: data_disk_1
+      source_interfaces:
+        cloudify.interfaces.relationship_lifecycle:
+          establish:
+            implementation: pkg.cloudify_azure.resources.compute.virtualmachine.attach_data_disk
+            inputs:
+              lun: 1
 
   resource_group:
     type: cloudify.azure.nodes.ResourceGroup
@@ -170,7 +178,6 @@ node_templates:
   storage_account:
     type: cloudify.azure.nodes.storage.StorageAccount
     properties:
-      name: {concat:[{get_input: resource_prefix},sa,{get_input: resource_suffix}]}
       location: { get_input: location }
       azure_config: *azure_config
       retry_after: { get_input: retry_after }
@@ -179,6 +186,40 @@ node_templates:
     relationships:
     - type: cloudify.azure.relationships.contained_in_resource_group
       target: resource_group
+      
+  data_disk_0:
+    type: cloudify.azure.nodes.storage.DataDisk
+    properties:
+      location: { get_input: location }
+      azure_config: *azure_config
+      retry_after: { get_input: retry_after }
+      resource_config:
+        size: 1
+        force_delete: true
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_storage_account
+      target: storage_account
+      
+  data_disk_1:
+    type: cloudify.azure.nodes.storage.DataDisk
+    properties:
+      location: { get_input: location }
+      azure_config: *azure_config
+      retry_after: { get_input: retry_after }
+      resource_config:
+        size: 10
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_storage_account
+      target: storage_account
+      
+  file_share_1:
+    type: cloudify.azure.nodes.storage.FileShare
+    properties:
+      resource_config:
+        quota: 5
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_storage_account
+      target: storage_account
 
   virtual_network:
     type: cloudify.azure.nodes.network.VirtualNetwork
@@ -267,3 +308,14 @@ policies:
     properties:
       default_instances: 1
     targets: [vm_and_ips]
+
+outputs:
+  file_share_1:
+    description: File Share connection details
+    value:
+      name: { get_attribute: [ file_share_1, name ] }
+      created: { get_attribute: [ file_share_1, created ] }
+      uri: { get_attribute: [ file_share_1, uri ] }
+      username: { get_attribute: [ file_share_1, username ] }
+      password: { get_attribute: [ file_share_1, password ] }
+

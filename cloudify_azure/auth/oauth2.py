@@ -18,15 +18,13 @@
     OAuth 2.0 authorization interface for the Microsoft Azure REST API
 '''
 
-# Used for HTTP requests / verification
-import requests
-import httplib
-# Used to implement connection retrying
-from requests.packages import urllib3
-# Used for pretty-printing JSON
-import json
 # For credentials structuring
 from collections import namedtuple
+# Used for HTTP requests / verification
+import httplib
+import requests
+# Used to implement connection retrying
+from requests.packages import urllib3
 # Exception handling, constants, logging
 from cloudify_azure import \
     (constants, exceptions)
@@ -121,10 +119,6 @@ class OAuth2(object):
             except ValueError:
                 raise exceptions.UnexpectedResponse(
                     'Malformed, non-JSON response data')
-        self.log.debug('Access token request response: '
-                       '(status={0}, data={1})'.format(
-                           res.status_code,
-                           json.dumps(data, indent=2)))
         # Check for 401 Unauthorized
         if res.status_code == 401:
             # We received an explicit credentials rejection

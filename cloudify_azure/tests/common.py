@@ -61,8 +61,28 @@ def mock_resourcegroup_endpoint(mock, params):
     )
 
 
+def mock_storageaccount_endpoint(mock, params):
+    '''Mock StorageAccount endpoint URLs'''
+    mock.register_uri(
+        'POST',
+        '{0}/subscriptions/{1}{2}'.format(
+            constants.CONN_API_ENDPOINT,
+            params['subscription_id'],
+            '/{0}/{1}/{2}?api-version={3}'.format(
+                'resourceGroups/{0}'.format(params['mock_rg_name']),
+                'providers/Microsoft.Storage',
+                'storageAccounts/mocksa/listKeys',
+                constants.API_VER_STORAGE)),
+        json={
+            'key1': 'asdklfjaskldfjaf88934==22jkl5',
+            'key2': 'q3489hzdgodfgio===//4236'
+        },
+        status_code=httplib.OK
+    )
+
+
 def mock_endpoints(mock, params, res_type,
-                   res_name, api_version, cls):
+                   res_name, api_version, cls, get_json=None):
     '''Mock an endpoint'''
     endpoint = '{0}/subscriptions/{1}{2}'.format(
         constants.CONN_API_ENDPOINT,
@@ -93,24 +113,24 @@ def mock_endpoints(mock, params, res_type,
     mock.register_uri(
         'GET',
         endpoint,
-        json={'response': 'ok'},
+        json=get_json or {'response': 'ok'},
         status_code=httplib.OK
     )
 
 
-def mock_network_endpoints(mock, params, res_type, res_name):
+def mock_network_endpoints(mock, params, res_type, res_name, get_json=None):
     '''Mock a network endpoint'''
     mock_endpoints(mock, params, res_type, res_name,
-                   constants.API_VER_NETWORK, 'Microsoft.Network')
+                   constants.API_VER_NETWORK, 'Microsoft.Network', get_json)
 
 
-def mock_compute_endpoints(mock, params, res_type, res_name):
+def mock_compute_endpoints(mock, params, res_type, res_name, get_json=None):
     '''Mock a compute endpoint'''
     mock_endpoints(mock, params, res_type, res_name,
-                   constants.API_VER_COMPUTE, 'Microsoft.Compute')
+                   constants.API_VER_COMPUTE, 'Microsoft.Compute', get_json)
 
 
-def mock_storage_endpoints(mock, params, res_type, res_name):
+def mock_storage_endpoints(mock, params, res_type, res_name, get_json=None):
     '''Mock a storage endpoint'''
     mock_endpoints(mock, params, res_type, res_name,
-                   constants.API_VER_STORAGE, 'Microsoft.Storage')
+                   constants.API_VER_STORAGE, 'Microsoft.Storage', get_json)
