@@ -199,7 +199,7 @@ node_templates:
       location: eastus
       resource_config:
         size: 1
-        force_delete: true
+        force_delete: false
     relationships:
     - type: cloudify.azure.relationships.contained_in_storage_account
       target: storage_account

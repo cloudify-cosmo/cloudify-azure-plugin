@@ -180,7 +180,7 @@ node_templates:
     relationships:
     - type: cloudify.azure.relationships.contained_in_resource_group
       target: resource_group
-    - type: cloudify.azure.relationships.connected_to_ip_configuration
+    - type: cloudify.azure.relationships.lb_connected_to_ip_configuration
       target: lb_ip_cfg
       
   load_balancer_backend_pool:
