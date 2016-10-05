@@ -28,7 +28,7 @@ setup(
         'cloudify_azure.resources.network',
         'cloudify_azure.resources.storage'
     ],
-    description='Microsoft Azure plugin for Cloudify',
+    description='Cloudify plugin for Microsoft Azure',
     install_requires=[
         'cloudify-plugins-common>=3.4',
         'requests==2.7.0',
