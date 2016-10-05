@@ -1,4 +1,4 @@
-tosca_definitions_version: cloudify_dsl_1_2
+tosca_definitions_version: cloudify_dsl_1_3
 
 description: >
   This blueprint creates a Fortinet FortiGate appliance that
@@ -6,8 +6,8 @@ description: >
   public IP associated with it for port TCP/443 (HTTPS) access.
 
 imports:
-- http://www.getcloudify.org/spec/cloudify/3.3.1/types.yaml
-- https://raw.githubusercontent.com/cloudify-cosmo/cloudify-azure-plugin/master/plugin.yaml
+  - http://www.getcloudify.org/spec/cloudify/3.4/types.yaml
+  - https://raw.githubusercontent.com/cloudify-cosmo/cloudify-azure-plugin/master/plugin.yaml
 
 
 inputs:

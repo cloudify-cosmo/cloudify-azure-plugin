@@ -1,0 +1,3 @@
+https://github.com/Azure/azure-sdk-for-python/archive/v1.0.0.zip
+msrest
+msrestazure

@@ -37,6 +37,7 @@ from cloudify import ctx
 from cloudify_azure import constants
 # AzureCredentials namedtuple
 from cloudify_azure.auth.oauth2 import AzureCredentials
+from cloudify.context import RelationshipSubjectContext
 
 
 def dict_update(orig, updates):
@@ -672,3 +673,33 @@ def get_rfc1123_date():
         See https://msdn.microsoft.com/en-us/library/azure/dd135714.aspx
     '''
     return datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
+
+
+def get_cloudify_endpoint(_ctx):
+    '''
+        ctx.endpoint collapses the functionality for local and manager
+        rest clients.
+
+    :param _ctx: the NodeInstanceContext
+    :return: endpoint object
+    '''
+    if hasattr(_ctx._endpoint, 'storage'):
+        return _ctx._endpoint.storage
+    return _ctx._endpoint
+
+
+def get_relationship_subject_ctx(_ctx, rel_target):
+    '''
+        Get a RelationshipSubjectContext for a given Relationship Target
+    :param _ctx: The NodeInstanceContext
+    :param rel_target: The NodeInstanceContext
+           relationship Target RelationshipContext
+    :return: RelationshipSubjectContext
+    '''
+    target_context = {
+        'node_name': rel_target.node.id,
+        'node_id': rel_target.instance.id
+    }
+    return RelationshipSubjectContext(context=target_context,
+                                      endpoint=get_cloudify_endpoint(_ctx),
+                                      modifiable=False)

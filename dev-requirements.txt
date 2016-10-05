@@ -1,7 +1,4 @@
-https://github.com/cloudify-cosmo/cloudify-dsl-parser/archive/3.4.zip
-https://github.com/cloudify-cosmo/cloudify-rest-client/archive/3.4.zip
-https://github.com/cloudify-cosmo/cloudify-plugins-common/archive/3.4.zip
-https://github.com/Azure/azure-sdk-for-python/archive/v1.0.0.zip
+https://github.com/cloudify-cosmo/cloudify-dsl-parser/archive/master.zip
+https://github.com/cloudify-cosmo/cloudify-rest-client/archive/master.zip
+https://github.com/cloudify-cosmo/cloudify-plugins-common/archive/master.zip
 https://github.com/Azure/azure-storage-python/archive/v0.33.0.zip
-msrest
-msrestazure

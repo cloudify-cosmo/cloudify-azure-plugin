@@ -165,7 +165,8 @@ def build_network_profile():
         network_interfaces.append(network_interface)
     # Check for a primary interface if multiple NICs are used
     if len(network_interfaces) > 1:
-        if not len([x for x in network_interfaces if x['properties']['primary']]):
+        if not len([x for x in network_interfaces
+                    if x['properties']['primary']]):
             raise NonRecoverableError(
                 'Exactly one "primary" network interface must be specified '
                 'if multiple NetworkInterfaceCard nodes are used')

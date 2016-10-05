@@ -111,4 +111,4 @@ class TestNetwork(unittest.TestCase):
         '''network uninstall workflow'''
         self.mock_uninstall_endpoints(mock)
         self.mock_network_endpoints(mock)
-        cfy_local.execute('uninstall', task_retries=1)
+        cfy_local.execute('uninstall', task_retries=2)

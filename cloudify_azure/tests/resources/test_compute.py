@@ -33,8 +33,9 @@ class TestCompute(unittest.TestCase):
     '''Tests Compute interfaces'''
     blueprint_path = path.join('blueprints',
                                'test_compute.yaml')
-    ps1_url = 'https://raw.githubusercontent.com/01000101/cloudify-azure-'\
-              'plugin/rebuild/scripts/ps_enable_winrm_http.ps1'
+    ps1_url = 'https://raw.githubusercontent.com/cloudify-cosmo/'\
+              'cloudify-azure-plugin/rebuild/scripts/'\
+              'ps_enable_winrm_http.ps1'
 
     def setUp(self):
         self.mock_rg_name = 'mockrg'

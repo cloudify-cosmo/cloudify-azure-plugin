@@ -607,7 +607,10 @@ def create_rule(**_):
 
 @operation
 def delete_rule(**_):
-    '''Deletes a Load Balancer Rule'''
+    '''
+        Deletes a Load Balancer Rule
+        TODO: Rewrite this to occur inside of a Relationship Operation
+    '''
     if ctx.node.properties.get('use_external_resource', False):
         return
     # Get an interface to the Load Balancer
@@ -615,7 +618,8 @@ def delete_rule(**_):
         ctx.instance.relationships,
         constants.REL_CONTAINED_IN_LB)
     lb_name = utils.get_resource_name(lb_rel.target)
-    lb_iface = LoadBalancer(_ctx=lb_rel.target)
+    lb_ctx = utils.get_relationship_subject_ctx(ctx, lb_rel.target)
+    lb_iface = LoadBalancer(_ctx=lb_ctx)
     # Get the existing rules
     lb_data = lb_iface.get(lb_name)
     lb_rules = lb_data.get('properties', dict()).get(
