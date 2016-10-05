@@ -91,7 +91,6 @@ class StorageAccount(Resource):
                 'name': key,
                 'key': keys[key]
             })
-        self.log.debug('keys: {0}'.format(keys))
         return ret
 
 

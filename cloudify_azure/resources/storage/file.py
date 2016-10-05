@@ -149,5 +149,3 @@ def create_file_share(**_):
         storage_account_name,
         constants.CONN_STORAGE_FILE_ENDPOINT,
         share_name)
-    ctx.logger.debug('Runtime properties: {0}'.format(
-        ctx.instance.runtime_properties))
