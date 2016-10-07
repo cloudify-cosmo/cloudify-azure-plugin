@@ -33,6 +33,6 @@ setup(
         'cloudify-plugins-common>=3.4',
         'requests==2.7.0',
         'pyyaml==3.10',
-        'azure-storage'
+        'azure-storage>=0.33.0'
     ]
 )
