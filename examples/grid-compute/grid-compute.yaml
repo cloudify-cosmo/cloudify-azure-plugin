@@ -106,15 +106,31 @@ inputs:
   vm_os_pubkey_auth_only:
     default: true
     
+  # Manager inputs (needed for agent deployments)
+  manager_resource_group:
+    required: true
+    default: shayrg
+
+  manager_virtual_network:
+    required: true
+    default: a73c364c-a14d-4b96-9dd5-04e561144788
+    
+  manager_subnet:
+    required: true
+    default: 3da67af5-cd44-47bd-b229-fa4357301b8d
+    
+  # Limits to consider
+  # - 100 VMs per availability set (1 set per resource group)
+  # - 800 total resources per resource group
+  # - 200 storage accounts per subscription
   scale_vm_per_sa:
     default: 50
     
   scale_sa_per_rg:
-    default: 5
+    default: 4
     
   scale_total_rg:
-    default: 4
-
+    default: 2
 
 dsl_definitions:
   azure_config: &azure_config
@@ -133,7 +149,11 @@ node_types:
       retry_after: { default: { get_input: retry_after } }
       os_family: { default: { get_input: vm_os_family } }
       azure_config: { default: *azure_config }
-      install_agent: { default: false }
+      agent_config:
+        default:
+          user: { get_input: vm_os_username }
+          password: { get_input: vm_os_password }
+          install_method: remote
       resource_config:
         default:
           hardwareProfile:
@@ -159,19 +179,18 @@ node_templates:
   core_resource_group:
     type: cloudify.azure.nodes.ResourceGroup
     properties:
-      name: {concat:[{get_input: resource_prefix},rg,{get_input: resource_suffix}]}
+      name: { get_input: manager_resource_group }
+      use_external_resource: true
       location: { get_input: location }
       azure_config: *azure_config
 
   core_virtual_network:
     type: cloudify.azure.nodes.network.VirtualNetwork
     properties:
+      name: { get_input: manager_virtual_network }
+      use_external_resource: true
       azure_config: *azure_config
       location: { get_input: location }
-      resource_config:
-        addressSpace:
-          addressPrefixes:
-          - 172.16.0.0/16
     relationships:
     - type: cloudify.azure.relationships.contained_in_resource_group
       target: core_resource_group
@@ -179,11 +198,10 @@ node_templates:
   core_subnet:
     type: cloudify.azure.nodes.network.Subnet
     properties:
+      name: { get_input: manager_subnet }
+      use_external_resource: true
       azure_config: *azure_config
       location: { get_input: location }
-      resource_config:
-        addressPrefix:
-          172.16.0.0/16
     relationships:
     - type: cloudify.azure.relationships.contained_in_virtual_network
       target: core_virtual_network
@@ -214,20 +232,29 @@ node_templates:
       target: resource_group
     - type: cloudify.azure.relationships.connected_to_storage_account
       target: storage_account
-    - type: cloudify.azure.relationships.connected_to_availability_set
-      target: availability_set
+    #- type: cloudify.azure.relationships.connected_to_availability_set
+    #  target: availability_set
     - type: cloudify.azure.relationships.connected_to_nic
       target: host_nic
-
-  availability_set:
-    type: cloudify.azure.nodes.compute.AvailabilitySet
-    properties:
-      location: { get_input: location }
-      azure_config: *azure_config
-      retry_after: { get_input: retry_after }
+    
+  application:
+    type: cloudify.nodes.ApplicationModule
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        start: scripts/example.py
     relationships:
-    - type: cloudify.azure.relationships.contained_in_resource_group
-      target: resource_group
+    - type: cloudify.relationships.contained_in
+      target: host
+
+  #availability_set:
+  #  type: cloudify.azure.nodes.compute.AvailabilitySet
+  #  properties:
+  #    location: { get_input: location }
+  #    azure_config: *azure_config
+  #    retry_after: { get_input: retry_after }
+  #  relationships:
+  #  - type: cloudify.azure.relationships.contained_in_resource_group
+  #    target: resource_group
 
   host_nic:
     type: cloudify.azure.nodes.network.NetworkInterfaceCard
@@ -261,6 +288,7 @@ groups:
     members:
     - outer
     - resource_group
+    #- availability_set
   
   outer:
     members:
