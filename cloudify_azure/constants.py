@@ -29,6 +29,8 @@ OAUTH2_GRANT_TYPE = 'client_credentials'
 
 # Connection constants
 CONN_API_ENDPOINT = 'https://management.azure.com'
+CONN_STORAGE_FILE_ENDPOINT = 'file.core.windows.net'
+CONN_STORAGE_BLOB_ENDPOINT = 'https://{0}.blob.core.windows.net'
 
 # API version constants
 # Each service has its own API version independent of any other services
@@ -36,10 +38,13 @@ API_VER_RESOURCES = '2016-02-01'
 API_VER_STORAGE = '2015-06-15'
 API_VER_NETWORK = '2016-03-30'
 API_VER_COMPUTE = '2016-03-30'
+API_VER_STORAGE_BLOB = '2015-12-11'
 
 # Relationship constants
 REL_CONTAINED_IN_RG = \
     'cloudify.azure.relationships.contained_in_resource_group'
+REL_CONTAINED_IN_SA = \
+    'cloudify.azure.relationships.contained_in_storage_account'
 REL_CONTAINED_IN_VN = \
     'cloudify.azure.relationships.contained_in_virtual_network'
 REL_CONTAINED_IN_NSG = \
@@ -72,6 +77,8 @@ REL_VMX_CONTAINED_IN_VM = \
     'cloudify.azure.relationships.vmx_contained_in_vm'
 REL_LB_CONNECTED_TO_NIC = \
     'cloudify.azure.relationships.lb_connected_to_nic'
+REL_LB_CONNECTED_TO_IPC = \
+    'cloudify.azure.relationships.lb_connected_to_ip_configuration'
 
 SECURE_KW = ['client_id', 'client_secret', 'username',
              'adminUsername', 'adminPassword', 'keyData']

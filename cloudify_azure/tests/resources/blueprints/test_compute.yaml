@@ -1,8 +1,8 @@
-tosca_definitions_version: cloudify_dsl_1_2
+tosca_definitions_version: cloudify_dsl_1_3
 
 
 imports:
-- http://www.getcloudify.org/spec/cloudify/3.3.1/types.yaml
+- http://www.getcloudify.org/spec/cloudify/3.4/types.yaml
 - plugin.yaml
 
 
@@ -183,4 +183,24 @@ node_templates:
       target: availability_set
     - type: cloudify.azure.relationships.connected_to_nic
       target: nic
+    - type: cloudify.azure.relationships.vm_connected_to_datadisk
+      target: data_disk_0
+      source_interfaces:
+        cloudify.interfaces.relationship_lifecycle:
+          establish:
+            implementation: pkg.cloudify_azure.resources.compute.virtualmachine.attach_data_disk
+            inputs:
+              lun: 0
+ 
+  data_disk_0:
+    type: cloudify.azure.nodes.storage.DataDisk
+    properties:
+      azure_config: *azure_config
+      location: eastus
+      resource_config:
+        size: 1
+        force_delete: false
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_storage_account
+      target: storage_account
  

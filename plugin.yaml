@@ -5,9 +5,9 @@
 plugins:
   pkg:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/1.4.1.dev0.zip
+    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/1.4.1.zip
     package_name: cloudify-azure-plugin
-    package_version: '1.4.1.dev0'
+    package_version: '1.4.1'
 
 data_types:
   cloudify.datatypes.azure.Config:
@@ -81,6 +81,42 @@ data_types:
         type: string
         default: Standard_LRS
         required: true
+        
+  cloudify.datatypes.azure.storage.DataDiskConfig:
+    properties:
+      container_name:
+        type: string
+        description: >
+          Container for the resource.
+        default: vhds
+      size:
+        description: >
+          Size of the Page Blob (Azure disk) in GiB. Maximum of 1023 GiB allowed.
+        default: 20
+        required: true
+      force_delete:
+        description: >
+          If set to true, the resource's "delete" lifecycle will purge the
+          Azure Data Disk from the Azure Storage Account. If false, the
+          Data Disk is left as-is in the Storage Account.
+        default: false
+        
+  cloudify.datatypes.azure.storage.FileShareConfig:
+    properties:
+      metadata:
+        description: >
+          Metadata (dict) for the File Share
+        required: false
+      quota:
+        description: >
+          Quote, in GiB, for the maximum size of the file share
+        required: false
+      fail_on_exist:
+        description: >
+          If true, causes the operation to raise a NonRecoverableError if
+          the file share already exists. If false, issues a warning and
+          continues execution.
+        default: false
 
   cloudify.datatypes.azure.network.VirtualNetworkConfig:
     description: >
@@ -178,8 +214,7 @@ data_types:
       ipConfigurations:
         required: false
       dnsSettings:
-        required: false
-        
+        required: false      
   
   cloudify.datatypes.azure.network.IPConfigurationConfig:
     properties:
@@ -425,6 +460,94 @@ node_types:
       cloudify.interfaces.lifecycle:
         create: pkg.cloudify_azure.resources.storage.storageaccount.create
         delete: pkg.cloudify_azure.resources.storage.storageaccount.delete
+        
+  cloudify.azure.nodes.storage.DataDisk:
+    derived_from: cloudify.nodes.Root
+    properties:
+      name:
+        type: string
+        description: >
+          Name for the resource (include any extension, such as .vhd).
+          Can be up to 80 characters in length and
+          contain lowercase letters, numbers, ".", and "_". Must start
+          with a number or lowercase letter and cannot end with
+          either "_" or "."
+        required: false
+      location:
+        type: string
+        description: >
+          Specifies the supported Azure location for the resource
+        required: false
+      use_external_resource:
+        description: >
+          Indicate whether the resource exists or if Cloudify should create the resource
+        type: boolean
+        default: false
+        required: true
+      retry_after:
+        description: >
+          Overrides the Azure-specified "retry_after" response. This property
+          will set the number of seconds for each task retry interval (in the
+          case of iteratively checking the status of an asynchronous operation)
+        type: integer
+        required: false
+      resource_config:
+        description: >
+          A dictionary of values to pass as properties when creating the resource
+        type: cloudify.datatypes.azure.storage.DataDiskConfig
+        required: false
+      azure_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create: pkg.cloudify_azure.resources.storage.disk.create_data_disk
+        delete: pkg.cloudify_azure.resources.storage.disk.delete_data_disk
+        
+  cloudify.azure.nodes.storage.FileShare:
+    derived_from: cloudify.nodes.Root
+    properties:
+      name:
+        type: string
+        description: >
+          Name for the resource. Can be up to 63 characters in length and
+          contain lowercase letters, numbers, and dashes. Must start
+          with a number or lowercase letter and cannot contain
+          two consecutive dashes.
+        required: false
+      location:
+        type: string
+        description: >
+          Specifies the supported Azure location for the resource
+        required: false
+      use_external_resource:
+        description: >
+          Indicate whether the resource exists or if Cloudify should create the resource
+        type: boolean
+        default: false
+        required: true
+      retry_after:
+        description: >
+          Overrides the Azure-specified "retry_after" response. This property
+          will set the number of seconds for each task retry interval (in the
+          case of iteratively checking the status of an asynchronous operation)
+        type: integer
+        required: false
+      resource_config:
+        description: >
+          A dictionary of values to pass as properties when creating the resource
+        type: cloudify.datatypes.azure.storage.FileShareConfig
+        required: false
+      azure_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create: pkg.cloudify_azure.resources.storage.file.create_file_share
         
   cloudify.azure.nodes.network.VirtualNetwork:
     derived_from: cloudify.nodes.Root
@@ -783,6 +906,11 @@ node_types:
         description: >
           Specifies a dictionary of one or more name and value pairs that describe a tag
         required: false
+      primary:
+        description: >
+          When using multiple Network Interfaces, a primary must be set
+        required: false
+        default: false
       resource_config:
         description: >
           A dictionary of values to pass as properties when creating the resource
@@ -994,6 +1122,11 @@ node_types:
         description: >
           Specifies a dictionary of one or more name and value pairs that describe a tag
         required: false
+      plan:
+        description: >
+          Specifies information about the marketplace image used to create the virtual
+          machine. This element is only used for marketplace images.
+        required: false
       resource_config:
         description: >
           A dictionary of values to pass as properties when creating the resource
@@ -1172,6 +1305,7 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         create: pkg.cloudify_azure.resources.network.loadbalancer.create
+        configure: pkg.cloudify_azure.resources.network.loadbalancer.configure
         delete: pkg.cloudify_azure.resources.network.loadbalancer.delete
         
   cloudify.azure.nodes.network.LoadBalancer.BackendAddressPool:
@@ -1393,6 +1527,9 @@ node_types:
 relationships:
   cloudify.azure.relationships.contained_in_resource_group:
     derived_from: cloudify.relationships.contained_in
+    
+  cloudify.azure.relationships.contained_in_storage_account:
+    derived_from: cloudify.relationships.contained_in
   
   cloudify.azure.relationships.contained_in_virtual_network:
     derived_from: cloudify.relationships.contained_in
@@ -1429,6 +1566,12 @@ relationships:
       cloudify.interfaces.relationship_lifecycle:
         preconfigure: pkg.cloudify_azure.resources.network.networkinterfacecard.attach_ip_configuration
   
+  cloudify.azure.relationships.lb_connected_to_ip_configuration:
+    derived_from: cloudify.relationships.connected_to
+    source_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        preconfigure: pkg.cloudify_azure.resources.network.loadbalancer.attach_ip_configuration
+
   cloudify.azure.relationships.ip_configuration_connected_to_subnet:
     derived_from: cloudify.relationships.connected_to
     
@@ -1437,6 +1580,13 @@ relationships:
     
   cloudify.azure.relationships.connected_to_storage_account:
     derived_from: cloudify.relationships.connected_to
+    
+  cloudify.azure.relationships.connected_to_data_disk:
+    derived_from: cloudify.relationships.connected_to
+    source_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        establish: pkg.cloudify_azure.resources.compute.virtualmachine.attach_disk
+        unlink: pkg.cloudify_azure.resources.compute.virtualmachine.detach_disk
     
   cloudify.azure.relationships.connected_to_nic:
     derived_from: cloudify.relationships.connected_to
@@ -1462,4 +1612,17 @@ relationships:
       cloudify.interfaces.relationship_lifecycle:
         establish: pkg.cloudify_azure.resources.network.loadbalancer.attach_nic_to_backend_pool
         unlink: pkg.cloudify_azure.resources.network.loadbalancer.detach_nic_from_backend_pool
-        
+
+  cloudify.azure.relationships.vm_connected_to_datadisk:
+    derived_from: cloudify.relationships.connected_to
+    source_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        establish:
+          implementation: pkg.cloudify_azure.resources.compute.virtualmachine.attach_data_disk
+          inputs:
+            lun:
+              description: >
+                Specifies the logical unit number of the data disk in the VM
+              default: 0
+              required: true
+        unlink: pkg.cloudify_azure.resources.compute.virtualmachine.detach_data_disk

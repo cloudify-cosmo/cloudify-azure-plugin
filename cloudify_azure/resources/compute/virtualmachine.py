@@ -21,9 +21,12 @@
 # Deep object copying
 from copy import deepcopy
 # Random string
-import random, string
+import random
+import string
 # Node properties and logger
 from cloudify import ctx
+# Exception handling
+from cloudify.exceptions import NonRecoverableError
 # Life-cycle operation decorator
 from cloudify.decorators import operation
 # Base resource class
@@ -134,9 +137,49 @@ def build_datadisks_profile(usr_datadisks):
     return datadisks
 
 
+def build_network_profile():
+    '''
+        Creates a networkProfile object complete with
+        a list of networkInterface objects
+
+    :returns: networkProfile object
+    :rtype: dict
+    '''
+    network_interfaces = list()
+    net_rels = utils.get_relationships_by_type(
+        ctx.instance.relationships,
+        constants.REL_CONNECTED_TO_NIC)
+    ctx.logger.debug('net_rels: {0}'.format(
+        [net_rel.target.node.id for net_rel in net_rels]))
+    for net_rel in net_rels:
+        # Get the NIC resource ID
+        network_interface = utils.get_full_id_reference(
+            NetworkInterfaceCard,
+            _ctx=net_rel.target)
+        # If more than one NIC is attached, set the Primary property
+        if len(net_rels) > 1:
+            network_interface['properties'] = {
+                'primary': net_rel.target.node.properties.get('primary')
+            }
+        network_interfaces.append(network_interface)
+    # Check for a primary interface if multiple NICs are used
+    if len(network_interfaces) > 1:
+        if not len([
+                x for x in network_interfaces
+                if x['properties']['primary']]):
+            raise NonRecoverableError(
+                'Exactly one "primary" network interface must be specified '
+                'if multiple NetworkInterfaceCard nodes are used')
+    return {
+        'networkInterfaces': network_interfaces
+    }
+
+
 def vm_name_generator():
     '''Generates a unique VM resource name'''
-    return ''.join(random.choice(string.lowercase) for i in range(15))
+    return ''.join(random.choice(
+        string.lowercase + string.digits + '-'
+    ) for i in range(random.randint(10, 64)))
 
 
 @operation
@@ -157,12 +200,7 @@ def create(**_):
         'dataDisks': datadisks
     }
     # Build the network profile
-    network_profile = {
-        'networkInterfaces': utils.get_rel_id_references(
-            NetworkInterfaceCard,
-            constants.REL_CONNECTED_TO_NIC
-        )
-    }
+    network_profile = build_network_profile()
     # Build the OS profile
     os_family = ctx.node.properties.get('os_family', '').lower()
     os_profile = dict()
@@ -200,6 +238,7 @@ def create(**_):
         {
             'location': ctx.node.properties.get('location'),
             'tags': ctx.node.properties.get('tags'),
+            'plan': ctx.node.properties.get('plan'),
             'properties': utils.dict_update(
                 utils.get_resource_config(),
                 {
@@ -291,3 +330,76 @@ def delete(**_):
     # Delete the resource
     utils.task_resource_delete(
         VirtualMachine())
+
+
+@operation
+def attach_data_disk(lun, **_):
+    '''Attaches a data disk'''
+    vm_iface = VirtualMachine(_ctx=ctx.source)
+    vm_state = vm_iface.get(name=utils.get_resource_name(_ctx=ctx.source))
+    data_disks = vm_state.get(
+        'properties', dict()).get(
+            'storageProfile', dict()).get(
+                'dataDisks', list())
+    # Get the createOption
+    create_opt = 'Empty'
+    if ctx.target.node.properties.get('use_external_resource', False):
+        create_opt = 'Attach'
+    # Add the disk to the list
+    data_disks.append({
+        'name': utils.get_resource_name(_ctx=ctx.target),
+        'lun': lun,
+        'diskSizeGB': ctx.target.instance.runtime_properties['diskSizeGB'],
+        'vhd': {
+            'uri': ctx.target.instance.runtime_properties['uri']
+        },
+        'createOption': create_opt,
+        'caching': 'None'
+    })
+    ctx.logger.info('async_op: {0}'.format(
+        ctx.source.instance.runtime_properties.get('async_op')))
+    # Update the VM
+    utils.task_resource_update(
+        VirtualMachine(_ctx=ctx.source),
+        {
+            'location': ctx.source.node.properties.get('location'),
+            'properties': {
+                'storageProfile': {
+                    'dataDisks': data_disks
+                }
+            }
+        },
+        force=True,
+        _ctx=ctx.source
+    )
+
+
+@operation
+def detach_data_disk(**_):
+    '''Detaches a data disk'''
+    vm_iface = VirtualMachine(_ctx=ctx.source)
+    vm_state = vm_iface.get(name=utils.get_resource_name(_ctx=ctx.source))
+    data_disks = [
+        x for x in vm_state.get(
+            'properties', dict()).get(
+                'storageProfile', dict()).get(
+                    'dataDisks', list())
+        if x.get('vhd', dict()).get('uri') !=
+        ctx.target.instance.runtime_properties['uri']
+    ]
+    ctx.logger.info('async_op: {0}'.format(
+        ctx.source.instance.runtime_properties.get('async_op')))
+    # Update the VM
+    utils.task_resource_update(
+        VirtualMachine(_ctx=ctx.source),
+        {
+            'location': ctx.source.node.properties.get('location'),
+            'properties': {
+                'storageProfile': {
+                    'dataDisks': data_disks
+                }
+            }
+        },
+        force=True,
+        _ctx=ctx.source
+    )

@@ -1,0 +1,26 @@
+# Account info
+subscription_id: AZURE_SUBSCRIPTION_ID
+tenant_id: AZURE_TENANT_ID
+client_id: AZURE_CLIENT_ID
+client_secret: AZURE_CLIENT_SECRET
+location: westeurope
+
+# General
+retry_after: 30
+
+# Networking
+vnet_cidr_block: 10.1.0.0/23
+subnet_public_cidr_block: 10.1.0.0/24
+subnet_private_cidr_block: 10.1.1.0/24
+
+# FortiGate VM
+vm_size: Standard_D3
+vm_os_family: linux
+vm_image_publisher: fortinet
+vm_image_offer: fortinet_fortigate-vm_v5
+vm_image_sku: fortinet_fg-vm
+vm_image_version: latest
+
+# Access
+vm_os_username: cloudify
+vm_os_password: Cl0ud1fy!

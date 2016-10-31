@@ -137,7 +137,8 @@ class Resource(object):
                  :exc:`requests.RequestException`
         '''
         self.log.info('Creating {0} "{1}"'.format(self.name, name))
-        self.ctx.instance.runtime_properties['async_op'] = None
+        if self.ctx.instance._modifiable:
+            self.ctx.instance.runtime_properties['async_op'] = None
         # Sanitize input data
         params = self.sanitize_json_input(params)
         # Make the request
@@ -153,6 +154,13 @@ class Resource(object):
         # HTTP 201 (CREATED) - The operation succeeded
         if res.status_code == httplib.CREATED:
             if headers.get('azure-asyncoperation'):
+                if not self.ctx.instance._modifiable:
+                    self.log.warn(
+                        'Not retrying async operation, '
+                        'because NodeInstanceContext is not modifiable. '
+                        'headers: {0}'.format(headers)
+                    )
+                    return
                 self.ctx.instance.runtime_properties['async_op'] = headers
                 return ctx.operation.retry(
                     'Operation: "{0}" started'
@@ -164,6 +172,13 @@ class Resource(object):
             if not headers.get('location'):
                 raise RecoverableError(
                     'HTTP 202 ACCEPTED but no Location header present')
+            if not self.ctx.instance._modifiable:
+                self.log.warn(
+                    'Not retrying async operation, '
+                    'because NodeInstanceContext is not modifiable. '
+                    'headers: {0}'.format(headers)
+                )
+                return
             self.ctx.instance.runtime_properties['async_op'] = headers
             return ctx.operation.retry(
                 'Operation: "{0}" started'
@@ -171,6 +186,13 @@ class Resource(object):
                 retry_after=self.get_retry_after(headers))
         # HTTP 200 (OK) - The resource already exists
         elif res.status_code == httplib.OK:
+            if not self.ctx.instance._modifiable:
+                self.log.warn(
+                    'Not retrying async operation, '
+                    'because NodeInstanceContext is not modifiable. '
+                    'headers: {0}'.format(headers)
+                )
+                return
             if headers.get('azure-asyncoperation'):
                 self.ctx.instance.runtime_properties['async_op'] = headers
                 return ctx.operation.retry(
@@ -215,7 +237,8 @@ class Resource(object):
             # Updating the data with our new data
             params = utils.dict_update(data, params)
         self.log.info('Updating {0} "{1}"'.format(self.name, name))
-        self.ctx.instance.runtime_properties['async_op'] = None
+        if self.ctx.instance._modifiable:
+            self.ctx.instance.runtime_properties['async_op'] = None
         # Sanitize input data
         params = self.sanitize_json_input(params)
         # Make the request
@@ -233,6 +256,13 @@ class Resource(object):
             if not headers.get('location'):
                 raise RecoverableError(
                     'HTTP 202 ACCEPTED but no Location header present')
+            if not self.ctx.instance._modifiable:
+                self.log.warn(
+                    'Not retrying async operation, '
+                    'because NodeInstanceContext is not modifiable. '
+                    'headers: {0}'.format(headers)
+                )
+                return
             self.ctx.instance.runtime_properties['async_op'] = headers
             return ctx.operation.retry(
                 'Operation: "{0}" started'
@@ -240,6 +270,19 @@ class Resource(object):
                 retry_after=self.get_retry_after(headers))
         # HTTP 200 (OK) - The resource already exists
         elif res.status_code == httplib.OK:
+            if headers.get('azure-asyncoperation'):
+                if not self.ctx.instance._modifiable:
+                    self.log.warn(
+                        'Not retrying async operation, '
+                        'because NodeInstanceContext is not modifiable. '
+                        'headers: {0}'.format(headers)
+                    )
+                    return
+                self.ctx.instance.runtime_properties['async_op'] = headers
+                return ctx.operation.retry(
+                    'Operation: "{0}" started'
+                    .format(self.get_operation_id(headers)),
+                    retry_after=self.get_retry_after(headers))
             self.log.warn('{0} already exists. Using resource.'
                           .format(self.name))
             return
@@ -270,7 +313,8 @@ class Resource(object):
                  :exc:`requests.RequestException`
         '''
         self.log.info('Deleting {0} "{1}"'.format(self.name, name))
-        self.ctx.instance.runtime_properties['async_op'] = None
+        if self.ctx.instance._modifiable:
+            self.ctx.instance.runtime_properties['async_op'] = None
         # Make the request
         res = self.client.request(
             method='delete',
@@ -290,6 +334,13 @@ class Resource(object):
             if not headers.get('location'):
                 raise RecoverableError(
                     'HTTP 202 ACCEPTED but no Location header present')
+            if not self.ctx.instance._modifiable:
+                self.log.warn(
+                    'Not retrying async operation, '
+                    'because NodeInstanceContext is not modifiable. '
+                    'headers: {0}'.format(headers)
+                )
+                return
             self.ctx.instance.runtime_properties['async_op'] = headers
             return ctx.operation.retry(
                 'Operation: "{0}" started'
@@ -371,7 +422,6 @@ class Resource(object):
         headers = dict(res.headers)
         self.log.debug('headers: {0}'.format(
             utils.secure_logging_content(headers)))
-        self.ctx.instance.runtime_properties['async_op'] = None
         # HTTP 200 (OK) - Operation is successful and complete
         if res.status_code == httplib.OK:
             if self.validate_res_json(res) == 'InProgress':
@@ -379,9 +429,12 @@ class Resource(object):
                     'Operation: "{0}" still pending'
                     .format(self.get_operation_id(headers)),
                     retry_after=self.get_retry_after(headers))
+            self.ctx.instance.runtime_properties['async_op'] = None
             return
+        # Clear the async state
+        self.ctx.instance.runtime_properties['async_op'] = None
         # HTTP 202 (ACCEPTED) - Operation is still pending
-        elif res.status_code == httplib.ACCEPTED:
+        if res.status_code == httplib.ACCEPTED:
             if not headers.get('location'):
                 raise RecoverableError(
                     'HTTP 202 ACCEPTED but no Location header present')
