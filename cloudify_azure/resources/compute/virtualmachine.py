@@ -177,9 +177,14 @@ def build_network_profile():
 
 def vm_name_generator():
     '''Generates a unique VM resource name'''
-    return ''.join(random.choice(
+    name = ''.join(random.choice(
         string.lowercase + string.digits + '-'
     ) for i in range(random.randint(10, 64)))
+    if name.endswith('-'):
+        name[-1] = random.choice(string.lowercase + string.digits)
+    if name.startswith('-'):
+        name[0] = random.choice(string.lowercase + string.digits)
+    return name
 
 
 @operation
