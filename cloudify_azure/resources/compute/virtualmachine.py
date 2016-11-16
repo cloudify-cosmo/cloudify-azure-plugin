@@ -189,7 +189,7 @@ def create(args=None, **_):
     utils.generate_resource_name(
         VirtualMachine(),
         generator=vm_name_generator)
-    res_cfg = utils.get_resource_config(args) or dict()
+    res_cfg = utils.get_resource_config(args=args) or dict()
     # Build storage profile
     osdisk = build_osdisk_profile(
         res_cfg.get('storageProfile', dict()).get('osDisk', dict()))
@@ -240,7 +240,7 @@ def create(args=None, **_):
             'tags': ctx.node.properties.get('tags'),
             'plan': ctx.node.properties.get('plan'),
             'properties': utils.dict_update(
-                utils.get_resource_config(args),
+                utils.get_resource_config(args=args),
                 {
                     'availabilitySet': utils.get_rel_id_reference(
                         AvailabilitySet,
