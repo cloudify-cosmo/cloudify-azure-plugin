@@ -393,9 +393,12 @@ class Resource(object):
         # HTTP 200 (OK) - The resource already exists
         elif res.status_code == httplib.OK:
             return True
-        # If Azure sent a 404, the resource doesn't exist (yet?)
-        if res.status_code == httplib.NOT_FOUND:
+        # HTTP 404 (NOT_FOUND) - The resource can't be found
+        elif res.status_code == httplib.NOT_FOUND:
             return False
+        # HTTP 400 (BAD_REQUEST) - The resource name is invalid
+        elif res.status_code == httplib.BAD_REQUEST:
+            raise ValueError('Invalid resource name')
         raise UnexpectedResponse(
             'Recieved unexpected HTTP ({0}) response'
             .format(res.status_code), res.json())

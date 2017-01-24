@@ -21,8 +21,7 @@
 # Deep object copying
 from copy import deepcopy
 # Random string
-import random
-import string
+from uuid import uuid4
 # Node properties and logger
 from cloudify import ctx
 # Exception handling
@@ -177,9 +176,7 @@ def build_network_profile():
 
 def vm_name_generator():
     '''Generates a unique VM resource name'''
-    return ''.join(random.choice(
-        string.lowercase + string.digits + '-'
-    ) for i in range(random.randint(10, 64)))
+    return uuid4()
 
 
 @operation

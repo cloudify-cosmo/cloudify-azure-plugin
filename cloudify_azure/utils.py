@@ -112,14 +112,18 @@ def generate_resource_name(resource, generator=None, name=None, _ctx=ctx):
     name = name or get_resource_name(_ctx)
     # Generate a new name (if needed)
     if not name:
-        for _ in xrange(0, 10):
+        for _ in xrange(0, 15):
             if generator:
                 name = generator()
             else:
                 name = str(uuid4())
             # Check if we have a duplicate name
-            if not resource.exists(name):
-                break
+            try:
+                if not resource.exists(name):
+                    break
+            except ValueError:
+                # Catch an HTTP 400 response for invalid name
+                pass
     # Set the new name in the runtime properties
     _ctx.instance.runtime_properties['name'] = name
     return name
