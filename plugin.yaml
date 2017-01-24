@@ -5,7 +5,7 @@
 plugins:
   pkg:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/1.4.1.zip
+    source: https://github.com/01000101/cloudify-azure-plugin/archive/rf-updates.zip
     package_name: cloudify-azure-plugin
     package_version: '1.4.1'
 
