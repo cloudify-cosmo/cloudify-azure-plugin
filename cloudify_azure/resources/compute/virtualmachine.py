@@ -176,7 +176,7 @@ def build_network_profile():
 
 def vm_name_generator():
     '''Generates a unique VM resource name'''
-    return uuid4()
+    return str(uuid4())
 
 
 @operation
