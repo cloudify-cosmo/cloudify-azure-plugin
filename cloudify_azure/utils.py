@@ -695,6 +695,7 @@ def get_cloudify_endpoint(_ctx):
 def get_relationship_subject_ctx(_ctx, rel_target):
     '''
         Get a RelationshipSubjectContext for a given Relationship Target
+
     :param _ctx: The NodeInstanceContext
     :param rel_target: The NodeInstanceContext
            relationship Target RelationshipContext

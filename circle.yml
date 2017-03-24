@@ -17,8 +17,10 @@ dependencies:
 
 test:
   override:
+    - tox -e docs
     - tox -e flake8
     - tox -e py27
+    - mv .tox/docs/tmp/html $CIRCLE_ARTIFACTS
 
 deployment:
   release:
