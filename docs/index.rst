@@ -10,6 +10,10 @@ This is the documentation for the Microsoft Azure plugin for Cloudify.
 Contents
 ========
 
+.. toctree::
+
+    types
+
 Core
 ----
 
