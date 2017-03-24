@@ -479,9 +479,9 @@ data_types:
           Distribution type to use.
           Possible values are::
             
-            Default – The load balancer is configured to use a 5 tuple hash to map traffic to available servers.
-            SourceIP – The load balancer is configured to use a 2 tuple hash to map traffic to available servers.
-            SourceIPProtocol – The load balancer is configured to use a 3 tuple hash to map traffic to available servers.
+            Default - The load balancer is configured to use a 5 tuple hash to map traffic to available servers.
+            SourceIP - The load balancer is configured to use a 2 tuple hash to map traffic to available servers.
+            SourceIPProtocol - The load balancer is configured to use a 3 tuple hash to map traffic to available servers.
         type: string
         required: false
         default: Default
