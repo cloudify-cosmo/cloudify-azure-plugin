@@ -2,10 +2,11 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Microsoft Azure plugin for Cloudify's documentation!
-========================================================
+Microsoft Azure plugin for Cloudify
+===================================
 
-This is the documentation for the Microsoft Azure plugin for Cloudify.
+The Azure plugin allows users to use Cloudify to manage cloud resources on Azure. See below for currently supported resource types.
+
 
 Contents
 ========
