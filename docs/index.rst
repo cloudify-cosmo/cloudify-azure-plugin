@@ -13,6 +13,7 @@ Contents
 .. toctree::
 
     types
+    examples
     misc
 
 Core
