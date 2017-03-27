@@ -409,26 +409,98 @@ Data Types
 Relationships
 =============
 
-.. cfy:rel:: cloudify.azure.relationships.lb_connected_to_ip_configuration
-.. cfy:rel:: cloudify.azure.relationships.contained_in_virtual_network
-.. cfy:rel:: cloudify.azure.relationships.contained_in_network_security_group
-.. cfy:rel:: cloudify.azure.relationships.ip_configuration_connected_to_subnet
-.. cfy:rel:: cloudify.azure.relationships.connected_to_availability_set
-.. cfy:rel:: cloudify.azure.relationships.vm_connected_to_datadisk
-.. cfy:rel:: cloudify.azure.relationships.ip_configuration_connected_to_public_ip
-.. cfy:rel:: cloudify.azure.relationships.connected_to_lb_be_pool
-.. cfy:rel:: cloudify.azure.relationships.nic_connected_to_ip_configuration
-.. cfy:rel:: cloudify.azure.relationships.nic_connected_to_network_security_group
-.. cfy:rel:: cloudify.azure.relationships.connected_to_data_disk
-.. cfy:rel:: cloudify.azure.relationships.connected_to_lb_probe
 .. cfy:rel:: cloudify.azure.relationships.contained_in_resource_group
+
+    Sets a dependency between the resource and the resource group that contains it.
+
+
+.. cfy:rel:: cloudify.azure.relationships.contained_in_virtual_network
+
+    Sets a dependency between the resource and the virtual network that contains it.
+
+
+.. cfy:rel:: cloudify.azure.relationships.contained_in_network_security_group
+
+    Sets a dependency between the resource and the network security group that contains it.
+
+
 .. cfy:rel:: cloudify.azure.relationships.contained_in_route_table
-.. cfy:rel:: cloudify.azure.relationships.contained_in_storage_account
-.. cfy:rel:: cloudify.azure.relationships.vmx_contained_in_vm
-.. cfy:rel:: cloudify.azure.relationships.connected_to_nic
-.. cfy:rel:: cloudify.azure.relationships.nic_connected_to_lb_be_pool
+
+    Sets a dependency between the resource and the route table that contains it.
+
+
 .. cfy:rel:: cloudify.azure.relationships.contained_in_load_balancer
-.. cfy:rel:: cloudify.azure.relationships.connected_to_ip_configuration
-.. cfy:rel:: cloudify.azure.relationships.route_table_attached_to_subnet
+
+    Sets a dependency between the resource and the load balancer.
+
+
 .. cfy:rel:: cloudify.azure.relationships.network_security_group_attached_to_subnet
+
+    Attaches a network security group to a subnet.
+
+
+.. cfy:rel:: cloudify.azure.relationships.route_table_attached_to_subnet
+
+    Attaches a network route table to a subnet.
+
+
+.. cfy:rel:: cloudify.azure.relationships.nic_connected_to_network_security_group
+
+    Attaches a NIC to a network security group.
+
+
+.. cfy:rel:: cloudify.azure.relationships.ip_configuration_connected_to_subnet
+
+    Sets a dependency between an IP configuration and a subnet.
+
+
+.. cfy:rel:: cloudify.azure.relationships.ip_configuration_connected_to_public_ip
+
+    Sets a dependency between an IP configuration and a public IP.
+
+
 .. cfy:rel:: cloudify.azure.relationships.connected_to_storage_account
+
+    Sets a dependency between the resource and a storage account.
+
+
+.. cfy:rel:: cloudify.azure.relationships.connected_to_availability_set
+
+    Sets a dependency between the resource and an availability set.
+
+
+.. cfy:rel:: cloudify.azure.relationships.connected_to_ip_configuration
+
+    Sets a dependency between the resource and an IP configuration.
+
+
+.. cfy:rel:: cloudify.azure.relationships.connected_to_nic
+
+    Sets a dependency between the resource and a NIC.
+
+
+.. cfy:rel:: cloudify.azure.relationships.connected_to_lb_be_pool
+
+    Sets a dependency between the resource and a LB pool.
+
+
+.. cfy:rel:: cloudify.azure.relationships.connected_to_lb_probe
+
+    Sets a dependency between the resource and a LB probe.
+
+
+.. cfy:rel:: cloudify.azure.relationships.vmx_contained_in_vm
+
+    Sets a dependency between a VM extension and a VM.
+
+
+.. cfy:rel:: cloudify.azure.relationships.nic_connected_to_lb_be_pool
+
+    Sets a dependency between a NIC and a LB pool.
+
+
+.. cfy:rel:: cloudify.azure.relationships.vm_connected_to_datadisk
+.. cfy:rel:: cloudify.azure.relationships.connected_to_data_disk
+.. cfy:rel:: cloudify.azure.relationships.nic_connected_to_ip_configuration
+.. cfy:rel:: cloudify.azure.relationships.lb_connected_to_ip_configuration
+.. cfy:rel:: cloudify.azure.relationships.contained_in_storage_account
