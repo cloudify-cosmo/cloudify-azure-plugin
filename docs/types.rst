@@ -1,7 +1,12 @@
 .. highlight:: yaml
 
+.. _types:
+
 Types
-=====
+^^^^^
+
+Node Types
+==========
 
 .. cfy:node:: cloudify.azure.nodes.ResourceGroup
 
