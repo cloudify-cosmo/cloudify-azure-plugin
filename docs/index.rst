@@ -12,9 +12,11 @@ Contents
 
 .. toctree::
 
+    requirements
     types
     examples
     misc
+
 
 Core
 ----
