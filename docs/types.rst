@@ -334,6 +334,54 @@ This example shows adding additional parameters, and explicitly defining the azu
 .. cfy:node:: cloudify.azure.nodes.network.NetworkInterfaceCard
 
 
+Node Types Common Behaviour
+===========================
+
+Common Properties
+-----------------
+
+All cloud resource nodes have common properties:
+
+  * ``name``
+  * ``location``
+  * ``tags``
+  * ``retry_after`` Because Azure's API is asynchronous, this value indicates the interval between retries.
+
+Every time you manage a resource with Cloudify,
+we create one or more clients with Azure API.
+You specify the configuration for these clients using the ``azure_config`` property.
+It should be a dictionary,
+with the following values::
+
+  subscription_id:
+  tenant_id:
+  client_id:
+  client_secret:
+
+See :cfy:datatype:``cloudify.datatypes.azure.Config``
+
+Using Existing Resources
+------------------------
+
+It is possible to use existing resources on Azure -
+whether these have been created by a different Cloudify deployment or not via Cloudify at all.
+
+All Cloudify Azure types have a property named ``use_external_resource``,
+whose default value is ``false``.
+When set to ``true``,
+the plugin will apply different semantics for each of the operations executed on the relevant node's instances:
+
+If ``use_external_resource`` is set to true in the blueprint,
+the ``name`` must be that resource's name in Azure.
+
+This behavior is common to all resource types:
+
+* ``create`` If ``use_external_resource`` is true,
+  the plugin will check if the resource is available in your account.
+* ``delete`` If ``use_external_resource`` is true,
+  the plugin will check if the resource is available in your account.
+
+
 Data Types
 ==========
 
