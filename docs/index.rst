@@ -12,12 +12,14 @@ Contents
 ========
 
 .. toctree::
-    :maxdepth: 2
-
     requirements
     types
     examples
     misc
+
+
+.. toctree::
+    :hidden:
 
     python
 
