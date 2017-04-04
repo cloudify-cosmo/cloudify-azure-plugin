@@ -6,15 +6,15 @@ Notes
 Timing & The Microsoft Azure cloud
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Timing is a tricky subject when dealing with the Azure cloud as
-some operations can take seconds while others can take up to 20
-minutes in real-world deployments.
+Timing is a complex subject when dealing with the Azure cloud
+because some operations can take seconds
+while others can take up to 20 minutes in real-world deployments.
 
 Azure APIs make an effort to
 mitigate this by responding to asynchronous operations with a
-"retry after" number to indicate the number of seconds to wait
-before checking the status of an operation again.  Unfortunately,
-this number is more often a woeful underestimate and relying on it
+"retry after" value to indicate the number of seconds to wait
+before checking the status of an operation again. Unfortunately,
+this value is often significantly underestimated and relying on it
 will result in a high percentage of Cloudify executions leading to
 failure because of too many task retries before an Azure resource
 reports it's successfully created or destroyed.
@@ -32,21 +32,23 @@ task retry limitations prevent this in many cases.  There are really only
 two options to mitigate this issue on the Cloudify side of things.
 
  **#1** is to
- take the reported "retry after" value from Azure with a grain of salt and
+ consider the reported "retry after" value from Azure with skepticism and
  override it to something like 120 seconds which would give each operation a
  maximum of 1,320 seconds (22 minutes) to complete.  The downside is that
  an operation that only takes 10 seconds to complete will still wait a minimum
  of 120 seconds before continuing, possibly delaying the overall deployment
  completion time.  This is the only option that can be leveraged from using the
- plugin itself (and not modifying external elements).  The "retry after" wait time
- can be set on a per-node basis in the blueprint by setting the `retry_after` property.
+ plugin itself (and not modifying external elements).
+ The "retry after" wait time can be set on a per-node basis
+ in the blueprint by setting the ``retry_after`` property.
 
  **#2** is to
- increase the maximum amount of retries to something much greater than the default.
- For instance, increasing the maximum retry count to 60 would allow operations to be
- checked using the reported "retry after" value (say, 25 seconds) but for many more
- iterations leading to a total operation timeout of (25*60) 1500 seconds (25 minutes).
- Setting this value can be done using the `--task-retries` flag in local executions or
+ increase the maximum number of retries to something much greater than the default.
+ For instance, increasing the maximum retry count to 60 enables operations to be
+ checked using the reported "retry after" value
+ (say, 25 seconds) but for many more iterations
+ which creates a total operation timeout of (25*60) 1500 seconds (25 minutes).
+ You can set this value using the ``--task-retries`` flag in local executions or
  during Manager bootstrapping.
 
 
@@ -103,10 +105,11 @@ achievable by using a CustomScriptExtension to enable and configure
 WinRM-HTTP (unencrypted, port 5985).  So, since the built in
 cloudify.azure.nodes.compute.VirtualMachine node type has to use
 this Virtual Machine Extension, it means that users will not be able to
-specify a cloudify.azure.nodes.compute.VirtualMachineExtension in their
+specify a :cfy:node:`cloudify.azure.nodes.compute.VirtualMachineExtension` in their
 blueprint if it is to be of type CustomScriptExtension (since there already
-is one to enable WinRM on the host).  This is not true for Linux as it relies on
-SSH and SSH is enabled on Azure Linux hosts by default (no script needed).
+is one to enable WinRM on the host).
+This is not true for Linux as it relies on SSH
+and SSH is enabled on Azure Linux hosts by default (no script needed).
 
 One workaround for this, if you have a strong need to include your own scripts,
 is to override this built-in script.  You can achieve this by changing the
@@ -128,7 +131,7 @@ by default:
               - https://server-fqdn/ps_enable_winrm_http.ps1
         delete: pkg.cloudify_azure.resources.compute.virtualmachine.delete
 
-The inputs ps_entry and ps_urls can be overriden if you create a new node
+The inputs ps_entry and ps_urls can be overridden if you create a new node
 type.  It's recommended that, if you do this, you still reference the
 default script within your override script as to still enable WinRM (unless
 you intend to remove or replace this functionality).  Without the default
@@ -140,21 +143,20 @@ Azure Storage Services REST API
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 As of this writing (March 2016) the Microsoft Azure Storage Services API is an
-awkward, XML-only RESTful service that behaves disimilarly to their other
+awkward, XML-only RESTful service that behaves dissimilarly to their other
 Resource Manager REST APIs.  While this plugin does not support this interface,
 there are some bits of information that should be shared in case future
 developers or users wish to implement pieces of the API in their applications.
 
 The API uses *Shared Key Authentication* in order to authenticate API requests.
-This is, quite possibly, the least intuitive way to authenticate to a
-modern API.  You can find the official Microsoft explanation here -
+You can find the official Microsoft explanation here -
 https://msdn.microsoft.com/en-us/library/azure/dd179428.aspx
 
 TL;DR; When you create a Storage Account resource (using this plugin, or
 otherwise), you have access to two unique Access Keys.  You can find them
 in the Azure UI if you click the key icon when looking at your
 Storage Account.  Generally, you want to protect these keys and not
-give them out to users / applications for use.  Instead, you want to create
+give them out to users / applications for use.  Instead, create
 a *Signature String* that will accompany requests.
 
 The link above explains how to craft a Signature String and how to make
@@ -170,7 +172,6 @@ a Signature String.
     import hmac
     import hashlib
 
-    # Beautiful, isn't it?
     # Basically, we specify the current date, API version,
     # Storage Account name, and the operation we want to perform (list)
     # The goal of this string is to match the request GET parameters and
@@ -183,8 +184,7 @@ a Signature String.
         'your_storage_acct',
         'comp:list')
 
-    # Maths and stuff...
-    # Decode the base64 Storage Account key, use it as our HMAC key.
+    # Decode the base64 Storage Account key, use it as the HMAC key.
     # Take the previously created String to Sign and use it as the HMAC message.
     # Perform an HMAC using SHA-256 digest and encode the result as base64.
     sss = base64.b64encode(

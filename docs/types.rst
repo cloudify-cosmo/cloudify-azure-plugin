@@ -348,9 +348,10 @@ All cloud resource nodes have common properties:
   * ``retry_after`` Because Azure's API is asynchronous, this value indicates the interval between retries.
 
 Every time you manage a resource with Cloudify,
-we create one or more clients with Azure API.
-You specify the configuration for these clients using the ``azure_config`` property.
-It should be a dictionary,
+One or more clients are created with Azure API.
+Specify the configuration for these clients
+using the ``azure_config`` property.
+It should be a dictionary
 with the following values::
 
   subscription_id:

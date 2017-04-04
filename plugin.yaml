@@ -468,7 +468,7 @@ data_types:
         default: false
       idleTimeoutInMinutes:
         description: |
-          Specifies the timeout for the Tcp idle connection.
+          Specifies the timeout for the TCP idle connection.
           The value can be set between 4 and 30 minutes.
           Only used when ``protocol`` is set to Tcp.
         type: integer
