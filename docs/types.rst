@@ -351,7 +351,7 @@ Every time you manage a resource with Cloudify,
 One or more clients are created with Azure API.
 Specify the configuration for these clients
 using the ``azure_config`` property.
-It should be a dictionary
+Create a dictionary
 with the following values::
 
   subscription_id:
