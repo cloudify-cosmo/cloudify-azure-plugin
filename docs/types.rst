@@ -10,7 +10,7 @@ Node Types
 
 .. cfy:node:: cloudify.azure.nodes.ResourceGroup
 
-This example shows adding additional parameters, and explicitly defining the azure_config::
+Example::
 
   resourcegroup:
     type: cloudify.azure.nodes.ResourceGroup
@@ -26,7 +26,7 @@ This example shows adding additional parameters, and explicitly defining the azu
 
 .. cfy:node:: cloudify.azure.nodes.storage.StorageAccount
 
-This example shows adding additional parameters, and explicitly defining the azure_config::
+Example::
 
   storageaccount:
     type: cloudify.azure.nodes.storage.StorageAccount
@@ -41,7 +41,7 @@ This example shows adding additional parameters, and explicitly defining the azu
 
 .. cfy:node:: cloudify.azure.nodes.network.VirtualNetwork
 
-This example shows adding additional parameters, and explicitly defining the azure_config::
+Example::
 
   virtual_network:
     type: cloudify.azure.nodes.network.VirtualNetwork
@@ -54,7 +54,7 @@ This example shows adding additional parameters, and explicitly defining the azu
 
 .. cfy:node:: cloudify.azure.nodes.network.Subnet
 
-This example shows adding additional parameters, and explicitly defining the azure_config::
+Example::
 
   subnet:
     type: cloudify.azure.nodes.network.Subnet
@@ -69,7 +69,7 @@ This example shows adding additional parameters, and explicitly defining the azu
 
 .. cfy:node:: cloudify.azure.nodes.network.NetworkSecurityGroup
 
-This example shows adding additional parameters, and explicitly defining the azure_config::
+Example::
 
   networksecuritygroup:
     type: cloudify.azure.nodes.network.NetworkSecurityGroup
@@ -95,7 +95,7 @@ This example shows adding additional parameters, and explicitly defining the azu
 
 .. cfy:node:: cloudify.azure.nodes.network.NetworkSecurityRule
 
-This example shows adding additional parameters, and explicitly defining the azure_config::
+Example::
 
   network_security_rule:
     type: cloudify.azure.nodes.network.NetworkSecurityRule
@@ -118,7 +118,7 @@ This example shows adding additional parameters, and explicitly defining the azu
 
 .. cfy:node:: cloudify.azure.nodes.network.RouteTable
 
-This example shows adding additional parameters, and explicitly defining the azure_config::
+Example::
 
   routetable:
     type: cloudify.azure.nodes.network.RouteTable
@@ -131,7 +131,7 @@ This example shows adding additional parameters, and explicitly defining the azu
 
 .. cfy:node:: cloudify.azure.nodes.network.Route
 
-This example shows adding additional parameters, and explicitly defining the azure_config::
+Example::
 
   internetroute:
     type: cloudify.azure.nodes.network.Route
@@ -147,7 +147,7 @@ This example shows adding additional parameters, and explicitly defining the azu
 
 .. cfy:node:: cloudify.azure.nodes.network.IPConfiguration
 
-This example shows adding additional parameters, and explicitly defining the azure_config::
+Example::
 
   ubuntuipconfig:
     type: cloudify.azure.nodes.network.IPConfiguration
@@ -162,7 +162,7 @@ This example shows adding additional parameters, and explicitly defining the azu
 
 .. cfy:node:: cloudify.azure.nodes.network.PublicIPAddress
 
-This example shows adding additional parameters, and explicitly defining the azure_config::
+Example::
 
   ubuntuipconfig:
     type: cloudify.azure.nodes.network.IPConfiguration
@@ -177,7 +177,7 @@ This example shows adding additional parameters, and explicitly defining the azu
 
 .. cfy:node:: cloudify.azure.nodes.compute.AvailabilitySet
 
-This example shows adding additional parameters, and explicitly defining the azure_config::
+Example::
 
   availabilityset:
     type: cloudify.azure.nodes.compute.AvailabilitySet
@@ -190,7 +190,7 @@ This example shows adding additional parameters, and explicitly defining the azu
 
 .. cfy:node:: cloudify.azure.nodes.compute.VirtualMachine
 
-This example shows adding additional parameters, and explicitly defining the azure_config::
+Example::
 
   host:
     type: cloudify.azure.nodes.compute.VirtualMachine
@@ -224,7 +224,7 @@ This example shows adding additional parameters, and explicitly defining the azu
 
 .. cfy:node:: cloudify.azure.nodes.compute.VirtualMachineExtension
 
-This example shows adding additional parameters, and explicitly defining the azure_config::
+Example::
 
   webserver:
     type: cloudify.azure.nodes.compute.VirtualMachineExtension
@@ -246,7 +246,7 @@ This example shows adding additional parameters, and explicitly defining the azu
 
 .. cfy:node:: cloudify.azure.nodes.network.LoadBalancer
 
-This example shows adding additional parameters, and explicitly defining the azure_config::
+Example::
 
   loadbalancer:
     type: cloudify.azure.nodes.network.LoadBalancer
@@ -264,7 +264,7 @@ This example shows adding additional parameters, and explicitly defining the azu
 
 .. cfy:node:: cloudify.azure.nodes.network.LoadBalancer.BackendAddressPool
 
-This example shows adding additional parameters, and explicitly defining the azure_config::
+Example::
 
   loadbalancerbackendpool:
     type: cloudify.azure.nodes.network.LoadBalancer.BackendAddressPool
@@ -280,7 +280,7 @@ This example shows adding additional parameters, and explicitly defining the azu
 
 .. cfy:node:: cloudify.azure.nodes.network.LoadBalancer.Probe
 
-This example shows adding additional parameters, and explicitly defining the azure_config::
+Example::
 
   loadbalancerprobe:
     type: cloudify.azure.nodes.network.LoadBalancer.Probe
@@ -305,7 +305,7 @@ This example shows adding additional parameters, and explicitly defining the azu
 
 .. cfy:node:: cloudify.azure.nodes.network.LoadBalancer.Rule
 
-This example shows adding additional parameters, and explicitly defining the azure_config::
+Example::
 
   loadbalancerrule:
     type: cloudify.azure.nodes.network.LoadBalancer.Rule
