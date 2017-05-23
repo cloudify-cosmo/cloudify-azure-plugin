@@ -186,7 +186,7 @@ def task_resource_delete(resource, name=None, _ctx=ctx):
     resource.delete(name)
 
 
-def get_resource_config(_ctx=ctx):
+def get_resource_config(_ctx=ctx, args=None):
     '''
         Loads the resource config parameters and converts
         unicode key/value pairs for use with *requests*
@@ -194,7 +194,7 @@ def get_resource_config(_ctx=ctx):
     :returns: Resource config parameters
     :rtype: dict
     '''
-    return _ctx.node.properties.get('resource_config')
+    return args if args else _ctx.node.properties.get('resource_config')
 
 
 def get_resource_name_ref(rel, prop=None, _ctx=ctx):
