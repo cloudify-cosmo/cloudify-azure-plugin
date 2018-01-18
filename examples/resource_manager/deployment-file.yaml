@@ -1,0 +1,191 @@
+tosca_definitions_version: cloudify_dsl_1_3
+
+description: >
+  Example for create azure deployment from template
+
+imports:
+  - http://www.getcloudify.org/spec/cloudify/3.4/types.yaml
+  - http://www.getcloudify.org/spec/fabric-plugin/1.4.1/plugin.yaml
+  - https://raw.githubusercontent.com/cloudify-incubator/cloudify-azure-plugin/master/plugin.yaml
+
+#####################################################################################
+# inputs section allows the user to use same
+# blueprint for creating different deployments, each one
+# with its own parameters.
+# to specify deployment inputs run:
+#   - cfy deployments create -b <blueprint_id> -d <deployment_id> -i inputs.json
+#####################################################################################
+
+inputs:
+  subscription_id:
+    type: string
+    required: false
+
+  tenant_id:
+    type: string
+    required: false
+
+  client_id:
+    type: string
+    required: false
+
+  client_secret:
+    type: string
+    required: false
+
+  location:
+    default: westus
+
+  public_key:
+    default: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDFR7AIauHIwY5L4DK466vqzKPe6z1r3oo8q9ChG5O+T9l6zw9wf7/n0NDBfO8hp7oJ4rDKYfOq2alLBxIOjB00RJmeNwNV5i4QF5nQ7XM6fr7oHyojegBb6npyiRTsm5VbdwcYe+i9Gu3xyFZcLW/7dI/0fApJEXbrQPQKlMgvPJfYl9KlnBuNxvTtj8A/5AS6E0pJdLKLHJb3nPmlYElWSwAaCWa/grTrOjvx5z6FrzPW/BPSZpLW8NJkQ7SaP8viazswKxjdIk8gzQie/lmuylXiSjBCuEnvJUGvSAbbTrGJ/qYLoUa8lA76dgvZibYh1pT84joyAkw9Sx/EZNuFR5huhS6PP1qVhyEWR5lF/Ra+xpBPoOT6IKFZlE507Zodull7b2GaJhDCr4EtT+tKe618gti/uZ7cwXGjl7OCiNu14xAifS8tIKzdXsqBtt0ko4VSXPPWwoVRUmNBjCdiIPfBJSlCF66XLJ4r8MC7CqUTxEE85RkbWYrnnt5rF6JN/6ROF/lB/R09KqzrtcIT8iWwvbSyw9IiaFYtooD7kReuplzDe3TDMqjU86MUDu7Dj7GebQSoQeQ2nPWFgWDhq9QcxZUKyYDzlFNA4JQQ6gbIhob+pEEj8AQ+y83KesYUn9cXytTr/HdxndtzIlM77J/TUk2sSlWlvVBKXcLQow== azure@deployment.check
+
+  private_key:
+    default: >
+        -----BEGIN RSA PRIVATE KEY-----
+
+        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
+
+        -----END RSA PRIVATE KEY-----
+
+  vm_name:
+    default: azure-deployment-sample-vm
+
+  vm_dns_name:
+    default: jolly-haze-azure
+
+dsl_definitions:
+
+  azure_configuration: &azure_config
+    subscription_id: { get_input: subscription_id }
+    tenant_id: { get_input: tenant_id }
+    client_id: { get_input: client_id }
+    client_secret: { get_input: client_secret }
+
+node_templates:
+
+  deployment:
+    type: cloudify.azure.Deployment
+    properties:
+      name: azure-python-deployment-sample
+      location: { get_input: location }
+      azure_config: *azure_config
+      params:
+        sshKeyData: { get_input: public_key }
+        vmName: { get_input: vm_name }
+        dnsLabelPrefix: { get_input: vm_dns_name }
+      template_file: template.json
+
+  check_connection:
+    type: cloudify.nodes.Root
+    interfaces:
+      cloudify.interfaces.lifecycle:
+          start:
+            implementation: fabric.fabric_plugin.tasks.run_commands
+            inputs:
+              commands:
+                - uname -a
+                - hostname
+              fabric_env:
+                user: azureSample
+                host_string: {concat:[{ get_input: vm_dns_name }, ".", {get_input: location}, ".cloudapp.azure.com"]}
+                key: { get_input: private_key }
+              script_path: scripts/vm_check.sh
+    relationships:
+      - target: deployment
+        type: cloudify.relationships.depends_on

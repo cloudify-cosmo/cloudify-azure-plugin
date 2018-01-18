@@ -5,9 +5,9 @@
 plugins:
   pkg:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/1.4.3.zip
+    source: https://github.com/cloudify-incubator/cloudify-azure-plugin/archive/master.zip
     package_name: cloudify-azure-plugin
-    package_version: '1.4.3'
+    package_version: '1.9.0'
 
 data_types:
   cloudify.datatypes.azure.Config:
@@ -81,7 +81,7 @@ data_types:
         type: string
         default: Standard_LRS
         required: true
-        
+
   cloudify.datatypes.azure.storage.DataDiskConfig:
     properties:
       container_name:
@@ -100,7 +100,7 @@ data_types:
           Azure Data Disk from the Azure Storage Account. If false, the
           Data Disk is left as-is in the Storage Account.
         default: false
-        
+
   cloudify.datatypes.azure.storage.FileShareConfig:
     properties:
       metadata:
@@ -132,14 +132,14 @@ data_types:
         required: false
       subnets:
         required: false
-        
+
   cloudify.datatypes.azure.network.NetworkSecurityGroupConfig:
     description: >
       See https://msdn.microsoft.com/en-us/library/mt163656.aspx
     properties:
       securityRules:
         required: false
-        
+
   cloudify.datatypes.azure.network.NetworkSecurityRuleConfig:
     description: >
       See https://msdn.microsoft.com/en-us/library/mt163645.aspx
@@ -171,7 +171,7 @@ data_types:
       direction:
         type: string
         required: true
-        
+
   cloudify.datatypes.azure.network.SubnetConfig:
     description: >
       See https://msdn.microsoft.com/en-us/library/mt163621.aspx
@@ -182,14 +182,14 @@ data_types:
         required: false
       routeTable:
         required: false
-        
+
   cloudify.datatypes.azure.network.RouteTableConfig:
     description: >
       See https://msdn.microsoft.com/en-us/library/mt502548.aspx
     properties:
       routes:
         required: false
-        
+
   cloudify.datatypes.azure.network.RouteConfig:
     description: >
       See https://msdn.microsoft.com/en-us/library/mt459110.aspx
@@ -203,7 +203,7 @@ data_types:
       nextHopIpAddress:
         type: string
         required: false
-        
+
 
   cloudify.datatypes.azure.network.NetworkInterfaceCardConfig:
     description: >
@@ -214,8 +214,8 @@ data_types:
       ipConfigurations:
         required: false
       dnsSettings:
-        required: false      
-  
+        required: false
+
   cloudify.datatypes.azure.network.IPConfigurationConfig:
     properties:
       privateIPAddress:
@@ -229,7 +229,7 @@ data_types:
           Defines how a private IP address is assigned. Options
           are Static or Dynamic
         required: true
-        
+
   cloudify.datatypes.azure.network.PublicIPAddressConfig:
     description: >
       See https://msdn.microsoft.com/en-us/library/mt163590.aspx
@@ -259,7 +259,7 @@ data_types:
           A fully qualified domain name that resolves to this
           public IP address.
         required: false
-        
+
   cloudify.datatypes.azure.compute.AvailabilitySetConfig:
     description: >
       See https://msdn.microsoft.com/en-us/library/mt163607.aspx
@@ -270,7 +270,7 @@ data_types:
       platformFaultDomainCount:
         type: integer
         required: false
-        
+
   cloudify.datatypes.azure.compute.VirtualMachineConfig:
     description: >
       https://msdn.microsoft.com/en-us/library/azure/mt163591.aspx
@@ -281,7 +281,7 @@ data_types:
         required: true
       osProfile:
         required: true
-  
+
   cloudify.datatypes.azure.network.LoadBalancerConfig:
     description: >
       See https://msdn.microsoft.com/en-us/library/mt163574.aspx
@@ -319,7 +319,7 @@ data_types:
         type: integer
         default: 16
         required: true
-        
+
   cloudify.datatypes.azure.network.LoadBalancerIncomingNATRuleConfig:
     description: >
       See https://msdn.microsoft.com/en-us/library/mt163574.aspx
@@ -334,7 +334,7 @@ data_types:
       backendPort:
         type: integer
         required: true
-        
+
   cloudify.datatypes.azure.network.LoadBalancerRuleConfig:
     description: >
       See https://msdn.microsoft.com/en-us/library/mt163574.aspx
@@ -361,7 +361,7 @@ data_types:
         type: string
         required: false
         default: Default
-              
+
 
 node_types:
   cloudify.azure.nodes.ResourceGroup:
@@ -406,7 +406,7 @@ node_types:
       cloudify.interfaces.lifecycle:
         create: pkg.cloudify_azure.resources.resourcegroup.create
         delete: pkg.cloudify_azure.resources.resourcegroup.delete
-        
+
   cloudify.azure.nodes.storage.StorageAccount:
     derived_from: cloudify.nodes.Root
     properties:
@@ -460,7 +460,7 @@ node_types:
       cloudify.interfaces.lifecycle:
         create: pkg.cloudify_azure.resources.storage.storageaccount.create
         delete: pkg.cloudify_azure.resources.storage.storageaccount.delete
-        
+
   cloudify.azure.nodes.storage.DataDisk:
     derived_from: cloudify.nodes.Root
     properties:
@@ -505,7 +505,7 @@ node_types:
       cloudify.interfaces.lifecycle:
         create: pkg.cloudify_azure.resources.storage.disk.create_data_disk
         delete: pkg.cloudify_azure.resources.storage.disk.delete_data_disk
-        
+
   cloudify.azure.nodes.storage.FileShare:
     derived_from: cloudify.nodes.Root
     properties:
@@ -548,14 +548,14 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         create: pkg.cloudify_azure.resources.storage.file.create_file_share
-        
+
   cloudify.azure.nodes.network.VirtualNetwork:
     derived_from: cloudify.nodes.Root
     properties:
       name:
         type: string
         description: >
-          Name for the resource. 
+          Name for the resource.
         required: false
       resource_group_name:
         type: string
@@ -600,14 +600,14 @@ node_types:
       cloudify.interfaces.lifecycle:
         create: pkg.cloudify_azure.resources.network.virtualnetwork.create
         delete: pkg.cloudify_azure.resources.network.virtualnetwork.delete
-        
+
   cloudify.azure.nodes.network.NetworkSecurityGroup:
     derived_from: cloudify.nodes.Root
     properties:
       name:
         type: string
         description: >
-          Name for the resource. 
+          Name for the resource.
         required: false
       resource_group_name:
         type: string
@@ -652,14 +652,14 @@ node_types:
       cloudify.interfaces.lifecycle:
         create: pkg.cloudify_azure.resources.network.networksecuritygroup.create
         delete: pkg.cloudify_azure.resources.network.networksecuritygroup.delete
-        
+
   cloudify.azure.nodes.network.NetworkSecurityRule:
     derived_from: cloudify.nodes.Root
     properties:
       name:
         type: string
         description: >
-          Name for the resource. 
+          Name for the resource.
         required: false
       resource_group_name:
         type: string
@@ -711,14 +711,14 @@ node_types:
       cloudify.interfaces.lifecycle:
         create: pkg.cloudify_azure.resources.network.networksecurityrule.create
         delete: pkg.cloudify_azure.resources.network.networksecurityrule.delete
-        
+
   cloudify.azure.nodes.network.Subnet:
     derived_from: cloudify.nodes.Root
     properties:
       name:
         type: string
         description: >
-          Name for the resource. 
+          Name for the resource.
         required: false
       resource_group_name:
         type: string
@@ -770,14 +770,14 @@ node_types:
       cloudify.interfaces.lifecycle:
         create: pkg.cloudify_azure.resources.network.subnet.create
         delete: pkg.cloudify_azure.resources.network.subnet.delete
-        
+
   cloudify.azure.nodes.network.RouteTable:
     derived_from: cloudify.nodes.Root
     properties:
       name:
         type: string
         description: >
-          Name for the resource. 
+          Name for the resource.
         required: false
       resource_group_name:
         type: string
@@ -829,7 +829,7 @@ node_types:
       name:
         type: string
         description: >
-          Name for the resource. 
+          Name for the resource.
         required: false
       resource_group_name:
         type: string
@@ -888,7 +888,7 @@ node_types:
       name:
         type: string
         description: >
-          Name for the resource. 
+          Name for the resource.
         required: false
       resource_group_name:
         type: string
@@ -939,14 +939,14 @@ node_types:
         create: pkg.cloudify_azure.resources.network.networkinterfacecard.create
         configure: pkg.cloudify_azure.resources.network.networkinterfacecard.configure
         delete: pkg.cloudify_azure.resources.network.networkinterfacecard.delete
-        
+
   cloudify.azure.nodes.network.IPConfiguration:
     derived_from: cloudify.nodes.Root
     properties:
       name:
         type: string
         description: >
-          Name for the resource. 
+          Name for the resource.
         required: false
       resource_group_name:
         type: string
@@ -994,7 +994,7 @@ node_types:
       name:
         type: string
         description: >
-          Name for the resource. 
+          Name for the resource.
         required: false
       resource_group_name:
         type: string
@@ -1153,7 +1153,7 @@ node_types:
       ip:
         description: |
           Property specifying the IP address of the resource to
-          use for the agent installer. 
+          use for the agent installer.
         type: string
         required: false
       os_family:
@@ -1182,14 +1182,14 @@ node_types:
               default:
               - https://raw.githubusercontent.com/cloudify-cosmo/cloudify-azure-plugin/1.4/scripts/ps_enable_winrm_http.ps1
         delete: pkg.cloudify_azure.resources.compute.virtualmachine.delete
-        
+
   cloudify.azure.nodes.compute.VirtualMachineExtension:
     derived_from: cloudify.nodes.Root
     properties:
       name:
         type: string
         description: >
-          Name for the resource. 
+          Name for the resource.
         required: false
       resource_group_name:
         type: string
@@ -1254,14 +1254,14 @@ node_types:
                 settings:
                   required: false
         delete: pkg.cloudify_azure.resources.compute.virtualmachineextension.delete
-        
+
   cloudify.azure.nodes.network.LoadBalancer:
     derived_from: cloudify.nodes.Root
     properties:
       name:
         type: string
         description: >
-          Name for the resource. 
+          Name for the resource.
         required: false
       resource_group_name:
         type: string
@@ -1307,14 +1307,14 @@ node_types:
         create: pkg.cloudify_azure.resources.network.loadbalancer.create
         configure: pkg.cloudify_azure.resources.network.loadbalancer.configure
         delete: pkg.cloudify_azure.resources.network.loadbalancer.delete
-        
+
   cloudify.azure.nodes.network.LoadBalancer.BackendAddressPool:
     derived_from: cloudify.nodes.Root
     properties:
       name:
         type: string
         description: >
-          Name for the resource. 
+          Name for the resource.
         required: false
       resource_group_name:
         type: string
@@ -1357,14 +1357,14 @@ node_types:
       cloudify.interfaces.lifecycle:
         create: pkg.cloudify_azure.resources.network.loadbalancer.create_backend_pool
         delete: pkg.cloudify_azure.resources.network.loadbalancer.delete_backend_pool
-   
+
   cloudify.azure.nodes.network.LoadBalancer.Probe:
     derived_from: cloudify.nodes.Root
     properties:
       name:
         type: string
         description: >
-          Name for the resource. 
+          Name for the resource.
         required: false
       resource_group_name:
         type: string
@@ -1412,14 +1412,14 @@ node_types:
       cloudify.interfaces.lifecycle:
         create: pkg.cloudify_azure.resources.network.loadbalancer.create_probe
         delete: pkg.cloudify_azure.resources.network.loadbalancer.delete_probe
-        
+
   cloudify.azure.nodes.network.LoadBalancer.IncomingNATRule:
     derived_from: cloudify.nodes.Root
     properties:
       name:
         type: string
         description: >
-          Name for the resource. 
+          Name for the resource.
         required: false
       resource_group_name:
         type: string
@@ -1467,14 +1467,14 @@ node_types:
       cloudify.interfaces.lifecycle:
         create: pkg.cloudify_azure.resources.network.loadbalancer.create_incoming_nat_rule
         delete: pkg.cloudify_azure.resources.network.loadbalancer.delete_incoming_nat_rule
-        
+
   cloudify.azure.nodes.network.LoadBalancer.Rule:
     derived_from: cloudify.nodes.Root
     properties:
       name:
         type: string
         description: >
-          Name for the resource. 
+          Name for the resource.
         required: false
       resource_group_name:
         type: string
@@ -1523,26 +1523,59 @@ node_types:
         create: pkg.cloudify_azure.resources.network.loadbalancer.create_rule
         delete: pkg.cloudify_azure.resources.network.loadbalancer.delete_rule
 
-        
+  cloudify.azure.Deployment:
+    derived_from: cloudify.nodes.Root
+    properties:
+      name:
+        required: true
+        type: string
+      location:
+        required: true
+        type: string
+      template_file:
+        type: string
+        required: false
+        description: >
+          Deployment template file
+      template:
+        type: string
+        required: false
+        description: >
+          Deployment template
+      params:
+        description: >
+          Deployment params
+        required: false
+        default: {}
+      azure_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create: pkg.cloudify_azure.resources.deployment.create
+        delete: pkg.cloudify_azure.resources.deployment.delete
+
 relationships:
   cloudify.azure.relationships.contained_in_resource_group:
     derived_from: cloudify.relationships.contained_in
-    
+
   cloudify.azure.relationships.contained_in_storage_account:
     derived_from: cloudify.relationships.contained_in
-  
+
   cloudify.azure.relationships.contained_in_virtual_network:
     derived_from: cloudify.relationships.contained_in
-  
+
   cloudify.azure.relationships.contained_in_network_security_group:
     derived_from: cloudify.relationships.contained_in
-    
+
   cloudify.azure.relationships.contained_in_route_table:
     derived_from: cloudify.relationships.contained_in
-    
+
   cloudify.azure.relationships.contained_in_load_balancer:
     derived_from: cloudify.relationships.contained_in
-    
+
   cloudify.azure.relationships.network_security_group_attached_to_subnet:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
@@ -1556,16 +1589,16 @@ relationships:
       cloudify.interfaces.relationship_lifecycle:
         establish: pkg.cloudify_azure.resources.network.subnet.attach_route_table
         unlink: pkg.cloudify_azure.resources.network.subnet.detach_route_table
-        
+
   cloudify.azure.relationships.nic_connected_to_network_security_group:
     derived_from: cloudify.relationships.connected_to
-    
+
   cloudify.azure.relationships.nic_connected_to_ip_configuration:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
         preconfigure: pkg.cloudify_azure.resources.network.networkinterfacecard.attach_ip_configuration
-  
+
   cloudify.azure.relationships.lb_connected_to_ip_configuration:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
@@ -1574,38 +1607,38 @@ relationships:
 
   cloudify.azure.relationships.ip_configuration_connected_to_subnet:
     derived_from: cloudify.relationships.connected_to
-    
+
   cloudify.azure.relationships.ip_configuration_connected_to_public_ip:
     derived_from: cloudify.relationships.connected_to
-    
+
   cloudify.azure.relationships.connected_to_storage_account:
     derived_from: cloudify.relationships.connected_to
-    
+
   cloudify.azure.relationships.connected_to_data_disk:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
         establish: pkg.cloudify_azure.resources.compute.virtualmachine.attach_disk
         unlink: pkg.cloudify_azure.resources.compute.virtualmachine.detach_disk
-    
+
   cloudify.azure.relationships.connected_to_nic:
     derived_from: cloudify.relationships.connected_to
-    
+
   cloudify.azure.relationships.connected_to_availability_set:
     derived_from: cloudify.relationships.connected_to
 
   cloudify.azure.relationships.connected_to_ip_configuration:
     derived_from: cloudify.relationships.connected_to
-  
+
   cloudify.azure.relationships.connected_to_lb_be_pool:
     derived_from: cloudify.relationships.connected_to
-    
+
   cloudify.azure.relationships.connected_to_lb_probe:
     derived_from: cloudify.relationships.connected_to
-    
+
   cloudify.azure.relationships.vmx_contained_in_vm:
     derived_from: cloudify.relationships.contained_in
-    
+
   cloudify.azure.relationships.nic_connected_to_lb_be_pool:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
