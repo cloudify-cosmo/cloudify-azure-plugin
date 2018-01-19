@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import json
+
+from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
+
 from azure.common.credentials import ServicePrincipalCredentials
 from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.resource.resources.models import DeploymentMode
@@ -91,10 +94,15 @@ def create(ctx, **kwargs):
 
     # load template
     template = properties.get('template')
-    if not template:
+    if not template and properties.get('template_file'):
         ctx.logger.info("Will be used {} as template"
-                        .format(repr(properties.get('template_file'))))
+                        .format(repr(properties['template_file'])))
         template = ctx.get_resource(properties['template_file'])
+
+    if not template:
+        raise cfy_exc.NonRecoverableError(
+            "please check your credentials"
+        )
 
     # create deployment
     deployment.create(template=template,
