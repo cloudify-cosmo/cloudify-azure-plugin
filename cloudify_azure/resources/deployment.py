@@ -63,8 +63,8 @@ class Deployment(object):
         }
 
         deployment_async_operation = self.client.deployments.create_or_update(
-            self.resource_group,
-            'azure-sample',
+            self.resource_group,  # resource group name
+            self.resource_group,  # deployment name
             deployment_properties
         )
         self.logger.info("Wait deployment...Timeout: {}"
@@ -101,7 +101,7 @@ def create(ctx, **kwargs):
 
     if not template:
         raise cfy_exc.NonRecoverableError(
-            "please check your credentials"
+            "Template does not defined."
         )
 
     # create deployment
