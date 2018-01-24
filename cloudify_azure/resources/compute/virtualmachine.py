@@ -18,6 +18,7 @@
     Microsoft Azure Virtual Machine interface
 '''
 
+import base64
 import re
 # Deep object copying
 from copy import deepcopy
@@ -248,8 +249,8 @@ def create(args=None, **_):
             split_agent_script = [existing_userdata,
                                   install_agent_script]
         existing_userdata = '\n'.join(split_agent_script)
-    existing_userdata = existing_userdata.encode('base64')
-    os_profile['customData'] = existing_userdata
+
+    os_profile['customData'] = base64.b64encode(existing_userdata.encode())
 
     # Create a resource (if necessary)
     utils.task_resource_create(
