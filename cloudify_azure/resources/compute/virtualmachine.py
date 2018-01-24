@@ -42,9 +42,6 @@ from cloudify_azure.resources.compute.availabilityset \
 from cloudify_azure.resources.compute.virtualmachineextension \
     import VirtualMachineExtension
 
-POWERSHELL_DEFAULT_SCRIPT = 'powershell -ExecutionPolicy Unrestricted -file ps_enable_winrm_http.ps1'
-ENABLE_WINRM_PS1 = 'ps_enable_winrm_http.ps1'
-
 
 class VirtualMachine(Resource):
     '''
@@ -186,6 +183,8 @@ def vm_name_generator():
 def create(args=None, **_):
     '''Uses an existing, or creates a new, Virtual Machine'''
     # Generate a resource name (if needed)
+    install_agent_userdata = ctx.agent.init_script()
+    ctx.instance.runtime_properties['init_script'] = install_agent_userdata
     utils.generate_resource_name(
         VirtualMachine(),
         generator=vm_name_generator)
@@ -253,18 +252,10 @@ def create(args=None, **_):
         })
 
 @operation
-def configure(command_to_execute, file_uris, **_):
+def configure(command_to_execute, file_uris, type_handler_version='v2.0', **_):
     '''Configures the resource'''
     os_family = ctx.node.properties.get('os_family', '').lower()
-    if os_family == 'linux':
-        if command_to_execute == POWERSHELL_DEFAULT_SCRIPT:
-            command_to_execute = ''
-        if ENABLE_WINRM_PS1 in file_uris:
-            file_uris = None
-    install_agent_userdata = ctx.agent.init_script()
-    if install_agent_userdata:
-        command_to_execute = '\n'.join([command_to_execute, install_agent_userdata])
-    if command_to_execute:
+    if os_family == 'windows':
         utils.task_resource_create(
             VirtualMachineExtension(
                 virtual_machine=utils.get_resource_name()
@@ -275,7 +266,7 @@ def configure(command_to_execute, file_uris, **_):
                 'properties': {
                     'publisher': 'Microsoft.Compute',
                     'type': 'CustomScriptExtension',
-                    'typeHandlerVersion': '1.4',
+                    'typeHandlerVersion': type_handler_version,
                     'settings': {
                         'fileUris': file_uris,
                         'commandToExecute': command_to_execute
