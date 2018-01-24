@@ -42,6 +42,9 @@ from cloudify_azure.resources.compute.availabilityset \
 from cloudify_azure.resources.compute.virtualmachineextension \
     import VirtualMachineExtension
 
+POWERSHELL_DEFAULT_SCRIPT = 'powershell -ExecutionPolicy Unrestricted -file ps_enable_winrm_http.ps1'
+ENABLE_WINRM_PS1 = 'ps_enable_winrm_http.ps1'
+
 
 class VirtualMachine(Resource):
     '''
@@ -249,14 +252,19 @@ def create(args=None, **_):
             )
         })
 
-
 @operation
 def configure(command_to_execute, file_uris, **_):
     '''Configures the resource'''
     os_family = ctx.node.properties.get('os_family', '').lower()
-    if os_family == 'windows':
-        # By default, this should enable WinRM HTTP (unencrypted)
-        # This entire function can be overridden from the plugin
+    if os_family == 'linux':
+        if command_to_execute == POWERSHELL_DEFAULT_SCRIPT:
+            command_to_execute = ''
+        if ENABLE_WINRM_PS1 in file_uris:
+            file_uris = None
+    install_agent_userdata = ctx.agent.init_script()
+    if install_agent_userdata:
+        command_to_execute = '\n'.join([command_to_execute, install_agent_userdata])
+    if command_to_execute:
         utils.task_resource_create(
             VirtualMachineExtension(
                 virtual_machine=utils.get_resource_name()
