@@ -18,6 +18,7 @@
     Microsoft Azure Virtual Machine interface
 '''
 
+import re
 # Deep object copying
 from copy import deepcopy
 # Random string
@@ -41,6 +42,9 @@ from cloudify_azure.resources.compute.availabilityset \
     import AvailabilitySet
 from cloudify_azure.resources.compute.virtualmachineextension \
     import VirtualMachineExtension
+
+PS_OPEN = '<powershell>'
+PS_CLOSE = '</powershell>'
 
 
 class VirtualMachine(Resource):
@@ -183,8 +187,6 @@ def vm_name_generator():
 def create(args=None, **_):
     '''Uses an existing, or creates a new, Virtual Machine'''
     # Generate a resource name (if needed)
-    install_agent_userdata = ctx.agent.init_script()
-    ctx.instance.runtime_properties['init_script'] = install_agent_userdata
     utils.generate_resource_name(
         VirtualMachine(),
         generator=vm_name_generator)
@@ -231,6 +233,24 @@ def create(args=None, **_):
         res_cfg.get(
             'osProfile', dict()
         ).get('computerName', utils.get_resource_name())
+
+    install_agent_script = ctx.agent.init_script()
+    existing_userdata = os_profile.get('customData', '')
+
+    if install_agent_script:
+        if os_family == 'windows':
+            split_agent_script = re.split('{0}|{1}'.format(PS_OPEN, PS_CLOSE),
+                                          install_agent_script)
+            split_agent_script.insert(0, existing_userdata)
+            split_agent_script.insert(0, PS_OPEN)
+            split_agent_script.insert(len(split_agent_script), PS_CLOSE)
+        else:
+            split_agent_script = [existing_userdata,
+                                  install_agent_script]
+        existing_userdata = '\n'.join(split_agent_script)
+    existing_userdata = existing_userdata.encode('base64')
+    os_profile['customData'] = existing_userdata
+
     # Create a resource (if necessary)
     utils.task_resource_create(
         VirtualMachine(),
@@ -250,6 +270,7 @@ def create(args=None, **_):
                 }
             )
         })
+
 
 @operation
 def configure(command_to_execute, file_uris, type_handler_version='v2.0', **_):
