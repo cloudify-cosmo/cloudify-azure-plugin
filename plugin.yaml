@@ -1180,7 +1180,7 @@ node_types:
               default: powershell -ExecutionPolicy Unrestricted -file ps_enable_winrm_http.ps1
             file_uris:
               default:
-              - https://raw.githubusercontent.com/cloudify-cosmo/cloudify-azure-plugin/1.4/scripts/ps_enable_winrm_http.ps1
+              - https://raw.githubusercontent.com/cloudify-incubator/cloudify-azure-plugin/1.4/scripts/ps_enable_winrm_http.ps1
         delete: pkg.cloudify_azure.resources.compute.virtualmachine.delete
         
   cloudify.azure.nodes.compute.VirtualMachineExtension:
