@@ -271,7 +271,6 @@ def create(args=None, **_):
             )
         })
 
-
 @operation
 def configure(command_to_execute, file_uris, type_handler_version='v2.0', **_):
     '''Configures the resource'''
