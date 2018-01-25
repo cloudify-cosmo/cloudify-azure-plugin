@@ -20,7 +20,6 @@
 
 import base64
 import json
-import re
 # Deep object copying
 from copy import deepcopy
 # Random string
@@ -231,7 +230,7 @@ def _handle_userdata(existing_userdata):
     os_family = ctx.node.properties['os_family']
 
     if not (existing_userdata or install_agent_userdata):
-        return parameters
+        return ''
 
     # Windows instances require no more than one
     # Powershell script, which must be surrounded by
@@ -276,6 +275,7 @@ def _handle_userdata(existing_userdata):
             [existing_userdata, install_agent_userdata])
 
     return final_userdata
+
 
 @operation
 def create(args=None, **_):
@@ -328,7 +328,7 @@ def create(args=None, **_):
             'osProfile', dict()
         ).get('computerName', utils.get_resource_name())
 
-    userdata = _handle_userdata(userdata)
+    userdata = _handle_userdata(os_profile.get('customData', ''))
     os_profile['customData'] = base64.b64encode(userdata.encode())
 
     # Create a resource (if necessary)
