@@ -18,11 +18,14 @@
     Microsoft Azure Virtual Machine interface
 '''
 
+import base64
+import json
 # Deep object copying
 from copy import deepcopy
 # Random string
 from uuid import uuid4
 # Node properties and logger
+from cloudify import compute
 from cloudify import ctx
 # Exception handling
 from cloudify.exceptions import NonRecoverableError
@@ -42,8 +45,8 @@ from cloudify_azure.resources.compute.availabilityset \
 from cloudify_azure.resources.compute.virtualmachineextension \
     import VirtualMachineExtension
 
-POWERSHELL_DEFAULT_SCRIPT = 'powershell -ExecutionPolicy Unrestricted -file ps_enable_winrm_http.ps1'
-ENABLE_WINRM_PS1 = 'ps_enable_winrm_http.ps1'
+PS_OPEN = '<powershell>'
+PS_CLOSE = '</powershell>'
 
 
 class VirtualMachine(Resource):
@@ -182,6 +185,98 @@ def vm_name_generator():
     return str(uuid4())
 
 
+def extract_powershell_content(string_with_powershell):
+    """We want to filter user data for powershell scripts.
+    However, AWS EC2 allows only one segment that is Powershell.
+    So we have to concat separate Powershell scripts into one.
+    First we separate all Powershell scripts without their tags.
+    Later we will add the tags back.
+    """
+
+    split_string = string_with_powershell.splitlines()
+
+    if not split_string:
+        return ''
+
+    if split_string[0] == '#ps1_sysnative' or \
+            split_string[0] == '#ps1_x86':
+        split_string.pop(0)
+
+    if PS_OPEN not in split_string:
+        script_start = -1  # Because we join at +1.
+    else:
+        script_start = split_string.index(PS_OPEN)
+
+    if PS_CLOSE not in split_string:
+        script_end = len(split_string)
+    else:
+        script_end = split_string.index(PS_CLOSE)
+
+    # Return everything between Powershell back as a string.
+    return '\n'.join(split_string[script_start+1:script_end])
+
+
+def _handle_userdata(existing_userdata):
+
+    if existing_userdata is None:
+        existing_userdata = ''
+    elif isinstance(existing_userdata, dict) or \
+            isinstance(existing_userdata, list):
+        existing_userdata = json.dumps(existing_userdata)
+    elif not isinstance(existing_userdata, basestring):
+        existing_userdata = str(existing_userdata)
+
+    install_agent_userdata = ctx.agent.init_script()
+    os_family = ctx.node.properties['os_family']
+
+    if not (existing_userdata or install_agent_userdata):
+        return ''
+
+    # Windows instances require no more than one
+    # Powershell script, which must be surrounded by
+    # Powershell tags.
+    if install_agent_userdata and os_family == 'windows':
+
+        # Get the powershell content from install_agent_userdata
+        install_agent_userdata = \
+            extract_powershell_content(install_agent_userdata)
+
+        # Get the powershell content from existing_userdata
+        # (If it exists.)
+        existing_userdata_powershell = \
+            extract_powershell_content(existing_userdata)
+
+        # Combine the powershell content from two sources.
+        install_agent_userdata = \
+            '#ps1_sysnative\n{0}\n{1}\n{2}\n{3}\n'.format(
+                PS_OPEN,
+                existing_userdata_powershell,
+                install_agent_userdata,
+                PS_CLOSE)
+
+        # Additional work on the existing_userdata.
+        # Remove duplicate Powershell content.
+        # Get rid of unnecessary newlines.
+        existing_userdata = \
+            existing_userdata.replace(
+                existing_userdata_powershell,
+                '').replace(
+                    PS_OPEN,
+                    '').replace(
+                        PS_CLOSE,
+                        '').strip()
+
+    if not existing_userdata or existing_userdata.isspace():
+        final_userdata = install_agent_userdata
+    elif not install_agent_userdata:
+        final_userdata = existing_userdata
+    else:
+        final_userdata = compute.create_multi_mimetype_userdata(
+            [existing_userdata, install_agent_userdata])
+
+    return final_userdata
+
+
 @operation
 def create(args=None, **_):
     '''Uses an existing, or creates a new, Virtual Machine'''
@@ -232,6 +327,10 @@ def create(args=None, **_):
         res_cfg.get(
             'osProfile', dict()
         ).get('computerName', utils.get_resource_name())
+
+    userdata = _handle_userdata(os_profile.get('customData', ''))
+    os_profile['customData'] = base64.b64encode(userdata.encode())
+
     # Create a resource (if necessary)
     utils.task_resource_create(
         VirtualMachine(),
@@ -252,19 +351,12 @@ def create(args=None, **_):
             )
         })
 
+
 @operation
-def configure(command_to_execute, file_uris, **_):
+def configure(command_to_execute, file_uris, type_handler_version='v2.0', **_):
     '''Configures the resource'''
     os_family = ctx.node.properties.get('os_family', '').lower()
-    if os_family == 'linux':
-        if command_to_execute == POWERSHELL_DEFAULT_SCRIPT:
-            command_to_execute = ''
-        if ENABLE_WINRM_PS1 in file_uris:
-            file_uris = None
-    install_agent_userdata = ctx.agent.init_script()
-    if install_agent_userdata:
-        command_to_execute = '\n'.join([command_to_execute, install_agent_userdata])
-    if command_to_execute:
+    if os_family == 'windows':
         utils.task_resource_create(
             VirtualMachineExtension(
                 virtual_machine=utils.get_resource_name()
@@ -275,7 +367,7 @@ def configure(command_to_execute, file_uris, **_):
                 'properties': {
                     'publisher': 'Microsoft.Compute',
                     'type': 'CustomScriptExtension',
-                    'typeHandlerVersion': '1.4',
+                    'typeHandlerVersion': type_handler_version,
                     'settings': {
                         'fileUris': file_uris,
                         'commandToExecute': command_to_execute
