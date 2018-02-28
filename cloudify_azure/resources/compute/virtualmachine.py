@@ -229,8 +229,8 @@ def _handle_userdata(existing_userdata):
     install_agent_userdata = ctx.agent.init_script()
     os_family = ctx.node.properties['os_family']
 
-    if not (existing_userdata or install_agent_userdata):
-        return ''
+    if not existing_userdata and not install_agent_userdata:
+        return
 
     # Windows instances require no more than one
     # Powershell script, which must be surrounded by
@@ -328,12 +328,7 @@ def create(args=None, **_):
             'osProfile', dict()
         ).get('computerName', utils.get_resource_name())
 
-    userdata = _handle_userdata(os_profile.get('customData', ''))
-    os_profile['customData'] = base64.b64encode(userdata.encode())
-
-    # Create a resource (if necessary)
-    utils.task_resource_create(
-        VirtualMachine(),
+    resource_create_payload = \
         {
             'location': ctx.node.properties.get('location'),
             'tags': ctx.node.properties.get('tags'),
@@ -349,7 +344,17 @@ def create(args=None, **_):
                     'osProfile': os_profile
                 }
             )
-        })
+        }
+    # support userdata from args.
+    os_profile = resource_create_payload['properties']['osProfile']
+    userdata = _handle_userdata(os_profile.get('customData'))
+    if userdata:
+        os_profile['customData'] = base64.b64encode(userdata.encode())
+    # Remove customData from osProfile if empty to avoid 400 Error.
+    elif 'customData' in resource_create_payload['properties']['osProfile']:
+        del resource_create_payload['properties']['osProfile']['customData']
+    # Create a resource (if necessary)
+    utils.task_resource_create(VirtualMachine(), resource_create_payload)
 
 
 @operation
