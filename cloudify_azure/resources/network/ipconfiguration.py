@@ -134,4 +134,4 @@ def build_ip_configuration(ipc):
             'subnet': subnet,
             'publicIPAddress': pubip
         }
-    }, utils.get_resource_config(_ctx=ipc))
+    }, {'properties': utils.get_resource_config(_ctx=ipc)})
