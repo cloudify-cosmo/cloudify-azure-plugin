@@ -315,6 +315,12 @@ class Resource(object):
         self.log.info('Deleting {0} "{1}"'.format(self.name, name))
         if self.ctx.instance._modifiable:
             self.ctx.instance.runtime_properties['async_op'] = None
+
+        # Before making the delete request, check if the resource exists or
+        if not self.exists(name):
+            self.log.info('Resource {0} does not exist anymore'.format(name))
+            return
+
         # Make the request
         res = self.client.request(
             method='delete',
