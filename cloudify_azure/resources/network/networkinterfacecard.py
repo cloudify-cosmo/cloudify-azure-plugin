@@ -88,7 +88,9 @@ def get_connected_nsg():
 @operation
 def create(**_):
     '''Uses an existing, or creates a new, Network Interface Card'''
-    utils.generate_resource_name(NetworkInterfaceCard())
+    utils.generate_resource_name(NetworkInterfaceCard(
+        api_version=ctx.node.properties.get('api_version',
+                                            constants.API_VER_NETWORK)))
 
 
 @operation
@@ -107,7 +109,8 @@ def configure(**_):
     '''
     # Create a resource (if necessary)
     utils.task_resource_create(
-        NetworkInterfaceCard(),
+        NetworkInterfaceCard(api_version=ctx.node.properties.get(
+            'api_version', constants.API_VER_NETWORK)),
         {
             'location': ctx.node.properties.get('location'),
             'tags': ctx.node.properties.get('tags'),
@@ -125,7 +128,8 @@ def delete(**_):
     '''Deletes a Network Interface Card'''
     # Delete the resource
     utils.task_resource_delete(
-        NetworkInterfaceCard())
+        NetworkInterfaceCard(api_version=ctx.node.properties.get(
+            'api_version', constants.API_VER_NETWORK)))
 
 
 @operation

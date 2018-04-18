@@ -210,6 +210,12 @@ class Resource(object):
                 'Recieved HTTP 400 BAD REQUEST', res.json())
         # HTTP 409 (CONFLICT) - Operation failed
         elif res.status_code == httplib.CONFLICT:
+            if "AnotherOperationInProgress" in res.text:
+                self.log.warn(
+                    "Another Operation In Progress, let's wait: {0}"
+                    .format(headers)
+                )
+                raise RecoverableError('Another Operation In Progress')
             raise NonRecoverableError(
                 'Operation failed. (code={0}, data={1})'
                 .format(res.status_code, res.text))
@@ -294,6 +300,12 @@ class Resource(object):
                 'Recieved HTTP 400 BAD REQUEST', res.json())
         # HTTP 409 (CONFLICT) - Operation failed
         elif res.status_code == httplib.CONFLICT:
+            if "AnotherOperationInProgress" in res.text:
+                self.log.warn(
+                    "Another Operation In Progress, let's wait: {0}"
+                    .format(headers)
+                )
+                raise RecoverableError('Another Operation In Progress')
             raise NonRecoverableError(
                 'Operation failed. (code={0}, data={1})'
                 .format(res.status_code, res.text))
@@ -354,6 +366,12 @@ class Resource(object):
                 'Recieved HTTP 400 BAD REQUEST', res.json())
         # HTTP 409 (CONFLICT) - Operation failed
         elif res.status_code == httplib.CONFLICT:
+            if "AnotherOperationInProgress" in res.text:
+                self.log.warn(
+                    "Another Operation In Progress, let's wait: {0}"
+                    .format(headers)
+                )
+                raise RecoverableError('Another Operation In Progress')
             raise NonRecoverableError(
                 'Operation failed. (code={0}, data={1})'
                 .format(res.status_code, res.text))
@@ -448,6 +466,12 @@ class Resource(object):
                 retry_after=self.get_retry_after(headers))
         # HTTP 409 (CONFLICT) - Operation failed
         elif res.status_code == httplib.CONFLICT:
+            if "AnotherOperationInProgress" in res.text:
+                self.log.warn(
+                    "Another Operation In Progress, let's wait: {0}"
+                    .format(headers)
+                )
+                raise RecoverableError('Another Operation In Progress')
             raise NonRecoverableError(
                 'Operation "{0}" failed. (code={1}, data={2})'
                 .format(op_id, res.status_code, res.text))

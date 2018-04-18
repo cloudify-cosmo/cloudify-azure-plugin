@@ -27,7 +27,7 @@ from requests.packages import urllib3
 # Used for pretty-printing JSON
 import json
 # Constants, exceptions, logging
-from cloudify_azure import (constants, exceptions, utils)
+from cloudify_azure import (exceptions, utils)
 # Used to get a Azure access token
 from cloudify_azure.auth.oauth2 import OAuth2
 # Context
@@ -92,10 +92,13 @@ class AzureConnection(object):
         if url.startswith('/'):
             # Add the endpoint and subscription ID
             url = '{0}/subscriptions/{1}{2}'.format(
-                constants.CONN_API_ENDPOINT,
+                creds.endpoints_resource_manager,
                 creds.subscription_id,
                 url)
         kwargs['url'] = url
+        # SSL Verification
+        kwargs['verify'] = creds.endpoint_verify
+
         # Update the params list with the api version
         url_params = urlparse.parse_qs(urlparse.urlparse(url).query)
         if not url_params.get('api-version'):
@@ -136,15 +139,18 @@ class AzureConnection(object):
         # Build a session object with some fault tolerance
         # Retry up to 10 times with increasing backoff time
         # up to 120 seconds.
+        creds = utils.get_credentials(_ctx=self.ctx)
         session = requests.Session()
         session.mount(
-            constants.CONN_API_ENDPOINT,
+            creds.endpoints_resource_manager,
             requests.adapters.HTTPAdapter(
                 max_retries=urllib3.util.Retry(
                     total=10,
                     backoff_factor=0.4,
                     status_forcelist=[500, 501, 502, 503, 504]
                 )))
+        # SSL Verification
+        requests.verify = creds.endpoint_verify
         # Set the Azure API access token for the session
         session.headers = {
             'Authorization': 'Bearer {0}'.format(

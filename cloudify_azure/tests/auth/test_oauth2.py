@@ -46,7 +46,12 @@ class OAuth2TestCase(unittest.TestCase):
             tenant_id='123456',
             client_id='1234567',
             client_secret='1234-1234-1234-1234',
-            subscription_id='12345-12345-12345')
+            subscription_id='subscription_id',
+            endpoint_resource=constants.OAUTH2_MGMT_RESOURCE,
+            endpoint_verify=True,
+            endpoints_resource_manager=constants.CONN_API_ENDPOINT,
+            endpoints_active_directory=constants.OAUTH2_ENDPOINT
+        )
         current_ctx.set(self.ctx)
 
     def tearDown(self):

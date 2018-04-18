@@ -76,7 +76,8 @@ def create(resource_config, **_):
         del props['ext_type']
     # Create a resource (if necessary)
     utils.task_resource_create(
-        VirtualMachineExtension(),
+        VirtualMachineExtension(api_version=ctx.node.properties.get(
+            'api_version', constants.API_VER_COMPUTE)),
         {
             'location': ctx.node.properties.get('location'),
             'tags': ctx.node.properties.get('tags'),
@@ -89,4 +90,5 @@ def delete(**_):
     '''Deletes a Virtual Machine Extension'''
     # Delete the resource
     utils.task_resource_delete(
-        VirtualMachineExtension())
+        VirtualMachineExtension(api_version=ctx.node.properties.get(
+            'api_version', constants.API_VER_COMPUTE)))

@@ -36,7 +36,9 @@ from cloudify import ctx
 
 AzureCredentials = namedtuple(
     'AzureCredentials',
-    ['tenant_id', 'client_id', 'client_secret', 'subscription_id']
+    ['tenant_id', 'client_id', 'client_secret', 'subscription_id',
+     'endpoint_resource', 'endpoint_verify', 'endpoints_resource_manager',
+     'endpoints_active_directory']
 )
 '''
     Microsoft Azure credentials and access information
@@ -89,7 +91,7 @@ class OAuth2(object):
             'client_id': self.credentials.client_id,
             'client_secret': self.credentials.client_secret,
             'grant_type': constants.OAUTH2_GRANT_TYPE,
-            'resource': constants.OAUTH2_MGMT_RESOURCE
+            'resource': self.credentials.endpoint_resource
         }
         data = dict()
         # Build a session object with some fault tolerance
@@ -97,7 +99,7 @@ class OAuth2(object):
         # up to 120 seconds.
         with requests.Session() as session:
             session.mount(
-                constants.OAUTH2_ENDPOINT,
+                self.credentials.endpoints_active_directory,
                 requests.adapters.HTTPAdapter(
                     max_retries=urllib3.util.Retry(
                         total=10,
@@ -106,7 +108,7 @@ class OAuth2(object):
                     )))
             # Make the request
             res = session.post('{0}/{1}/oauth2/token'.format(
-                constants.OAUTH2_ENDPOINT,
+                self.credentials.endpoints_active_directory,
                 self.credentials.tenant_id
             ), data=payload)
             # Expecting valid JSON response

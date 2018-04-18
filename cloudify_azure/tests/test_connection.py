@@ -40,7 +40,11 @@ class ConnectionTestCase(unittest.TestCase):
                 'tenant_id': self.tenant_id,
                 'client_id': '1234567',
                 'client_secret': '1234-1234-1234-1234',
-                'subscription_id': self.subscription_id
+                'subscription_id': self.subscription_id,
+                'endpoint_resource': constants.OAUTH2_MGMT_RESOURCE,
+                'endpoint_verify': True,
+                'endpoints_resource_manager': constants.CONN_API_ENDPOINT,
+                'endpoints_active_directory': constants.OAUTH2_ENDPOINT
             }
         }
         self.ctx = MockCloudifyContext(node_id='test_connection',

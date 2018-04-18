@@ -65,7 +65,9 @@ def create(**_):
     '''Uses an existing, or creates a new, Public IP Address'''
     # Create a resource (if necessary)
     utils.task_resource_create(
-        PublicIPAddress(),
+        PublicIPAddress(api_version=ctx.node.properties.get(
+            'api_version', constants.API_VER_NETWORK)
+        ),
         {
             'location': ctx.node.properties.get('location'),
             'tags': ctx.node.properties.get('tags'),
@@ -78,4 +80,6 @@ def delete(**_):
     '''Deletes a Public IP Address'''
     # Delete the resource
     utils.task_resource_delete(
-        PublicIPAddress())
+        PublicIPAddress(api_version=ctx.node.properties.get(
+            'api_version', constants.API_VER_NETWORK)
+        ))

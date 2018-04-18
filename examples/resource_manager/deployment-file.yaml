@@ -6,7 +6,8 @@ description: >
 imports:
   - http://www.getcloudify.org/spec/cloudify/3.4/types.yaml
   - http://www.getcloudify.org/spec/fabric-plugin/1.4.1/plugin.yaml
-  - https://raw.githubusercontent.com/cloudify-incubator/cloudify-azure-plugin/master/plugin.yaml
+  # - https://raw.githubusercontent.com/cloudify-incubator/cloudify-azure-plugin/master/plugin.yaml
+  - ../../plugin.yaml
 
 #####################################################################################
 # inputs section allows the user to use same
@@ -149,6 +150,19 @@ inputs:
   vm_dns_name:
     default: jolly-haze-azure
 
+  endpoint_resource:
+    default: https://management.core.windows.net/
+
+  endpoints_resource_manager:
+    default: https://management.azure.com
+
+  endpoint_verify:
+    default: True
+
+  endpoint_storage:
+    type: string
+    default: core.windows.net
+
 dsl_definitions:
 
   azure_configuration: &azure_config
@@ -156,6 +170,9 @@ dsl_definitions:
     tenant_id: { get_input: tenant_id }
     client_id: { get_input: client_id }
     client_secret: { get_input: client_secret }
+    endpoint_resource: { get_input: endpoint_resource }
+    endpoints_resource_manager: { get_input: endpoints_resource_manager }
+    endpoint_verify: { get_input: endpoint_verify }
 
 node_templates:
 
@@ -169,6 +186,7 @@ node_templates:
         sshKeyData: { get_input: public_key }
         vmName: { get_input: vm_name }
         dnsLabelPrefix: { get_input: vm_dns_name }
+        storageEndpoint: { get_input: endpoint_storage }
       template_file: template.json
 
   check_connection:

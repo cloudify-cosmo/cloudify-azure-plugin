@@ -279,7 +279,9 @@ class FrontendIPConfiguration(Resource):
 @operation
 def create(**_):
     '''Uses an existing, or creates a new, Load Balancer'''
-    utils.generate_resource_name(LoadBalancer())
+    utils.generate_resource_name(LoadBalancer(
+        api_version=ctx.node.properties.get('api_version',
+                                            constants.API_VER_NETWORK)))
 
 
 @operation
@@ -299,7 +301,8 @@ def configure(**_):
                 del ip_cfg['properties']['subnet']
     # Create a resource (if necessary)
     utils.task_resource_create(
-        LoadBalancer(),
+        LoadBalancer(api_version=ctx.node.properties.get(
+            'api_version', constants.API_VER_NETWORK)),
         {
             'location': ctx.node.properties.get('location'),
             'tags': ctx.node.properties.get('tags'),
@@ -310,7 +313,8 @@ def configure(**_):
                 })
         })
     # Get an interface to the Load Balancer
-    lb_iface = LoadBalancer()
+    lb_iface = LoadBalancer(api_version=ctx.node.properties.get(
+            'api_version', constants.API_VER_NETWORK))
     lb_data = lb_iface.get(utils.get_resource_name())
     # Get the ID of the Frontend IP Configuration
     for fe_ipc_data in lb_data.get('properties', dict()).get(
@@ -344,7 +348,8 @@ def delete(**_):
     '''Deletes a Load Balancer'''
     # Delete the resource
     utils.task_resource_delete(
-        LoadBalancer())
+        LoadBalancer(api_version=ctx.node.properties.get(
+            'api_version', constants.API_VER_NETWORK)))
 
 
 @operation
@@ -366,13 +371,16 @@ def create_backend_pool(**_):
         raise NonRecoverableError(
             '"use_external_resource" specified without a resource "name"')
     # Generate a name if it doesn't exist
-    utils.generate_resource_name(BackendAddressPool())
+    utils.generate_resource_name(BackendAddressPool(
+        api_version=ctx.node.properties.get(
+            'api_version', constants.API_VER_NETWORK)))
     # Get an interface to the Load Balancer
     lb_rel = utils.get_relationship_by_type(
         ctx.instance.relationships,
         constants.REL_CONTAINED_IN_LB)
     lb_name = utils.get_resource_name(lb_rel.target)
-    lb_iface = LoadBalancer()
+    lb_iface = LoadBalancer(api_version=ctx.node.properties.get(
+            'api_version', constants.API_VER_NETWORK))
     # Get the existing pools
     lb_data = lb_iface.get(lb_name)
     lb_pools = lb_data.get('properties', dict()).get(
@@ -399,7 +407,10 @@ def delete_backend_pool(**_):
         ctx.instance.relationships,
         constants.REL_CONTAINED_IN_LB)
     lb_name = utils.get_resource_name(lb_rel.target)
-    lb_iface = LoadBalancer(_ctx=lb_rel.target)
+    lb_iface = LoadBalancer(
+        _ctx=lb_rel.target,
+        api_version=ctx.node.properties.get('api_version',
+                                            constants.API_VER_NETWORK))
     # Get the existing pools
     lb_data = lb_iface.get(lb_name)
     lb_pools = lb_data.get('properties', dict()).get(
@@ -427,13 +438,15 @@ def create_probe(**_):
         raise NonRecoverableError(
             '"use_external_resource" specified without a resource "name"')
     # Generate a name if it doesn't exist
-    utils.generate_resource_name(Probe())
+    utils.generate_resource_name(Probe(api_version=ctx.node.properties.get(
+            'api_version', constants.API_VER_NETWORK)))
     # Get an interface to the Load Balancer
     lb_rel = utils.get_relationship_by_type(
         ctx.instance.relationships,
         constants.REL_CONTAINED_IN_LB)
     lb_name = utils.get_resource_name(lb_rel.target)
-    lb_iface = LoadBalancer()
+    lb_iface = LoadBalancer(api_version=ctx.node.properties.get(
+            'api_version', constants.API_VER_NETWORK))
     # Get the existing probes
     lb_data = lb_iface.get(lb_name)
     lb_probes = lb_data.get('properties', dict()).get(
@@ -463,7 +476,10 @@ def delete_probe(**_):
         ctx.instance.relationships,
         constants.REL_CONTAINED_IN_LB)
     lb_name = utils.get_resource_name(lb_rel.target)
-    lb_iface = LoadBalancer(_ctx=lb_rel.target)
+    lb_iface = LoadBalancer(
+        _ctx=lb_rel.target,
+        api_version=ctx.node.properties.get('api_version',
+                                            constants.API_VER_NETWORK))
     # Get the existing probes
     lb_data = lb_iface.get(lb_name)
     lb_probes = lb_data.get('properties', dict()).get(
@@ -491,13 +507,16 @@ def create_incoming_nat_rule(**_):
         raise NonRecoverableError(
             '"use_external_resource" specified without a resource "name"')
     # Generate a name if it doesn't exist
-    utils.generate_resource_name(InboundNATRule())
+    utils.generate_resource_name(InboundNATRule(
+        api_version=ctx.node.properties.get(
+            'api_version', constants.API_VER_NETWORK)))
     # Get an interface to the Load Balancer
     lb_rel = utils.get_relationship_by_type(
         ctx.instance.relationships,
         constants.REL_CONTAINED_IN_LB)
     lb_name = utils.get_resource_name(lb_rel.target)
-    lb_iface = LoadBalancer()
+    lb_iface = LoadBalancer(api_version=ctx.node.properties.get(
+            'api_version', constants.API_VER_NETWORK))
     # Get the resource config
     res_cfg = utils.get_resource_config()
     # Get the existing rules
@@ -507,7 +526,9 @@ def create_incoming_nat_rule(**_):
     # Get the Load Balancer Frontend IP Configuration
     lb_fe_ipc_name = utils.get_rel_node_name(constants.REL_CONNECTED_TO_IPC)
     lb_fe_ipc_id = utils.get_full_resource_id(
-        FrontendIPConfiguration(), lb_fe_ipc_name)
+        FrontendIPConfiguration(api_version=ctx.node.properties.get(
+            'api_version', constants.API_VER_NETWORK)
+        ), lb_fe_ipc_name)
     # Update the resource config
     res_cfg['frontendIPConfiguration'] = lb_fe_ipc_id
     lb_rules.append({
@@ -535,7 +556,10 @@ def delete_incoming_nat_rule(**_):
         ctx.instance.relationships,
         constants.REL_CONTAINED_IN_LB)
     lb_name = utils.get_resource_name(lb_rel.target)
-    lb_iface = LoadBalancer(_ctx=lb_rel.target)
+    lb_iface = LoadBalancer(
+        _ctx=lb_rel.target,
+        api_version=ctx.node.properties.get('api_version',
+                                            constants.API_VER_NETWORK))
     # Get the existing probes
     lb_data = lb_iface.get(lb_name)
     lb_rules = lb_data.get('properties', dict()).get(
@@ -563,7 +587,9 @@ def create_rule(**_):
         raise NonRecoverableError(
             '"use_external_resource" specified without a resource "name"')
     # Generate a name if it doesn't exist
-    utils.generate_resource_name(LoadBalancerRule())
+    utils.generate_resource_name(LoadBalancerRule(
+        api_version=ctx.node.properties.get('api_version',
+                                            constants.API_VER_NETWORK)))
     # Get the resource config
     res_cfg = utils.get_resource_config()
     # Get an interface to the Load Balancer
@@ -571,7 +597,8 @@ def create_rule(**_):
         ctx.instance.relationships,
         constants.REL_CONTAINED_IN_LB)
     lb_name = utils.get_resource_name(lb_rel.target)
-    lb_iface = LoadBalancer()
+    lb_iface = LoadBalancer(api_version=ctx.node.properties.get(
+            'api_version', constants.API_VER_NETWORK))
     lb_data = lb_iface.get(lb_name)
     # Get the Load Balancer Backend Pool
     lb_be_pool_id = utils.get_rel_id_reference(
@@ -582,7 +609,9 @@ def create_rule(**_):
     # Get the Load Balancer Frontend IP Configuration
     lb_fe_ipc_name = utils.get_rel_node_name(constants.REL_CONNECTED_TO_IPC)
     lb_fe_ipc_id = utils.get_full_resource_id(
-        FrontendIPConfiguration(), lb_fe_ipc_name)
+        FrontendIPConfiguration(api_version=ctx.node.properties.get(
+            'api_version', constants.API_VER_NETWORK)
+        ), lb_fe_ipc_name)
     # Get the existing Load Balancer Rules
     lb_rules = lb_data.get('properties', dict()).get(
         'loadBalancingRules', list())
@@ -619,7 +648,8 @@ def delete_rule(**_):
         constants.REL_CONTAINED_IN_LB)
     lb_name = utils.get_resource_name(lb_rel.target)
     lb_ctx = utils.get_relationship_subject_ctx(ctx, lb_rel.target)
-    lb_iface = LoadBalancer(_ctx=lb_ctx)
+    lb_iface = LoadBalancer(_ctx=lb_ctx, api_version=ctx.node.properties.get(
+            'api_version', constants.API_VER_NETWORK))
     # Get the existing rules
     lb_data = lb_iface.get(lb_name)
     lb_rules = lb_data.get('properties', dict()).get(
