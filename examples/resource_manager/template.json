@@ -2,6 +2,13 @@
   "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json",
   "contentVersion": "1.0.0.0",
   "parameters": {
+    "storageEndpoint": {
+      "type": "string",
+      "defaultValue": "core.windows.net",
+      "metadata": {
+        "description": "Storage Endpoint."
+      }
+    },
     "adminUserName": {
       "type": "string",
       "defaultValue": "azureSample",
@@ -78,6 +85,7 @@
     }
   },
   "variables": {
+    "storageEndpoint": "[parameters('storageEndpoint')]",
     "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'azsample')]",
     "location": "[resourceGroup().location]",
     "osDiskName": "osDisk1",
@@ -231,7 +239,7 @@
           "osDisk": {
             "name": "osdisk",
             "vhd": {
-              "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/', variables('osDiskName'),'.vhd')]"
+              "uri": "[concat('http://',variables('storageAccountName'),'.blob.', variables('storageEndpoint'), '/',variables('vmStorageAccountContainerName'),'/', variables('osDiskName'),'.vhd')]"
             },
             "caching": "ReadWrite",
             "createOption": "FromImage"
@@ -247,7 +255,7 @@
         "diagnosticsProfile": {
           "bootDiagnostics": {
             "enabled": "true",
-            "storageUri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net')]"
+            "storageUri": "[concat('http://',variables('storageAccountName'),'.blob.', variables('storageEndpoint'))]"
           }
         }
       }

@@ -71,7 +71,8 @@ def create(**_):
     '''Uses an existing, or creates a new, Route'''
     # Create a resource (if necessary)
     utils.task_resource_create(
-        Route(),
+        Route(api_version=ctx.node.properties.get(
+            'api_version', constants.API_VER_NETWORK)),
         {
             'location': ctx.node.properties.get('location'),
             'tags': ctx.node.properties.get('tags'),
@@ -84,4 +85,5 @@ def delete(**_):
     '''Deletes a Route'''
     # Delete the resource
     utils.task_resource_delete(
-        Route())
+        Route(api_version=ctx.node.properties.get(
+            'api_version', constants.API_VER_NETWORK)))

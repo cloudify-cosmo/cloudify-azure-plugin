@@ -20,6 +20,7 @@ from cloudify.state import current_ctx
 
 from azure.mgmt.resource.resources.models import DeploymentMode
 
+from cloudify_azure import constants
 import cloudify_azure.resources.deployment as deployment
 
 
@@ -72,13 +73,18 @@ class DeploymentTest(unittest.TestCase):
                     'subscription_id': "subscription_id",
                 })
 
-        credentials_call.assert_called_with(client_id='client_id',
-                                            secret='client_secret',
-                                            tenant='tenant_id')
-        client_call.assert_called_with(credentials, "subscription_id")
+        credentials_call.assert_called_with(
+            client_id='client_id',
+            resource=constants.OAUTH2_MGMT_RESOURCE,
+            secret='client_secret',
+            tenant='tenant_id',
+            verify=True)
+        client_call.assert_called_with(credentials, "subscription_id",
+                                       base_url='https://management.azure.com')
 
         async_call.wait.assert_called_with(timeout=None)
-        client.resource_groups.delete.assert_called_with('check_id')
+        client.resource_groups.delete.assert_called_with('check_id',
+                                                         verify=True)
 
     def test_create(self):
         fake_ctx, node, _ = self._get_mock_context_for_run()
@@ -116,10 +122,15 @@ class DeploymentTest(unittest.TestCase):
                 self.assertEqual(str(ex.exception),
                                  "Template does not defined.")
 
-                credentials_call.assert_called_with(client_id='client_id',
-                                                    secret='client_secret',
-                                                    tenant='tenant_id')
-                client_call.assert_called_with(credentials, "subscription_id")
+                credentials_call.assert_called_with(
+                    client_id='client_id',
+                    resource=constants.OAUTH2_MGMT_RESOURCE,
+                    secret='client_secret',
+                    tenant='tenant_id',
+                    verify=True)
+                client_call.assert_called_with(
+                    credentials, "subscription_id",
+                    base_url='https://management.azure.com')
 
                 deployment.create(
                     ctx=fake_ctx,
@@ -141,7 +152,7 @@ class DeploymentTest(unittest.TestCase):
                         'parameters': {},
                         'mode': DeploymentMode.incremental,
                         'template': {}
-                    }
+                    }, verify=True
                 )
 
                 node.properties['template_file'] = "check.json"
@@ -169,7 +180,7 @@ class DeploymentTest(unittest.TestCase):
                         'parameters': {'c': {'value': 'd'}},
                         'mode': DeploymentMode.incremental,
                         'template': {'a': 'b'}
-                    }
+                    }, verify=True
                 )
 
 

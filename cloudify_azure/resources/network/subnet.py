@@ -78,7 +78,9 @@ def create(**_):
     '''Uses an existing, or creates a new, Subnet'''
     # Create a resource (if necessary)
     utils.task_resource_create(
-        Subnet(),
+        Subnet(api_version=ctx.node.properties.get(
+            'api_version', constants.API_VER_NETWORK)
+        ),
         {
             'location': ctx.node.properties.get('location'),
             'tags': ctx.node.properties.get('tags'),
@@ -91,7 +93,10 @@ def delete(**_):
     '''Deletes a Subnet'''
     # Delete the resource
     utils.task_resource_delete(
-        Subnet())
+        Subnet(api_version=ctx.node.properties.get(
+            'api_version', constants.API_VER_NETWORK)
+        )
+    )
 
 
 @operation
@@ -101,7 +106,9 @@ def attach_network_security_group(**_):
     nsg_name = utils.get_resource_name(ctx.source)
     # Attach
     utils.task_resource_update(
-        Subnet(_ctx=ctx.target), {
+        Subnet(_ctx=ctx.target, api_version=ctx.source.node.properties.get(
+            'api_version', constants.API_VER_NETWORK)
+        ), {
             'properties': {
                 'networkSecurityGroup': {
                     'id': '/subscriptions/{0}{1}/{2}'.format(
@@ -118,7 +125,9 @@ def detach_network_security_group(**_):
     '''Detaches a Network Security Group to the Subnet'''
     # Detach
     utils.task_resource_update(
-        Subnet(_ctx=ctx.target), {
+        Subnet(_ctx=ctx.target, api_version=ctx.source.node.properties.get(
+            'api_version', constants.API_VER_NETWORK)
+        ), {
             'properties': {
                 'networkSecurityGroup': None
             }
@@ -132,7 +141,9 @@ def attach_route_table(**_):
     rtbl_name = utils.get_resource_name(ctx.source)
     # Attach
     utils.task_resource_update(
-        Subnet(_ctx=ctx.target), {
+        Subnet(_ctx=ctx.target, api_version=ctx.source.node.properties.get(
+            'api_version', constants.API_VER_NETWORK)
+        ), {
             'properties': {
                 'routeTable': {
                     'id': '/subscriptions/{0}{1}/{2}'.format(
@@ -149,7 +160,9 @@ def detach_route_table(**_):
     '''Detaches a Route Table to the Subnet'''
     # Detach
     utils.task_resource_update(
-        Subnet(_ctx=ctx.target), {
+        Subnet(_ctx=ctx.target, api_version=ctx.source.node.properties.get(
+            'api_version', constants.API_VER_NETWORK)
+        ), {
             'properties': {
                 'routeTable': None
             }

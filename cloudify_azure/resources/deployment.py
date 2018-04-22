@@ -17,6 +17,8 @@ import json
 from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
 
+from cloudify_azure import constants
+
 from azure.common.credentials import ServicePrincipalCredentials
 from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.resource.resources.models import DeploymentMode
@@ -28,27 +30,36 @@ class Deployment(object):
         self.resource_group = name
         self.logger = logger
         self.timeout = timeout
+        self.resource_verify = bool(credentials.get('endpoint_verify', True))
+
         self.credentials = ServicePrincipalCredentials(
             client_id=str(credentials['client_id']),
             secret=str(credentials['client_secret']),
-            tenant=str(credentials['tenant_id'])
+            tenant=str(credentials['tenant_id']),
+            verify=self.resource_verify,
+            resource=str(credentials.get('endpoint_resource',
+                                         constants.OAUTH2_MGMT_RESOURCE))
         )
         self.client = ResourceManagementClient(
-            self.credentials, str(credentials['subscription_id']))
+            self.credentials, str(credentials['subscription_id']),
+            base_url=str(credentials.get('endpoints_resource_manager',
+                                         constants.CONN_API_ENDPOINT)))
 
         self.logger.info("Use subscription: {}"
                          .format(credentials['subscription_id']))
 
-    def create(self, template, params, location):
+    def create(self, location):
         """Deploy the template to a resource group."""
         self.logger.info("Client resource...")
         self.client.resource_groups.create_or_update(
             self.resource_group,
             {
                 'location': location
-            }
+            },
+            verify=self.resource_verify
         )
 
+    def update(self, template, params, location):
         self.logger.info("Create deployment...")
 
         parameters = {str(k): {'value': str(v)} for k, v in params.items()}
@@ -65,7 +76,8 @@ class Deployment(object):
         deployment_async_operation = self.client.deployments.create_or_update(
             self.resource_group,  # resource group name
             self.resource_group,  # deployment name
-            deployment_properties
+            deployment_properties,
+            verify=self.resource_verify
         )
         self.logger.info("Wait deployment...Timeout: {}"
                          .format(repr(self.timeout)))
@@ -75,7 +87,8 @@ class Deployment(object):
         """Destroy the given resource group"""
         self.logger.info("Delete resource groups...")
         deployment_async_operation = self.client.resource_groups.delete(
-            self.resource_group
+            self.resource_group,
+            verify=self.resource_verify
         )
         self.logger.info("Wait delete deployment...Timeout: {}"
                          .format(repr(self.timeout)))
@@ -105,10 +118,13 @@ def create(ctx, **kwargs):
         )
 
     # create deployment
-    deployment.create(template=template,
+    deployment.create(location=properties['location'])
+    ctx.instance.runtime_properties['resource_id'] = properties['name']
+
+    # update deployment
+    deployment.update(template=template,
                       params=properties.get('params', {}),
                       location=properties['location'])
-    ctx.instance.runtime_properties['resource_id'] = properties['name']
 
 
 @operation

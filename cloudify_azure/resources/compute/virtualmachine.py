@@ -101,7 +101,7 @@ def build_osdisk_profile(usr_osdisk=None):
         osdisk['vhd'] = {
             'uri': 'http://{0}.{1}/vhds/{2}.vhd'.format(
                 utils.get_rel_node_name(constants.REL_CONNECTED_TO_SA),
-                'blob.core.windows.net',
+                'blob.local.azurestack.external',
                 osdisk.get('name'))
         }
     # Fill in the blanks if the user didn't specify
@@ -132,7 +132,7 @@ def build_datadisks_profile(usr_datadisks):
             datadisk['vhd'] = {
                 'uri': 'http://{0}.{1}/vhds/{2}.vhd'.format(
                     utils.get_rel_node_name(constants.REL_CONNECTED_TO_SA),
-                    'blob.core.windows.net',
+                    'blob.local.azurestack.external',
                     datadisk.get('name'))
             }
         # Fill in the blanks if the user didn't specify
@@ -282,7 +282,8 @@ def create(args=None, **_):
     '''Uses an existing, or creates a new, Virtual Machine'''
     # Generate a resource name (if needed)
     utils.generate_resource_name(
-        VirtualMachine(),
+        VirtualMachine(api_version=ctx.node.properties.get(
+            'api_version', constants.API_VER_COMPUTE)),
         generator=vm_name_generator)
     res_cfg = utils.get_resource_config(args=args) or dict()
     # Build storage profile
@@ -354,7 +355,10 @@ def create(args=None, **_):
     elif 'customData' in resource_create_payload['properties']['osProfile']:
         del resource_create_payload['properties']['osProfile']['customData']
     # Create a resource (if necessary)
-    utils.task_resource_create(VirtualMachine(), resource_create_payload)
+    utils.task_resource_create(VirtualMachine(
+        api_version=ctx.node.properties.get(
+            'api_version', constants.API_VER_COMPUTE)),
+        resource_create_payload)
 
 
 @operation
@@ -364,7 +368,9 @@ def configure(command_to_execute, file_uris, type_handler_version='v2.0', **_):
     if os_family == 'windows':
         utils.task_resource_create(
             VirtualMachineExtension(
-                virtual_machine=utils.get_resource_name()
+                virtual_machine=utils.get_resource_name(),
+                api_version=ctx.node.properties.get('api_version',
+                                                    constants.API_VER_COMPUTE)
             ),
             {
                 'location': ctx.node.properties.get('location'),
@@ -385,32 +391,47 @@ def configure(command_to_execute, file_uris, type_handler_version='v2.0', **_):
     rel_nic = utils.get_relationship_by_type(
         ctx.instance.relationships,
         constants.REL_CONNECTED_TO_NIC)
+
     # No NIC? Exit and hope the user doesn't plan to install an agent
     if not rel_nic:
         return
+
+    print repr(rel_nic.target.node.properties)
     # Get the NIC data from the API directly (because of IPConfiguration)
-    nic = NetworkInterfaceCard(_ctx=rel_nic.target)
+    nic = NetworkInterfaceCard(_ctx=rel_nic.target,
+                               api_version=rel_nic.target.node.properties.get(
+                                    'api_version',
+                                    constants.API_VER_NETWORK))
     nic_data = nic.get(utils.get_resource_name(rel_nic.target))
+
     # Iterate over each IPConfiguration entry
+    creds = utils.get_credentials(_ctx=ctx)
     for ip_cfg in nic_data.get(
             'properties', dict()).get(
                 'ipConfigurations', list()):
+
         # Get the Private IP Address endpoint
         ctx.instance.runtime_properties['ip'] = \
             ip_cfg.get('properties', dict()).get('privateIPAddress')
+
         # Get the Public IP Address endpoint
         pubip_id = ip_cfg.get(
             'properties', dict()).get(
                 'publicIPAddress', dict()).get('id')
         if isinstance(pubip_id, basestring):
             # use the ID to get the data on the public ip
-            pubip = PublicIPAddress(_ctx=rel_nic.target)
+            pubip = PublicIPAddress(
+                _ctx=rel_nic.target,
+                api_version=rel_nic.target.node.properties.get(
+                    'api_version',
+                    constants.API_VER_NETWORK))
             pubip.endpoint = '{0}{1}'.format(
-                constants.CONN_API_ENDPOINT, pubip_id)
+                creds.endpoints_resource_manager, pubip_id)
             pubip_data = pubip.get()
             if isinstance(pubip_data, dict):
                 ctx.instance.runtime_properties['public_ip'] = \
                     pubip_data.get('properties', dict()).get('ipAddress')
+
     # See if the user wants to use the public IP as primary IP
     if ctx.node.properties.get('use_public_ip') and \
             ctx.instance.runtime_properties.get('public_ip'):
@@ -431,13 +452,16 @@ def delete(**_):
     '''Deletes a Virtual Machine'''
     # Delete the resource
     utils.task_resource_delete(
-        VirtualMachine())
+        VirtualMachine(api_version=ctx.node.properties.get(
+            'api_version', constants.API_VER_COMPUTE)))
 
 
 @operation
 def attach_data_disk(lun, **_):
     '''Attaches a data disk'''
-    vm_iface = VirtualMachine(_ctx=ctx.source)
+    vm_iface = VirtualMachine(_ctx=ctx.source,
+                              api_version=ctx.source.node.properties.get(
+                                    'api_version', constants.API_VER_COMPUTE))
     vm_state = vm_iface.get(name=utils.get_resource_name(_ctx=ctx.source))
     data_disks = vm_state.get(
         'properties', dict()).get(
@@ -462,7 +486,9 @@ def attach_data_disk(lun, **_):
         ctx.source.instance.runtime_properties.get('async_op')))
     # Update the VM
     utils.task_resource_update(
-        VirtualMachine(_ctx=ctx.source),
+        VirtualMachine(_ctx=ctx.source,
+                       api_version=ctx.source.node.properties.get(
+                            'api_version', constants.API_VER_COMPUTE)),
         {
             'location': ctx.source.node.properties.get('location'),
             'properties': {
@@ -479,7 +505,9 @@ def attach_data_disk(lun, **_):
 @operation
 def detach_data_disk(**_):
     '''Detaches a data disk'''
-    vm_iface = VirtualMachine(_ctx=ctx.source)
+    vm_iface = VirtualMachine(_ctx=ctx.source,
+                              api_version=ctx.source.node.properties.get(
+                                'api_version', constants.API_VER_COMPUTE))
     vm_state = vm_iface.get(name=utils.get_resource_name(_ctx=ctx.source))
     data_disks = [
         x for x in vm_state.get(
@@ -493,7 +521,9 @@ def detach_data_disk(**_):
         ctx.source.instance.runtime_properties.get('async_op')))
     # Update the VM
     utils.task_resource_update(
-        VirtualMachine(_ctx=ctx.source),
+        VirtualMachine(_ctx=ctx.source,
+                       api_version=ctx.source.node.properties.get(
+                            'api_version', constants.API_VER_COMPUTE)),
         {
             'location': ctx.source.node.properties.get('location'),
             'properties': {

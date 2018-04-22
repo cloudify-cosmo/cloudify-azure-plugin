@@ -145,7 +145,6 @@ def create_file_share(**_):
     ctx.instance.runtime_properties['storage_account'] = storage_account_name
     ctx.instance.runtime_properties['username'] = storage_account_name
     ctx.instance.runtime_properties['password'] = storage_account_key
-    ctx.instance.runtime_properties['uri'] = '{0}.{1}/{2}'.format(
-        storage_account_name,
-        constants.CONN_STORAGE_FILE_ENDPOINT,
-        share_name)
+    ctx.instance.runtime_properties['uri'] = '{0}.file.{1}/{2}'.format(
+        storage_account_name, constants.CONN_STORAGE_FILE_ENDPOINT, share_name
+    )

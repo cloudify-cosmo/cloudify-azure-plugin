@@ -117,9 +117,11 @@ def create_data_disk(**_):
         res_cfg.get('size')
     ctx.instance.runtime_properties['container'] = \
         disk_container
-    ctx.instance.runtime_properties['uri'] = \
-        constants.CONN_STORAGE_BLOB_ENDPOINT.format(
-            csa.account_name) + '/{0}/{1}'.format(disk_container, disk_name)
+    ctx.instance.runtime_properties['uri'] = (
+        'https://{0}.blob.{1}/{2}/{3}'.format(
+            csa.account_name, constants.CONN_STORAGE_ENDPOINT,
+            disk_container, disk_name)
+    )
 
 
 @operation

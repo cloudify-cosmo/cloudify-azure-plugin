@@ -23,14 +23,17 @@ CONFIG_PATH = '/opt/cloudify_azure_provider.conf'
 CONFIG_PATH_ENV_VAR_NAME = 'CFY_AZURE_CONFIG_PATH'
 
 # OAuth 2.0 constants
+# az cloud # endpoints.activeDirectory
 OAUTH2_ENDPOINT = 'https://login.microsoftonline.com'
+# az cloud # endpoints.activeDirectoryResourceId
 OAUTH2_MGMT_RESOURCE = 'https://management.core.windows.net/'
 OAUTH2_GRANT_TYPE = 'client_credentials'
 
 # Connection constants
+# az cloud # endpoints.resourceManager
 CONN_API_ENDPOINT = 'https://management.azure.com'
-CONN_STORAGE_FILE_ENDPOINT = 'file.core.windows.net'
-CONN_STORAGE_BLOB_ENDPOINT = 'https://{0}.blob.core.windows.net'
+# az cloud # suffixes.storageEndpoint
+CONN_STORAGE_ENDPOINT = "core.windows.net"
 
 # API version constants
 # Each service has its own API version independent of any other services

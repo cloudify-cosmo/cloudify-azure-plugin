@@ -65,7 +65,8 @@ def create(**_):
     '''Uses an existing, or creates a new, Availability Set'''
     # Create a resource (if necessary)
     utils.task_resource_create(
-        AvailabilitySet(),
+        AvailabilitySet(api_version=ctx.node.properties.get(
+            'api_version', constants.API_VER_COMPUTE)),
         {
             'location': ctx.node.properties.get('location'),
             'tags': ctx.node.properties.get('tags'),
@@ -78,4 +79,5 @@ def delete(**_):
     '''Deletes a Availability Set'''
     # Delete the resource
     utils.task_resource_delete(
-        AvailabilitySet())
+        AvailabilitySet(api_version=ctx.node.properties.get(
+            'api_version', constants.API_VER_COMPUTE)))

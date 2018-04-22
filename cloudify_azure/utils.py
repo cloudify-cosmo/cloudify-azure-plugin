@@ -608,6 +608,8 @@ def get_credentials(_ctx=ctx):
         f_creds = get_credentials_from_file(f_config_path)
     n_creds = get_credentials_from_node(_ctx=_ctx)
     creds = dict_update(f_creds, n_creds)
+    if 'endpoint_verify' not in creds:
+        creds['endpoint_verify'] = True
     return AzureCredentials(**creds)
 
 
@@ -620,8 +622,9 @@ def get_credentials_from_file(config_path=constants.CONFIG_PATH):
     :rtype: dict
     '''
     cred_keys = [
-        'client_id', 'client_secret',
-        'subscription_id', 'tenant_id'
+        'client_id', 'client_secret', 'subscription_id', 'tenant_id',
+        'endpoint_resource', 'endpoint_verify', 'endpoints_resource_manager',
+        'endpoints_active_directory'
     ]
     config = SafeConfigParser()
     config.read(config_path)
@@ -637,11 +640,15 @@ def get_credentials_from_node(_ctx=ctx):
     :rtype: dict
     '''
     cred_keys = [
-        'client_id', 'client_secret',
-        'subscription_id', 'tenant_id'
+        'client_id', 'client_secret', 'subscription_id', 'tenant_id',
+        'endpoint_resource', 'endpoints_resource_manager',
+        'endpoints_active_directory'
     ]
     props = _ctx.node.properties.get('azure_config')
-    return {k: props[k] for k in cred_keys if props.get(k)}
+    properties = {k: props[k] for k in cred_keys if props.get(k)}
+    if 'endpoint_verify' in props:
+        properties['endpoint_verify'] = props['endpoint_verify']
+    return properties
 
 
 def get_subscription_id(_ctx=ctx):
