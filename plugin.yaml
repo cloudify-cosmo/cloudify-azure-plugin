@@ -391,7 +391,7 @@ node_types:
         type: string
         description: >
           Resources API Version
-        default: "2016-02-01"
+        default: "2017-05-10"
       name:
         type: string
         description: >
