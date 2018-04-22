@@ -1251,6 +1251,10 @@ node_types:
         default:
           install_method: remote
           port: 5985
+      storage_endpoint:
+        type: string
+        description: This is the suffix for the storage endpoint. Supported values are core.windows.net or local.azurestack.external.
+        default: core.windows.net
     interfaces:
       cloudify.interfaces.lifecycle:
         create: pkg.cloudify_azure.resources.compute.virtualmachine.create

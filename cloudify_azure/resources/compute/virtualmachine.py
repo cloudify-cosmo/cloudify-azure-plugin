@@ -101,7 +101,7 @@ def build_osdisk_profile(usr_osdisk=None):
         osdisk['vhd'] = {
             'uri': 'http://{0}.{1}/vhds/{2}.vhd'.format(
                 utils.get_rel_node_name(constants.REL_CONNECTED_TO_SA),
-                'blob.local.azurestack.external',
+                'blob.' + ctx.node.properties['storage_endpoint'],
                 osdisk.get('name'))
         }
     # Fill in the blanks if the user didn't specify
@@ -132,7 +132,7 @@ def build_datadisks_profile(usr_datadisks):
             datadisk['vhd'] = {
                 'uri': 'http://{0}.{1}/vhds/{2}.vhd'.format(
                     utils.get_rel_node_name(constants.REL_CONNECTED_TO_SA),
-                    'blob.local.azurestack.external',
+                    'blob.' + ctx.node.properties['storage_endpoint'],
                     datadisk.get('name'))
             }
         # Fill in the blanks if the user didn't specify

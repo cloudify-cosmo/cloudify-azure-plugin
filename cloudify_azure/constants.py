@@ -33,7 +33,7 @@ OAUTH2_GRANT_TYPE = 'client_credentials'
 # az cloud # endpoints.resourceManager
 CONN_API_ENDPOINT = 'https://management.azure.com'
 # az cloud # suffixes.storageEndpoint
-CONN_STORAGE_ENDPOINT = "core.windows.net"
+# CONN_STORAGE_ENDPOINT = "core.windows.net"
 
 # API version constants
 # Each service has its own API version independent of any other services
