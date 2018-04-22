@@ -37,7 +37,7 @@ CONN_STORAGE_ENDPOINT = "core.windows.net"
 
 # API version constants
 # Each service has its own API version independent of any other services
-API_VER_RESOURCES = '2016-02-01'
+API_VER_RESOURCES = '2017-05-10'
 API_VER_STORAGE = '2015-06-15'
 API_VER_NETWORK = '2016-03-30'
 API_VER_COMPUTE = '2016-03-30'

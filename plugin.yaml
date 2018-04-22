@@ -5,9 +5,9 @@
 plugins:
   pkg:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-incubator/cloudify-azure-plugin/archive/1.6.0.zip
+    source: https://github.com/cloudify-incubator/cloudify-azure-plugin/archive/1.6.1.zip
     package_name: cloudify-azure-plugin
-    package_version: '1.6.0'
+    package_version: '1.6.1'
 
 data_types:
   cloudify.datatypes.azure.Config:
@@ -391,7 +391,7 @@ node_types:
         type: string
         description: >
           Resources API Version
-        default: "2016-02-01"
+        default: "2017-05-10"
       name:
         type: string
         description: >
