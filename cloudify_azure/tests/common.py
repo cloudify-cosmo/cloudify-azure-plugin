@@ -99,9 +99,9 @@ def mock_endpoints(mock, params, res_type,
         'PUT',
         endpoint,
         headers={
-            'location': params['mock_retry_url'],
+            'Location': params['mock_retry_url'],
             'x-ms-request-id': '123412341234',
-            'retry-after': '1'
+            'Retry-After': '1'
         },
         status_code=httplib.ACCEPTED
     )
