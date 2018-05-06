@@ -404,7 +404,6 @@ class Resource(object):
             url=url)
         self.log.debug('headers: {0}'.format(
             utils.secure_logging_content(dict(res.headers))))
-        headers = self.lowercase_headers(res.headers)
         # Check the response
         # HTTP 202 (ACCEPTED) - An asynchronous operation has started
         if res.status_code == httplib.ACCEPTED:
