@@ -78,9 +78,9 @@ class TestResourceGroup(unittest.TestCase):
                     self.mock_res_name,
                     constants.API_VER_RESOURCES)),
             headers={
-                'location': self.mock_retry_url,
+                'Location': self.mock_retry_url,
                 'x-ms-request-id': '123412341234',
-                'retry-after': '1'
+                'Retry-After': '1'
             },
             status_code=httplib.ACCEPTED
         )

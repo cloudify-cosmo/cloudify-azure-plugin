@@ -129,7 +129,7 @@ class ResourcesBaseTestCase(unittest.TestCase):
             'virtualMachines')
         headers = {
             'x-ms-request-id': 'test-id-string',
-            'retry-after': '1'
+            'Retry-After': '1'
         }
         self.mock_endpoints(mock, endpoint, res_name,
                             json={'response': 'ok'},
@@ -159,8 +159,8 @@ class ResourcesBaseTestCase(unittest.TestCase):
             'providers/Microsoft.Compute',
             'virtualMachines')
         headers = {
-            'location': 'https://test.com/test',
-            'retry-after': '1'
+            'Location': 'https://test.com/test',
+            'Retry-After': '1'
         }
         self.mock_endpoints(mock, endpoint, res_name,
                             json={'response': 'ok'},
@@ -176,7 +176,7 @@ class ResourcesBaseTestCase(unittest.TestCase):
         res.get(name=res_name)
         self.assertEqual(
             self.ctx.instance.runtime_properties.get('async_op'),
-            headers)
+            dict((k.lower(), v) for k, v in headers.items()))
 
     @requests_mock.Mocker()
     def test_accepted(self, mock):
@@ -188,9 +188,9 @@ class ResourcesBaseTestCase(unittest.TestCase):
             'providers/Microsoft.Compute',
             'virtualMachines')
         headers = {
-            'location': 'https://test.com/test',
+            'Location': 'https://test.com/test',
             'x-ms-request-id': 'test-id-string',
-            'retry-after': '1'
+            'Retry-After': '1'
         }
         self.mock_endpoints(mock, endpoint, res_name,
                             json={'response': 'ok'},
@@ -206,4 +206,4 @@ class ResourcesBaseTestCase(unittest.TestCase):
         res.get(name=res_name)
         self.assertEqual(
             self.ctx.instance.runtime_properties.get('async_op'),
-            headers)
+            dict((k.lower(), v) for k, v in headers.items()))

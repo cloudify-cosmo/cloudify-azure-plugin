@@ -91,10 +91,9 @@ class Resource(object):
         res = self.client.request(
             method='get',
             url=url)
-        # Convert headers from CaseInsensitiveDict to Dict
-        headers = dict(res.headers)
         self.log.debug('headers: {0}'.format(
-            utils.secure_logging_content(headers)))
+            utils.secure_logging_content(dict(res.headers))))
+        headers = self.lowercase_headers(res.headers)
         # Check the response
         # HTTP 202 (ACCEPTED) - The operation has started but is asynchronous
         if res.status_code == httplib.ACCEPTED:
@@ -146,10 +145,9 @@ class Resource(object):
             method='put',
             url='{0}/{1}'.format(self.endpoint, name),
             json=params)
-        # Convert headers from CaseInsensitiveDict to Dict
-        headers = dict(res.headers)
         self.log.debug('headers: {0}'.format(
-            utils.secure_logging_content(headers)))
+            utils.secure_logging_content(dict(res.headers))))
+        headers = self.lowercase_headers(res.headers)
         # Check the response
         # HTTP 201 (CREATED) - The operation succeeded
         if res.status_code == httplib.CREATED:
@@ -252,10 +250,9 @@ class Resource(object):
             method='put',
             url='{0}/{1}'.format(self.endpoint, name),
             json=params)
-        # Convert headers from CaseInsensitiveDict to Dict
-        headers = dict(res.headers)
         self.log.debug('headers: {0}'.format(
-            utils.secure_logging_content(headers)))
+            utils.secure_logging_content(dict(res.headers))))
+        headers = self.lowercase_headers(res.headers)
         # Check the response
         # HTTP 202 (ACCEPTED) - The operation has started but is asynchronous
         if res.status_code == httplib.ACCEPTED:
@@ -337,10 +334,9 @@ class Resource(object):
         res = self.client.request(
             method='delete',
             url='{0}/{1}'.format(self.endpoint, name))
-        # Convert headers from CaseInsensitiveDict to Dict
-        headers = dict(res.headers)
         self.log.debug('headers: {0}'.format(
-            utils.secure_logging_content(headers)))
+            utils.secure_logging_content(dict(res.headers))))
+        headers = self.lowercase_headers(res.headers)
         # HTTP 200 (OK) - The operation is successful and complete
         if res.status_code == httplib.OK:
             return
@@ -406,10 +402,8 @@ class Resource(object):
         res = self.client.request(
             method='get',
             url=url)
-        # Convert headers from CaseInsensitiveDict to Dict
-        headers = dict(res.headers)
         self.log.debug('headers: {0}'.format(
-            utils.secure_logging_content(headers)))
+            utils.secure_logging_content(dict(res.headers))))
         # Check the response
         # HTTP 202 (ACCEPTED) - An asynchronous operation has started
         if res.status_code == httplib.ACCEPTED:
@@ -445,10 +439,9 @@ class Resource(object):
             op_info.get('azure-asyncoperation')
         res = self.client.request(method='get',
                                   url=op_url)
-        # Convert headers from CaseInsensitiveDict to Dict
-        headers = dict(res.headers)
         self.log.debug('headers: {0}'.format(
-            utils.secure_logging_content(headers)))
+            utils.secure_logging_content(dict(res.headers))))
+        headers = self.lowercase_headers(res.headers)
         # HTTP 200 (OK) - Operation is successful and complete
         if res.status_code == httplib.OK:
             if self.validate_res_json(res) == 'InProgress':
@@ -540,3 +533,8 @@ class Resource(object):
             return None
         return yaml.safe_load(
             json.dumps(us_data, ensure_ascii=True).encode('utf8'))
+
+    @staticmethod
+    def lowercase_headers(headers):
+        # Convert headers from CaseInsensitiveDict to Dict
+        return dict(headers.lower_items())
