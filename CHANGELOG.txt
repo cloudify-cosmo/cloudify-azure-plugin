@@ -1,3 +1,5 @@
+1.6.2:
+  - Additional fixes handling response headers.
 1.6.1:
   - Fix a bug where deleted resource groups state was unclear because of missing location header.
 1.6.0:
