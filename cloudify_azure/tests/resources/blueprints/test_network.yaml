@@ -138,7 +138,7 @@ node_templates:
     relationships:
     - type: cloudify.azure.relationships.contained_in_resource_group
       target: resource_group
-    - type: cloudify.azure.relationships.connected_to_ip_configuration
+    - type: cloudify.azure.relationships.nic_connected_to_ip_configuration
       target: nic_ip
     - type: cloudify.azure.relationships.nic_connected_to_network_security_group
       target: network_security_group

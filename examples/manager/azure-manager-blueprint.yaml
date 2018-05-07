@@ -1,5 +1,9 @@
 tosca_definitions_version: cloudify_dsl_1_3
 
+### #######################
+### Note that this blueprint uses a deprecated version of Cloudify.
+### It is maintained for plugin tests.
+
 imports:
   - http://www.getcloudify.org/spec/cloudify/3.4/types.yaml
   - https://raw.githubusercontent.com/cloudify-cosmo/cloudify-azure-plugin/master/plugin.yaml
@@ -902,7 +906,7 @@ node_templates:
       target: resource_group
     - type: cloudify.azure.relationships.nic_connected_to_network_security_group
       target: network_security_group
-    - type: cloudify.azure.relationships.connected_to_ip_configuration
+    - type: cloudify.azure.relationships.nic_connected_to_ip_configuration
       target: vm_nic_ip_cfg
 
   # #####################################################################
