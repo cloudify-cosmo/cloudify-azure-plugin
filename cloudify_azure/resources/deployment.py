@@ -113,7 +113,6 @@ def create(ctx, **kwargs):
 
     if ctx.node.properties.get('use_external_resource', False):
         ctx.logger.info("Using external resource")
-        deployment.get()
     else:
         # load template
         template = properties.get('template')
@@ -135,6 +134,9 @@ def create(ctx, **kwargs):
         deployment.update(template=template,
                           params=properties.get('params', {}),
                           location=properties['location'])
+
+    resource = deployment.get()
+    ctx.instance.runtime_properties['outputs'] = resource.properties.outputs
 
 
 @operation

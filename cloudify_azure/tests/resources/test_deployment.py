@@ -179,6 +179,28 @@ class DeploymentTest(unittest.TestCase):
         self.client.deployments.create_or_update.assert_not_called()
         self.client.deployments.get.assert_called()
 
+    def test_create_with_deployment_outputs(self):
+        mock_outputs = {
+            "exampleOutput": {
+                "type": "String",
+                "value": "exampleOutput",
+            }
+        }
+        self.client.deployments.get.return_value.properties.outputs = \
+            mock_outputs
+
+        deployment.create(
+            ctx=self.fake_ctx,
+            name="check",
+            location="west",
+            template="{}",
+            params={'c': 'd'},
+            azure_config=self.azure_config
+        )
+
+        outputs = self.instance.runtime_properties['outputs']
+        self.assertDictEqual(outputs, mock_outputs)
+
 
 if __name__ == '__main__':
     unittest.main()
