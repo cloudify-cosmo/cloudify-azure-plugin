@@ -85,6 +85,15 @@ class DeploymentTest(unittest.TestCase):
         async_call = self.client.resource_groups.delete.return_value
         async_call.wait.assert_called_with(timeout=None)
 
+    def test_delete_with_external_resource(self):
+        self.node.properties['use_external_resource'] = True
+
+        deployment.delete(ctx=self.fake_ctx,
+                          name="check",
+                          azure_config=self.azure_config)
+
+        self.client.resource_groups.delete.assert_not_called()
+
     def test_init(self):
         deployment.create(
             ctx=self.fake_ctx,
@@ -113,7 +122,7 @@ class DeploymentTest(unittest.TestCase):
                 name="check",
                 azure_config=self.azure_config
             )
-        self.assertEqual(str(ex.exception), "Template does not defined.")
+        self.assertEqual(str(ex.exception), "Template is not defined.")
 
     def test_create_with_template_string(self):
         deployment.create(
@@ -157,6 +166,18 @@ class DeploymentTest(unittest.TestCase):
         )
         async_call = self.client.deployments.create_or_update.return_value
         async_call.wait.assert_called_with(timeout=None)
+
+    def test_create_with_external_resource(self):
+        self.node.properties['use_external_resource'] = True
+
+        deployment.create(
+            ctx=self.fake_ctx,
+            name="check",
+            location="west",
+            azure_config=self.azure_config
+        )
+        self.client.deployments.create_or_update.assert_not_called()
+        self.client.deployments.get.assert_called()
 
 
 if __name__ == '__main__':
