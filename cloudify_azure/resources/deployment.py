@@ -50,7 +50,7 @@ class Deployment(object):
 
     def create(self, location):
         """Deploy the template to a resource group."""
-        self.logger.info("Client resource...")
+        self.logger.info("Create resource group...")
         self.client.resource_groups.create_or_update(
             self.resource_group,
             {
