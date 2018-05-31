@@ -1,3 +1,7 @@
+1.7.0:
+  - Support use_external_resource for deployments
+  - Set Deployment outputs in runtime properties
+  - Fix bug that prevented healing from attaching new data disk to healed VM.
 1.6.2:
   - Additional fixes handling response headers.
 1.6.1:
