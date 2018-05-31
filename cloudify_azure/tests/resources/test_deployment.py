@@ -26,8 +26,29 @@ import cloudify_azure.resources.deployment as deployment
 
 class DeploymentTest(unittest.TestCase):
 
-    def tearDown(self):
-        current_ctx.clear()
+    def setUp(self):
+        patch = mock.patch(
+            'cloudify_azure.resources.deployment.ResourceManagementClient')
+        self.Client = patch.start()
+        self.client = self.Client.return_value
+        self.addCleanup(patch.stop)
+
+        patch = mock.patch(
+            'cloudify_azure.resources.deployment.ServicePrincipalCredentials')
+        self.Credentials = patch.start()
+        self.addCleanup(patch.stop)
+
+        self.fake_ctx, self.node, self.instance = \
+            self._get_mock_context_for_run()
+        current_ctx.set(self.fake_ctx)
+        self.addCleanup(current_ctx.clear)
+
+        self.azure_config = {
+            'client_id': "client_id",
+            'client_secret': "client_secret",
+            'tenant_id': "tenant_id",
+            'subscription_id': "subscription_id",
+        }
 
     def _get_mock_context_for_run(self):
         fake_ctx = cfy_mocks.MockCloudifyContext()
@@ -44,144 +65,141 @@ class DeploymentTest(unittest.TestCase):
         return fake_ctx, node, instance
 
     def test_delete(self):
-        fake_ctx, _, instance = self._get_mock_context_for_run()
-        current_ctx.set(fake_ctx)
+        self.instance.runtime_properties['resource_id'] = 'check_id'
 
-        instance.runtime_properties['resource_id'] = 'check_id'
+        deployment.delete(ctx=self.fake_ctx,
+                          name="check",
+                          azure_config=self.azure_config)
 
-        credentials = mock.MagicMock()
-        async_call = mock.MagicMock()
-        async_call.wait = mock.MagicMock()
-        client = mock.MagicMock()
-        client.resource_groups = mock.MagicMock()
-        client.resource_groups.delete = mock.MagicMock(
-            return_value=async_call
-        )
-
-        with mock.patch(
-            'cloudify_azure.resources.deployment.ServicePrincipalCredentials',
-            mock.MagicMock(return_value=credentials)
-        ) as credentials_call:
-            with mock.patch(
-                'cloudify_azure.resources.deployment.ResourceManagementClient',
-                mock.MagicMock(return_value=client)
-            ) as client_call:
-                deployment.delete(ctx=fake_ctx, name="check", azure_config={
-                    'client_id': "client_id",
-                    'client_secret': "client_secret",
-                    'tenant_id': "tenant_id",
-                    'subscription_id': "subscription_id",
-                })
-
-        credentials_call.assert_called_with(
+        self.Credentials.assert_called_with(
             client_id='client_id',
             resource=constants.OAUTH2_MGMT_RESOURCE,
             secret='client_secret',
             tenant='tenant_id',
             verify=True)
-        client_call.assert_called_with(credentials, "subscription_id",
+        self.Client.assert_called_with(self.Credentials.return_value,
+                                       "subscription_id",
                                        base_url='https://management.azure.com')
-
+        self.client.resource_groups.delete.assert_called_with('check_id',
+                                                              verify=True)
+        async_call = self.client.resource_groups.delete.return_value
         async_call.wait.assert_called_with(timeout=None)
-        client.resource_groups.delete.assert_called_with('check_id',
-                                                         verify=True)
 
-    def test_create(self):
-        fake_ctx, node, _ = self._get_mock_context_for_run()
-        current_ctx.set(fake_ctx)
+    def test_delete_with_external_resource(self):
+        self.node.properties['use_external_resource'] = True
 
-        credentials = mock.MagicMock()
-        async_call = mock.MagicMock()
-        async_call.wait = mock.MagicMock()
-        client = mock.MagicMock()
-        client.deployments = mock.MagicMock()
-        client.deployments.create_or_update = mock.MagicMock(
-            return_value=async_call
+        deployment.delete(ctx=self.fake_ctx,
+                          name="check",
+                          azure_config=self.azure_config)
+
+        self.client.resource_groups.delete.assert_not_called()
+
+    def test_init(self):
+        deployment.create(
+            ctx=self.fake_ctx,
+            name="check",
+            template="{}",
+            location="west",
+            timeout=10,
+            azure_config=self.azure_config
         )
 
-        with mock.patch(
-            'cloudify_azure.resources.deployment.ServicePrincipalCredentials',
-            mock.MagicMock(return_value=credentials)
-        ) as credentials_call:
-            with mock.patch(
-                'cloudify_azure.resources.deployment.ResourceManagementClient',
-                mock.MagicMock(return_value=client)
-            ) as client_call:
-                # call without templates
-                with self.assertRaises(cfy_exc.NonRecoverableError) as ex:
-                    deployment.create(
-                        ctx=fake_ctx,
-                        name="check",
-                        azure_config={
-                            'client_id': "client_id",
-                            'client_secret': "client_secret",
-                            'tenant_id': "tenant_id",
-                            'subscription_id': "subscription_id",
-                        }
-                    )
-                self.assertEqual(str(ex.exception),
-                                 "Template does not defined.")
+        self.Credentials.assert_called_with(
+            client_id='client_id',
+            resource=constants.OAUTH2_MGMT_RESOURCE,
+            secret='client_secret',
+            tenant='tenant_id',
+            verify=True)
+        self.Client.assert_called_with(
+            self.Credentials.return_value, "subscription_id",
+            base_url='https://management.azure.com')
 
-                credentials_call.assert_called_with(
-                    client_id='client_id',
-                    resource=constants.OAUTH2_MGMT_RESOURCE,
-                    secret='client_secret',
-                    tenant='tenant_id',
-                    verify=True)
-                client_call.assert_called_with(
-                    credentials, "subscription_id",
-                    base_url='https://management.azure.com')
+    def test_create_without_template(self):
+        # call without templates
+        with self.assertRaises(cfy_exc.NonRecoverableError) as ex:
+            deployment.create(
+                ctx=self.fake_ctx,
+                name="check",
+                azure_config=self.azure_config
+            )
+        self.assertEqual(str(ex.exception), "Template is not defined.")
 
-                deployment.create(
-                    ctx=fake_ctx,
-                    name="check",
-                    template="{}",
-                    location="west",
-                    timeout=10,
-                    azure_config={
-                        'client_id': "client_id",
-                        'client_secret': "client_secret",
-                        'tenant_id': "tenant_id",
-                        'subscription_id': "subscription_id",
-                    }
-                )
+    def test_create_with_template_string(self):
+        deployment.create(
+            ctx=self.fake_ctx,
+            name="check",
+            template="{}",
+            location="west",
+            timeout=10,
+            azure_config=self.azure_config
+        )
 
-                async_call.wait.assert_called_with(timeout=10)
-                client.deployments.create_or_update.assert_called_with(
-                    'check', 'check', {
-                        'parameters': {},
-                        'mode': DeploymentMode.incremental,
-                        'template': {}
-                    }, verify=True
-                )
+        self.client.deployments.create_or_update.assert_called_with(
+            'check', 'check', {
+                'parameters': {},
+                'mode': DeploymentMode.incremental,
+                'template': {}
+            }, verify=True
+        )
+        async_call = self.client.deployments.create_or_update.return_value
+        async_call.wait.assert_called_with(timeout=10)
 
-                node.properties['template_file'] = "check.json"
-                fake_ctx.get_resource = mock.MagicMock(
-                    return_value='{"a":"b"}'
-                )
+    def test_create_with_template_file(self):
+        self.node.properties['template_file'] = "check.json"
+        self.fake_ctx.get_resource.return_value = '{"a":"b"}'
 
-                deployment.create(
-                    ctx=fake_ctx,
-                    name="check",
-                    location="west",
-                    params={'c': 'd'},
-                    azure_config={
-                        'client_id': "client_id",
-                        'client_secret': "client_secret",
-                        'tenant_id': "tenant_id",
-                        'subscription_id': "subscription_id",
-                    }
-                )
+        deployment.create(
+            ctx=self.fake_ctx,
+            name="check",
+            location="west",
+            params={'c': 'd'},
+            azure_config=self.azure_config
+        )
 
-                fake_ctx.get_resource.assert_called_with("check.json")
-                async_call.wait.assert_called_with(timeout=None)
-                client.deployments.create_or_update.assert_called_with(
-                    'check', 'check', {
-                        'parameters': {'c': {'value': 'd'}},
-                        'mode': DeploymentMode.incremental,
-                        'template': {'a': 'b'}
-                    }, verify=True
-                )
+        self.fake_ctx.get_resource.assert_called_with("check.json")
+        self.client.deployments.create_or_update.assert_called_with(
+            'check', 'check', {
+                'parameters': {'c': {'value': 'd'}},
+                'mode': DeploymentMode.incremental,
+                'template': {'a': 'b'}
+            }, verify=True
+        )
+        async_call = self.client.deployments.create_or_update.return_value
+        async_call.wait.assert_called_with(timeout=None)
+
+    def test_create_with_external_resource(self):
+        self.node.properties['use_external_resource'] = True
+
+        deployment.create(
+            ctx=self.fake_ctx,
+            name="check",
+            location="west",
+            azure_config=self.azure_config
+        )
+        self.client.deployments.create_or_update.assert_not_called()
+        self.client.deployments.get.assert_called()
+
+    def test_create_with_deployment_outputs(self):
+        mock_outputs = {
+            "exampleOutput": {
+                "type": "String",
+                "value": "exampleOutput",
+            }
+        }
+        self.client.deployments.get.return_value.properties.outputs = \
+            mock_outputs
+
+        deployment.create(
+            ctx=self.fake_ctx,
+            name="check",
+            location="west",
+            template="{}",
+            params={'c': 'd'},
+            azure_config=self.azure_config
+        )
+
+        outputs = self.instance.runtime_properties['outputs']
+        self.assertDictEqual(outputs, mock_outputs)
 
 
 if __name__ == '__main__':
