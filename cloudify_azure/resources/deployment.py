@@ -50,13 +50,19 @@ class Deployment(object):
 
     def create(self, location):
         """Deploy the template to a resource group."""
-        self.logger.info("Client resource...")
+        self.logger.info("Create resource group...")
         self.client.resource_groups.create_or_update(
             self.resource_group,
             {
                 'location': location
             },
             verify=self.resource_verify
+        )
+
+    def get(self):
+        return self.client.deployments.get(
+            self.resource_group,  # resource group name
+            self.resource_group,  # deployment name
         )
 
     def update(self, template, params, location):
@@ -105,30 +111,38 @@ def create(ctx, **kwargs):
                             properties['name'],
                             timeout=properties.get('timeout'))
 
-    # load template
-    template = properties.get('template')
-    if not template and properties.get('template_file'):
-        ctx.logger.info("Will be used {} as template"
-                        .format(repr(properties['template_file'])))
-        template = ctx.get_resource(properties['template_file'])
+    if ctx.node.properties.get('use_external_resource', False):
+        ctx.logger.info("Using external resource")
+    else:
+        # load template
+        template = properties.get('template')
+        if not template and properties.get('template_file'):
+            ctx.logger.info("Using {} as template"
+                            .format(repr(properties['template_file'])))
+            template = ctx.get_resource(properties['template_file'])
 
-    if not template:
-        raise cfy_exc.NonRecoverableError(
-            "Template does not defined."
-        )
+        if not template:
+            raise cfy_exc.NonRecoverableError(
+                "Template is not defined."
+            )
 
-    # create deployment
-    deployment.create(location=properties['location'])
-    ctx.instance.runtime_properties['resource_id'] = properties['name']
+        # create deployment
+        deployment.create(location=properties['location'])
+        ctx.instance.runtime_properties['resource_id'] = properties['name']
 
-    # update deployment
-    deployment.update(template=template,
-                      params=properties.get('params', {}),
-                      location=properties['location'])
+        # update deployment
+        deployment.update(template=template,
+                          params=properties.get('params', {}),
+                          location=properties['location'])
+
+    resource = deployment.get()
+    ctx.instance.runtime_properties['outputs'] = resource.properties.outputs
 
 
 @operation
 def delete(ctx, **kwargs):
+    if ctx.node.properties.get('use_external_resource', False):
+        return
     properties = {}
     properties.update(ctx.node.properties)
     properties.update(kwargs)

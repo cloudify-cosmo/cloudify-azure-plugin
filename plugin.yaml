@@ -5,9 +5,9 @@
 plugins:
   pkg:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-incubator/cloudify-azure-plugin/archive/1.6.2.zip
+    source: https://github.com/cloudify-incubator/cloudify-azure-plugin/archive/1.7.0.zip
     package_name: cloudify-azure-plugin
-    package_version: '1.6.2'
+    package_version: '1.7.0'
 
 data_types:
   cloudify.datatypes.azure.Config:
@@ -1671,6 +1671,12 @@ node_types:
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
+      use_external_resource:
+        description: >
+          Indicate whether the resource exists or if Cloudify should create the resource
+        type: boolean
+        default: false
+        required: true
     interfaces:
       cloudify.interfaces.lifecycle:
         create: pkg.cloudify_azure.resources.deployment.create

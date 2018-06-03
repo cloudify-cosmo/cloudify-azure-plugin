@@ -1,3 +1,6 @@
 testtools
 requests_mock
 mock
+nose
+coverage
+nose-cov

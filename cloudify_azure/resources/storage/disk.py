@@ -147,3 +147,10 @@ def delete_data_disk(**_):
     ctx.logger.info('Deleting Data Disk "{0}/{1}"'
                     .format(disk_container, disk_name))
     pageblobsvc.delete_blob(disk_container, disk_name)
+    for prop in ['name', 'diskSizeGB', 'container', 'uri']:
+        try:
+            del ctx.instance.runtime_properties[prop]
+        except IndexError:
+            ctx.logger.debug(
+                'Attempted to delete property {0} but failed.'.format(
+                    prop))

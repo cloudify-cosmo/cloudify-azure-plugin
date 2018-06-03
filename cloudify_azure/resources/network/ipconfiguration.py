@@ -126,12 +126,14 @@ def build_ip_configuration(ipc):
         PublicIPAddress,
         constants.REL_IPC_CONNECTED_TO_PUBIP,
         _ctx=ipc)
-
-    # Build a partial config and update it with properties config
-    return utils.dict_update({
+    ip_configuration = {
         'name': utils.get_resource_name(ipc),
         'properties': {
             'subnet': subnet,
             'publicIPAddress': pubip
         }
-    }, utils.get_resource_config(_ctx=ipc))
+    }
+    ip_configuration['properties'] = utils.dict_update(
+        ip_configuration['properties'],
+        utils.get_resource_config(_ctx=ipc))
+    return ip_configuration
