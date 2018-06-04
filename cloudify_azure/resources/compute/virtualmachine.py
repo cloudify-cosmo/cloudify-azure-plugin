@@ -404,6 +404,38 @@ def configure(command_to_execute, file_uris, type_handler_version='v2.0', **_):
                                     constants.API_VER_NETWORK))
     nic_data = nic.get(utils.get_resource_name(rel_nic.target))
 
+    # TODO: If NIC is not attached to VM update the NIC.
+    virtual_machine = nic_data.get(
+        'properties', dict()).get(
+            'virtualMachine', dict())
+    if not virtual_machine:
+        virtual_machine_name = ctx.instance.runtime_properties.get('name')
+        virtual_machine = \
+            VirtualMachine(
+                api_version=ctx.node.properties.get(
+                    'api_version',
+                    constants.API_VER_COMPUTE)).get(
+                        name=virtual_machine_name)
+
+        nic_update = \
+            {
+                'location': rel_nic.target.node.node.properties.get(
+                    'location'),
+                'tags': rel_nic.target.node.node.properties.get('tags'),
+                'properties': {
+                    'virtualMachine': {
+                        'id': virtual_machine.get('id')
+                    }
+                }
+            }
+        utils.task_resource_update(
+            NetworkInterfaceCard(
+                _ctx=rel_nic.target,
+                api_version=rel_nic.target.node.properties.get(
+                    'api_version', constants.API_VER_NETWORK)),
+            nic_update
+        )
+
     # Iterate over each IPConfiguration entry
     creds = utils.get_credentials(_ctx=ctx)
     for ip_cfg in nic_data.get(
