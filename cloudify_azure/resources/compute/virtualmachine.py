@@ -429,8 +429,14 @@ def configure(command_to_execute, file_uris, type_handler_version='v2.0', **_):
                 creds.endpoints_resource_manager, pubip_id)
             pubip_data = pubip.get()
             if isinstance(pubip_data, dict):
-                ctx.instance.runtime_properties['public_ip'] = \
+                public_ip = \
                     pubip_data.get('properties', dict()).get('ipAddress')
+                # Maintained for backwards compatibility.
+                ctx.instance.runtime_properties['public_ip'] = \
+                    public_ip
+                # For consistency with other plugins.
+                ctx.instance.runtime_properties['public_ip_address'] = \
+                    public_ip
 
     # See if the user wants to use the public IP as primary IP
     if ctx.node.properties.get('use_public_ip') and \
@@ -454,6 +460,11 @@ def delete(**_):
     utils.task_resource_delete(
         VirtualMachine(api_version=ctx.node.properties.get(
             'api_version', constants.API_VER_COMPUTE)))
+    for prop in ['public_ip', 'public_ip_address', 'ip']:
+        try:
+            del ctx.instance.runtime_properties[prop]
+        except KeyError:
+            pass
 
 
 @operation
