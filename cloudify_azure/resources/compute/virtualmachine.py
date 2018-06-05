@@ -385,6 +385,17 @@ def configure(command_to_execute, file_uris, type_handler_version='v2.0', **_):
                     }
                 }
             })
+    virtual_machine_name = ctx.instance.runtime_properties.get('name')
+    virtual_machine_iface = \
+        VirtualMachine(
+            api_version=ctx.node.properties.get(
+                'api_version',
+                constants.API_VER_COMPUTE)).get(
+                    name=virtual_machine_name)
+    # Provide empty string for id default so that it does not equal
+    # None in comparison to nic_virtual_machine_id below.
+    # If everything is right, it would never be None.
+    virtual_machine_id = virtual_machine_iface.get('id', '')
 
     # Write the IP address to runtime properties for the agent
     # Get a reference to the NIC
@@ -405,41 +416,32 @@ def configure(command_to_execute, file_uris, type_handler_version='v2.0', **_):
                 constants.API_VER_NETWORK))
         nic_name = utils.get_resource_name(rel_nic.target)
         nic_data = nic_iface.get(nic_name)
+        nic_virtual_machine_id = nic_data.get(
+            'properties', dict()).get('virtualMachine', dict()).get('id')
 
-        if not nic_data.get(
-                'properties', dict()).get(
-                    'virtualMachine', dict()):
-            virtual_machine_name = ctx.instance.runtime_properties.get('name')
-            virtual_machine_iface = \
-                VirtualMachine(
-                    api_version=ctx.node.properties.get(
-                        'api_version',
-                        constants.API_VER_COMPUTE)).get(
-                            name=virtual_machine_name)
-            nic_update = \
-                {
-                    'virtualMachine': {
-                        'id': virtual_machine_iface.get('id')
-                    }
-                }
-            nic_data['properties'] = \
-                utils.dict_update(
-                    nic_data.get('properties', {}),
-                    nic_update)
+        if virtual_machine_id != nic_virtual_machine_id:
             utils.task_resource_update(
-                nic_iface, nic_data, _ctx=rel_nic.target)
-            nic_data = nic_iface.get(nic_name)
-            # An ugly little condition to handle limits of tests.
-            # In the real world, retry until successful.
-            if virtual_machine_name not in nic_data.get(
-                    'properties', dict()).get(
-                        'virtualMachine', dict()).get('id', str()):
-                return ctx.operation.retry(
-                    message='Waiting for NIC {0} to '
-                            'attach to VM {1}..'
-                            .format(nic_name,
-                                    virtual_machine_name),
-                    retry_after=10)
+                NetworkInterfaceCard(
+                    _ctx=rel_nic.target,
+                    api_version=rel_nic.target.node.properties.get(
+                        'api_version', constants.API_VER_NETWORK)),
+                {
+                    'location': rel_nic.target.node.properties.get('location'),
+                    'tags': rel_nic.target.node.properties.get('tags'),
+                    'properties': utils.dict_update(
+                        utils.get_resource_config(_ctx=rel_nic.target),
+                        {
+                            'primary': ctx.node.properties.get(
+                                'primary', False),
+                            'virtualMachine': {'id': virtual_machine_id},
+                            'networkSecurityGroup': nic_data.get(
+                                'properties', {}).get('networkSecurityGroup'),
+                            'ipConfigurations': nic_data.get(
+                                'properties', {}).get('ipConfigurations')
+                        }
+                    )
+                }
+            )
 
         # Iterate over each IPConfiguration entry
         creds = utils.get_credentials(_ctx=ctx)
