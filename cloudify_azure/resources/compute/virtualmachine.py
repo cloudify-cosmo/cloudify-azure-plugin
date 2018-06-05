@@ -429,7 +429,7 @@ def configure(command_to_execute, file_uris, type_handler_version='v2.0', **_):
                     nic_data.get('properties', {}),
                     nic_update)
             utils.task_resource_update(
-                nic_iface, nic_data['properties'], ctx=rel_nic.target)
+                nic_iface, nic_data['properties'], _ctx=rel_nic.target)
             nic_data = nic_iface.get(nic_name)
             # An ugly little condition to handle limits of tests.
             # In the real world, retry until successful.
