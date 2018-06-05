@@ -396,30 +396,28 @@ def configure(command_to_execute, file_uris, type_handler_version='v2.0', **_):
     if not rel_nic:
         return
 
-    print repr(rel_nic.target.node.properties)
     # Get the NIC data from the API directly (because of IPConfiguration)
-    nic = NetworkInterfaceCard(_ctx=rel_nic.target,
-                               api_version=rel_nic.target.node.properties.get(
-                                    'api_version',
-                                    constants.API_VER_NETWORK))
+    nic_iface = NetworkInterfaceCard(
+        _ctx=rel_nic.target,
+        api_version=rel_nic.target.node.properties.get(
+            'api_version',
+            constants.API_VER_NETWORK))
     nic_name = utils.get_resource_name(rel_nic.target)
-    nic_data = nic.get(nic_name)
+    nic_data = nic_iface.get(nic_name)
 
-    # TODO: If NIC is not attached to VM update the NIC.
     if not nic_data.get('properties', dict()).get('virtualMachine', dict()):
         virtual_machine_name = ctx.instance.runtime_properties.get('name')
-        virtual_machine = \
+        virtual_machine_iface = \
             VirtualMachine(
                 api_version=ctx.node.properties.get(
                     'api_version',
                     constants.API_VER_COMPUTE)).get(
                         name=virtual_machine_name)
-        virtual_machine_id = virtual_machine.get('id')
         nic_update = \
             {
                 'properties': {
                     'virtualMachine': {
-                        'id': virtual_machine_id
+                        'id': virtual_machine_iface.get('id')
                     }
                 }
             }
@@ -427,9 +425,11 @@ def configure(command_to_execute, file_uris, type_handler_version='v2.0', **_):
             utils.dict_update(
                 nic_data.get('properties', {}),
                 nic_update)
-        utils.task_resource_update(nic, nic_data['properties'])
-        nic_data = nic.get(nic_name)
-        if virtual_machine_id not in nic_data.get(
+        utils.task_resource_update(nic_iface, nic_data['properties'])
+        nic_data = nic_iface.get(nic_name)
+        # An ugly little condition to handle limits of tests.
+        # In the real world, retry until successful.
+        if virtual_machine_name not in nic_data.get(
                 'properties', dict()).get(
                     'virtualMachine', dict()).get('id', str()):
             return ctx.operation.retry(

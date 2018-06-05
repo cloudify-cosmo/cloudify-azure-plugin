@@ -59,12 +59,13 @@ class TestCompute(unittest.TestCase):
         tutils.mock_retry_async_endpoint(mock, self.params)
         tutils.mock_resourcegroup_endpoint(mock, self.params)
 
-    def mock_network_endpoints(self, mock):
+    def mock_network_endpoints(self, mock, _get_json=None):
         '''Mock network endpoints'''
         tutils.mock_network_endpoints(mock, self.params,
                                       'virtualNetworks', 'mockvnet')
         tutils.mock_network_endpoints(mock, self.params,
-                                      'networkInterfaces', 'mocknic')
+                                      'networkInterfaces', 'mocknic',
+                                      get_json=_get_json)
         tutils.mock_network_endpoints(mock, self.params,
                                       'networkInterfaces', 'mockvm')
         tutils.mock_network_endpoints(mock, self.params,
@@ -92,7 +93,15 @@ class TestCompute(unittest.TestCase):
     def test_lifecycle_install(self, cfy_local, mock, *_):
         '''network install workflow'''
         self.mock_install_endpoints(mock)
-        self.mock_network_endpoints(mock)
+        response_data = {
+            'name': 'mockvm',
+            'properties': {
+                'virtualMachine': {
+                    'id': 'mockvm'
+                }
+            }
+        }
+        self.mock_network_endpoints(mock, _get_json=response_data)
         self.mock_compute_endpoints(mock)
         self.mock_storage_endpoints(mock)
         cfy_local.execute('install', task_retries=1)

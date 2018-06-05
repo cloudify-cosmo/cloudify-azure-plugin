@@ -58,7 +58,6 @@ class ResourcesBaseTestCase(unittest.TestCase):
                                            'retry_number': 0
                                        },
                                        properties=self.node_properties)
-
         self.log = logging.getLogger('tests.ResourcesBaseTestCase')
         stream = logging.StreamHandler(stdout)
         stream.setLevel(logging.INFO)
