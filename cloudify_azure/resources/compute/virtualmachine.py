@@ -402,13 +402,11 @@ def configure(command_to_execute, file_uris, type_handler_version='v2.0', **_):
                                api_version=rel_nic.target.node.properties.get(
                                     'api_version',
                                     constants.API_VER_NETWORK))
-    nic_data = nic.get(utils.get_resource_name(rel_nic.target))
+    nic_name = utils.get_resource_name(rel_nic.target)
+    nic_data = nic.get(nic_name)
 
     # TODO: If NIC is not attached to VM update the NIC.
-    virtual_machine = nic_data.get(
-        'properties', dict()).get(
-            'virtualMachine', dict())
-    if not virtual_machine:
+    if not nic_data.get('properties', dict()).get('virtualMachine', dict()):
         virtual_machine_name = ctx.instance.runtime_properties.get('name')
         virtual_machine = \
             VirtualMachine(
@@ -416,25 +414,30 @@ def configure(command_to_execute, file_uris, type_handler_version='v2.0', **_):
                     'api_version',
                     constants.API_VER_COMPUTE)).get(
                         name=virtual_machine_name)
-
+        virtual_machine_id = virtual_machine.get('id')
         nic_update = \
             {
-                'location': rel_nic.target.node.node.properties.get(
-                    'location'),
-                'tags': rel_nic.target.node.node.properties.get('tags'),
                 'properties': {
                     'virtualMachine': {
-                        'id': virtual_machine.get('id')
+                        'id': virtual_machine_id
                     }
                 }
             }
-        utils.task_resource_update(
-            NetworkInterfaceCard(
-                _ctx=rel_nic.target,
-                api_version=rel_nic.target.node.properties.get(
-                    'api_version', constants.API_VER_NETWORK)),
-            nic_update
-        )
+        nic_data['properties'] = \
+            utils.dict_update(
+                nic_data.get('properties', {}),
+                nic_update)
+        utils.task_resource_update(nic, nic_data['properties'])
+        nic_data = nic.get(nic_name)
+        if virtual_machine_id not in nic_data.get(
+                'properties', dict()).get(
+                    'virtualMachine', dict()).get('id', str()):
+            return ctx.operation.retry(
+                message='Waiting for NIC {0} to '
+                        'attach to VM {1}..'
+                        .format(nic_name,
+                                virtual_machine_name),
+                retry_after=10)
 
     # Iterate over each IPConfiguration entry
     creds = utils.get_credentials(_ctx=ctx)

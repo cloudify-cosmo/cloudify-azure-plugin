@@ -66,6 +66,8 @@ class TestCompute(unittest.TestCase):
         tutils.mock_network_endpoints(mock, self.params,
                                       'networkInterfaces', 'mocknic')
         tutils.mock_network_endpoints(mock, self.params,
+                                      'networkInterfaces', 'mockvm')
+        tutils.mock_network_endpoints(mock, self.params,
                                       'publicIPAddresses', 'mocknicpip')
         tutils.mock_network_endpoints(
             mock, self.params,
