@@ -386,71 +386,116 @@ def configure(command_to_execute, file_uris, type_handler_version='v2.0', **_):
                 }
             })
 
+    virtual_machine_name = ctx.instance.runtime_properties.get('name')
+    virtual_machine_iface = \
+        VirtualMachine(
+            api_version=ctx.node.properties.get(
+                'api_version',
+                constants.API_VER_COMPUTE)).get(
+                    name=virtual_machine_name)
+
     # Write the IP address to runtime properties for the agent
     # Get a reference to the NIC
-    rel_nic = utils.get_relationship_by_type(
+    rel_nics = utils.get_relationships_by_type(
         ctx.instance.relationships,
         constants.REL_CONNECTED_TO_NIC)
 
     # No NIC? Exit and hope the user doesn't plan to install an agent
-    if not rel_nic:
+    if not rel_nics:
         return
 
-    print repr(rel_nic.target.node.properties)
-    # Get the NIC data from the API directly (because of IPConfiguration)
-    nic = NetworkInterfaceCard(_ctx=rel_nic.target,
-                               api_version=rel_nic.target.node.properties.get(
-                                    'api_version',
-                                    constants.API_VER_NETWORK))
-    nic_data = nic.get(utils.get_resource_name(rel_nic.target))
-
-    # Iterate over each IPConfiguration entry
-    creds = utils.get_credentials(_ctx=ctx)
-    for ip_cfg in nic_data.get(
+    for rel_nic in rel_nics:
+        # Get the NIC data from the API directly (because of IPConfiguration)
+        nic_iface = NetworkInterfaceCard(
+            _ctx=rel_nic.target,
+            api_version=rel_nic.target.node.properties.get(
+                'api_version',
+                constants.API_VER_NETWORK))
+        nic_name = utils.get_resource_name(rel_nic.target)
+        nic_data = nic_iface.get(nic_name)
+        nic_virtual_machine_id = nic_data.get(
             'properties', dict()).get(
-                'ipConfigurations', list()):
+                'virtualMachine', dict()).get('id')
 
-        # Get the Private IP Address endpoint
-        ctx.instance.runtime_properties['ip'] = \
-            ip_cfg.get('properties', dict()).get('privateIPAddress')
+        if virtual_machine_name not in nic_virtual_machine_id:
+            nic_data['properties'] = \
+                utils.dict_update(
+                    nic_data.get('properties', {}),
+                    {
+                        'virtualMachine': {
+                            'id': virtual_machine_iface.get('id')
+                        }
+                    }
+                )
+            utils.task_resource_update(
+                nic_iface, nic_data, _ctx=rel_nic.target)
+            nic_data = nic_iface.get(nic_name)
+            if virtual_machine_name not in nic_data.get(
+                    'properties', dict()).get(
+                        'virtualMachine', dict()).get('id', str()):
+                return ctx.operation.retry(
+                    message='Waiting for NIC {0} to '
+                            'attach to VM {1}..'
+                            .format(nic_name,
+                                    virtual_machine_name),
+                    retry_after=10)
 
-        # Get the Public IP Address endpoint
-        pubip_id = ip_cfg.get(
-            'properties', dict()).get(
-                'publicIPAddress', dict()).get('id')
-        if isinstance(pubip_id, basestring):
-            # use the ID to get the data on the public ip
-            pubip = PublicIPAddress(
-                _ctx=rel_nic.target,
-                api_version=rel_nic.target.node.properties.get(
-                    'api_version',
-                    constants.API_VER_NETWORK))
-            pubip.endpoint = '{0}{1}'.format(
-                creds.endpoints_resource_manager, pubip_id)
-            pubip_data = pubip.get()
-            if isinstance(pubip_data, dict):
-                public_ip = \
-                    pubip_data.get('properties', dict()).get('ipAddress')
-                # Maintained for backwards compatibility.
-                ctx.instance.runtime_properties['public_ip'] = \
-                    public_ip
-                # For consistency with other plugins.
-                ctx.instance.runtime_properties['public_ip_address'] = \
-                    public_ip
+        # Iterate over each IPConfiguration entry
+        creds = utils.get_credentials(_ctx=ctx)
+        for ip_cfg in nic_data.get(
+                'properties', dict()).get(
+                    'ipConfigurations', list()):
 
-    # See if the user wants to use the public IP as primary IP
-    if ctx.node.properties.get('use_public_ip') and \
-            ctx.instance.runtime_properties.get('public_ip'):
-        ctx.instance.runtime_properties['ip'] = \
-            ctx.instance.runtime_properties.get('public_ip')
-    ctx.logger.info('OUTPUT {0}.{1} = "{2}"'.format(
-        ctx.instance.id,
-        'ip',
-        ctx.instance.runtime_properties.get('ip')))
-    ctx.logger.info('OUTPUT {0}.{1} = "{2}"'.format(
-        ctx.instance.id,
-        'public_ip',
-        ctx.instance.runtime_properties.get('public_ip')))
+            # Get the Private IP Address endpoint
+            ctx.instance.runtime_properties['ip'] = \
+                ip_cfg.get('properties', dict()).get('privateIPAddress')
+
+            # Get the Public IP Address endpoint
+            pubip_id = ip_cfg.get(
+                'properties', dict()).get(
+                    'publicIPAddress', dict()).get('id')
+            if isinstance(pubip_id, basestring):
+                # use the ID to get the data on the public ip
+                pubip = PublicIPAddress(
+                    _ctx=rel_nic.target,
+                    api_version=rel_nic.target.node.properties.get(
+                        'api_version',
+                        constants.API_VER_NETWORK))
+                pubip.endpoint = '{0}{1}'.format(
+                    creds.endpoints_resource_manager, pubip_id)
+                pubip_data = pubip.get()
+                if isinstance(pubip_data, dict):
+                    public_ip = \
+                        pubip_data.get('properties', dict()).get('ipAddress')
+                    # Maintained for backwards compatibility.
+                    ctx.instance.runtime_properties['public_ip'] = \
+                        public_ip
+                    # For consistency with other plugins.
+                    ctx.instance.runtime_properties['public_ip_address'] = \
+                        public_ip
+                    # We should also consider that maybe there will be many
+                    # public ip addresses.
+                    public_ip_addresses = \
+                        ctx.instance.runtime_properties.get(
+                            'public_ip_address', [])
+                    if public_ip not in public_ip_addresses:
+                        public_ip_addresses.append(public_ip)
+                    ctx.instance.runtime_properties['public_ip_address'] = \
+                        public_ip_addresses
+
+        # See if the user wants to use the public IP as primary IP
+        if ctx.node.properties.get('use_public_ip') and \
+                ctx.instance.runtime_properties.get('public_ip'):
+            ctx.instance.runtime_properties['ip'] = \
+                ctx.instance.runtime_properties.get('public_ip')
+        ctx.logger.info('OUTPUT {0}.{1} = "{2}"'.format(
+            ctx.instance.id,
+            'ip',
+            ctx.instance.runtime_properties.get('ip')))
+        ctx.logger.info('OUTPUT {0}.{1} = "{2}"'.format(
+            ctx.instance.id,
+            'public_ip',
+            ctx.instance.runtime_properties.get('public_ip')))
 
 
 @operation
@@ -460,7 +505,8 @@ def delete(**_):
     utils.task_resource_delete(
         VirtualMachine(api_version=ctx.node.properties.get(
             'api_version', constants.API_VER_COMPUTE)))
-    for prop in ['public_ip', 'public_ip_address', 'ip']:
+    for prop in ['public_ip', 'public_ip_address', 'ip',
+                 'name', 'async_op', 'public_ip_address']:
         try:
             del ctx.instance.runtime_properties[prop]
         except KeyError:
