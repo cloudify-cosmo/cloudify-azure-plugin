@@ -386,6 +386,14 @@ def configure(command_to_execute, file_uris, type_handler_version='v2.0', **_):
                 }
             })
 
+    virtual_machine_name = ctx.instance.runtime_properties.get('name')
+    virtual_machine_iface = \
+        VirtualMachine(
+            api_version=ctx.node.properties.get(
+                'api_version',
+                constants.API_VER_COMPUTE)).get(
+                    name=virtual_machine_name)
+
     # Write the IP address to runtime properties for the agent
     # Get a reference to the NIC
     rel_nics = utils.get_relationships_by_type(
@@ -405,32 +413,23 @@ def configure(command_to_execute, file_uris, type_handler_version='v2.0', **_):
                 constants.API_VER_NETWORK))
         nic_name = utils.get_resource_name(rel_nic.target)
         nic_data = nic_iface.get(nic_name)
+        nic_virtual_machine_id = nic_data.get(
+            'properties', dict()).get(
+                'virtualMachine', dict()).get('id')
 
-        if not nic_data.get(
-                'properties', dict()).get(
-                    'virtualMachine', dict()):
-            virtual_machine_name = ctx.instance.runtime_properties.get('name')
-            virtual_machine_iface = \
-                VirtualMachine(
-                    api_version=ctx.node.properties.get(
-                        'api_version',
-                        constants.API_VER_COMPUTE)).get(
-                            name=virtual_machine_name)
-            nic_update = \
-                {
-                    'virtualMachine': {
-                        'id': virtual_machine_iface.get('id')
-                    }
-                }
+        if virtual_machine_name not in nic_virtual_machine_id:
             nic_data['properties'] = \
                 utils.dict_update(
                     nic_data.get('properties', {}),
-                    nic_update)
+                    {
+                        'virtualMachine': {
+                            'id': virtual_machine_iface.get('id')
+                        }
+                    }
+                )
             utils.task_resource_update(
                 nic_iface, nic_data, _ctx=rel_nic.target)
             nic_data = nic_iface.get(nic_name)
-            # An ugly little condition to handle limits of tests.
-            # In the real world, retry until successful.
             if virtual_machine_name not in nic_data.get(
                     'properties', dict()).get(
                         'virtualMachine', dict()).get('id', str()):
@@ -474,6 +473,15 @@ def configure(command_to_execute, file_uris, type_handler_version='v2.0', **_):
                     # For consistency with other plugins.
                     ctx.instance.runtime_properties['public_ip_address'] = \
                         public_ip
+                    # We should also consider that maybe there will be many
+                    # public ip addresses.
+                    public_ip_addresses = \
+                        ctx.instance.runtime_properties.get(
+                            'public_ip_address', [])
+                    if public_ip not in public_ip_addresses:
+                        public_ip_addresses.append(public_ip)
+                    ctx.instance.runtime_properties['public_ip_address'] = \
+                        public_ip_addresses
 
         # See if the user wants to use the public IP as primary IP
         if ctx.node.properties.get('use_public_ip') and \
@@ -497,7 +505,8 @@ def delete(**_):
     utils.task_resource_delete(
         VirtualMachine(api_version=ctx.node.properties.get(
             'api_version', constants.API_VER_COMPUTE)))
-    for prop in ['public_ip', 'public_ip_address', 'ip']:
+    for prop in ['public_ip', 'public_ip_address', 'ip',
+                 'name', 'async_op', 'public_ip_address']:
         try:
             del ctx.instance.runtime_properties[prop]
         except KeyError:
