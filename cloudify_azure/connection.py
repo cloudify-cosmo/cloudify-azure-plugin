@@ -140,6 +140,7 @@ class AzureConnection(object):
         # Retry up to 10 times with increasing backoff time
         # up to 120 seconds.
         creds = utils.get_credentials(_ctx=self.ctx)
+        print type(creds)
         session = requests.Session()
         session.mount(
             creds.endpoints_resource_manager,
