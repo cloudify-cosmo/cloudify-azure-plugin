@@ -1,0 +1,4 @@
+cloudify-plugins-common===3.4.2
+requests==2.7.0
+pyyaml==3.10
+azure==2.0.0
