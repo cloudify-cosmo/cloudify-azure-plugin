@@ -362,12 +362,35 @@ class Resource(object):
                 retry_after=self.get_retry_after(headers))
         # HTTP 400 (BAD_REQUEST) - We're sending bad data
         elif res.status_code == httplib.BAD_REQUEST:
+            # Sometime it takes longer time to fully delete a parent node, so
+            # lets wait for sometime to give it a chance to be fully deleted
+            # This check will cover: [NicInUse, InUseSubnetCannotBeDeleted,
+            # InUseNetworkSecurityGroupCannotBeDeleted]
+            if "InUse" in res.json()['error']['code']:
+                self.log.warn(
+                    "The resource currently in use, maybe a deletion for a "
+                    "parent node using it still in progress, let's wait: {0}"
+                        .format(headers)
+                )
+                raise RecoverableError('Resource in use')
             self.log.info('BAD REQUEST: response: {}'.format(
                 utils.secure_logging_content(res.content)))
             raise UnexpectedResponse(
                 'Recieved HTTP 400 BAD REQUEST', res.json())
         # HTTP 409 (CONFLICT) - Operation failed
         elif res.status_code == httplib.CONFLICT:
+            # Sometime it takes longer time to fully delete a parent node, so
+            # lets wait for sometime to give it a chance to be fully deleted
+            # Checking against message content as codes are not informative
+            # [OperationNotAllowed, AccountIsLocked]
+            if "ensure that it does not contain any VM" in res.text or \
+                    "its artifacts being in use" in res.text:
+                self.log.warn(
+                    "The resource is still in use, maybe a deletion for a "
+                    "parent node using it still in progress, let's wait: {0}"
+                        .format(headers)
+                )
+                raise RecoverableError('Resource in use')
             if "AnotherOperationInProgress" in res.text:
                 self.log.warn(
                     "Another Operation In Progress, let's wait: {0}"
