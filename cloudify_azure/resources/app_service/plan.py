@@ -12,24 +12,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from cloudify.decorators import operation
-from azure.mgmt.containerservice import ContainerServiceClient
+from azure.mgmt.web import WebSiteManagementClient
+from msrestazure.azure_exceptions import CloudError
 
+from cloudify.decorators import operation
+from cloudify import exceptions as cfy_exc
 from cloudify_azure.resources.base import ResourceSDK
 
 
-class ContainerService(ResourceSDK):
-
+class ServicePlan(ResourceSDK):
     def __init__(
-            self, logger, credentials, group_name,
-            container_service_name, container_params={}):
+            self, logger, credentials, group_name, plan_name, plan_details={}):
         self.group_name = group_name
-        self.container_service_name = container_service_name
+        self.plan_name = plan_name
         self.logger = logger
-        self.container_params = container_params
+        self.plan_details = plan_details
         self.resource_verify = bool(credentials.get('endpoint_verify', True))
-        super(ContainerService, self).__init__(credentials)
-        self.client = ContainerServiceClient(
+        super(ServicePlan, self).__init__(credentials)
+        self.client = WebSiteManagementClient(
             self.credentials, str(credentials['subscription_id']))
 
         self.logger.info("Use subscription: {}"
@@ -37,38 +37,41 @@ class ContainerService(ResourceSDK):
 
     def create_or_update(self):
         """Deploy the template to a resource group."""
-        self.logger.info("Create/Updating container service...")
-
-        service_plan_async = self.client.container_services.create_or_update(
-            resource_group_name=self.group_name,
-            container_service_name=self.container_service_name,
-            parameters=self.container_params,
+        self.logger.info("Create/Updating service plan...")
+        service_plan_async = self.client.app_service_plans.create_or_update(
+            self.group_name,
+            self.plan_name,
+            self.plan_details
         )
         return service_plan_async.result()
 
     def get(self):
-        return self.client.container_services.get(
-            resource_group_name=self.group_name,
-            container_service_name=self.container_service_name)
+        return self.client.app_service_plans.get(
+            resource_group_name=self.group_name, name=self.plan_name)
 
     def delete(self):
         """Destroy the given resource group"""
-        self.logger.info("Delete container service...")
-        self.client.container_services.delete(
+        self.logger.info("Delete service plan...")
+        self.client.app_service_plans.delete(
             resource_group_name=self.group_name,
-            container_service_name=self.container_service_name)
-        self.logger.info("Wait for deleting container service...")
+            name=self.plan_name)
+        self.logger.info("Wait for deleting service plan...")
 
 
 @operation
-def create(ctx, resource_group, name, container_service_config, **kwargs):
+def create(ctx, resource_group, name, plan_details, **kwargs):
+    azure_auth = ctx.node.properties['azure_config']
+    plan = ServicePlan(
+        ctx.logger, azure_auth, resource_group, name, plan_details)
     if ctx.node.properties.get('use_external_resource', False):
-        ctx.logger.info("Using external resource")
+        try:
+            plan.get()
+            ctx.logger.info("Using external resource")
+        except CloudError:
+            raise cfy_exc.NonRecoverableError(
+                "Can't use non-existing plan '{}'.".format(name)
+            )
     else:
-        azure_auth = ctx.node.properties['azure_config']
-        plan = ContainerService(
-            ctx.logger, azure_auth, resource_group, name,
-            container_service_config)
         plan.create_or_update()
         ctx.instance.runtime_properties['resource_group'] = resource_group
         ctx.instance.runtime_properties['name'] = name
@@ -81,5 +84,5 @@ def delete(ctx, **kwargs):
     azure_auth = ctx.node.properties['azure_config']
     resource_group = ctx.instance.runtime_properties.get('resource_group')
     name = ctx.instance.runtime_properties.get('name')
-    plan = ContainerService(ctx.logger, azure_auth, resource_group, name)
+    plan = ServicePlan(ctx.logger, azure_auth, resource_group, name)
     plan.delete()

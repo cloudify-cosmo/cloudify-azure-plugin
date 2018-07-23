@@ -32,6 +32,8 @@ from cloudify_azure.exceptions import UnexpectedResponse
 # Runtime properties
 from cloudify import ctx
 
+from cloudify_azure.auth.oauth2 import to_service_principle_credentials
+
 
 class Resource(object):
     '''
@@ -561,3 +563,15 @@ class Resource(object):
     def lowercase_headers(headers):
         # Convert headers from CaseInsensitiveDict to Dict
         return dict(headers.lower_items())
+
+
+class ResourceSDK(object):
+    def __init__(self, credentials):
+        self.credentials = to_service_principle_credentials(
+            client_id=str(credentials['client_id']),
+            secret=str(credentials.get('client_secret')),
+            thumbprint=str(credentials.get('thumbprint')),
+            certificate=str(credentials.get('certificate')),
+            tenant=str(credentials['tenant_id']),
+            verify=self.resource_verify
+        )

@@ -5,9 +5,9 @@
 plugins:
   pkg:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-incubator/cloudify-azure-plugin/archive/2.0.0.zip
+    source: https://github.com/cloudify-incubator/cloudify-azure-plugin/archive/2.1.0.zip
     package_name: cloudify-azure-plugin
-    package_version: '2.0.0'
+    package_version: '2.1.0'
 
 data_types:
   cloudify.datatypes.azure.Config:
@@ -1728,6 +1728,104 @@ node_types:
               default: { get_property: [SELF, azure_config]}
         delete:
           implementation: pkg.cloudify_azure.resources.compute.container_service.delete
+
+  cloudify.azure.nodes.Plan:
+    derived_from: cloudify.nodes.Root
+    properties:
+      name:
+        required: true
+        type: string
+      resource_group:
+        required: true
+        type: string
+      sku:
+        type: string
+        required: false
+        description: >
+          SKU details, including location, name, capacity and tier
+      azure_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
+      use_external_resource:
+        description: >
+          Indicate whether the resource exists or if Cloudify should create the resource
+        type: boolean
+        default: false
+        required: true
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: pkg.cloudify_azure.resources.app_service.plan.create
+          inputs:
+            name:
+              default: { get_property: [SELF, name]}
+            resource_group:
+              default: { get_property: [SELF, resource_group]}
+            sku:
+              default: { get_property: [SELF, sku]}
+            azure_config:
+              default: { get_property: [SELF, azure_config]}
+        delete:
+          implementation: pkg.cloudify_azure.resources.app_service.plan.delete
+
+  cloudify.azure.nodes.WebApp:
+    derived_from: cloudify.nodes.Root
+    properties:
+      name:
+        required: true
+        type: string
+      resource_group:
+        required: true
+        type: string
+      app_config:
+        type: string
+        required: false
+        description: >
+          App config details, including location and plan
+      azure_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: pkg.cloudify_azure.resources.app_service.webapp.create
+          inputs:
+            name:
+              default: { get_property: [SELF, name]}
+            resource_group:
+              default: { get_property: [SELF, resource_group]}
+            app_config:
+              default: { get_property: [SELF, app_config]}
+            azure_config:
+              default: { get_property: [SELF, azure_config]}
+        delete:
+          implementation: pkg.cloudify_azure.resources.app_service.webapp.delete
+
+  cloudify.azure.nodes.PublishingUser:
+    derived_from: cloudify.nodes.Root
+    properties:
+      user_details:
+        required: true
+        description: >
+          User details including location, name, kind, user_name,...
+      azure_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: pkg.cloudify_azure.resources.app_service.publishing_user.set_user
+          inputs:
+            user_details:
+              default: { get_property: [SELF, user_details]}
+            azure_config:
+              default: { get_property: [SELF, azure_config]}
 
 relationships:
   cloudify.azure.relationships.contained_in_resource_group:
