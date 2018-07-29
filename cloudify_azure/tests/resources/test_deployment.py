@@ -33,8 +33,8 @@ class DeploymentTest(unittest.TestCase):
         self.client = self.Client.return_value
         self.addCleanup(patch.stop)
 
-        patch = mock.patch(
-            'cloudify_azure.resources.deployment.ServicePrincipalCredentials')
+        patch = mock.patch('cloudify_azure.resources.deployment.'
+                           'to_service_principle_credentials')
         self.Credentials = patch.start()
         self.addCleanup(patch.stop)
 
@@ -75,6 +75,7 @@ class DeploymentTest(unittest.TestCase):
             client_id='client_id',
             resource=constants.OAUTH2_MGMT_RESOURCE,
             secret='client_secret',
+            client_assertion='',
             tenant='tenant_id',
             verify=True)
         self.Client.assert_called_with(self.Credentials.return_value,
@@ -108,6 +109,7 @@ class DeploymentTest(unittest.TestCase):
             client_id='client_id',
             resource=constants.OAUTH2_MGMT_RESOURCE,
             secret='client_secret',
+            client_assertion='',
             tenant='tenant_id',
             verify=True)
         self.Client.assert_called_with(

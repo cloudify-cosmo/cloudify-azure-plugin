@@ -19,9 +19,10 @@ from cloudify.decorators import operation
 
 from cloudify_azure import constants
 
-from azure.common.credentials import ServicePrincipalCredentials
 from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.resource.resources.models import DeploymentMode
+
+from cloudify_azure.auth.oauth2 import to_service_principle_credentials
 
 
 class Deployment(object):
@@ -31,10 +32,10 @@ class Deployment(object):
         self.logger = logger
         self.timeout = timeout
         self.resource_verify = bool(credentials.get('endpoint_verify', True))
-
-        self.credentials = ServicePrincipalCredentials(
+        self.credentials = to_service_principle_credentials(
             client_id=str(credentials['client_id']),
-            secret=str(credentials['client_secret']),
+            client_assertion=str(credentials.get('client_assertion', '')),
+            secret=str(credentials.get('client_secret', '')),
             tenant=str(credentials['tenant_id']),
             verify=self.resource_verify,
             resource=str(credentials.get('endpoint_resource',

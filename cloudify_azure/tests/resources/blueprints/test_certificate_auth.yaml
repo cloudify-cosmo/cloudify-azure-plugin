@@ -1,0 +1,42 @@
+tosca_definitions_version: cloudify_dsl_1_3
+
+
+imports:
+- http://www.getcloudify.org/spec/cloudify/3.4/types.yaml
+- plugin.yaml
+
+inputs:
+  # Virtual Machine information
+  subscription_id:
+    type: string
+  tenant_id:
+    type: string
+  client_id:
+    type: string
+  client_secret:
+    type: string
+  location:
+    type: string
+  resource_prefix:
+    type: string
+  resource_suffix:
+    type: string
+  password:
+    type: string
+  client_assertion:
+    type: string
+
+dsl_definitions:
+  azure_config: &azure_config
+    subscription_id: { get_input: subscription_id }
+    tenant_id: { get_input: tenant_id }
+    client_id: { get_input: client_id }
+    client_assertion: { get_input: client_assertion }
+
+node_templates:
+  resource_group:
+    type: cloudify.azure.nodes.ResourceGroup
+    properties:
+      name: testrg
+      location: eastus
+      azure_config: *azure_config
