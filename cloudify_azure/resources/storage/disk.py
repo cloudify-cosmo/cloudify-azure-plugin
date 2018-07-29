@@ -32,7 +32,7 @@ from cloudify_azure.resources.storage.storageaccount import StorageAccount
 # Logger, API version
 from cloudify_azure import (constants, utils)
 # Azure storage API interface
-from azure.storage import CloudStorageAccount
+from azure.storage.common.cloudstorageaccount import CloudStorageAccount
 
 # pylint: disable=W0703
 

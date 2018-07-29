@@ -34,6 +34,7 @@ from cloudify_azure import constants, exceptions
 
 class OAuth2TestCase(unittest.TestCase):
     '''Tests OAuth2 interface'''
+
     def setUp(self):
         self.ctx = MockCloudifyContext(node_id='test_oauth2',
                                        node_name='OAuth2TestCase',
@@ -52,7 +53,8 @@ class OAuth2TestCase(unittest.TestCase):
             endpoint_verify=True,
             endpoints_resource_manager=constants.CONN_API_ENDPOINT,
             endpoints_active_directory=constants.OAUTH2_ENDPOINT,
-            client_assertion=None
+            certificate=None,
+            thumbprint=None
         )
         self.cert_credentials = oauth2.AzureCredentials(
             tenant_id='123456',
@@ -63,7 +65,8 @@ class OAuth2TestCase(unittest.TestCase):
             endpoint_verify=True,
             endpoints_resource_manager=constants.CONN_API_ENDPOINT,
             endpoints_active_directory=constants.OAUTH2_ENDPOINT,
-            client_assertion='dummy client_assertion'
+            certificate='dummy certificate',
+            thumbprint='27EFC095BFE002AF43A3F32D7C0DD725BB54717E'
         )
         current_ctx.set(self.ctx)
 
@@ -86,7 +89,8 @@ class OAuth2TestCase(unittest.TestCase):
 
         oauth2.to_service_principle_credentials(
             client_id='aa22',
-            client_assertion='123')
+            certificate='123',
+            thumbprint='27EFC095BFE002AF43A3F32D7C0DD725BB54717E')
         ServicePrincipalCertificateAuth.assert_called_once()
         ServicePrincipalCredentials.assert_not_called()
         oauth2.to_service_principle_credentials(
@@ -105,23 +109,26 @@ class OAuth2TestCase(unittest.TestCase):
         client = oauth2.OAuth2(self.credentials, logger=self.log)
         client.request_access_token()
         post_mock.assert_called_with('{0}/{1}/oauth2/token'.format(
-                constants.OAUTH2_ENDPOINT,
-                self.credentials.tenant_id), data={
+            constants.OAUTH2_ENDPOINT,
+            self.credentials.tenant_id), data={
             'client_id': self.credentials.client_id,
             'grant_type': constants.OAUTH2_GRANT_TYPE,
             'resource': self.credentials.endpoint_resource,
             'client_secret': self.credentials.client_secret,
         })
 
+    @mock.patch('cloudify_azure.auth.oauth2.jwt.encode')
     @mock.patch('requests.sessions.Session.post')
-    def test_auth_with_certificate(self, post_mock):
+    def test_auth_with_certificate(self, post_mock, jwt_encode_mock):
         post_mock.return_value = mock.MagicMock()
+        jwt_encode_mock.return_value = "sample_client_assertion"
         post_mock.return_value.json = mock.MagicMock(
             return_value={'access_token': '123'})
         post_mock.return_value.status_code = httplib.OK
 
         client = oauth2.OAuth2(self.cert_credentials, logger=self.log)
         client.request_access_token()
+        jwt_encode_mock.assert_called()
         post_mock.assert_called_with('{0}/{1}/oauth2/token'.format(
             constants.OAUTH2_ENDPOINT,
             self.cert_credentials.tenant_id), data={
@@ -129,7 +136,7 @@ class OAuth2TestCase(unittest.TestCase):
             'grant_type': constants.OAUTH2_GRANT_TYPE,
             'resource': self.cert_credentials.endpoint_resource,
             'client_assertion_type': constants.OAUTH2_JWT_ASSERTION_TYPE,
-            'client_assertion': self.cert_credentials.client_assertion,
+            'client_assertion': 'sample_client_assertion'
         })
 
     @requests_mock.Mocker()
