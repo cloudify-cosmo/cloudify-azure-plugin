@@ -28,7 +28,8 @@ OAUTH2_ENDPOINT = 'https://login.microsoftonline.com'
 # az cloud # endpoints.activeDirectoryResourceId
 OAUTH2_MGMT_RESOURCE = 'https://management.core.windows.net/'
 OAUTH2_GRANT_TYPE = 'client_credentials'
-
+OAUTH2_JWT_ASSERTION_TYPE = \
+    'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
 # Connection constants
 # az cloud # endpoints.resourceManager
 CONN_API_ENDPOINT = 'https://management.azure.com'

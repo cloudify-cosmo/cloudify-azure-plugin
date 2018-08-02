@@ -5,9 +5,9 @@
 plugins:
   pkg:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-incubator/cloudify-azure-plugin/archive/1.7.3.zip
+    source: https://github.com/cloudify-incubator/cloudify-azure-plugin/archive/1.8.0.zip
     package_name: cloudify-azure-plugin
-    package_version: '1.7.3'
+    package_version: '1.8.0'
 
 data_types:
   cloudify.datatypes.azure.Config:
@@ -89,6 +89,14 @@ data_types:
         type: string
         required: true
         default: "1234567890"
+      client_assertion:
+        description: >
+          An assertion (a JSON Web Token) that you need to create
+          and sign with the certificate you registered as credentials
+          for your application.
+        type: string
+        required: false
+        default: ""
 
 
   cloudify.datatypes.azure.storage.StorageAccountConfig:

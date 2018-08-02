@@ -21,6 +21,7 @@
 from sys import stdout
 import logging
 import unittest
+import mock
 import httplib
 import requests_mock
 
@@ -50,7 +51,19 @@ class OAuth2TestCase(unittest.TestCase):
             endpoint_resource=constants.OAUTH2_MGMT_RESOURCE,
             endpoint_verify=True,
             endpoints_resource_manager=constants.CONN_API_ENDPOINT,
-            endpoints_active_directory=constants.OAUTH2_ENDPOINT
+            endpoints_active_directory=constants.OAUTH2_ENDPOINT,
+            client_assertion=None
+        )
+        self.cert_credentials = oauth2.AzureCredentials(
+            tenant_id='123456',
+            client_id='1234567',
+            client_secret=None,
+            subscription_id='subscription_id',
+            endpoint_resource=constants.OAUTH2_MGMT_RESOURCE,
+            endpoint_verify=True,
+            endpoints_resource_manager=constants.CONN_API_ENDPOINT,
+            endpoints_active_directory=constants.OAUTH2_ENDPOINT,
+            client_assertion='dummy client_assertion'
         )
         current_ctx.set(self.ctx)
 
@@ -62,6 +75,62 @@ class OAuth2TestCase(unittest.TestCase):
         self.assertRaises(
             exceptions.InvalidCredentials,
             oauth2.OAuth2, {'username': 'cloudify'})
+
+    def test_certificate_credentials(self):
+        sp_credentials_mock = mock.patch(
+            'cloudify_azure.auth.oauth2.ServicePrincipalCredentials')
+        sp_cert_credentials_mock = mock.patch(
+            'cloudify_azure.auth.oauth2.ServicePrincipalCertificateAuth')
+        ServicePrincipalCredentials = sp_credentials_mock.start()
+        ServicePrincipalCertificateAuth = sp_cert_credentials_mock.start()
+
+        oauth2.to_service_principle_credentials(
+            client_id='aa22',
+            client_assertion='123')
+        ServicePrincipalCertificateAuth.assert_called_once()
+        ServicePrincipalCredentials.assert_not_called()
+        oauth2.to_service_principle_credentials(
+            client_id='aa22',
+            client_secret='555')
+        ServicePrincipalCertificateAuth.assert_called_once()
+        ServicePrincipalCredentials.assert_called_once()
+
+    @mock.patch('requests.sessions.Session.post')
+    def test_auth_with_secret(self, post_mock):
+        post_mock.return_value = mock.MagicMock()
+        post_mock.return_value.json = mock.MagicMock(
+            return_value={'access_token': '123'})
+        post_mock.return_value.status_code = httplib.OK
+
+        client = oauth2.OAuth2(self.credentials, logger=self.log)
+        client.request_access_token()
+        post_mock.assert_called_with('{0}/{1}/oauth2/token'.format(
+                constants.OAUTH2_ENDPOINT,
+                self.credentials.tenant_id), data={
+            'client_id': self.credentials.client_id,
+            'grant_type': constants.OAUTH2_GRANT_TYPE,
+            'resource': self.credentials.endpoint_resource,
+            'client_secret': self.credentials.client_secret,
+        })
+
+    @mock.patch('requests.sessions.Session.post')
+    def test_auth_with_certificate(self, post_mock):
+        post_mock.return_value = mock.MagicMock()
+        post_mock.return_value.json = mock.MagicMock(
+            return_value={'access_token': '123'})
+        post_mock.return_value.status_code = httplib.OK
+
+        client = oauth2.OAuth2(self.cert_credentials, logger=self.log)
+        client.request_access_token()
+        post_mock.assert_called_with('{0}/{1}/oauth2/token'.format(
+            constants.OAUTH2_ENDPOINT,
+            self.cert_credentials.tenant_id), data={
+            'client_id': self.cert_credentials.client_id,
+            'grant_type': constants.OAUTH2_GRANT_TYPE,
+            'resource': self.cert_credentials.endpoint_resource,
+            'client_assertion_type': constants.OAUTH2_JWT_ASSERTION_TYPE,
+            'client_assertion': self.cert_credentials.client_assertion,
+        })
 
     @requests_mock.Mocker()
     def test_missing_return(self, mock):

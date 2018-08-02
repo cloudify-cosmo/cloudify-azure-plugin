@@ -610,6 +610,10 @@ def get_credentials(_ctx=ctx):
     creds = dict_update(f_creds, n_creds)
     if 'endpoint_verify' not in creds:
         creds['endpoint_verify'] = True
+    if 'client_assertion' not in creds:
+        creds['client_assertion'] = None
+    if 'client_secret' not in creds:
+        creds['client_secret'] = None
     return AzureCredentials(**creds)
 
 
@@ -624,7 +628,7 @@ def get_credentials_from_file(config_path=constants.CONFIG_PATH):
     cred_keys = [
         'client_id', 'client_secret', 'subscription_id', 'tenant_id',
         'endpoint_resource', 'endpoint_verify', 'endpoints_resource_manager',
-        'endpoints_active_directory'
+        'endpoints_active_directory', 'client_assertion'
     ]
     config = SafeConfigParser()
     config.read(config_path)
@@ -642,7 +646,7 @@ def get_credentials_from_node(_ctx=ctx):
     cred_keys = [
         'client_id', 'client_secret', 'subscription_id', 'tenant_id',
         'endpoint_resource', 'endpoints_resource_manager',
-        'endpoints_active_directory'
+        'endpoints_active_directory', 'client_assertion'
     ]
     props = _ctx.node.properties.get('azure_config')
     properties = {k: props[k] for k in cred_keys if props.get(k)}
