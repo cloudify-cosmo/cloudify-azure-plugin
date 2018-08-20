@@ -73,4 +73,4 @@ class ContainerServiceTest(AzureSDKResourceTest):
         container_service.delete(self.fake_ctx)
         client().container_services.delete.assert_called_with(
             resource_group_name='sample_resource_group',
-            name='cs_name')
+            container_service_name='cs_name')

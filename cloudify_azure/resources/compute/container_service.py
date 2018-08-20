@@ -23,7 +23,6 @@ class ContainerService(object):
     def __init__(
             self, logger, credentials, group_name,
             container_service_name, container_params={}):
-
         self.group_name = group_name
         self.container_service_name = container_service_name
         self.logger = logger
@@ -57,14 +56,14 @@ class ContainerService(object):
     def get(self):
         return self.client.container_services.get(
             resource_group_name=self.group_name,
-            name=self.container_service_name)
+            container_service_name=self.container_service_name)
 
     def delete(self):
         """Destroy the given resource group"""
         self.logger.info("Delete container service...")
         self.client.container_services.delete(
             resource_group_name=self.group_name,
-            name=self.container_service_name)
+            container_service_name=self.container_service_name)
         self.logger.info("Wait for deleting container service...")
 
 
