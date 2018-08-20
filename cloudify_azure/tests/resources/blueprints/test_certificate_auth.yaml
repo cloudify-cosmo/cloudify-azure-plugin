@@ -23,7 +23,9 @@ inputs:
     type: string
   password:
     type: string
-  client_assertion:
+  certificate:
+    type: string
+  thumbprint:
     type: string
 
 dsl_definitions:
@@ -31,7 +33,8 @@ dsl_definitions:
     subscription_id: { get_input: subscription_id }
     tenant_id: { get_input: tenant_id }
     client_id: { get_input: client_id }
-    client_assertion: { get_input: client_assertion }
+    certificate: { get_input: certificate }
+    thumbprint: { get_input: thumbprint }
 
 node_templates:
   resource_group:

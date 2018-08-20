@@ -1,0 +1,77 @@
+tosca_definitions_version: cloudify_dsl_1_3
+
+
+imports:
+- http://www.getcloudify.org/spec/cloudify/3.4/types.yaml
+- plugin.yaml
+
+inputs:
+  # Virtual Machine information
+  subscription_id:
+    type: string
+  tenant_id:
+    type: string
+  client_id:
+    type: string
+  client_secret:
+    type: string
+  location:
+    type: string
+  resource_prefix:
+    type: string
+  resource_suffix:
+    type: string
+  password:
+    type: string
+  certificate:
+    type: string
+  thumbprint:
+    type: string
+
+dsl_definitions:
+  azure_config: &azure_config
+    subscription_id: { get_input: subscription_id }
+    tenant_id: { get_input: tenant_id }
+    client_id: { get_input: client_id }
+    thumbprint: { get_input: thumbprint }
+    certificate: { get_input: certificate }
+
+  container_service_config: &container_service_config
+    properties:
+      masterProfile:
+        count: 1
+        dnsPrefix: "proud-scene-4371"
+        vmSize: "Standard_D1_v2"
+      agentPoolProfiles:
+        - count: 1
+          osType: "Linux"
+          vmSize: "Standard_D1_v2"
+          name: "containersampleservice"
+          dnsPrefix: "proud-scene-4371-agent"
+
+      orchestratorProfile:
+        orchestratorType: "DCOS"
+
+      linuxProfile:
+        adminUsername: "containersampleservice"
+        ssh:
+          publicKeys:
+            - keyData: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDfWmSLNlihQCEpOg9uZCFCtknfSXMQN0Bnt/PkYtupEgLGtPl0JOLtM1RFzL+w4McGyvtr1OVYB8rysGPVqS8ZIjslEjE/M5BjvAzd8/W+C1CkRJx4t5I1qqrEqXD8yjZJmYi1AazTBG6cNsWOtOCJW1XtTw78+Uu6uZjwzUwgZopVO+HONf0Oa9u8620Ez/86oR7kyt8oyIocSRbm0jljNAqLbsqWHl4yBKKSAyjsgqR7Xv5DVXtZtOPrdQ/o7+8oTtXCJ6mPgdXzZ7e1IW+LX3Zp3vx6u6HnT2NETMxRP4hlyl7aDU6aDXH6qUbBW2eu39L75RcFfm3PVHhF9ESlRXWF/EpsM0x71YGPthLt68qSkyK3V0OrfaQq0FljHMFRI4T4IX1+DlmOHFnse/atf+qJudEFoDs5E+mOGu67+4a450fuKO7pPEysRzm/RbfS5Ww7jWuY44eXQovHfAQRYQJa/E9Ba32ZUoo0durqrojla7UvFz9ysH0wP5okgiIXzXo4BuUYN3YzRp1vP326LtxLwJCzBNhY+1RV/K+eIRlYA4mmO8rQEmviE3kahw/OJ8ugGQkka/d3rD/qIBuzePeeHb2RzCndI1klmOrSxai8PzN2XepkwWVN0jKSHW0sOBRGk30yl5FmJhHNqPO5Cxc0B0zTodF+F2T9U4PwNw== ghaleb.khaled@gmail.com\n"
+
+    location: "southcentralus"
+
+
+node_templates:
+  resource_group:
+    type: cloudify.azure.nodes.ResourceGroup
+    properties:
+      name: sample-group
+      location: southcentralus
+      azure_config: *azure_config
+  container_service:
+    type: cloudify.azure.nodes.compute.ContainerService
+    properties:
+      name: 'sample-cs2'
+      resource_group: sample-group
+      azure_config: *azure_config
+      container_service_config: *container_service_config

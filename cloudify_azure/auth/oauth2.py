@@ -17,23 +17,26 @@
     ~~~~~~~~~~~
     OAuth 2.0 authorization interface for the Microsoft Azure REST API
 '''
-
+import binascii
+import base64
 # For credentials structuring
 from collections import namedtuple
 # Used for HTTP requests / verification
 import httplib
+import datetime
+import time
+import uuid
 
 import requests
+import jwt
+
 # Used to implement connection retrying
 from requests.packages import urllib3
-from msrestazure.azure_active_directory import (
-    AADMixin, BackendApplicationClient)
-from requests import RequestException
-from oauthlib.oauth2.rfc6749.errors import (
-    InvalidGrantError,
-    OAuth2Error)
+from msrestazure.azure_active_directory import AADMixin
 from msrest.exceptions import AuthenticationError, raise_with_traceback
 from azure.common.credentials import ServicePrincipalCredentials
+import adal
+from adal.constants import Jwt
 
 # Exception handling, constants, logging
 from cloudify_azure import \
@@ -48,8 +51,35 @@ AzureCredentials = namedtuple(
     'AzureCredentials',
     ['tenant_id', 'client_id', 'client_secret', 'subscription_id',
      'endpoint_resource', 'endpoint_verify', 'endpoints_resource_manager',
-     'endpoints_active_directory', 'client_assertion']
+     'endpoints_active_directory', 'certificate', 'thumbprint']
 )
+
+
+def generate_jwt_token(certificate, thumbprint, client_id, talent_id):
+    x5t = base64.urlsafe_b64encode(binascii.a2b_hex(thumbprint)).decode()
+    now = datetime.datetime.now()
+    minutes = datetime.timedelta(0, 0, 0, 0, Jwt.SELF_SIGNED_JWT_LIFETIME)
+    expires = now + minutes
+    header = {
+        'typ': 'JWT',
+        'alg': 'RS256',
+        'x5t': x5t
+    }
+    payload = {
+        Jwt.AUDIENCE:
+            "https://login.microsoftonline.com/{}/oauth2/token".format(
+                talent_id),
+        Jwt.EXPIRES_ON: int(time.mktime(expires.timetuple())),
+        Jwt.ISSUER: client_id,
+        Jwt.JWT_ID: str(uuid.uuid4()),
+        Jwt.NOT_BEFORE: int(time.mktime(now.timetuple())),
+        Jwt.SUBJECT: client_id
+    }
+    jwt_token = jwt.encode(
+        payload, certificate, algorithm='RS256', headers=header).decode()
+    return jwt_token
+
+
 '''
     Microsoft Azure credentials and access information
 
@@ -102,11 +132,14 @@ class OAuth2(object):
             'grant_type': constants.OAUTH2_GRANT_TYPE,
             'resource': self.credentials.endpoint_resource
         }
-        if self.credentials.client_assertion:
+        if self.credentials.certificate and self.credentials.thumbprint:
             # this is certificate based authentication
+            client_assertion = generate_jwt_token(
+                self.credentials.certificate, self.credentials.thumbprint,
+                self.credentials.client_id, self.credentials.tenant_id)
             payload.update({
                 'client_assertion_type': constants.OAUTH2_JWT_ASSERTION_TYPE,
-                'client_assertion': self.credentials.client_assertion,
+                'client_assertion': client_assertion,
             })
         else:
             # this is shared secret authentication
@@ -163,75 +196,56 @@ class OAuth2(object):
 
 class ServicePrincipalCertificateAuth(AADMixin):
     """Credentials object for Service Principle Authentication.
-    Authenticates via a Client ID and Client Assertion.
+    Authenticates via a Client ID and Certificate.
 
     Optional kwargs may include:
 
     - cloud_environment (msrestazure.azure_cloud.Cloud):
-            A targeted cloud environment
+                        A targeted cloud environment
     - china (bool): Configure auth for China-based service,
       default is 'False'.
     - tenant (str): Alternative tenant, default is 'common'.
-    - auth_uri (str): Alternative authentication endpoint.
-    - token_uri (str): Alternative token retrieval endpoint.
     - resource (str): Alternative authentication resource, default
       is 'https://management.core.windows.net/'.
     - verify (bool): Verify secure connection, default is 'True'.
-    - keyring (str): Name of local token cache, default is 'AzureAAD'.
     - timeout (int): Timeout of the request in seconds.
-    - cached (bool): If true, will not attempt to collect a token,
-      which can then be populated later from a cached token.
     - proxies (dict): Dictionary mapping protocol or protocol and
       hostname to the URL of the proxy.
+    - cache (adal.TokenCache): A adal.TokenCache, see ADAL configuration
+    for details. This parameter is not used here and directly passed to ADAL.
 
     :param str client_id: Client ID.
-    :param str assertion: Client assertion.
+    :param str certificate: Certificate private key part.
+    :param str thumbprint: Certificate part thumbprint.
     """
-    def __init__(self, client_id, client_assertion, **kwargs):
+    def __init__(self, client_id, certificate, thumbprint, **kwargs):
         super(ServicePrincipalCertificateAuth, self).__init__(client_id, None)
         self._configure(**kwargs)
 
-        self.client_assertion = client_assertion
-        self.client = BackendApplicationClient(self.id)
-        if not kwargs.get('cached'):
-            self.set_token()
-
-    @classmethod
-    def retrieve_session(cls, client_id):
-        """Create ServicePrincipalCredentials from a cached token if it has not
-        yet expired.
-        """
-        session = cls(client_id, None, cached=True)
-        session._retrieve_stored_token()
-        return session
+        self.certificate = certificate
+        self.thumbprint = thumbprint
+        self.set_token()
 
     def set_token(self):
-        """Get token using Client ID/Assertion credentials.
+        """Get token using Client ID/Secret credentials.
 
         :raises: AuthenticationError if credentials invalid, or call fails.
         """
-        with self._setup_session() as session:
-            try:
-                token = session.fetch_token(
-                    self.token_uri,
-                    client_id=self.id,
-                    resource=self.resource,
-                    client_assertion=self.client_assertion,
-                    response_type="client_credentials",
-                    client_assertion_type='urn:ietf:params:oauth:'
-                                          'client-assertion-type:jwt-bearer',
-                    verify=self.verify,
-                    timeout=self.timeout,
-                    proxies=self.proxies)
-            except (RequestException, OAuth2Error, InvalidGrantError) as err:
-                raise_with_traceback(AuthenticationError, "", err)
-            else:
-                self.token = token
-                self._default_token_cache(self.token)
+        super(ServicePrincipalCertificateAuth, self).set_token()
+        try:
+            token = self._context.acquire_token_with_client_certificate(
+                self.resource,
+                self.id,
+                self.certificate,
+                self.thumbprint
+            )
+            self.token = self._convert_token(token)
+        except adal.AdalError as err:
+            raise_with_traceback(AuthenticationError, "", err)
 
 
 def to_service_principle_credentials(**kwargs):
-    if 'client_assertion' in kwargs:
+    if 'certificate' in kwargs:
         return ServicePrincipalCertificateAuth(**kwargs)
     else:
         return ServicePrincipalCredentials(**kwargs)
