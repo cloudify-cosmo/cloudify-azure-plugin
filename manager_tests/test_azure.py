@@ -11,8 +11,8 @@ class TestAzure(TestLocal):
         try:
             return {
                 'password': self.password,
-                'location': 'westus',
-                'resource_prefix': 'trammell',
+                'location': 'eastus',
+                'resource_prefix': 'cfyaztest',
                 'resource_suffix': os.environ['CIRCLE_BUILD_NUM'],
                 'subscription_id': os.environ['AZURE_SUB_ID'],
                 'tenant_id': os.environ['AZURE_TEN_ID'],
