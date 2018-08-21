@@ -106,8 +106,6 @@ class TestAzure(TestLocal):
             'build')
         utils.upload_plugin(
             utils.get_wagon_path(workspace_path))
-        for plugin in self.plugins_to_upload:
-            utils.upload_plugin(plugin[0], plugin[1])
         self.install_network()
         self.install_nodecellar()
         utils.execute_uninstall('nc')
