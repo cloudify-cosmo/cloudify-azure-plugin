@@ -1,5 +1,6 @@
 # Built-in Imports
 import os
+from time import sleep
 
 # Cloudify Imports
 from ecosystem_tests import TestLocal, utils
@@ -114,5 +115,6 @@ class TestAzure(TestLocal):
         self.uninstall_manager()
 
     def test_run_tests(self):
+        sleep(5)
         self.node_instances_after_setup()
         self.install_blueprints()
