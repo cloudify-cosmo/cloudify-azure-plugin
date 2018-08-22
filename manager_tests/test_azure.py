@@ -82,7 +82,8 @@ class TestAzure(TestLocal):
         utils.create_deployment(
             'azure-example-network',
             inputs=network_inputs)
-        sleep(2)
+        sleep(30)
+        utils.execute_command('cfy executions list --include-system-workflows')
         utils.execute_install('azure-example-network')
         self.check_resources_in_deployment('azure-example-network')
 
