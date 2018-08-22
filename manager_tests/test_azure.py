@@ -82,6 +82,7 @@ class TestAzure(TestLocal):
         utils.create_deployment(
             'azure-example-network',
             inputs=network_inputs)
+        sleep(2)
         utils.execute_install('azure-example-network')
         self.check_resources_in_deployment('azure-example-network')
 
@@ -97,6 +98,7 @@ class TestAzure(TestLocal):
         self.check_resources_in_deployment('nc')
 
     def install_blueprints(self):
+        sleep(5)
         utils.initialize_cfy_profile(
             '{0} -u admin -p {1} -t default_tenant'.format(
                 self.manager_ip, self.password))
@@ -113,6 +115,5 @@ class TestAzure(TestLocal):
         self.uninstall_manager()
 
     def test_run_tests(self):
-        sleep(5)
         self.node_instances_after_setup()
         self.install_blueprints()
