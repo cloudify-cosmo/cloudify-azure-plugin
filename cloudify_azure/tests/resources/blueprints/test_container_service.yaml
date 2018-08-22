@@ -1,22 +1,18 @@
 tosca_definitions_version: cloudify_dsl_1_3
 
-description: >
-  Example for create azure deployment from template
 
 imports:
-  - http://www.getcloudify.org/spec/cloudify/3.4/types.yaml
-  - http://www.getcloudify.org/spec/fabric-plugin/1.4.1/plugin.yaml
-  - plugin.yaml
-
-#####################################################################################
-# inputs section allows the user to use same
-# blueprint for creating different deployments, each one
-# with its own parameters.
-# to specify deployment inputs run:
-#   - cfy deployments create -b <blueprint_id> -d <deployment_id> -i inputs.json
-#####################################################################################
+- http://www.getcloudify.org/spec/cloudify/3.4/types.yaml
+- plugin.yaml
 
 inputs:
+  resource_prefix:
+    default: cfy
+
+  resource_suffix:
+    default: 10
+
+  # Azure account information
   subscription_id:
     type: string
     required: false
@@ -29,6 +25,10 @@ inputs:
     type: string
     required: false
 
+  client_secret:
+    type: string
+    required: false
+
   certificate:
     type: string
     required: false
@@ -38,7 +38,20 @@ inputs:
     required: false
 
   location:
-    default: westus
+    type: string
+    required: true
+    default: eastus
+
+  password:
+    type: string
+
+  plan_name:
+    type: string
+    default: test-plan
+
+  resource_group_name:
+    type: string
+    default: test-group
 
   public_key:
     default: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDFR7AIauHIwY5L4DK466vqzKPe6z1r3oo8q9ChG5O+T9l6zw9wf7/n0NDBfO8hp7oJ4rDKYfOq2alLBxIOjB00RJmeNwNV5i4QF5nQ7XM6fr7oHyojegBb6npyiRTsm5VbdwcYe+i9Gu3xyFZcLW/7dI/0fApJEXbrQPQKlMgvPJfYl9KlnBuNxvTtj8A/5AS6E0pJdLKLHJb3nPmlYElWSwAaCWa/grTrOjvx5z6FrzPW/BPSZpLW8NJkQ7SaP8viazswKxjdIk8gzQie/lmuylXiSjBCuEnvJUGvSAbbTrGJ/qYLoUa8lA76dgvZibYh1pT84joyAkw9Sx/EZNuFR5huhS6PP1qVhyEWR5lF/Ra+xpBPoOT6IKFZlE507Zodull7b2GaJhDCr4EtT+tKe618gti/uZ7cwXGjl7OCiNu14xAifS8tIKzdXsqBtt0ko4VSXPPWwoVRUmNBjCdiIPfBJSlCF66XLJ4r8MC7CqUTxEE85RkbWYrnnt5rF6JN/6ROF/lB/R09KqzrtcIT8iWwvbSyw9IiaFYtooD7kReuplzDe3TDMqjU86MUDu7Dj7GebQSoQeQ2nPWFgWDhq9QcxZUKyYDzlFNA4JQQ6gbIhob+pEEj8AQ+y83KesYUn9cXytTr/HdxndtzIlM77J/TUk2sSlWlvVBKXcLQow== azure@deployment.check
@@ -147,67 +160,49 @@ inputs:
 
         -----END RSA PRIVATE KEY-----
 
-  vm_name:
-    default: azure-deployment-sample-vm
-
-  vm_dns_name:
-    default: jolly-haze-azure
-
-  endpoint_resource:
-    default: https://management.core.windows.net/
-
-  endpoints_resource_manager:
-    default: https://management.azure.com
-
-  endpoint_verify:
-    default: True
-
-  endpoint_storage:
-    type: string
-    default: core.windows.net
-
 dsl_definitions:
-
-  azure_configuration: &azure_config
+  azure_config: &azure_config
     subscription_id: { get_input: subscription_id }
     tenant_id: { get_input: tenant_id }
     client_id: { get_input: client_id }
-    certificate: { get_input: certificate }
-    thumbprint: { get_input: thumbprint }
-    endpoint_resource: { get_input: endpoint_resource }
-    endpoints_resource_manager: { get_input: endpoints_resource_manager }
-    endpoint_verify: { get_input: endpoint_verify }
+    client_secret: { get_input: client_secret }
+
+  container_service_config: &container_service_config
+    properties:
+      masterProfile:
+        count: 1
+        dnsPrefix: "proud-scene-4371"
+        vmSize: "Standard_D1_v2"
+      agentPoolProfiles:
+        - count: 1
+          osType: "Linux"
+          vmSize: "Standard_D1_v2"
+          name: "containersampleservice"
+          dnsPrefix: "proud-scene-4371-agent"
+
+      orchestratorProfile:
+        orchestratorType: "DCOS"
+
+      linuxProfile:
+        adminUsername: "containersampleservice"
+        ssh:
+          publicKeys:
+            - keyData: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDfWmSLNlihQCEpOg9uZCFCtknfSXMQN0Bnt/PkYtupEgLGtPl0JOLtM1RFzL+w4McGyvtr1OVYB8rysGPVqS8ZIjslEjE/M5BjvAzd8/W+C1CkRJx4t5I1qqrEqXD8yjZJmYi1AazTBG6cNsWOtOCJW1XtTw78+Uu6uZjwzUwgZopVO+HONf0Oa9u8620Ez/86oR7kyt8oyIocSRbm0jljNAqLbsqWHl4yBKKSAyjsgqR7Xv5DVXtZtOPrdQ/o7+8oTtXCJ6mPgdXzZ7e1IW+LX3Zp3vx6u6HnT2NETMxRP4hlyl7aDU6aDXH6qUbBW2eu39L75RcFfm3PVHhF9ESlRXWF/EpsM0x71YGPthLt68qSkyK3V0OrfaQq0FljHMFRI4T4IX1+DlmOHFnse/atf+qJudEFoDs5E+mOGu67+4a450fuKO7pPEysRzm/RbfS5Ww7jWuY44eXQovHfAQRYQJa/E9Ba32ZUoo0durqrojla7UvFz9ysH0wP5okgiIXzXo4BuUYN3YzRp1vP326LtxLwJCzBNhY+1RV/K+eIRlYA4mmO8rQEmviE3kahw/OJ8ugGQkka/d3rD/qIBuzePeeHb2RzCndI1klmOrSxai8PzN2XepkwWVN0jKSHW0sOBRGk30yl5FmJhHNqPO5Cxc0B0zTodF+F2T9U4PwNw== ghaleb.khaled@gmail.com\n"
+
+    location: "southcentralus"
+
 
 node_templates:
-
-  deployment:
-    type: cloudify.azure.Deployment
+  resource_group:
+    type: cloudify.azure.nodes.ResourceGroup
     properties:
-      name: azure-python-deployment-sample
-      location: { get_input: location }
+      name: sample-group
+      location: southcentralus
       azure_config: *azure_config
-      params:
-        sshKeyData: { get_input: public_key }
-        vmName: { get_input: vm_name }
-        dnsLabelPrefix: { get_input: vm_dns_name }
-        storageEndpoint: { get_input: endpoint_storage }
-      template_file: template.json
-
-  check_connection:
-    type: cloudify.nodes.Root
-    interfaces:
-      cloudify.interfaces.lifecycle:
-          start:
-            implementation: fabric.fabric_plugin.tasks.run_commands
-            inputs:
-              commands:
-                - uname -a
-                - hostname
-              fabric_env:
-                user: azureSample
-                host_string: {concat:[{ get_input: vm_dns_name }, ".", {get_input: location}, ".cloudapp.azure.com"]}
-                key: { get_input: private_key }
-              script_path: scripts/vm_check.sh
-    relationships:
-      - target: deployment
-        type: cloudify.relationships.depends_on
+  container_service:
+    type: cloudify.azure.nodes.compute.ContainerService
+    properties:
+      name: 'sample-cs2'
+      resource_group: sample-group
+      azure_config: *azure_config
+      container_service_config: *container_service_config

@@ -1,5 +1,6 @@
 # Built-in Imports
 import os
+from time import sleep
 
 # Cloudify Imports
 from ecosystem_tests import TestLocal, utils
@@ -11,8 +12,8 @@ class TestAzure(TestLocal):
         try:
             return {
                 'password': self.password,
-                'location': 'westus',
-                'resource_prefix': 'trammell',
+                'location': 'eastus',
+                'resource_prefix': 'cfyaztest',
                 'resource_suffix': os.environ['CIRCLE_BUILD_NUM'],
                 'subscription_id': os.environ['AZURE_SUB_ID'],
                 'tenant_id': os.environ['AZURE_TEN_ID'],
@@ -81,6 +82,8 @@ class TestAzure(TestLocal):
         utils.create_deployment(
             'azure-example-network',
             inputs=network_inputs)
+        sleep(30)
+        utils.execute_command('cfy executions list --include-system-workflows')
         utils.execute_install('azure-example-network')
         self.check_resources_in_deployment('azure-example-network')
 
@@ -96,6 +99,7 @@ class TestAzure(TestLocal):
         self.check_resources_in_deployment('nc')
 
     def install_blueprints(self):
+        sleep(5)
         utils.initialize_cfy_profile(
             '{0} -u admin -p {1} -t default_tenant'.format(
                 self.manager_ip, self.password))
@@ -105,8 +109,6 @@ class TestAzure(TestLocal):
             'build')
         utils.upload_plugin(
             utils.get_wagon_path(workspace_path))
-        for plugin in self.plugins_to_upload:
-            utils.upload_plugin(plugin[0], plugin[1])
         self.install_network()
         self.install_nodecellar()
         utils.execute_uninstall('nc')

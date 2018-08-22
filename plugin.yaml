@@ -5,9 +5,9 @@
 plugins:
   pkg:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-incubator/cloudify-azure-plugin/archive/1.8.0.zip
+    source: https://github.com/cloudify-incubator/cloudify-azure-plugin/archive/2.0.0.zip
     package_name: cloudify-azure-plugin
-    package_version: '1.8.0'
+    package_version: '2.0.0'
 
 data_types:
   cloudify.datatypes.azure.Config:
@@ -89,11 +89,15 @@ data_types:
         type: string
         required: true
         default: "1234567890"
-      client_assertion:
+      certificate:
         description: >
-          An assertion (a JSON Web Token) that you need to create
-          and sign with the certificate you registered as credentials
-          for your application.
+          Certificate private key.
+        type: string
+        required: false
+        default: ""
+      thumbprint:
+        description: >
+          Certificate thumbprint.
         type: string
         required: false
         default: ""
@@ -1689,6 +1693,41 @@ node_types:
       cloudify.interfaces.lifecycle:
         create: pkg.cloudify_azure.resources.deployment.create
         delete: pkg.cloudify_azure.resources.deployment.delete
+
+  cloudify.azure.nodes.compute.ContainerService:
+    derived_from: cloudify.nodes.Root
+    properties:
+      name:
+        required: true
+        type: string
+      resource_group:
+        required: true
+        type: string
+      container_service_config:
+        type: string
+        required: false
+        description: >
+          Container service config details
+      azure_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: pkg.cloudify_azure.resources.compute.container_service.create
+          inputs:
+            name:
+              default: { get_property: [SELF, name]}
+            resource_group:
+              default: { get_property: [SELF, resource_group]}
+            container_service_config:
+              default: { get_property: [SELF, container_service_config]}
+            azure_config:
+              default: { get_property: [SELF, azure_config]}
+        delete:
+          implementation: pkg.cloudify_azure.resources.compute.container_service.delete
 
 relationships:
   cloudify.azure.relationships.contained_in_resource_group:

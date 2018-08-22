@@ -75,7 +75,8 @@ class DeploymentTest(unittest.TestCase):
             client_id='client_id',
             resource=constants.OAUTH2_MGMT_RESOURCE,
             secret='client_secret',
-            client_assertion='',
+            certificate='',
+            thumbprint='',
             tenant='tenant_id',
             verify=True)
         self.Client.assert_called_with(self.Credentials.return_value,
@@ -109,7 +110,8 @@ class DeploymentTest(unittest.TestCase):
             client_id='client_id',
             resource=constants.OAUTH2_MGMT_RESOURCE,
             secret='client_secret',
-            client_assertion='',
+            certificate='',
+            thumbprint='',
             tenant='tenant_id',
             verify=True)
         self.Client.assert_called_with(

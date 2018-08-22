@@ -34,7 +34,8 @@ class Deployment(object):
         self.resource_verify = bool(credentials.get('endpoint_verify', True))
         self.credentials = to_service_principle_credentials(
             client_id=str(credentials['client_id']),
-            client_assertion=str(credentials.get('client_assertion', '')),
+            certificate=str(credentials.get('certificate', '')),
+            thumbprint=str(credentials.get('thumbprint', '')),
             secret=str(credentials.get('client_secret', '')),
             tenant=str(credentials['tenant_id']),
             verify=self.resource_verify,
