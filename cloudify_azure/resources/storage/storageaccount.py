@@ -108,15 +108,19 @@ def create(**_):
         StorageAccount(api_version=ctx.node.properties.get(
             'api_version', constants.API_VER_STORAGE)),
         generator=sa_name_generator)
+    sa_sku = ctx.node.properties.get('sku')
+    sa_params = {
+        'location': ctx.node.properties.get('location'),
+        'tags': ctx.node.properties.get('tags'),
+        'properties': utils.get_resource_config()
+    }
+    if sa_sku:
+        sa_params['sku'] = sa_sku
     # Create a resource (if necessary)
     utils.task_resource_create(
         StorageAccount(api_version=ctx.node.properties.get(
             'api_version', constants.API_VER_STORAGE)),
-        {
-            'location': ctx.node.properties.get('location'),
-            'tags': ctx.node.properties.get('tags'),
-            'properties': utils.get_resource_config()
-        })
+        sa_params)
 
 
 @operation

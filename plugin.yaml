@@ -5,9 +5,9 @@
 plugins:
   pkg:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-incubator/cloudify-azure-plugin/archive/2.0.0.zip
+    source: https://github.com/cloudify-incubator/cloudify-azure-plugin/archive/2.0.1.zip
     package_name: cloudify-azure-plugin
-    package_version: '2.0.0'
+    package_version: '2.0.1'
 
 data_types:
   cloudify.datatypes.azure.Config:
@@ -111,8 +111,16 @@ data_types:
         description: >
           An storage account type (case sensitive)
         type: string
-        default: Standard_LRS
-        required: true
+        required: false
+      networkAcls:
+        required: false
+      supportsHttpsTrafficOnly:
+        required: false
+      encryption:
+        required: false
+      keySource:
+        required: false
+
 
   cloudify.datatypes.azure.storage.DataDiskConfig:
     properties:
@@ -474,6 +482,10 @@ node_types:
       tags:
         description: >
           Specifies a dictionary of one or more name and value pairs that describe a tag
+        required: false
+      sku:
+        description: >
+          A Storage account SKU if needed.
         required: false
       resource_config:
         description: >
