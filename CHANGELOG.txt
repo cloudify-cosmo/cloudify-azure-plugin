@@ -1,3 +1,7 @@
+2.1.0:
+  - Add Support for WebApps, plan, publishing user.
+  - Adjust osDisk handling for managedDisk support.
+  - Adjust Storage Account resource data type for next generation storage accounts.
 2.0.0:
   - Update to azure sdk version 4.0
   - Support container service

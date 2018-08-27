@@ -97,7 +97,9 @@ def build_osdisk_profile(usr_osdisk=None):
     # Generate disk name if one wasn't provided
     osdisk['name'] = osdisk.get('name') or utils.get_resource_name()
     # If no disk URI was specified, generate one
-    if not osdisk.get('vhd', dict()).get('uri'):
+    # Unless this is a managedDisk.
+    if not osdisk.get('vhd', dict()).get('uri') and \
+            'managedDisk' not in osdisk:
         osdisk['vhd'] = {
             'uri': 'http://{0}.{1}/vhds/{2}.vhd'.format(
                 utils.get_rel_node_name(constants.REL_CONNECTED_TO_SA),
