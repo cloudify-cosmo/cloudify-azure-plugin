@@ -33,6 +33,8 @@ from cloudify_azure.resources.network.networksecuritygroup \
     import NetworkSecurityGroup
 from cloudify_azure.resources.network.ipconfiguration \
     import IPConfiguration
+from cloudify_azure.resources.network.publicipaddress \
+    import PublicIPAddress
 
 # pylint: disable=R0913
 
@@ -121,6 +123,65 @@ def configure(**_):
                     'ipConfigurations': get_ip_configurations()
                 })
         })
+
+
+@operation
+def start(**_):
+    '''
+        Stores NIC IPs in runtime properties.
+    '''
+
+    creds = utils.get_credentials(_ctx=ctx)
+
+    nic_iface = NetworkInterfaceCard(
+        _ctx=ctx,
+        api_version=ctx.node.properties.get(
+            'api_version',
+            constants.API_VER_NETWORK))
+    nic_name = utils.get_resource_name(ctx)
+    nic_data = nic_iface.get(nic_name)
+
+    for ip_cfg in nic_data.get(
+            'properties', dict()).get(
+                'ipConfigurations', list()):
+
+        # Get the Private IP Address endpoint
+        ctx.instance.runtime_properties['ip'] = \
+            ip_cfg.get('properties', dict()).get('privateIPAddress')
+
+        # Get the Public IP Address endpoint
+        pubip_id = ip_cfg.get(
+            'properties', dict()).get(
+            'publicIPAddress', dict()).get('id')
+        if isinstance(pubip_id, basestring):
+            # use the ID to get the data on the public ip
+            pubip = PublicIPAddress(
+                _ctx=ctx,
+                api_version=ctx.node.properties.get(
+                    'api_version',
+                    constants.API_VER_NETWORK))
+            pubip.endpoint = '{0}{1}'.format(
+                creds.endpoints_resource_manager, pubip_id)
+            pubip_data = pubip.get()
+            if isinstance(pubip_data, dict):
+                public_ip = \
+                    pubip_data.get('properties', dict()).get('ipAddress')
+                # Maintained for backwards compatibility.
+                ctx.instance.runtime_properties['public_ip'] = \
+                    public_ip
+                # For consistency with other plugins.
+                ctx.instance.runtime_properties['public_ip_address'] = \
+                    public_ip
+
+            # We should also consider that maybe there will be many
+            # public ip addresses.
+            public_ip_addresses = \
+                ctx.instance.runtime_properties.get(
+                    'public_ip_address', [])
+            if public_ip not in public_ip_addresses:
+                public_ip_addresses.append(public_ip)
+            ctx.instance.runtime_properties['public_ip_addresses'] = \
+                public_ip_addresses
 
 
 @operation

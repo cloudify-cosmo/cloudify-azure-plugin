@@ -482,7 +482,7 @@ def configure(command_to_execute, file_uris, type_handler_version='v2.0', **_):
                             'public_ip_address', [])
                     if public_ip not in public_ip_addresses:
                         public_ip_addresses.append(public_ip)
-                    ctx.instance.runtime_properties['public_ip_address'] = \
+                    ctx.instance.runtime_properties['public_ip_addresses'] = \
                         public_ip_addresses
 
         # See if the user wants to use the public IP as primary IP

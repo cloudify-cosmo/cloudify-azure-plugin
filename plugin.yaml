@@ -1027,6 +1027,7 @@ node_types:
       cloudify.interfaces.lifecycle:
         create: pkg.cloudify_azure.resources.network.networkinterfacecard.create
         configure: pkg.cloudify_azure.resources.network.networkinterfacecard.configure
+        start: pkg.cloudify_azure.resources.network.networkinterfacecard.start
         delete: pkg.cloudify_azure.resources.network.networkinterfacecard.delete
 
   cloudify.azure.nodes.network.IPConfiguration:
