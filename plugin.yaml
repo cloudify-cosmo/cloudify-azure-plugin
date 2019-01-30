@@ -1138,6 +1138,7 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         create: pkg.cloudify_azure.resources.network.publicipaddress.create
+        start: pkg.cloudify_azure.resources.network.publicipaddress.start
         delete: pkg.cloudify_azure.resources.network.publicipaddress.delete
 
   cloudify.azure.nodes.compute.AvailabilitySet:

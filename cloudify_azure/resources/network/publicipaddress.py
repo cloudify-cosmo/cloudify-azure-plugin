@@ -76,6 +76,26 @@ def create(**_):
 
 
 @operation
+def start(**_):
+    '''Update IP runtime property'''
+    resource = PublicIPAddress(
+        _ctx=ctx,
+        api_version=ctx.node.properties.get(
+            'api_version',
+            constants.API_VER_NETWORK)
+    )
+    data = resource.get()
+    if isinstance(data, dict):
+        public_ip = data.get('properties', dict()).get('ipAddress')
+        # Maintained for backwards compatibility.
+        ctx.instance.runtime_properties['public_ip'] = \
+            public_ip
+        # For consistency with other plugins.
+        ctx.instance.runtime_properties['public_ip_address'] = \
+            public_ip
+
+
+@operation
 def delete(**_):
     '''Deletes a Public IP Address'''
     # Delete the resource
