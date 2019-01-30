@@ -75,6 +75,9 @@ def create(resource_config, **_):
         props['type'] = props['ext_type']
         del props['ext_type']
     # Create a resource (if necessary)
+    ctx.logger.warn(
+        'Azure customData implementation is dependent on '
+        'Virtual Machine image support.')
     utils.task_resource_create(
         VirtualMachineExtension(api_version=ctx.node.properties.get(
             'api_version', constants.API_VER_COMPUTE)),
