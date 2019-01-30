@@ -61,6 +61,12 @@ def get_resource_name(_ctx=ctx):
         _ctx.node.properties.get('name')
 
 
+def task_resource_get(resource,
+                      name=None,
+                      _ctx=ctx):
+    return resource.get(name or get_resource_name(_ctx))
+
+
 def task_resource_create(resource, params,
                          name=None, use_external=None,
                          _ctx=ctx):

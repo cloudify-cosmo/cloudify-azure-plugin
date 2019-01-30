@@ -34,7 +34,7 @@ from cloudify_azure.resources.network.networksecuritygroup \
 from cloudify_azure.resources.network.ipconfiguration \
     import IPConfiguration
 from cloudify_azure.resources.network.publicipaddress \
-    import PublicIPAddress
+    import PublicIPAddress, PUBLIC_IP_PROPERTY
 
 # pylint: disable=R0913
 
@@ -170,14 +170,14 @@ def start(**_):
                 ctx.instance.runtime_properties['public_ip'] = \
                     public_ip
                 # For consistency with other plugins.
-                ctx.instance.runtime_properties['public_ip_address'] = \
+                ctx.instance.runtime_properties[PUBLIC_IP_PROPERTY] = \
                     public_ip
 
             # We should also consider that maybe there will be many
             # public ip addresses.
             public_ip_addresses = \
                 ctx.instance.runtime_properties.get(
-                    'public_ip_address', [])
+                    PUBLIC_IP_PROPERTY, [])
             if public_ip not in public_ip_addresses:
                 public_ip_addresses.append(public_ip)
             ctx.instance.runtime_properties['public_ip_addresses'] = \

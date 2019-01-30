@@ -27,6 +27,8 @@ from cloudify.decorators import operation
 # Logger, API version
 from cloudify_azure import (constants, utils)
 
+PUBLIC_IP_PROPERTY = 'public_ip_address'
+
 
 class PublicIPAddress(Resource):
     '''
@@ -78,21 +80,17 @@ def create(**_):
 @operation
 def start(**_):
     '''Update IP runtime property'''
-    resource = PublicIPAddress(
-        _ctx=ctx,
-        api_version=ctx.node.properties.get(
-            'api_version',
-            constants.API_VER_NETWORK)
-    )
-    data = resource.get()
+    data = utils.task_resource_get(
+        PublicIPAddress(
+            _ctx=ctx,
+            api_version=ctx.node.properties.get(
+                'api_version',
+                constants.API_VER_NETWORK)
+        ),
+        _ctx=ctx)
     if isinstance(data, dict):
-        public_ip = data.get('properties', dict()).get('ipAddress')
-        # Maintained for backwards compatibility.
-        ctx.instance.runtime_properties['public_ip'] = \
-            public_ip
-        # For consistency with other plugins.
-        ctx.instance.runtime_properties['public_ip_address'] = \
-            public_ip
+        ctx.instance.runtime_properties[PUBLIC_IP_PROPERTY] = \
+            data.get('properties', dict()).get('ipAddress')
 
 
 @operation
