@@ -352,6 +352,9 @@ def create(args=None, **_):
     os_profile = resource_create_payload['properties']['osProfile']
     userdata = _handle_userdata(os_profile.get('customData'))
     if userdata:
+        ctx.logger.warn(
+            'Azure customData implementation is dependent on '
+            'Virtual Machine image support.')
         os_profile['customData'] = base64.b64encode(userdata.encode())
     # Remove customData from osProfile if empty to avoid 400 Error.
     elif 'customData' in resource_create_payload['properties']['osProfile']:
