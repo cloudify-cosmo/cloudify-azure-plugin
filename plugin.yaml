@@ -5,9 +5,9 @@
 plugins:
   pkg:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-incubator/cloudify-azure-plugin/archive/2.1.0.zip
+    source: https://github.com/cloudify-incubator/cloudify-azure-plugin/archive/2.1.1.zip
     package_name: cloudify-azure-plugin
-    package_version: '2.1.0'
+    package_version: '2.1.1'
 
 data_types:
   cloudify.datatypes.azure.Config:
@@ -1027,6 +1027,7 @@ node_types:
       cloudify.interfaces.lifecycle:
         create: pkg.cloudify_azure.resources.network.networkinterfacecard.create
         configure: pkg.cloudify_azure.resources.network.networkinterfacecard.configure
+        start: pkg.cloudify_azure.resources.network.networkinterfacecard.start
         delete: pkg.cloudify_azure.resources.network.networkinterfacecard.delete
 
   cloudify.azure.nodes.network.IPConfiguration:
@@ -1137,6 +1138,7 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         create: pkg.cloudify_azure.resources.network.publicipaddress.create
+        start: pkg.cloudify_azure.resources.network.publicipaddress.start
         delete: pkg.cloudify_azure.resources.network.publicipaddress.delete
 
   cloudify.azure.nodes.compute.AvailabilitySet:

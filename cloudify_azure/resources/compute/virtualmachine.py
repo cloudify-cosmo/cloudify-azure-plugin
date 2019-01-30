@@ -39,7 +39,7 @@ from cloudify_azure import (constants, utils)
 from cloudify_azure.resources.network.networkinterfacecard \
     import NetworkInterfaceCard
 from cloudify_azure.resources.network.publicipaddress \
-    import PublicIPAddress
+    import PublicIPAddress, PUBLIC_IP_PROPERTY
 from cloudify_azure.resources.compute.availabilityset \
     import AvailabilitySet
 from cloudify_azure.resources.compute.virtualmachineextension \
@@ -473,16 +473,16 @@ def configure(command_to_execute, file_uris, type_handler_version='v2.0', **_):
                     ctx.instance.runtime_properties['public_ip'] = \
                         public_ip
                     # For consistency with other plugins.
-                    ctx.instance.runtime_properties['public_ip_address'] = \
+                    ctx.instance.runtime_properties[PUBLIC_IP_PROPERTY] = \
                         public_ip
                     # We should also consider that maybe there will be many
                     # public ip addresses.
                     public_ip_addresses = \
                         ctx.instance.runtime_properties.get(
-                            'public_ip_address', [])
+                            PUBLIC_IP_PROPERTY, [])
                     if public_ip not in public_ip_addresses:
                         public_ip_addresses.append(public_ip)
-                    ctx.instance.runtime_properties['public_ip_address'] = \
+                    ctx.instance.runtime_properties['public_ip_addresses'] = \
                         public_ip_addresses
 
         # See if the user wants to use the public IP as primary IP
