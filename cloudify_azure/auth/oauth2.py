@@ -245,6 +245,9 @@ class ServicePrincipalCertificateAuth(AADMixin):
 
 
 def to_service_principle_credentials(**kwargs):
+    for k, v in kwargs.items():
+        if not v:
+            del kwargs[k]
     if 'certificate' in kwargs:
         return ServicePrincipalCertificateAuth(**kwargs)
     else:

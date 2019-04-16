@@ -110,8 +110,8 @@ class TestAzure(TestLocal):
         utils.upload_plugin(
             utils.get_wagon_path(workspace_path))
         self.install_network()
-        self.install_nodecellar()
-        utils.execute_uninstall('nc')
+        # self.install_nodecellar()
+        # utils.execute_uninstall('nc')
         utils.execute_uninstall('azure-example-network')
         self.uninstall_manager()
 

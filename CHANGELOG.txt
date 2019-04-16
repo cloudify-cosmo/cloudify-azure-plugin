@@ -1,3 +1,7 @@
+2.1.2:
+  - Conditionally allow key parameters in Deployment type.
+2.1.1:
+  - Add warning about custom data.
 2.1.0:
   - Add Support for WebApps, plan, publishing user.
   - Adjust osDisk handling for managedDisk support.
