@@ -44,7 +44,8 @@ class ConnectionTestCase(unittest.TestCase):
                 'endpoint_resource': constants.OAUTH2_MGMT_RESOURCE,
                 'endpoint_verify': True,
                 'endpoints_resource_manager': constants.CONN_API_ENDPOINT,
-                'endpoints_active_directory': constants.OAUTH2_ENDPOINT
+                'endpoints_active_directory': constants.OAUTH2_ENDPOINT,
+                'cloud_environment': None,
             }
         }
         self.ctx = MockCloudifyContext(node_id='test_connection',
