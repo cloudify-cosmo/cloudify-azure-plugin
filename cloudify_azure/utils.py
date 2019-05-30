@@ -638,7 +638,8 @@ def get_credentials_from_file(config_path=constants.CONFIG_PATH):
     cred_keys = [
         'client_id', 'client_secret', 'subscription_id', 'tenant_id',
         'endpoint_resource', 'endpoint_verify', 'endpoints_resource_manager',
-        'endpoints_active_directory', 'certificate', 'thumbprint'
+        'endpoints_active_directory', 'certificate', 'thumbprint',
+        'cloud_environment'
     ]
     config = SafeConfigParser()
     config.read(config_path)
@@ -656,7 +657,8 @@ def get_credentials_from_node(_ctx=ctx):
     cred_keys = [
         'client_id', 'client_secret', 'subscription_id', 'tenant_id',
         'endpoint_resource', 'endpoints_resource_manager',
-        'endpoints_active_directory', 'certificate', 'thumbprint'
+        'endpoints_active_directory', 'certificate', 'thumbprint',
+        'cloud_environment'
     ]
     props = _ctx.node.properties.get('azure_config')
     properties = {k: props[k] for k in cred_keys if props.get(k)}
