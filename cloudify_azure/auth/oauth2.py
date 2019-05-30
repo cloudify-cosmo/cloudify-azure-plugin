@@ -51,7 +51,8 @@ AzureCredentials = namedtuple(
     'AzureCredentials',
     ['tenant_id', 'client_id', 'client_secret', 'subscription_id',
      'endpoint_resource', 'endpoint_verify', 'endpoints_resource_manager',
-     'endpoints_active_directory', 'certificate', 'thumbprint']
+     'endpoints_active_directory', 'certificate', 'thumbprint',
+     'cloud_environment']
 )
 
 
@@ -218,12 +219,19 @@ class ServicePrincipalCertificateAuth(AADMixin):
     :param str certificate: Certificate private key part.
     :param str thumbprint: Certificate part thumbprint.
     """
-    def __init__(self, client_id, certificate, thumbprint, **kwargs):
+    def __init__(self,
+                 client_id,
+                 certificate,
+                 thumbprint,
+                 cloud_environment=None,
+                 **kwargs):
+
         super(ServicePrincipalCertificateAuth, self).__init__(client_id, None)
         self._configure(**kwargs)
 
         self.certificate = certificate
         self.thumbprint = thumbprint
+        self.cloud_environment = cloud_environment
         self.set_token()
 
     def set_token(self):
@@ -237,7 +245,8 @@ class ServicePrincipalCertificateAuth(AADMixin):
                 self.resource,
                 self.id,
                 self.certificate,
-                self.thumbprint
+                self.thumbprint,
+                self.cloud_environment
             )
             self.token = self._convert_token(token)
         except adal.AdalError as err:

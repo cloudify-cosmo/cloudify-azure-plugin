@@ -54,7 +54,8 @@ class OAuth2TestCase(unittest.TestCase):
             endpoints_resource_manager=constants.CONN_API_ENDPOINT,
             endpoints_active_directory=constants.OAUTH2_ENDPOINT,
             certificate=None,
-            thumbprint=None
+            thumbprint=None,
+            cloud_environment=None
         )
         self.cert_credentials = oauth2.AzureCredentials(
             tenant_id='123456',
@@ -66,7 +67,8 @@ class OAuth2TestCase(unittest.TestCase):
             endpoints_resource_manager=constants.CONN_API_ENDPOINT,
             endpoints_active_directory=constants.OAUTH2_ENDPOINT,
             certificate='dummy certificate',
-            thumbprint='27EFC095BFE002AF43A3F32D7C0DD725BB54717E'
+            thumbprint='27EFC095BFE002AF43A3F32D7C0DD725BB54717E',
+            cloud_environment=None
         )
         current_ctx.set(self.ctx)
 

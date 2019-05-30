@@ -622,6 +622,8 @@ def get_credentials(_ctx=ctx):
         creds['thumbprint'] = None
     if 'client_secret' not in creds:
         creds['client_secret'] = None
+    if 'cloud_environment' not in creds:
+        creds['cloud_environment'] = None
     return AzureCredentials(**creds)
 
 

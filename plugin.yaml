@@ -5,9 +5,9 @@
 plugins:
   pkg:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-incubator/cloudify-azure-plugin/archive/2.1.2.zip
+    source: https://github.com/cloudify-incubator/cloudify-azure-plugin/archive/2.1.3.zip
     package_name: cloudify-azure-plugin
-    package_version: '2.1.2'
+    package_version: '2.1.3'
 
 data_types:
   cloudify.datatypes.azure.Config:
@@ -101,7 +101,12 @@ data_types:
         type: string
         required: false
         default: ""
-
+      cloud_environment:
+        description: >
+          An alternative cloud environment.
+        type: string
+        required: false
+        default: ""
 
   cloudify.datatypes.azure.storage.StorageAccountConfig:
     description: >
