@@ -77,6 +77,7 @@ class DeploymentTest(unittest.TestCase):
             secret='client_secret',
             certificate='',
             thumbprint='',
+            cloud_environment='',
             tenant='tenant_id',
             verify=True)
         self.Client.assert_called_with(self.Credentials.return_value,
@@ -113,6 +114,7 @@ class DeploymentTest(unittest.TestCase):
             certificate='',
             thumbprint='',
             tenant='tenant_id',
+            cloud_environment='',
             verify=True)
         self.Client.assert_called_with(
             self.Credentials.return_value, "subscription_id",

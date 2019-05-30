@@ -36,6 +36,7 @@ class Deployment(object):
             client_id=str(credentials['client_id']),
             certificate=str(credentials.get('certificate', '')),
             thumbprint=str(credentials.get('thumbprint', '')),
+            cloud_environment=str(credentials.get('cloud_environment', '')),
             secret=str(credentials.get('client_secret', '')),
             tenant=str(credentials['tenant_id']),
             verify=self.resource_verify,
