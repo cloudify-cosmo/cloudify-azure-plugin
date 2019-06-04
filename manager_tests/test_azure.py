@@ -19,7 +19,8 @@ class TestAzure(TestLocal):
                 'tenant_id': os.environ['AZURE_TEN_ID'],
                 'client_id': os.environ['AZURE_CLI_ID'],
                 'client_secret': os.environ['AZURE_CLI_SE'],
-                'large_image_size': 'Standard_H8m'
+                'large_image_size': 'Standard_H8m',
+                'retry_after': 30
             }
         except KeyError:
             raise
