@@ -31,7 +31,6 @@ import uuid
 
 import requests
 import jwt
-import warnings
 
 # Used to implement connection retrying
 from requests.packages import urllib3
@@ -240,7 +239,7 @@ class CustomAADMixin(object):
                        "please use "
                        "cloud_environment"
                        "=msrestazure.azure_cloud.AZURE_CHINA_CLOUD")
-            warnings.warn(err_msg, DeprecationWarning)
+            ctx.logger.error(err_msg)
             self._cloud_environment = AZURE_CHINA_CLOUD
         else:
             self._cloud_environment = AZURE_PUBLIC_CLOUD
