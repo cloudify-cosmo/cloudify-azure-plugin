@@ -4,3 +4,7 @@ mock
 nose
 coverage
 nose-cov
+azure==4.0.0
+pyyaml==3.10
+urllib3
+requests==2.20.0

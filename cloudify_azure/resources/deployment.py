@@ -40,8 +40,10 @@ class Deployment(object):
             secret=str(credentials.get('client_secret', '')),
             tenant=str(credentials['tenant_id']),
             verify=self.resource_verify,
+            endpoints_active_directory=str(credentials.get(
+                'endpoints_active_directory', '')),
             resource=str(credentials.get('endpoint_resource',
-                                         constants.OAUTH2_MGMT_RESOURCE))
+                                         constants.OAUTH2_MGMT_RESOURCE),)
         )
         self.client = ResourceManagementClient(
             self.credentials, str(credentials['subscription_id']),
