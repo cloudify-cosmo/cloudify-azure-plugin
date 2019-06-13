@@ -46,7 +46,7 @@ class AzureSDKResourceTest(unittest.TestCase):
         return fake_ctx, node, instance
 
 
-@patch('cloudify_azure.auth.oauth2.ServicePrincipalCredentials')
+@patch('cloudify_azure.auth.oauth2.CustomServicePrincipalCredentials')
 @patch('cloudify_azure.resources.app_service.plan.WebSiteManagementClient')
 class PlanTest(AzureSDKResourceTest):
     def test_create(self, client, credentials):
@@ -77,7 +77,7 @@ class PlanTest(AzureSDKResourceTest):
             name='plan_name')
 
 
-@patch('cloudify_azure.auth.oauth2.ServicePrincipalCredentials')
+@patch('cloudify_azure.auth.oauth2.CustomServicePrincipalCredentials')
 @patch('cloudify_azure.resources.app_service.webapp.WebSiteManagementClient')
 class WebAppTest(AzureSDKResourceTest):
     def test_create(self, client, credentials):
@@ -108,7 +108,7 @@ class WebAppTest(AzureSDKResourceTest):
             name='app_name')
 
 
-@patch('cloudify_azure.auth.oauth2.ServicePrincipalCredentials')
+@patch('cloudify_azure.auth.oauth2.CustomServicePrincipalCredentials')
 @patch('cloudify_azure.resources.app_service.'
        'publishing_user.WebSiteManagementClient')
 class PublishingUserTest(AzureSDKResourceTest):

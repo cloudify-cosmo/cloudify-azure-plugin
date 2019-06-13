@@ -44,7 +44,7 @@ class AzureSDKResourceTest(unittest.TestCase):
         return fake_ctx, node, instance
 
 
-@patch('cloudify_azure.auth.oauth2.ServicePrincipalCredentials')
+@patch('cloudify_azure.auth.oauth2.CustomServicePrincipalCredentials')
 @patch('cloudify_azure.resources.compute.'
        'container_service.ContainerServiceClient')
 class ContainerServiceTest(AzureSDKResourceTest):

@@ -83,7 +83,7 @@ class OAuth2TestCase(unittest.TestCase):
 
     def test_certificate_credentials(self):
         sp_credentials_mock = mock.patch(
-            'cloudify_azure.auth.oauth2.ServicePrincipalCredentials')
+            'cloudify_azure.auth.oauth2.CustomServicePrincipalCredentials')
         sp_cert_credentials_mock = mock.patch(
             'cloudify_azure.auth.oauth2.ServicePrincipalCertificateAuth')
         ServicePrincipalCredentials = sp_credentials_mock.start()

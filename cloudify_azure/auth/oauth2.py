@@ -18,7 +18,9 @@
     OAuth 2.0 authorization interface for the Microsoft Azure REST API
 '''
 import binascii
+import importlib
 import base64
+import re
 # For credentials structuring
 from collections import namedtuple
 # Used for HTTP requests / verification
@@ -33,6 +35,7 @@ import jwt
 # Used to implement connection retrying
 from requests.packages import urllib3
 from msrestazure.azure_active_directory import AADMixin
+from msrestazure.azure_cloud import (AZURE_PUBLIC_CLOUD, AZURE_CHINA_CLOUD)
 from msrest.exceptions import AuthenticationError, raise_with_traceback
 from azure.common.credentials import ServicePrincipalCredentials
 import adal
@@ -43,6 +46,7 @@ from cloudify_azure import \
     (constants, exceptions)
 # Context
 from cloudify import ctx
+from cloudify.exceptions import NonRecoverableError
 
 # pylint: disable=R0903
 
@@ -195,7 +199,116 @@ class OAuth2(object):
         return data
 
 
-class ServicePrincipalCertificateAuth(AADMixin):
+class CustomAADMixin(object):
+    VALID_CLOUD_ENVS = (
+        'AZURE_PUBLIC_CLOUD',
+        'AZURE_CHINA_CLOUD',
+        'AZURE_US_GOV_CLOUD',
+        'AZURE_GERMAN_CLOUD',
+    )
+
+    def _configure(self, **kwargs):
+        """Configure authentication endpoint.
+
+        Optional kwargs may include:
+
+            - cloud_environment (msrestazure.azure_cloud.Cloud):
+            A targeted cloud environment
+            - china (bool): Configure auth for China-based service,
+              default is 'False'.
+            - tenant (str): Alternative tenant, default is 'common'.
+            - resource (str): Alternative authentication resource, default
+              is 'https://management.core.windows.net/'.
+            - verify (bool): Verify secure connection, default is 'True'.
+            - timeout (int): Timeout of the request in seconds.
+            - proxies (dict): Dictionary mapping protocol or protocol and
+              hostname to the URL of the proxy.
+            - cache (adal.TokenCache): A adal.TokenCache,
+              see ADAL configuration
+              for details. This parameter is not used here and directly
+              passed to ADAL.
+        """
+        def _import_cloud_cls(name):
+            module = importlib.import_module('msrestazure.azure_cloud')
+            env_cls = getattr(module, name)
+            return env_cls
+
+        self._endpoints_active_directory = None
+        if kwargs.get('china'):
+            err_msg = ("china parameter is deprecated, "
+                       "please use "
+                       "cloud_environment"
+                       "=msrestazure.azure_cloud.AZURE_CHINA_CLOUD")
+            ctx.logger.error(err_msg)
+            self._cloud_environment = AZURE_CHINA_CLOUD
+        else:
+            self._cloud_environment = AZURE_PUBLIC_CLOUD
+
+        # First check if the "cloud_environment" is specified by user so
+        # that we can use it instead of the default cloud environment
+        if kwargs.get('cloud_environment'):
+            cloud_env = kwargs['cloud_environment']
+            if cloud_env not in self.VALID_CLOUD_ENVS:
+                raise NonRecoverableError(
+                    'cloud_environment {0} is not '
+                    'valid'.format(cloud_env))
+
+            cloud_env_cls = _import_cloud_cls(cloud_env)
+            self._cloud_environment = cloud_env_cls
+        else:
+            # Check to see if "endpoints_active_directory" is specified or not
+            if kwargs.get('endpoints_active_directory'):
+                self._endpoints_active_directory =\
+                    kwargs['endpoints_active_directory']
+
+        if self._endpoints_active_directory:
+            auth_endpoint = self._endpoints_active_directory
+        else:
+            auth_endpoint = self._cloud_environment.endpoints.active_directory
+        resource = \
+            self._cloud_environment.endpoints.active_directory_resource_id
+
+        self._tenant = kwargs.get('tenant', "common")
+        self._verify = kwargs.get('verify')
+        # 'None' will honor ADAL_PYTHON_SSL_NO_VERIFY
+        self.resource = kwargs.get('resource', resource)
+        self._proxies = kwargs.get('proxies')
+        self._timeout = kwargs.get('timeout')
+        self._cache = kwargs.get('cache')
+        self.store_key = "{}_{}".format(
+            auth_endpoint.strip('/'), self.store_key)
+        self.secret = None
+        self._context = None  # Future ADAL context
+
+    def _create_adal_context(self):
+        if self._endpoints_active_directory:
+            authority_url = self._endpoints_active_directory
+        else:
+            authority_url = self.cloud_environment.endpoints.active_directory
+        is_adfs = bool(re.match('.+(/adfs|/adfs/)$', authority_url, re.I))
+        if is_adfs:
+            authority_url = authority_url.rstrip('/')
+            # workaround: ADAL is known to reject auth urls with trailing /
+        else:
+            authority_url = authority_url + '/' + self._tenant
+
+        self._context = adal.AuthenticationContext(
+            authority_url,
+            timeout=self._timeout,
+            verify_ssl=self._verify,
+            proxies=self._proxies,
+            validate_authority=not is_adfs,
+            cache=self._cache,
+            api_version=None
+        )
+
+
+class CustomServicePrincipalCredentials(CustomAADMixin,
+                                        ServicePrincipalCredentials):
+    pass
+
+
+class ServicePrincipalCertificateAuth(CustomAADMixin, AADMixin):
     """Credentials object for Service Principle Authentication.
     Authenticates via a Client ID and Certificate.
 
@@ -223,15 +336,12 @@ class ServicePrincipalCertificateAuth(AADMixin):
                  client_id,
                  certificate,
                  thumbprint,
-                 cloud_environment=None,
                  **kwargs):
 
         super(ServicePrincipalCertificateAuth, self).__init__(client_id, None)
         self._configure(**kwargs)
-
         self.certificate = certificate
         self.thumbprint = thumbprint
-        self.cloud_environment = cloud_environment
         self.set_token()
 
     def set_token(self):
@@ -260,4 +370,4 @@ def to_service_principle_credentials(**kwargs):
     if 'certificate' in kwargs:
         return ServicePrincipalCertificateAuth(**kwargs)
     else:
-        return ServicePrincipalCredentials(**kwargs)
+        return CustomServicePrincipalCredentials(**kwargs)
