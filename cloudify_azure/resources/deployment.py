@@ -12,6 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+import ast
 import json
 
 from cloudify import exceptions as cfy_exc
@@ -30,7 +32,7 @@ class Deployment(object):
     def __init__(self, logger, credentials, name, timeout=None):
         self.resource_group = name
         self.logger = logger
-        self.timeout = timeout
+        self.timeout = timeout or 900
         self.resource_verify = bool(credentials.get('endpoint_verify', True))
         self.credentials = to_service_principle_credentials(
             client_id=str(credentials['client_id']),
@@ -50,7 +52,7 @@ class Deployment(object):
             base_url=str(credentials.get('endpoints_resource_manager',
                                          constants.CONN_API_ENDPOINT)))
 
-        self.logger.info("Use subscription: {}"
+        self.logger.info("Use subscription: {0}"
                          .format(credentials['subscription_id']))
 
     def create(self, location):
@@ -59,7 +61,7 @@ class Deployment(object):
         self.client.resource_groups.create_or_update(
             self.resource_group,
             {
-                'location': location
+                "location": location
             },
             verify=self.resource_verify
         )
@@ -70,18 +72,23 @@ class Deployment(object):
             self.resource_group,  # deployment name
         )
 
-    def update(self, template, params, location):
+    @staticmethod
+    def format_params(params):
+        for k, v in params.items():
+            if not isinstance(v, int):
+                v = ast.literal_eval(repr(v))
+            v = {"value": v}
+            params[k] = v
+        return ast.literal_eval(json.dumps(params))
+
+    def update(self, template, params):
+
         self.logger.info("Create deployment...")
-
-        parameters = {str(k): {'value': str(v)} for k, v in params.items()}
-
-        if isinstance(template, basestring):
-            template = json.loads(template)
 
         deployment_properties = {
             'mode': DeploymentMode.incremental,
             'template': template,
-            'parameters': parameters
+            'parameters': self.format_params(params)
         }
 
         deployment_async_operation = self.client.deployments.create_or_update(
@@ -90,7 +97,7 @@ class Deployment(object):
             deployment_properties,
             verify=self.resource_verify
         )
-        self.logger.info("Wait deployment...Timeout: {}"
+        self.logger.info("Wait deployment...Timeout: {0}"
                          .format(repr(self.timeout)))
         deployment_async_operation.wait(timeout=self.timeout)
 
@@ -101,7 +108,7 @@ class Deployment(object):
             self.resource_group,
             verify=self.resource_verify
         )
-        self.logger.info("Wait delete deployment...Timeout: {}"
+        self.logger.info("Wait delete deployment...Timeout: {0}"
                          .format(repr(self.timeout)))
         deployment_async_operation.wait(timeout=self.timeout)
 
@@ -111,7 +118,9 @@ def create(ctx, **kwargs):
     properties = {}
     properties.update(ctx.node.properties)
     properties.update(kwargs)
-    ctx.logger.info("Create: {}".format(repr(properties['name'])))
+
+    ctx.logger.info("Create: {0}".format(repr(properties['name'])))
+
     deployment = Deployment(ctx.logger, properties['azure_config'],
                             properties['name'],
                             timeout=properties.get('timeout'))
@@ -122,14 +131,14 @@ def create(ctx, **kwargs):
         # load template
         template = properties.get('template')
         if not template and properties.get('template_file'):
-            ctx.logger.info("Using {} as template"
+            ctx.logger.info("Using {0} as template"
                             .format(repr(properties['template_file'])))
             template = ctx.get_resource(properties['template_file'])
+            template = json.loads(template)
 
         if not template:
             raise cfy_exc.NonRecoverableError(
-                "Template is not defined."
-            )
+                "A deployment template is not defined.")
 
         # create deployment
         deployment.create(location=properties['location'])
@@ -137,8 +146,7 @@ def create(ctx, **kwargs):
 
         # update deployment
         deployment.update(template=template,
-                          params=properties.get('params', {}),
-                          location=properties['location'])
+                          params=properties.get('params', {}))
 
     resource = deployment.get()
     ctx.instance.runtime_properties['outputs'] = resource.properties.outputs
@@ -151,7 +159,7 @@ def delete(ctx, **kwargs):
     properties = {}
     properties.update(ctx.node.properties)
     properties.update(kwargs)
-    ctx.logger.info("Delete: {}".format(
+    ctx.logger.info("Delete: {0}".format(
         repr(ctx.instance.runtime_properties['resource_id'])
     ))
     deployment = Deployment(ctx.logger, properties['azure_config'],
