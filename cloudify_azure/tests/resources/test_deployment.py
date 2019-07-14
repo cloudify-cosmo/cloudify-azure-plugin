@@ -87,7 +87,7 @@ class DeploymentTest(unittest.TestCase):
         self.client.resource_groups.delete.assert_called_with('check_id',
                                                               verify=True)
         async_call = self.client.resource_groups.delete.return_value
-        async_call.wait.assert_called_with(timeout=None)
+        async_call.wait.assert_called_with(timeout=900)
 
     def test_delete_with_external_resource(self):
         self.node.properties['use_external_resource'] = True
@@ -130,7 +130,8 @@ class DeploymentTest(unittest.TestCase):
                 name="check",
                 azure_config=self.azure_config
             )
-        self.assertEqual(str(ex.exception), "Template is not defined.")
+        self.assertEqual(str(ex.exception),
+                         "A deployment template is not defined.")
 
     def test_create_with_template_string(self):
         deployment.create(
@@ -146,7 +147,7 @@ class DeploymentTest(unittest.TestCase):
             'check', 'check', {
                 'parameters': {},
                 'mode': DeploymentMode.incremental,
-                'template': {}
+                'template': '{}'
             }, verify=True
         )
         async_call = self.client.deployments.create_or_update.return_value
@@ -173,7 +174,7 @@ class DeploymentTest(unittest.TestCase):
             }, verify=True
         )
         async_call = self.client.deployments.create_or_update.return_value
-        async_call.wait.assert_called_with(timeout=None)
+        async_call.wait.assert_called_with(timeout=900)
 
     def test_create_with_external_resource(self):
         self.node.properties['use_external_resource'] = True
