@@ -510,12 +510,18 @@ def delete(**_):
     utils.task_resource_delete(
         VirtualMachine(api_version=ctx.node.properties.get(
             'api_version', constants.API_VER_COMPUTE)))
-    for prop in ['public_ip', 'public_ip_address', 'ip',
-                 'name', 'async_op', 'public_ip_address']:
-        try:
-            del ctx.instance.runtime_properties[prop]
-        except KeyError:
-            pass
+    # If we get here, we know that deletion either finished
+    # or is going to be retried. We must not remove these
+    # runtime properties when the operation is going to be retried.
+    # Currently there's no way of detecting that other than
+    # inquiring the protected _operation_retry member.
+    if ctx.operation._operation_retry is None:
+        for prop in ['public_ip', 'public_ip_address', 'ip',
+                     'name', 'async_op', 'public_ip_address']:
+            try:
+                del ctx.instance.runtime_properties[prop]
+            except KeyError:
+                pass
 
 
 @operation
