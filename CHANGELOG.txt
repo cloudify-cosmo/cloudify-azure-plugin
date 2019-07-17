@@ -1,3 +1,5 @@
+2.1.6:
+  - Delete runtime properties only the first the resource is deleted.
 2.1.5:
   - Fix issue in deployment when using template file.
 2.1.4:
