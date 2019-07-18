@@ -14,9 +14,13 @@
 import mock
 import unittest
 
+from copy import deepcopy
+
 from cloudify import exceptions as cfy_exc
 from cloudify import mocks as cfy_mocks
 from cloudify.state import current_ctx
+
+from cloudify_azure.resources.deployment import Deployment
 
 from azure.mgmt.resource.resources.models import DeploymentMode
 
@@ -209,6 +213,54 @@ class DeploymentTest(unittest.TestCase):
 
         outputs = self.instance.runtime_properties['outputs']
         self.assertDictEqual(outputs, mock_outputs)
+
+
+class FormatParamsTest(unittest.TestCase):
+    def test_empty(self):
+        self.assertEqual(Deployment.format_params(None), None)
+        self.assertEqual(Deployment.format_params({}), {})
+
+    def test_simple(self):
+        d = {
+            'key1': 4,
+            'key2': False,
+            'key3': 'hello'
+        }
+        result = Deployment.format_params(deepcopy(d))
+        self.assertEqual(result, {
+            'key1': {
+                'value': 4
+            },
+            'key2': {
+                'value': False
+            },
+            'key3': {
+                'value': 'hello'
+            }
+        })
+
+    def test_recursive(self):
+        d = {
+            'key1': 4,
+            'key2': {
+                'subkey1': 3,
+                'subkey2': True,
+                'subkey3': 'hello'
+            }
+        }
+        result = Deployment.format_params(deepcopy(d))
+        self.assertEqual(result, {
+            'key1': {
+                'value': 4
+            },
+            'key2': {
+                'value': {
+                    'subkey1': 3,
+                    'subkey2': True,
+                    'subkey3': 'hello'
+                }
+            }
+        })
 
 
 if __name__ == '__main__':
