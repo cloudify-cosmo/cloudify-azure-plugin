@@ -74,12 +74,28 @@ class Deployment(object):
 
     @staticmethod
     def format_params(params):
+        # We need to traverse the parameters' dictionary
+        # and convert all unicode strings to regular strings
+        def convert_value(v):
+            if v is None:
+                return None
+            if isinstance(v, int) or isinstance(v, bool) or isinstance(v, str):
+                return v
+            if isinstance(v, unicode):
+                return ast.literal_eval(repr(v))
+            if isinstance(v, dict):
+                for k, y in v.items():
+                    v[k] = convert_value(y)
+                return v
+            raise Exception("Unhandled data type: {} ({})".format(
+                type(v), str(v)))
+
+        if params is None:
+            return None
         for k, v in params.items():
-            if not isinstance(v, int):
-                v = ast.literal_eval(repr(v))
-            v = {"value": v}
-            params[k] = v
-        return ast.literal_eval(json.dumps(params))
+            updated_value = convert_value(v)
+            params[k] = {"value": updated_value}
+        return params
 
     def update(self, template, params):
 
