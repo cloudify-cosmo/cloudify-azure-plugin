@@ -1676,6 +1676,11 @@ node_types:
   cloudify.azure.Deployment:
     derived_from: cloudify.nodes.Root
     properties:
+      resource_group:
+        type: string
+        description: The name of the resource group to use.
+        required: false
+        default: { get_property: [ SELF, name ] }
       name:
         required: true
         type: string

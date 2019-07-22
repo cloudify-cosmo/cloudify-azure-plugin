@@ -29,8 +29,15 @@ from cloudify_azure.auth.oauth2 import to_service_principle_credentials
 
 class Deployment(object):
 
-    def __init__(self, logger, credentials, name, timeout=None):
-        self.resource_group = name
+    def __init__(self,
+                 logger,
+                 credentials,
+                 resource_group,
+                 deployment_name=None,
+                 timeout=None):
+
+        self.resource_group = resource_group
+        self.deployment_name = deployment_name or resource_group
         self.logger = logger
         self.timeout = timeout or 900
         self.resource_verify = bool(credentials.get('endpoint_verify', True))
@@ -69,7 +76,7 @@ class Deployment(object):
     def get(self):
         return self.client.deployments.get(
             self.resource_group,  # resource group name
-            self.resource_group,  # deployment name
+            self.deployment_name,  # deployment name
         )
 
     @staticmethod
