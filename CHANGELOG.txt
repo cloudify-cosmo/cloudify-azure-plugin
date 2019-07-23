@@ -1,5 +1,7 @@
 2.1.7:
   - Improve Deployment Template handling.
+  - Improve Deployment logging.
+  - Changed plugin name from 'pkg' to 'azure'.
 2.1.6:
   - Delete runtime properties only the first the resource is deleted.
 2.1.5:
