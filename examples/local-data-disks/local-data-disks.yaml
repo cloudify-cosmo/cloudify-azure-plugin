@@ -175,7 +175,7 @@ node_templates:
       source_interfaces:
         cloudify.interfaces.relationship_lifecycle:
           establish:
-            implementation: pkg.cloudify_azure.resources.compute.virtualmachine.attach_data_disk
+            implementation: azure.cloudify_azure.resources.compute.virtualmachine.attach_data_disk
             inputs:
               lun: 0
     - type: cloudify.azure.relationships.vm_connected_to_datadisk
@@ -183,7 +183,7 @@ node_templates:
       source_interfaces:
         cloudify.interfaces.relationship_lifecycle:
           establish:
-            implementation: pkg.cloudify_azure.resources.compute.virtualmachine.attach_data_disk
+            implementation: azure.cloudify_azure.resources.compute.virtualmachine.attach_data_disk
             inputs:
               lun: 1
 
