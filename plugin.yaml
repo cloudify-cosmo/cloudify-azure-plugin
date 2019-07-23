@@ -3,7 +3,7 @@
 ##################################################################################
 
 plugins:
-  pkg:
+  azure:
     executor: central_deployment_agent
     source: https://github.com/cloudify-incubator/cloudify-azure-plugin/archive/2.1.7.zip
     package_name: cloudify-azure-plugin
@@ -454,8 +454,8 @@ node_types:
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: pkg.cloudify_azure.resources.resourcegroup.create
-        delete: pkg.cloudify_azure.resources.resourcegroup.delete
+        create: azure.cloudify_azure.resources.resourcegroup.create
+        delete: azure.cloudify_azure.resources.resourcegroup.delete
 
   cloudify.azure.nodes.storage.StorageAccount:
     derived_from: cloudify.nodes.Root
@@ -517,8 +517,8 @@ node_types:
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: pkg.cloudify_azure.resources.storage.storageaccount.create
-        delete: pkg.cloudify_azure.resources.storage.storageaccount.delete
+        create: azure.cloudify_azure.resources.storage.storageaccount.create
+        delete: azure.cloudify_azure.resources.storage.storageaccount.delete
 
   cloudify.azure.nodes.storage.DataDisk:
     derived_from: cloudify.nodes.Root
@@ -562,8 +562,8 @@ node_types:
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: pkg.cloudify_azure.resources.storage.disk.create_data_disk
-        delete: pkg.cloudify_azure.resources.storage.disk.delete_data_disk
+        create: azure.cloudify_azure.resources.storage.disk.create_data_disk
+        delete: azure.cloudify_azure.resources.storage.disk.delete_data_disk
 
   cloudify.azure.nodes.storage.FileShare:
     derived_from: cloudify.nodes.Root
@@ -606,7 +606,7 @@ node_types:
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: pkg.cloudify_azure.resources.storage.file.create_file_share
+        create: azure.cloudify_azure.resources.storage.file.create_file_share
 
   cloudify.azure.nodes.network.VirtualNetwork:
     derived_from: cloudify.nodes.Root
@@ -662,8 +662,8 @@ node_types:
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: pkg.cloudify_azure.resources.network.virtualnetwork.create
-        delete: pkg.cloudify_azure.resources.network.virtualnetwork.delete
+        create: azure.cloudify_azure.resources.network.virtualnetwork.create
+        delete: azure.cloudify_azure.resources.network.virtualnetwork.delete
 
   cloudify.azure.nodes.network.NetworkSecurityGroup:
     derived_from: cloudify.nodes.Root
@@ -719,8 +719,8 @@ node_types:
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: pkg.cloudify_azure.resources.network.networksecuritygroup.create
-        delete: pkg.cloudify_azure.resources.network.networksecuritygroup.delete
+        create: azure.cloudify_azure.resources.network.networksecuritygroup.create
+        delete: azure.cloudify_azure.resources.network.networksecuritygroup.delete
 
   cloudify.azure.nodes.network.NetworkSecurityRule:
     derived_from: cloudify.nodes.Root
@@ -783,8 +783,8 @@ node_types:
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: pkg.cloudify_azure.resources.network.networksecurityrule.create
-        delete: pkg.cloudify_azure.resources.network.networksecurityrule.delete
+        create: azure.cloudify_azure.resources.network.networksecurityrule.create
+        delete: azure.cloudify_azure.resources.network.networksecurityrule.delete
 
   cloudify.azure.nodes.network.Subnet:
     derived_from: cloudify.nodes.Root
@@ -847,8 +847,8 @@ node_types:
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: pkg.cloudify_azure.resources.network.subnet.create
-        delete: pkg.cloudify_azure.resources.network.subnet.delete
+        create: azure.cloudify_azure.resources.network.subnet.create
+        delete: azure.cloudify_azure.resources.network.subnet.delete
 
   cloudify.azure.nodes.network.RouteTable:
     derived_from: cloudify.nodes.Root
@@ -904,8 +904,8 @@ node_types:
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: pkg.cloudify_azure.resources.network.routetable.create
-        delete: pkg.cloudify_azure.resources.network.routetable.delete
+        create: azure.cloudify_azure.resources.network.routetable.create
+        delete: azure.cloudify_azure.resources.network.routetable.delete
 
   cloudify.azure.nodes.network.Route:
     derived_from: cloudify.nodes.Root
@@ -968,8 +968,8 @@ node_types:
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: pkg.cloudify_azure.resources.network.route.create
-        delete: pkg.cloudify_azure.resources.network.route.delete
+        create: azure.cloudify_azure.resources.network.route.create
+        delete: azure.cloudify_azure.resources.network.route.delete
 
   cloudify.azure.nodes.network.NetworkInterfaceCard:
     derived_from: cloudify.nodes.Root
@@ -1030,10 +1030,10 @@ node_types:
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: pkg.cloudify_azure.resources.network.networkinterfacecard.create
-        configure: pkg.cloudify_azure.resources.network.networkinterfacecard.configure
-        start: pkg.cloudify_azure.resources.network.networkinterfacecard.start
-        delete: pkg.cloudify_azure.resources.network.networkinterfacecard.delete
+        create: azure.cloudify_azure.resources.network.networkinterfacecard.create
+        configure: azure.cloudify_azure.resources.network.networkinterfacecard.configure
+        start: azure.cloudify_azure.resources.network.networkinterfacecard.start
+        delete: azure.cloudify_azure.resources.network.networkinterfacecard.delete
 
   cloudify.azure.nodes.network.IPConfiguration:
     derived_from: cloudify.nodes.Root
@@ -1142,9 +1142,9 @@ node_types:
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: pkg.cloudify_azure.resources.network.publicipaddress.create
-        start: pkg.cloudify_azure.resources.network.publicipaddress.start
-        delete: pkg.cloudify_azure.resources.network.publicipaddress.delete
+        create: azure.cloudify_azure.resources.network.publicipaddress.create
+        start: azure.cloudify_azure.resources.network.publicipaddress.start
+        delete: azure.cloudify_azure.resources.network.publicipaddress.delete
 
   cloudify.azure.nodes.compute.AvailabilitySet:
     derived_from: cloudify.nodes.Root
@@ -1200,8 +1200,8 @@ node_types:
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: pkg.cloudify_azure.resources.compute.availabilityset.create
-        delete: pkg.cloudify_azure.resources.compute.availabilityset.delete
+        create: azure.cloudify_azure.resources.compute.availabilityset.create
+        delete: azure.cloudify_azure.resources.compute.availabilityset.delete
 
   cloudify.azure.nodes.compute.VirtualMachine:
     derived_from: cloudify.nodes.Compute
@@ -1288,9 +1288,9 @@ node_types:
         default: core.windows.net
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: pkg.cloudify_azure.resources.compute.virtualmachine.create
+        create: azure.cloudify_azure.resources.compute.virtualmachine.create
         configure:
-          implementation: pkg.cloudify_azure.resources.compute.virtualmachine.configure
+          implementation: azure.cloudify_azure.resources.compute.virtualmachine.configure
           inputs:
             command_to_execute:
               description: >
@@ -1301,7 +1301,7 @@ node_types:
             file_uris:
               default:
               - https://raw.githubusercontent.com/cloudify-incubator/cloudify-azure-plugin/1.4/scripts/ps_enable_winrm_http.ps1
-        delete: pkg.cloudify_azure.resources.compute.virtualmachine.delete
+        delete: azure.cloudify_azure.resources.compute.virtualmachine.delete
 
   cloudify.azure.nodes.compute.VirtualMachineExtension:
     derived_from: cloudify.nodes.Root
@@ -1360,7 +1360,7 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
-          implementation: pkg.cloudify_azure.resources.compute.virtualmachineextension.create
+          implementation: azure.cloudify_azure.resources.compute.virtualmachineextension.create
           inputs:
             resource_config:
               default:
@@ -1378,7 +1378,7 @@ node_types:
                   default: 1.4
                 settings:
                   required: false
-        delete: pkg.cloudify_azure.resources.compute.virtualmachineextension.delete
+        delete: azure.cloudify_azure.resources.compute.virtualmachineextension.delete
 
   cloudify.azure.nodes.network.LoadBalancer:
     derived_from: cloudify.nodes.Root
@@ -1434,9 +1434,9 @@ node_types:
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: pkg.cloudify_azure.resources.network.loadbalancer.create
-        configure: pkg.cloudify_azure.resources.network.loadbalancer.configure
-        delete: pkg.cloudify_azure.resources.network.loadbalancer.delete
+        create: azure.cloudify_azure.resources.network.loadbalancer.create
+        configure: azure.cloudify_azure.resources.network.loadbalancer.configure
+        delete: azure.cloudify_azure.resources.network.loadbalancer.delete
 
   cloudify.azure.nodes.network.LoadBalancer.BackendAddressPool:
     derived_from: cloudify.nodes.Root
@@ -1490,8 +1490,8 @@ node_types:
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: pkg.cloudify_azure.resources.network.loadbalancer.create_backend_pool
-        delete: pkg.cloudify_azure.resources.network.loadbalancer.delete_backend_pool
+        create: azure.cloudify_azure.resources.network.loadbalancer.create_backend_pool
+        delete: azure.cloudify_azure.resources.network.loadbalancer.delete_backend_pool
 
   cloudify.azure.nodes.network.LoadBalancer.Probe:
     derived_from: cloudify.nodes.Root
@@ -1550,8 +1550,8 @@ node_types:
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: pkg.cloudify_azure.resources.network.loadbalancer.create_probe
-        delete: pkg.cloudify_azure.resources.network.loadbalancer.delete_probe
+        create: azure.cloudify_azure.resources.network.loadbalancer.create_probe
+        delete: azure.cloudify_azure.resources.network.loadbalancer.delete_probe
 
   cloudify.azure.nodes.network.LoadBalancer.IncomingNATRule:
     derived_from: cloudify.nodes.Root
@@ -1610,8 +1610,8 @@ node_types:
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: pkg.cloudify_azure.resources.network.loadbalancer.create_incoming_nat_rule
-        delete: pkg.cloudify_azure.resources.network.loadbalancer.delete_incoming_nat_rule
+        create: azure.cloudify_azure.resources.network.loadbalancer.create_incoming_nat_rule
+        delete: azure.cloudify_azure.resources.network.loadbalancer.delete_incoming_nat_rule
 
   cloudify.azure.nodes.network.LoadBalancer.Rule:
     derived_from: cloudify.nodes.Root
@@ -1670,8 +1670,8 @@ node_types:
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: pkg.cloudify_azure.resources.network.loadbalancer.create_rule
-        delete: pkg.cloudify_azure.resources.network.loadbalancer.delete_rule
+        create: azure.cloudify_azure.resources.network.loadbalancer.create_rule
+        delete: azure.cloudify_azure.resources.network.loadbalancer.delete_rule
 
   cloudify.azure.Deployment:
     derived_from: cloudify.nodes.Root
@@ -1710,8 +1710,8 @@ node_types:
         required: true
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: pkg.cloudify_azure.resources.deployment.create
-        delete: pkg.cloudify_azure.resources.deployment.delete
+        create: azure.cloudify_azure.resources.deployment.create
+        delete: azure.cloudify_azure.resources.deployment.delete
 
   cloudify.azure.nodes.compute.ContainerService:
     derived_from: cloudify.nodes.Root
@@ -1735,7 +1735,7 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
-          implementation: pkg.cloudify_azure.resources.compute.container_service.create
+          implementation: azure.cloudify_azure.resources.compute.container_service.create
           inputs:
             name:
               default: { get_property: [SELF, name]}
@@ -1746,7 +1746,7 @@ node_types:
             azure_config:
               default: { get_property: [SELF, azure_config]}
         delete:
-          implementation: pkg.cloudify_azure.resources.compute.container_service.delete
+          implementation: azure.cloudify_azure.resources.compute.container_service.delete
 
   cloudify.azure.nodes.Plan:
     derived_from: cloudify.nodes.Root
@@ -1776,7 +1776,7 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
-          implementation: pkg.cloudify_azure.resources.app_service.plan.create
+          implementation: azure.cloudify_azure.resources.app_service.plan.create
           inputs:
             name:
               default: { get_property: [SELF, name]}
@@ -1787,7 +1787,7 @@ node_types:
             azure_config:
               default: { get_property: [SELF, azure_config]}
         delete:
-          implementation: pkg.cloudify_azure.resources.app_service.plan.delete
+          implementation: azure.cloudify_azure.resources.app_service.plan.delete
 
   cloudify.azure.nodes.WebApp:
     derived_from: cloudify.nodes.Root
@@ -1811,7 +1811,7 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
-          implementation: pkg.cloudify_azure.resources.app_service.webapp.create
+          implementation: azure.cloudify_azure.resources.app_service.webapp.create
           inputs:
             name:
               default: { get_property: [SELF, name]}
@@ -1822,7 +1822,7 @@ node_types:
             azure_config:
               default: { get_property: [SELF, azure_config]}
         delete:
-          implementation: pkg.cloudify_azure.resources.app_service.webapp.delete
+          implementation: azure.cloudify_azure.resources.app_service.webapp.delete
 
   cloudify.azure.nodes.PublishingUser:
     derived_from: cloudify.nodes.Root
@@ -1839,7 +1839,7 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
-          implementation: pkg.cloudify_azure.resources.app_service.publishing_user.set_user
+          implementation: azure.cloudify_azure.resources.app_service.publishing_user.set_user
           inputs:
             user_details:
               default: { get_property: [SELF, user_details]}
@@ -1869,15 +1869,15 @@ relationships:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
-        establish: pkg.cloudify_azure.resources.network.subnet.attach_network_security_group
-        unlink: pkg.cloudify_azure.resources.network.subnet.detach_network_security_group
+        establish: azure.cloudify_azure.resources.network.subnet.attach_network_security_group
+        unlink: azure.cloudify_azure.resources.network.subnet.detach_network_security_group
 
   cloudify.azure.relationships.route_table_attached_to_subnet:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
-        establish: pkg.cloudify_azure.resources.network.subnet.attach_route_table
-        unlink: pkg.cloudify_azure.resources.network.subnet.detach_route_table
+        establish: azure.cloudify_azure.resources.network.subnet.attach_route_table
+        unlink: azure.cloudify_azure.resources.network.subnet.detach_route_table
 
   cloudify.azure.relationships.nic_connected_to_network_security_group:
     derived_from: cloudify.relationships.connected_to
@@ -1886,13 +1886,13 @@ relationships:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
-        preconfigure: pkg.cloudify_azure.resources.network.networkinterfacecard.attach_ip_configuration
+        preconfigure: azure.cloudify_azure.resources.network.networkinterfacecard.attach_ip_configuration
 
   cloudify.azure.relationships.lb_connected_to_ip_configuration:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
-        preconfigure: pkg.cloudify_azure.resources.network.loadbalancer.attach_ip_configuration
+        preconfigure: azure.cloudify_azure.resources.network.loadbalancer.attach_ip_configuration
 
   cloudify.azure.relationships.ip_configuration_connected_to_subnet:
     derived_from: cloudify.relationships.connected_to
@@ -1907,8 +1907,8 @@ relationships:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
-        establish: pkg.cloudify_azure.resources.compute.virtualmachine.attach_disk
-        unlink: pkg.cloudify_azure.resources.compute.virtualmachine.detach_disk
+        establish: azure.cloudify_azure.resources.compute.virtualmachine.attach_disk
+        unlink: azure.cloudify_azure.resources.compute.virtualmachine.detach_disk
 
   cloudify.azure.relationships.connected_to_nic:
     derived_from: cloudify.relationships.connected_to
@@ -1932,19 +1932,19 @@ relationships:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
-        establish: pkg.cloudify_azure.resources.network.loadbalancer.attach_nic_to_backend_pool
-        unlink: pkg.cloudify_azure.resources.network.loadbalancer.detach_nic_from_backend_pool
+        establish: azure.cloudify_azure.resources.network.loadbalancer.attach_nic_to_backend_pool
+        unlink: azure.cloudify_azure.resources.network.loadbalancer.detach_nic_from_backend_pool
 
   cloudify.azure.relationships.vm_connected_to_datadisk:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
         establish:
-          implementation: pkg.cloudify_azure.resources.compute.virtualmachine.attach_data_disk
+          implementation: azure.cloudify_azure.resources.compute.virtualmachine.attach_data_disk
           inputs:
             lun:
               description: >
                 Specifies the logical unit number of the data disk in the VM
               default: 0
               required: true
-        unlink: pkg.cloudify_azure.resources.compute.virtualmachine.detach_data_disk
+        unlink: azure.cloudify_azure.resources.compute.virtualmachine.detach_data_disk

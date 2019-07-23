@@ -184,16 +184,16 @@ by default:
 
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: pkg.cloudify_azure.resources.compute.virtualmachine.create
+        create: azure.cloudify_azure.resources.compute.virtualmachine.create
         configure:
-          implementation: pkg.cloudify_azure.resources.compute.virtualmachine.configure
+          implementation: azure.cloudify_azure.resources.compute.virtualmachine.configure
           inputs:
             ps_entry:
               default: ps_enable_winrm_http.ps1
             ps_urls:
               default:
               - https://server-fqdn/ps_enable_winrm_http.ps1
-        delete: pkg.cloudify_azure.resources.compute.virtualmachine.delete
+        delete: azure.cloudify_azure.resources.compute.virtualmachine.delete
 
 The inputs ps_entry and ps_urls can be overriden if you create a new node
 type.  It's recommended that, if you do this, you still reference the

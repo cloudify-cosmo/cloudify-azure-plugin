@@ -104,7 +104,7 @@ class TestAzure(TestLocal):
         utils.initialize_cfy_profile(
             '{0} -u admin -p {1} -t default_tenant'.format(
                 self.manager_ip, self.password))
-        utils.update_plugin_yaml(os.environ['CIRCLE_SHA1'], 'pkg')
+        utils.update_plugin_yaml(os.environ['CIRCLE_SHA1'], 'azure')
         workspace_path = os.path.join(
             os.path.abspath('workspace'),
             'build')
