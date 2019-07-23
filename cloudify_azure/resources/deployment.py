@@ -52,12 +52,13 @@ class Deployment(object):
             base_url=str(credentials.get('endpoints_resource_manager',
                                          constants.CONN_API_ENDPOINT)))
 
-        self.logger.info("Use subscription: {0}"
+        self.logger.info("Using subscription: {0}"
                          .format(credentials['subscription_id']))
 
     def create(self, location):
         """Deploy the template to a resource group."""
-        self.logger.info("Create resource group...")
+        self.logger.info("Creating resource group: {0}".format(
+            self.resource_group))
         self.client.resource_groups.create_or_update(
             self.resource_group,
             {
@@ -87,7 +88,7 @@ class Deployment(object):
                 for k, y in v.items():
                     v[k] = convert_value(y)
                 return v
-            raise Exception("Unhandled data type: {} ({})".format(
+            raise Exception("Unhandled data type: {0} ({1})".format(
                 type(v), str(v)))
 
         if params is None:
@@ -99,7 +100,8 @@ class Deployment(object):
 
     def update(self, template, params):
 
-        self.logger.info("Create deployment...")
+        self.logger.info("Creating deployment: {0}".format(
+            self.resource_group))
 
         deployment_properties = {
             'mode': DeploymentMode.incremental,
@@ -113,19 +115,23 @@ class Deployment(object):
             deployment_properties,
             verify=self.resource_verify
         )
-        self.logger.info("Wait deployment...Timeout: {0}"
-                         .format(repr(self.timeout)))
+        self.logger.info(
+            "Waiting for deployment to finish (timeout: {0} seconds)".format(
+                repr(self.timeout)))
+
         deployment_async_operation.wait(timeout=self.timeout)
 
     def delete(self):
         """Destroy the given resource group"""
-        self.logger.info("Delete resource groups...")
+        self.logger.info("Deleting resource group: {0}".format(
+            self.resource_group))
         deployment_async_operation = self.client.resource_groups.delete(
             self.resource_group,
             verify=self.resource_verify
         )
-        self.logger.info("Wait delete deployment...Timeout: {0}"
-                         .format(repr(self.timeout)))
+        self.logger.info(
+            "Waiting for deployment to be deleted (timeout: {0} "
+            "seconds)".format(repr(self.timeout)))
         deployment_async_operation.wait(timeout=self.timeout)
 
 
@@ -134,8 +140,6 @@ def create(ctx, **kwargs):
     properties = {}
     properties.update(ctx.node.properties)
     properties.update(kwargs)
-
-    ctx.logger.info("Create: {0}".format(repr(properties['name'])))
 
     deployment = Deployment(ctx.logger, properties['azure_config'],
                             properties['name'],
@@ -175,9 +179,6 @@ def delete(ctx, **kwargs):
     properties = {}
     properties.update(ctx.node.properties)
     properties.update(kwargs)
-    ctx.logger.info("Delete: {0}".format(
-        repr(ctx.instance.runtime_properties['resource_id'])
-    ))
     deployment = Deployment(ctx.logger, properties['azure_config'],
                             ctx.instance.runtime_properties['resource_id'],
                             timeout=properties.get('timeout'))
