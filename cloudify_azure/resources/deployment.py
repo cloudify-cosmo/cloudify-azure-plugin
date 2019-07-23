@@ -19,7 +19,7 @@ import json
 from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
 
-from cloudify_azure import constants
+from cloudify_azure import constants, utils
 
 from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.resource.resources.models import DeploymentMode
@@ -32,12 +32,12 @@ class Deployment(object):
     def __init__(self,
                  logger,
                  credentials,
-                 resource_group,
+                 resource_group_name,
                  deployment_name=None,
                  timeout=None):
 
-        self.resource_group = resource_group
-        self.deployment_name = deployment_name or resource_group
+        self.resource_group = resource_group_name
+        self.deployment_name = deployment_name or resource_group_name
         self.logger = logger
         self.timeout = timeout or 900
         self.resource_verify = bool(credentials.get('endpoint_verify', True))
@@ -66,13 +66,15 @@ class Deployment(object):
         """Deploy the template to a resource group."""
         self.logger.info("Creating resource group: {0}".format(
             self.resource_group))
-        self.client.resource_groups.create_or_update(
-            self.resource_group,
-            {
-                "location": location
-            },
-            verify=self.resource_verify
-        )
+        if not self.client.resource_groups.check_existence(
+                self.resource_group):
+            self.client.resource_groups.create_or_update(
+                self.resource_group,
+                {
+                    "location": location
+                },
+                verify=self.resource_verify
+            )
 
     def get(self):
         return self.client.deployments.get(
@@ -118,7 +120,7 @@ class Deployment(object):
 
         deployment_async_operation = self.client.deployments.create_or_update(
             self.resource_group,  # resource group name
-            self.resource_group,  # deployment name
+            self.deployment_name,  # deployment name
             deployment_properties,
             verify=self.resource_verify
         )
@@ -149,6 +151,9 @@ def create(ctx, **kwargs):
     properties.update(kwargs)
 
     deployment = Deployment(ctx.logger, properties['azure_config'],
+                            utils.get_resource_group(
+                                _ctx=ctx,
+                                properties_to_use=properties),
                             properties['name'],
                             timeout=properties.get('timeout'))
 

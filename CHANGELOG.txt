@@ -1,5 +1,6 @@
 2.1.7:
   - Improve Deployment Template handling.
+  - Add ability to use existing resource group.
   - Improve Deployment logging.
   - Changed plugin name from 'pkg' to 'azure'.
 2.1.6:

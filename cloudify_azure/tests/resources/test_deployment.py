@@ -63,6 +63,8 @@ class DeploymentTest(unittest.TestCase):
         fake_ctx._node = node
         node.properties = {}
         node.runtime_properties = {}
+        fake_ctx.node.properties['resource_group_name'] = \
+            'groupy'
         fake_ctx.get_resource = mock.MagicMock(
             return_value=""
         )
@@ -125,6 +127,7 @@ class DeploymentTest(unittest.TestCase):
         self.Client.assert_called_with(
             self.Credentials.return_value, "subscription_id",
             base_url='https://management.azure.com')
+        self.client.resource_groups.check_existence.assert_called()
 
     def test_create_without_template(self):
         # call without templates
@@ -148,7 +151,7 @@ class DeploymentTest(unittest.TestCase):
         )
 
         self.client.deployments.create_or_update.assert_called_with(
-            'check', 'check', {
+            'groupy', 'check', {
                 'parameters': {},
                 'mode': DeploymentMode.incremental,
                 'template': '{}'
@@ -171,7 +174,7 @@ class DeploymentTest(unittest.TestCase):
 
         self.fake_ctx.get_resource.assert_called_with("check.json")
         self.client.deployments.create_or_update.assert_called_with(
-            'check', 'check', {
+            'groupy', 'check', {
                 'parameters': {'c': {'value': 'd'}},
                 'mode': DeploymentMode.incremental,
                 'template': {'a': 'b'}
