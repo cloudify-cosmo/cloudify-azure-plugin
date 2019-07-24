@@ -16,6 +16,15 @@
 import ast
 import json
 
+try:
+    # Python 3.x
+    from urllib.parse import urlparse
+    from urllib.request import urlopen
+except ImportError:
+    # Python 2.x
+    from urlparse import urlparse
+    from urllib2 import urlopen
+
 from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
 
@@ -25,6 +34,11 @@ from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.resource.resources.models import DeploymentMode
 
 from cloudify_azure.auth.oauth2 import to_service_principle_credentials
+
+
+def is_url(string):
+    parse_info = urlparse(str(string))
+    return parse_info.scheme and (parse_info.netloc or parse_info.path)
 
 
 class Deployment(object):
@@ -135,6 +149,38 @@ class Deployment(object):
         deployment_async_operation.wait(timeout=self.timeout)
 
 
+def get_template(ctx, properties):
+    template = properties.get('template')
+    if template:
+        if isinstance(template, basestring):
+            ctx.logger.info("Template provided as a string in blueprint")
+            ctx.logger.debug("Template string: %s", template)
+            template = json.loads(template)
+        elif not isinstance(template, dict):
+            raise cfy_exc.NonRecoverableError(
+                "Provided template is neither a string nor a dict "
+                "(type: {0}, value: {1})".format(
+                    type(template), repr(template)))
+    else:
+        template = properties.get('template_file')
+        if template is None:
+            raise cfy_exc.NonRecoverableError(
+                "Deployment template not provided. Please specify "
+                "either 'template' or 'template_file'."
+            )
+        ctx.logger.info("Template file provided: %s", template)
+        if is_url(template):
+            f = urlopen(template)
+            try:
+                template = json.load(f)
+            finally:
+                f.close()
+        else:
+            template = ctx.get_resource(template)
+            template = json.loads(template)
+    return template
+
+
 @operation
 def create(ctx, **kwargs):
     properties = {}
@@ -149,16 +195,8 @@ def create(ctx, **kwargs):
         ctx.logger.info("Using external resource")
     else:
         # load template
-        template = properties.get('template')
-        if not template and properties.get('template_file'):
-            ctx.logger.info("Using {0} as template"
-                            .format(repr(properties['template_file'])))
-            template = ctx.get_resource(properties['template_file'])
-            template = json.loads(template)
-
-        if not template:
-            raise cfy_exc.NonRecoverableError(
-                "A deployment template is not defined.")
+        template = get_template(ctx, properties)
+        ctx.logger.debug("Parsed template: %s", json.dumps(template, indent=4))
 
         # create deployment
         deployment.create(location=properties['location'])

@@ -1686,7 +1686,7 @@ node_types:
         type: string
         required: false
         description: >
-          Deployment template file
+          Path or URL to template file. Ignored if `template` is specified.
       template:
         type: string
         required: false
