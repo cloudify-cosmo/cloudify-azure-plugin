@@ -33,7 +33,7 @@ setup(
     install_requires=[
         'cloudify-plugins-common>=4.0',
         'requests==2.20.0',
-        'urllib3',
+        'urllib3==1.25.3',
         'pyyaml==3.10',
         'azure==4.0.0'
     ]

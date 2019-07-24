@@ -3,6 +3,7 @@
   - Improve Deployment logging.
   - Changed plugin name from 'pkg' to 'azure'.
   - Support getting a Deployment Template from a URL.
+  - Pinned versions of third-party modules.
 2.1.6:
   - Delete runtime properties only the first the resource is deleted.
 2.1.5:
