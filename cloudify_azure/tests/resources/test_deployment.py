@@ -11,8 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 import mock
 import unittest
+import tempfile
+import pathlib
 
 from copy import deepcopy
 
@@ -213,6 +216,45 @@ class DeploymentTest(unittest.TestCase):
 
         outputs = self.instance.runtime_properties['outputs']
         self.assertDictEqual(outputs, mock_outputs)
+
+    def test_get_template_string(self):
+        properties = {
+            'template': '{"key": "value"}',
+            'template_file': 'missing/file'
+        }
+        template = deployment.get_template(self.fake_ctx, properties)
+        self.assertEqual(template, {
+            'key': 'value'
+        })
+
+    def test_get_template_none(self):
+        with self.assertRaises(cfy_exc.NonRecoverableError) as ex:
+            deployment.get_template(self.fake_ctx, {})
+        self.assertTrue("Deployment template not provided", str(ex.exception))
+
+    def test_get_template_dict(self):
+        properties = {
+            'template': {
+                'key': 'value'
+            }
+        }
+        template = deployment.get_template(self.fake_ctx, properties)
+        self.assertEquals(template, properties['template'])
+
+    def test_get_template_url(self):
+        with tempfile.NamedTemporaryFile('w', delete=False) as tmp_file:
+            tmp_file.write('{"key": "value"}')
+            tmp_file.close()
+
+        try:
+            template = deployment.get_template(self.fake_ctx, {
+                'template_file': pathlib.Path(tmp_file.name).as_uri()
+            })
+            self.assertEqual(template, {
+                'key': 'value'
+            })
+        finally:
+            os.remove(tmp_file.name)
 
 
 class FormatParamsTest(unittest.TestCase):
