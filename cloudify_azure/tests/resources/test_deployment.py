@@ -137,8 +137,8 @@ class DeploymentTest(unittest.TestCase):
                 name="check",
                 azure_config=self.azure_config
             )
-        self.assertEqual(str(ex.exception),
-                         "A deployment template is not defined.")
+        self.assertTrue(
+            "Deployment template not provided" in str(ex.exception))
 
     def test_create_with_template_string(self):
         deployment.create(
@@ -154,7 +154,7 @@ class DeploymentTest(unittest.TestCase):
             'check', 'check', {
                 'parameters': {},
                 'mode': DeploymentMode.incremental,
-                'template': '{}'
+                'template': {}
             }, verify=True
         )
         async_call = self.client.deployments.create_or_update.return_value
