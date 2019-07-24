@@ -217,7 +217,7 @@ def get_resource_name_ref(rel, prop=None, _ctx=ctx):
     return prop or get_ancestor_name(_ctx.instance, rel)
 
 
-def get_resource_group(_ctx=ctx, properties_to_use=None):
+def get_resource_group(_ctx=ctx):
     '''
         Finds the Resource Group associated with the current node. This
         method searches both by node properties (priority) or by
@@ -226,9 +226,7 @@ def get_resource_group(_ctx=ctx, properties_to_use=None):
     :returns: Resource Group name
     :rtype: string
     '''
-    if not properties_to_use:
-        properties_to_use = _ctx.node.properties
-    return properties_to_use.get('resource_group_name') or \
+    return _ctx.node.properties.get('resource_group_name') or \
         get_ancestor_name(
             _ctx.instance, constants.REL_CONTAINED_IN_RG)
 
