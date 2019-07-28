@@ -1688,10 +1688,10 @@ node_types:
         description: >
           Path or URL to template file. Ignored if `template` is specified.
       template:
-        type: string
         required: false
         description: >
-          Deployment template
+          Deployment template. Can be either a string (which will be parsed as
+          JSON) or a dict (which will be passed as-is to the Azure SDK).
       params:
         description: >
           Deployment params
