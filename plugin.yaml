@@ -5,9 +5,9 @@
 plugins:
   azure:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-incubator/cloudify-azure-plugin/archive/2.1.7.zip
+    source: https://github.com/cloudify-incubator/cloudify-azure-plugin/archive/2.1.8.zip
     package_name: cloudify-azure-plugin
-    package_version: '2.1.7'
+    package_version: '2.1.8'
 
 data_types:
   cloudify.datatypes.azure.Config:
@@ -1276,12 +1276,12 @@ node_types:
         description: |
           Property specifying what type of operating system family
           this compute node will run.
-        default: windows
+        default: linux
       agent_config:
         type: cloudify.datatypes.AgentConfig
         default:
           install_method: remote
-          port: 5985
+          port: 22
       storage_endpoint:
         type: string
         description: This is the suffix for the storage endpoint. Supported values are core.windows.net or local.azurestack.external.
@@ -1297,11 +1297,30 @@ node_types:
                 This is the command that the CustomScriptExtension extension will
                 execute. The file_uris below will be downloaded and this property
                 should specify a command to start the execution of one of them.
+              default: ''
+            file_uris:
+              default: []
+        delete: azure.cloudify_azure.resources.compute.virtualmachine.delete
+
+  cloudify.azure.nodes.compute.WindowsVirtualMachine:
+    derived_from: cloudify.azure.nodes.compute.VirtualMachine
+    properties:
+      os_family:
+        default: windows
+      agent_config:
+        default:
+          install_method: remote
+          port: 5985
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        configure:
+          implementation: azure.cloudify_azure.resources.compute.virtualmachine.configure
+          inputs:
+            command_to_execute:
               default: powershell -ExecutionPolicy Unrestricted -file ps_enable_winrm_http.ps1
             file_uris:
               default:
-              - https://raw.githubusercontent.com/cloudify-incubator/cloudify-azure-plugin/1.4/scripts/ps_enable_winrm_http.ps1
-        delete: azure.cloudify_azure.resources.compute.virtualmachine.delete
+                - https://raw.githubusercontent.com/cloudify-incubator/cloudify-azure-plugin/1.4/scripts/ps_enable_winrm_http.ps1
 
   cloudify.azure.nodes.compute.VirtualMachineExtension:
     derived_from: cloudify.nodes.Root
