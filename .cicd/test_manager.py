@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import os
+from random import random
 
 from integration_tests.tests.test_cases import PluginsTest
 from integration_tests.tests import utils as test_utils
@@ -32,13 +33,16 @@ class AzurePluginTestCase(PluginsTest):
     @property
     def inputs(self):
         return {
-            'azure_subscription_id': os.getenv('azure_subscription_id'),
-            'azure_tenant_id': os.getenv('azure_tenant_id'),
-            'azure_client_id': os.getenv('azure_client_id'),
-            'azure_client_secret': os.getenv('azure_client_secret'),
-            'agent_key_private': None,
-            'agent_key_public': None,
-            'location': os.getenv('azure_location')
+            'subscription_id': os.getenv('azure_subscription_id'),
+            'tenant_id': os.getenv('azure_tenant_id'),
+            'client_id': os.getenv('azure_client_id'),
+            'client_secret': os.getenv('azure_client_secret'),
+            'agent_key_private': '',
+            'agent_key_public': os.getenv('agent_key_public'),
+            'location': os.getenv('azure_location'),
+            'resource_prefix': os.getenv('CIRCLE_JOB', 'cfy'),
+            'resource_suffix': os.getenv(
+                'CIRCLE_BUILD_NUM', str(random())[-4:-1])
         }
 
     @property
@@ -56,7 +60,7 @@ class AzurePluginTestCase(PluginsTest):
             blueprint_id=blueprint_id,
             deployment_id=blueprint_id,
             inputs=self.inputs)
-        self.undeploy_application(dep.id)
+        self.undeploy_application(dep.id, timeout_seconds=400)
 
     def test_blueprints(self):
         self.upload_mock_plugin(PLUGIN_NAME, self.plugin_root_directory)

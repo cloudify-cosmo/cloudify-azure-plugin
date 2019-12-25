@@ -50,16 +50,16 @@ inputs:
     description: The user name of the agent on the instance created from the image.
     default: ubuntu
 
-  azure_subscription_id:
+  subscription_id:
     type: string
 
-  azure_tenant_id:
+  tenant_id:
     type: string
 
-  azure_client_id:
+  client_id:
     type: string
 
-  azure_client_secret:
+  client_secret:
     type: string
 
   agent_key_private:
@@ -71,10 +71,10 @@ inputs:
 dsl_definitions:
 
   azure_config: &azure_config
-    subscription_id: { get_input: azure_subscription_id }
-    tenant_id: { get_input: azure_tenant_id }
-    client_id: { get_input: azure_client_id }
-    client_secret: { get_input: azure_client_secret }
+    subscription_id: { get_input: subscription_id }
+    tenant_id: { get_input: tenant_id }
+    client_id: { get_input: client_id }
+    client_secret: { get_input: client_secret }
 
 node_templates:
 
