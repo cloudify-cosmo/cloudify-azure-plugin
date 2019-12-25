@@ -120,3 +120,24 @@ workflows:
           filters:
             branches:
               only: /([0-9\.]*\-build|master|dev)/
+  nightly:
+    triggers:
+    - schedule:
+        cron: "0 0 * * *"
+        filters:
+          branches:
+            only:
+              - master
+    jobs:
+      - unittests
+      - wagon:
+          filters:
+            branches:
+              only: /([0-9\.]*\-build|master|dev)/
+      - cloudify-manager:
+          context: ecosystem
+          requires:
+            - wagon
+          filters:
+            branches:
+              only: /([0-9\.]*\-build|master|dev)/
