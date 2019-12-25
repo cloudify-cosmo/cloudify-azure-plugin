@@ -19,6 +19,9 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Upgrade pip
+          command: pip install --upgrade pip==9.0.1
+      - run:
           name: install tox
           command: pip install tox
       - run: tox -e flake8
@@ -73,6 +76,9 @@ jobs:
       - checkout
       - attach_workspace:
           at: workspace
+      - run:
+          name: Upgrade pip
+          command: pip install --upgrade pip==9.0.1
       - run:
           name: Add Azure Repo Part one # Cloudify and Azure have conflicts in PyPI
           command: echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $(lsb_release -cs) main" > azure-cli.list
