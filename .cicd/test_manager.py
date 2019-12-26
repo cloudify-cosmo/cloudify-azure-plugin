@@ -51,6 +51,7 @@ class AzurePluginTestCase(PluginsTest):
 
     def check_main_blueprint(self):
         blueprint_id = 'azure_blueprint'
+        self.addCleanup(self.undeploy_application, blueprint_id)
         dep, ex_id = self.deploy_application(
             test_utils.get_resource(
                 os.path.join(
