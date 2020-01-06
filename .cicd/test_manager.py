@@ -14,10 +14,8 @@
 # limitations under the License.
 
 import os
-from time import sleep
 from random import random
 
-from integration_tests.tests import utils as test_utils
 from integration_tests.tests.test_cases import PluginsTest
 
 PLUGIN_NAME = 'cloudify-azure-plugin'
@@ -49,6 +47,7 @@ class AzurePluginTestCase(PluginsTest):
             'azure_tenant_id': os.getenv('azure_tenant_id'),
             'azure_client_id': os.getenv('azure_client_id'),
             'azure_client_secret': os.getenv('azure_client_secret'),
+            'azure_location': os.getenv('azure_location'),
             'agent_key_private': os.getenv('agent_key_private'),
             'agent_key_public': os.getenv('agent_key_public'),
         }
@@ -57,20 +56,6 @@ class AzurePluginTestCase(PluginsTest):
     @property
     def wagon_build_time_limit(self):
         return 1800
-
-    def check_main_blueprint(self):
-        blueprint_path = os.path.join(
-            self.examples.git_location,
-            'hello-world-example', 'azure.yaml')
-        blueprint_id = 'hello-world-azure'
-        self.addCleanup(self.undeploy_application, blueprint_id)
-        dep, ex_id = self.deploy_application(
-            test_utils.get_resource(blueprint_path),
-            timeout_seconds=600,
-            blueprint_id=blueprint_id,
-            deployment_id=blueprint_id,
-            inputs=self.inputs)
-        self.undeploy_application(dep.id, timeout_seconds=600)
 
     def upload_plugins(self):
         self.upload_mock_plugin(
@@ -85,4 +70,5 @@ class AzurePluginTestCase(PluginsTest):
     def test_blueprints(self):
         self.upload_plugins()
         self.create_secrets()
-        self.check_main_blueprint()
+        self.check_hello_world_blueprint('azure', self.inputs, 800)
+        self.check_db_lb_app_blueprint('azure', 800)
