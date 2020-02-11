@@ -74,5 +74,6 @@ class AzurePluginTestCase(PluginsTest):
     def test_blueprints(self):
         self.upload_plugins()
         self.create_secrets()
-        self.check_hello_world_blueprint('azure', self.inputs, 800)
-        self.check_db_lb_app_blueprint('azure', 800)
+        self.check_hello_world_blueprint(
+            'azure', self.inputs, self.wagon_build_time_limit)
+        self.check_db_lb_app_blueprint('azure', self.wagon_build_time_limit)
