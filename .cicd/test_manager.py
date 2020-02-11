@@ -37,7 +37,7 @@ class AzurePluginTestCase(PluginsTest):
     @property
     def inputs(self):
         return {
-            'location': os.getenv('azure_location'),
+            'location': os.getenv('azure_location', 'westeurope'),
             'resource_prefix': os.getenv('CIRCLE_JOB', 'cfy'),
             'resource_suffix': os.getenv(
                 'CIRCLE_BUILD_NUM', str(random())[-4:-1])
