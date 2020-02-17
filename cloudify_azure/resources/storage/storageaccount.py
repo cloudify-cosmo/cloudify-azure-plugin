@@ -100,7 +100,7 @@ def sa_name_generator():
         string.ascii_lowercase + string.digits) for i in range(3, 24))
 
 
-@operation
+@operation(resumable=True)
 def create(**_):
     '''Uses an existing, or creates a new, Storage Account'''
     # Generate a resource name (if needed)
@@ -123,7 +123,7 @@ def create(**_):
         sa_params)
 
 
-@operation
+@operation(resumable=True)
 def delete(**_):
     '''Deletes a Storage Account'''
     # Delete the resource

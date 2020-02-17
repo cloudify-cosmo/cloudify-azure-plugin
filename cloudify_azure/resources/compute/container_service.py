@@ -60,7 +60,7 @@ class ContainerService(ResourceSDK):
         self.logger.info("Wait for deleting container service...")
 
 
-@operation
+@operation(resumable=True)
 def create(ctx, resource_group, name, container_service_config, **kwargs):
     if ctx.node.properties.get('use_external_resource', False):
         ctx.logger.info("Using external resource")
@@ -74,7 +74,7 @@ def create(ctx, resource_group, name, container_service_config, **kwargs):
         ctx.instance.runtime_properties['name'] = name
 
 
-@operation
+@operation(resumable=True)
 def delete(ctx, **kwargs):
     if ctx.node.properties.get('use_external_resource', False):
         return

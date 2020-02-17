@@ -276,7 +276,7 @@ class FrontendIPConfiguration(Resource):
             _ctx=_ctx)
 
 
-@operation
+@operation(resumable=True)
 def create(**_):
     '''Uses an existing, or creates a new, Load Balancer'''
     utils.generate_resource_name(LoadBalancer(
@@ -284,7 +284,7 @@ def create(**_):
                                             constants.API_VER_NETWORK)))
 
 
-@operation
+@operation(resumable=True)
 def configure(**_):
     '''Uses an existing, or creates a new, Load Balancer'''
     # Get the Frontend IP Configuration
@@ -343,7 +343,7 @@ def configure(**_):
             pipc_data.get('properties', dict()).get('ipAddress')
 
 
-@operation
+@operation(resumable=True)
 def delete(**_):
     '''Deletes a Load Balancer'''
     # Delete the resource
@@ -352,7 +352,7 @@ def delete(**_):
             'api_version', constants.API_VER_NETWORK)))
 
 
-@operation
+@operation(resumable=True)
 def attach_ip_configuration(**_):
     '''Generates a usable UUID for the NIC's IP Configuration'''
     # Generate the IPConfiguration's name
@@ -362,7 +362,7 @@ def attach_ip_configuration(**_):
     ), _ctx=ctx.target)
 
 
-@operation
+@operation(resumable=True)
 def create_backend_pool(**_):
     '''Uses an existing, or creates a new, Load Balancer Backend Pool'''
     # Check if invalid external resource
@@ -397,7 +397,7 @@ def create_backend_pool(**_):
         name=lb_name)
 
 
-@operation
+@operation(resumable=True)
 def delete_backend_pool(**_):
     '''Deletes a Load Balancer Backend Pool'''
     if ctx.node.properties.get('use_external_resource', False):
@@ -429,7 +429,7 @@ def delete_backend_pool(**_):
         name=lb_name)
 
 
-@operation
+@operation(resumable=True)
 def create_probe(**_):
     '''Uses an existing, or creates a new, Load Balancer Probe'''
     # Check if invalid external resource
@@ -466,7 +466,7 @@ def create_probe(**_):
         name=lb_name)
 
 
-@operation
+@operation(resumable=True)
 def delete_probe(**_):
     '''Deletes a Load Balancer Probe'''
     if ctx.node.properties.get('use_external_resource', False):
@@ -498,7 +498,7 @@ def delete_probe(**_):
         name=lb_name)
 
 
-@operation
+@operation(resumable=True)
 def create_incoming_nat_rule(**_):
     '''Uses an existing, or creates a new, Load Balancer Incoming NAT Rule'''
     # Check if invalid external resource
@@ -546,7 +546,7 @@ def create_incoming_nat_rule(**_):
         name=lb_name)
 
 
-@operation
+@operation(resumable=True)
 def delete_incoming_nat_rule(**_):
     '''Deletes a Load Balancer Incoming NAT Rule'''
     if ctx.node.properties.get('use_external_resource', False):
@@ -578,7 +578,7 @@ def delete_incoming_nat_rule(**_):
         name=lb_name)
 
 
-@operation
+@operation(resumable=True)
 def create_rule(**_):
     '''Uses an existing, or creates a new, Load Balancer Rule'''
     # Check if invalid external resource
@@ -634,7 +634,7 @@ def create_rule(**_):
         name=lb_name)
 
 
-@operation
+@operation(resumable=True)
 def delete_rule(**_):
     '''
         Deletes a Load Balancer Rule
@@ -668,7 +668,7 @@ def delete_rule(**_):
         name=lb_name)
 
 
-@operation
+@operation(resumable=True)
 def attach_nic_to_backend_pool(**_):
     '''
         Attaches a Network Interface Card's IPConfigurations
@@ -700,7 +700,7 @@ def attach_nic_to_backend_pool(**_):
         }, _ctx=ctx.source)
 
 
-@operation
+@operation(resumable=True)
 def detach_nic_from_backend_pool(**_):
     '''
         Detaches a Network Interface Card's IPConfigurations

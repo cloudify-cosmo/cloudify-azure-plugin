@@ -60,7 +60,7 @@ class AvailabilitySet(Resource):
             _ctx=_ctx)
 
 
-@operation
+@operation(resumable=True)
 def create(**_):
     '''Uses an existing, or creates a new, Availability Set'''
     # Create a resource (if necessary)
@@ -74,7 +74,7 @@ def create(**_):
         })
 
 
-@operation
+@operation(resumable=True)
 def delete(**_):
     '''Deletes a Availability Set'''
     # Delete the resource

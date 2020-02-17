@@ -53,7 +53,7 @@ class ResourceGroup(Resource):
             _ctx=_ctx)
 
 
-@operation
+@operation(resumable=True)
 def create(**_):
     '''Uses an existing, or creates a new, Resource Group'''
     # Create a resource (if necessary)
@@ -66,7 +66,7 @@ def create(**_):
         })
 
 
-@operation
+@operation(resumable=True)
 def delete(**_):
     '''Deletes a Resource Group'''
     # Delete the resource

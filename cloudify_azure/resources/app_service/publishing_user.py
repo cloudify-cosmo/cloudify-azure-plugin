@@ -35,7 +35,7 @@ class PublishingUser(ResourceSDK):
         return user
 
 
-@operation
+@operation(resumable=True)
 def set_user(ctx, user_details, **kwargs):
     azure_auth = ctx.node.properties['azure_config']
     webapp = PublishingUser(ctx.logger, azure_auth, user_details)

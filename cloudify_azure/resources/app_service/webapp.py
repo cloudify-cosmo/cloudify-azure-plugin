@@ -56,7 +56,7 @@ class WebApp(ResourceSDK):
             name=self.app_name)
 
 
-@operation
+@operation(resumable=True)
 def create(ctx, resource_group, name, app_config, **kwargs):
     azure_auth = ctx.node.properties['azure_config']
     webapp = WebApp(ctx.logger, azure_auth, resource_group, name,
@@ -75,7 +75,7 @@ def create(ctx, resource_group, name, app_config, **kwargs):
         ctx.instance.runtime_properties['name'] = name
 
 
-@operation
+@operation(resumable=True)
 def delete(ctx, **kwargs):
     if ctx.node.properties.get('use_external_resource', False):
         return

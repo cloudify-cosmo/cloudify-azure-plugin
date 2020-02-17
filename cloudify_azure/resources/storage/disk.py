@@ -83,7 +83,7 @@ def get_cloud_storage_account(_ctx=ctx):
         account_key=storage_account_key)
 
 
-@operation
+@operation(resumable=True)
 def create_data_disk(**_):
     '''Uses an existing, or creates a new, Data Disk placeholder'''
     res_cfg = utils.get_resource_config() or dict()
@@ -124,7 +124,7 @@ def create_data_disk(**_):
     )
 
 
-@operation
+@operation(resumable=True)
 def delete_data_disk(**_):
     '''Deletes a Data Disk'''
     res_cfg = utils.get_resource_config() or dict()

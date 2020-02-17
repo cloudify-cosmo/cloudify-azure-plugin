@@ -58,7 +58,7 @@ class ServicePlan(ResourceSDK):
         self.logger.info("Wait for deleting service plan...")
 
 
-@operation
+@operation(resumable=True)
 def create(ctx, resource_group, name, plan_details, **kwargs):
     azure_auth = ctx.node.properties['azure_config']
     plan = ServicePlan(
@@ -77,7 +77,7 @@ def create(ctx, resource_group, name, plan_details, **kwargs):
         ctx.instance.runtime_properties['name'] = name
 
 
-@operation
+@operation(resumable=True)
 def delete(ctx, **kwargs):
     if ctx.node.properties.get('use_external_resource', False):
         return

@@ -62,7 +62,7 @@ class PublicIPAddress(Resource):
             _ctx=_ctx)
 
 
-@operation
+@operation(resumable=True)
 def create(**_):
     '''Uses an existing, or creates a new, Public IP Address'''
     # Create a resource (if necessary)
@@ -77,7 +77,7 @@ def create(**_):
         })
 
 
-@operation
+@operation(resumable=True)
 def start(**_):
     '''Update IP runtime property'''
     data = utils.task_resource_get(
@@ -93,7 +93,7 @@ def start(**_):
             data.get('properties', dict()).get('ipAddress')
 
 
-@operation
+@operation(resumable=True)
 def delete(**_):
     '''Deletes a Public IP Address'''
     # Delete the resource

@@ -73,7 +73,7 @@ class Subnet(Resource):
             _ctx=_ctx)
 
 
-@operation
+@operation(resumable=True)
 def create(**_):
     '''Uses an existing, or creates a new, Subnet'''
     # Create a resource (if necessary)
@@ -88,7 +88,7 @@ def create(**_):
         })
 
 
-@operation
+@operation(resumable=True)
 def delete(**_):
     '''Deletes a Subnet'''
     # Delete the resource
@@ -99,7 +99,7 @@ def delete(**_):
     )
 
 
-@operation
+@operation(resumable=True)
 def attach_network_security_group(**_):
     '''Attaches a Network Security Group (source) to the Subnet (target)'''
     nsg = NetworkSecurityGroup(_ctx=ctx.source)
@@ -120,7 +120,7 @@ def attach_network_security_group(**_):
         }, _ctx=ctx.target)
 
 
-@operation
+@operation(resumable=True)
 def detach_network_security_group(**_):
     '''Detaches a Network Security Group to the Subnet'''
     # Detach
@@ -134,7 +134,7 @@ def detach_network_security_group(**_):
         }, _ctx=ctx.target)
 
 
-@operation
+@operation(resumable=True)
 def attach_route_table(**_):
     '''Attaches a Route Table (source) to the Subnet (target)'''
     rtbl = RouteTable(_ctx=ctx.source)
@@ -155,7 +155,7 @@ def attach_route_table(**_):
         }, _ctx=ctx.target)
 
 
-@operation
+@operation(resumable=True)
 def detach_route_table(**_):
     '''Detaches a Route Table to the Subnet'''
     # Detach

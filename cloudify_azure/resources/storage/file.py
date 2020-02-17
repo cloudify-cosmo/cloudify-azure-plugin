@@ -65,7 +65,7 @@ def file_share_exists(filesvc, share_name):
         return None
 
 
-@operation
+@operation(resumable=True)
 def create_file_share(**_):
     '''Creates an Azure File Share'''
     # Get resource config values

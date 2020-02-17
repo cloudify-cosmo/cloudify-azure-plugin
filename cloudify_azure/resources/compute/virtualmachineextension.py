@@ -66,7 +66,7 @@ class VirtualMachineExtension(Resource):
             _ctx=_ctx)
 
 
-@operation
+@operation(resumable=True)
 def create(resource_config, **_):
     '''Uses an existing, or creates a new, Virtual Machine Extension'''
     # Work around for the reserved "type" name
@@ -88,7 +88,7 @@ def create(resource_config, **_):
         })
 
 
-@operation
+@operation(resumable=True)
 def delete(**_):
     '''Deletes a Virtual Machine Extension'''
     # Delete the resource

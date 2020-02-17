@@ -87,7 +87,7 @@ def get_connected_nsg():
     } if nsg else None
 
 
-@operation
+@operation(resumable=True)
 def create(**_):
     '''Uses an existing, or creates a new, Network Interface Card'''
     utils.generate_resource_name(NetworkInterfaceCard(
@@ -95,7 +95,7 @@ def create(**_):
                                             constants.API_VER_NETWORK)))
 
 
-@operation
+@operation(resumable=True)
 def configure(**_):
     '''
         Uses an existing, or creates a new, Network Interface Card
@@ -125,7 +125,7 @@ def configure(**_):
         })
 
 
-@operation
+@operation(resumable=True)
 def start(**_):
     '''
         Stores NIC IPs in runtime properties.
@@ -184,7 +184,7 @@ def start(**_):
                 public_ip_addresses
 
 
-@operation
+@operation(resumable=True)
 def delete(**_):
     '''Deletes a Network Interface Card'''
     # Delete the resource
@@ -193,7 +193,7 @@ def delete(**_):
             'api_version', constants.API_VER_NETWORK)))
 
 
-@operation
+@operation(resumable=True)
 def attach_ip_configuration(**_):
     '''Generates a usable UUID for the NIC's IP Configuration'''
     # Generate the IPConfiguration's name
