@@ -1,5 +1,5 @@
 # #######
-# Copyright (c) 2016 GigaSpaces Technologies Ltd. All rights reserved
+# Copyright (c) 2016-2020 Cloudify Platform Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -9,9 +9,9 @@
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
-#    * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#    * See the License for the specific language governing permissions and
-#    * limitations under the License.
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 '''
     resources.storage.Disk
     ~~~~~~~~~~~~~~~~~~~~~~
@@ -83,7 +83,7 @@ def get_cloud_storage_account(_ctx=ctx):
         account_key=storage_account_key)
 
 
-@operation
+@operation(resumable=True)
 def create_data_disk(**_):
     '''Uses an existing, or creates a new, Data Disk placeholder'''
     res_cfg = utils.get_resource_config() or dict()
@@ -124,7 +124,7 @@ def create_data_disk(**_):
     )
 
 
-@operation
+@operation(resumable=True)
 def delete_data_disk(**_):
     '''Deletes a Data Disk'''
     res_cfg = utils.get_resource_config() or dict()

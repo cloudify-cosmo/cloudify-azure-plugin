@@ -18,7 +18,7 @@ from setuptools import setup
 
 setup(
     name='cloudify-azure-plugin',
-    version='2.1.8',
+    version='2.1.9',
     license='LICENSE',
     packages=[
         'cloudify_azure',

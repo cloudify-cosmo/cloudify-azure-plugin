@@ -1,5 +1,5 @@
 # #######
-# Copyright (c) 2018 GigaSpaces Technologies Ltd. All rights reserved
+# Copyright (c) 2018-2020 Cloudify Platform Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ class PublishingUser(ResourceSDK):
         return user
 
 
-@operation
+@operation(resumable=True)
 def set_user(ctx, user_details, **kwargs):
     azure_auth = ctx.node.properties['azure_config']
     webapp = PublishingUser(ctx.logger, azure_auth, user_details)

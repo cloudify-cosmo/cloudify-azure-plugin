@@ -1,5 +1,5 @@
 # #######
-# Copyright (c) 2016 GigaSpaces Technologies Ltd. All rights reserved
+# Copyright (c) 2016-2020 Cloudify Platform Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -9,9 +9,9 @@
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
-#    * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#    * See the License for the specific language governing permissions and
-#    * limitations under the License.
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 '''
     resources.compute.VirtualMachine
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -279,7 +279,7 @@ def _handle_userdata(existing_userdata):
     return final_userdata
 
 
-@operation
+@operation(resumable=True)
 def create(args=None, **_):
     '''Uses an existing, or creates a new, Virtual Machine'''
     # Generate a resource name (if needed)
@@ -366,7 +366,7 @@ def create(args=None, **_):
         resource_create_payload)
 
 
-@operation
+@operation(resumable=True)
 def configure(command_to_execute, file_uris, type_handler_version='v2.0', **_):
     '''Configures the resource'''
     os_family = ctx.node.properties.get('os_family', '').lower()
@@ -503,7 +503,7 @@ def configure(command_to_execute, file_uris, type_handler_version='v2.0', **_):
             ctx.instance.runtime_properties.get('public_ip')))
 
 
-@operation
+@operation(resumable=True)
 def delete(**_):
     '''Deletes a Virtual Machine'''
     # Delete the resource
@@ -524,7 +524,7 @@ def delete(**_):
                 pass
 
 
-@operation
+@operation(resumable=True)
 def attach_data_disk(lun, **_):
     '''Attaches a data disk'''
     vm_iface = VirtualMachine(_ctx=ctx.source,
@@ -570,7 +570,7 @@ def attach_data_disk(lun, **_):
     )
 
 
-@operation
+@operation(resumable=True)
 def detach_data_disk(**_):
     '''Detaches a data disk'''
     vm_iface = VirtualMachine(_ctx=ctx.source,

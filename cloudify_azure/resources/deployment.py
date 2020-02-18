@@ -1,5 +1,5 @@
 # #######
-# Copyright (c) 2016 GigaSpaces Technologies Ltd. All rights reserved
+# Copyright (c) 2016-2020 Cloudify Platform Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -181,7 +181,7 @@ def get_template(ctx, properties):
     return template
 
 
-@operation
+@operation(resumable=True)
 def create(ctx, **kwargs):
     properties = {}
     properties.update(ctx.node.properties)
@@ -210,7 +210,7 @@ def create(ctx, **kwargs):
     ctx.instance.runtime_properties['outputs'] = resource.properties.outputs
 
 
-@operation
+@operation(resumable=True)
 def delete(ctx, **kwargs):
     if ctx.node.properties.get('use_external_resource', False):
         return

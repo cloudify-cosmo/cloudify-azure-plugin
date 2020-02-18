@@ -1,5 +1,5 @@
 # #######
-# Copyright (c) 2016 GigaSpaces Technologies Ltd. All rights reserved
+# Copyright (c) 2016-2020 Cloudify Platform Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ class ServicePlan(ResourceSDK):
         self.logger.info("Wait for deleting service plan...")
 
 
-@operation
+@operation(resumable=True)
 def create(ctx, resource_group, name, plan_details, **kwargs):
     azure_auth = ctx.node.properties['azure_config']
     plan = ServicePlan(
@@ -77,7 +77,7 @@ def create(ctx, resource_group, name, plan_details, **kwargs):
         ctx.instance.runtime_properties['name'] = name
 
 
-@operation
+@operation(resumable=True)
 def delete(ctx, **kwargs):
     if ctx.node.properties.get('use_external_resource', False):
         return
