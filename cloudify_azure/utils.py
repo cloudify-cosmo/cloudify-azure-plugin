@@ -1,5 +1,5 @@
 # #######
-# Copyright (c) 2016 GigaSpaces Technologies Ltd. All rights reserved
+# Copyright (c) 2016-2020 Cloudify Platform Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -9,9 +9,9 @@
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
-#    * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#    * See the License for the specific language governing permissions and
-#    * limitations under the License.
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
 '''
     Utils
     ~~~~~
@@ -48,6 +48,15 @@ def dict_update(orig, updates):
         else:
             orig[key] = updates[key]
     return orig
+
+
+def runtime_properties_cleanup(ctx, force=False):
+    # cleanup runtime properties
+    if not force and ctx.instance.runtime_properties.get('async_op'):
+        return
+    keys = [key for key in ctx.instance.runtime_properties.keys()]
+    for key in keys:
+        del ctx.instance.runtime_properties[key]
 
 
 def get_resource_name(_ctx=ctx):
@@ -99,8 +108,13 @@ def task_resource_create(resource, params,
     if _ctx.instance.runtime_properties.get('async_op'):
         return resource.operation_complete(
             _ctx.instance.runtime_properties.get('async_op'))
-    # Create a new resource
-    resource.create(name, params)
+    if not resource.exists(name):
+        # Create a new resource
+        resource.create(name, params)
+    else:
+        _ctx.logger.info("Resource with name {0} exists".format(name))
+
+
 
 
 def generate_resource_name(resource, generator=None, name=None, _ctx=ctx):
@@ -156,13 +170,15 @@ def task_resource_update(resource, params,
     '''
     # Get the resource name
     name = name or get_resource_name(_ctx)
-    # Handle pending asynchrnous operations
-    if _ctx.instance.runtime_properties.get('async_op'):
-        return resource.operation_complete(
-            _ctx.instance.runtime_properties.get('async_op'))
-    # Update an existing resource
-    resource.update(name, params, force=force)
-
+    if resource.exists(name):
+        # Handle pending asynchrnous operations
+        if _ctx.instance.runtime_properties.get('async_op'):
+            return resource.operation_complete(
+                _ctx.instance.runtime_properties.get('async_op'))
+        # Update an existing resource
+        resource.update(name, params, force=force)
+    else:
+        _ctx.logger.info("Resource with name {0} doesn't exist".format(name))
 
 def task_resource_delete(resource, name=None, _ctx=ctx):
     '''
@@ -184,12 +200,17 @@ def task_resource_delete(resource, name=None, _ctx=ctx):
     # Check for existing resources
     if _ctx.node.properties.get('use_external_resource'):
         return resource.get(name)
-    # Handle pending asynchrnous operations
-    if _ctx.instance.runtime_properties.get('async_op'):
-        return resource.operation_complete(
-            _ctx.instance.runtime_properties.get('async_op'))
-    # Delete the resource
-    resource.delete(name)
+    if resource.exists(name):
+        # Handle pending asynchrnous operations
+        if _ctx.instance.runtime_properties.get('async_op'):
+            return resource.operation_complete(
+                _ctx.instance.runtime_properties.get('async_op'))
+        # Delete the resource
+        resource.delete(name)
+        runtime_properties_cleanup(_ctx)
+    else:
+        runtime_properties_cleanup(_ctx, True)
+        _ctx.logger.info("Resource with name {0} doesn't exist".format(name))
 
 
 def get_resource_config(_ctx=ctx, args=None):
