@@ -115,8 +115,6 @@ def task_resource_create(resource, params,
         _ctx.logger.info("Resource with name {0} exists".format(name))
 
 
-
-
 def generate_resource_name(resource, generator=None, name=None, _ctx=ctx):
     '''
         Generates a resource name (if needed)
@@ -179,6 +177,7 @@ def task_resource_update(resource, params,
         resource.update(name, params, force=force)
     else:
         _ctx.logger.info("Resource with name {0} doesn't exist".format(name))
+
 
 def task_resource_delete(resource, name=None, _ctx=ctx):
     '''
