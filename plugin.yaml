@@ -408,6 +408,51 @@ data_types:
         default: Default
 
 
+  cloudify.datatypes.azure.compute.ManagedClusterConfig:
+    description: >
+      See https://docs.microsoft.com/en-us/rest/api/aks/managedclusters
+    properties:
+      location:
+        type: string
+        default: ''
+      tags:
+        description: >
+          A dict containing resource tags
+        default: {}
+      kubernetes_version:
+        type: string
+        default: ''
+      dns_prefix:
+        type: string
+        default: ''
+      agent_pool_profiles:
+        description: >
+          An array to pass an array of dict for agent profile
+        default: []
+      linux_profile:
+        description: >
+          A dict to define linux profile with user name and public keys
+        default: {}
+      network_profile:
+        description: >
+          A dict to define network profile loadbalancer,outbound,IPs
+        default: {}
+      windows_profile:
+        description: >
+          A dict to define windows profile with user name and password
+        default: {}
+      service_principal_profile:
+        description: >
+          A dict to define service service_principal_profile [client_id, secret]
+        default: {}
+      addon_profiles:
+        description: >
+          A dict to define addons to the managed cluster
+        default: {}
+      enable_rbac:
+        type: boolean
+        default: true
+
 node_types:
   cloudify.azure.nodes.ResourceGroup:
     derived_from: cloudify.nodes.Root
@@ -1864,6 +1909,41 @@ node_types:
               default: { get_property: [SELF, user_details]}
             azure_config:
               default: { get_property: [SELF, azure_config]}
+
+  cloudify.azure.nodes.compute.ManagedCluster:
+    derived_from: cloudify.nodes.Root
+    properties:
+      resource_group:
+        required: true
+        type: string
+      cluster_name:
+        required: true
+        type: string
+      cluster_config:
+        type: cloudify.datatypes.azure.compute.ManagedClusterConfig
+        required: true
+        description: >
+          Managed Cluster config details, including location, profiles
+      azure_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: azure.cloudify_azure.resources.compute.managed_cluster.create
+          inputs:
+            resource_group:
+              default: { get_property: [SELF, resource_group]}
+            cluster_name:
+              default: { get_property: [SELF, cluster_name]}
+            cluster_config:
+              default: { get_property: [SELF, cluster_config]}
+            azure_config:
+              default: { get_property: [SELF, azure_config]}
+        delete:
+          implementation: azure.cloudify_azure.resources.compute.managed_cluster.delete
 
 relationships:
   cloudify.azure.relationships.contained_in_resource_group:

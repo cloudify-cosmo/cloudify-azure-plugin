@@ -1,0 +1,99 @@
+tosca_definitions_version: cloudify_dsl_1_3
+
+description: >
+  This blueprint create a managed cluster.
+
+imports:
+  - http://www.getcloudify.org/spec/cloudify/3.4/types.yaml
+  - plugin:cloudify-azure-plugin
+
+inputs:
+  # Azure account information
+  subscription_id:
+    type: string
+    required: false
+
+  tenant_id:
+    type: string
+    required: false
+
+  client_id:
+    type: string
+    required: false
+
+  client_secret:
+    type: string
+    required: false
+
+  location:
+    type: string
+    required: true
+    default: westus
+
+  resource_group_name:
+    type: string
+    default: aks-test-rg
+
+  managed_cluster_name:
+    type: string
+    default: aks-test-mc
+
+  public_key:
+    type: string
+    default: ''
+
+dsl_definitions:
+  azure_config: &azure_config
+    subscription_id: { get_input: subscription_id }
+    tenant_id: { get_input: tenant_id }
+    client_id: { get_input: client_id }
+    client_secret: { get_input: client_secret }
+
+  cluster_config: &cluster_config
+    location: { get_input: location }
+    tags:
+      Name: "AKS_Test"
+      tier: "Testing"
+    kubernetes_version: ""
+    dns_prefix: "akstest"
+    agent_pool_profiles:
+      - name: "nodepool1"
+        count: 3
+        vmSize: "Standard_DS1_v2"
+        osType: "Linux"
+        type: "VirtualMachineScaleSets"
+        availabilityZones:
+          - "1"
+          - "2"
+          - "3"
+        enableNodePublicIP: true
+    linux_profile:
+      adminUsername: "azureuser"
+      ssh:
+        publicKeys:
+          - keyData : { get_input: public_key }
+    network_profile:
+      loadBalancerSku: "standard"
+      outboundType: "loadBalancer"
+      loadBalancerProfile:
+        managedOutboundIPs:
+          count: 2
+    windows_profile:
+      adminUsername: "azureuser"
+      adminPassword: "az#1234"
+    service_principal_profile:
+      clientId: { get_input: client_id }
+      secret: { get_input: client_secret }
+    addon_profiles: {}
+    enable_rbac: true
+
+
+node_templates:
+
+  managed_cluster:
+    type: cloudify.azure.nodes.compute.ManagedCluster
+    properties:
+      resource_group: { get_input: resource_group_name }
+      cluster_name: { get_input: managed_cluster_name }
+      cluster_config: *cluster_config
+      azure_config: *azure_config
