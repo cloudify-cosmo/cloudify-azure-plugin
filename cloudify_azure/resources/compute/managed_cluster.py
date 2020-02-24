@@ -67,9 +67,8 @@ class ManagedCluster(ResourceSDK):
         }
         self.logger.info("Create/Updating Resource Group...")
 
-        create_rg_async = self.resourceClient.resource_groups.create_or_update(
+        self.resourceClient.resource_groups.create_or_update(
             self.resource_group, {'location': location})
-        create_rg_async.result()
 
         self.logger.info("Create/Updating Managed Cluster...")
         managed_cluster_async = self.client.managed_clusters.create_or_update(
@@ -88,14 +87,12 @@ class ManagedCluster(ResourceSDK):
         """Deletes the managed cluster with a specified
         resource group and name"""
         self.logger.info("Delete managed cluster...")
-        delete_mc_async = self.client.managed_clusters.delete(
+        self.client.managed_clusters.delete(
             resource_group_name=self.resource_group,
             resource_name=self.cluster_name)
-        delete_mc_async.result()
         self.logger.info("Delete resource group...")
-        delete_rg_async = self.resourceClient.resource_groups.delete(
+        self.resourceClient.resource_groups.delete(
             self.resource_group)
-        delete_rg_async.result()
 
 
 @operation(resumable=True)
