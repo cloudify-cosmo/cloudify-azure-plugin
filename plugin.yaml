@@ -1919,11 +1919,18 @@ node_types:
       cluster_name:
         required: true
         type: string
-      cluster_config:
+      resource_config:
         type: cloudify.datatypes.azure.compute.ManagedClusterConfig
         required: true
         description: >
           Managed Cluster config details, including location, profiles
+      store_kube_config_in_runtime:
+        type: boolean
+        default: true
+        required: true
+        description: >
+          it will store the kubernetes configuration into a runtime property ['kubeconf'] to
+          use later to interact with the cluster
       azure_config:
         description: >
           A dictionary of values to pass to authenticate with the Azure API
@@ -1938,8 +1945,8 @@ node_types:
               default: { get_property: [SELF, resource_group]}
             cluster_name:
               default: { get_property: [SELF, cluster_name]}
-            cluster_config:
-              default: { get_property: [SELF, cluster_config]}
+            resource_config:
+              default: { get_property: [SELF, resource_config]}
             azure_config:
               default: { get_property: [SELF, azure_config]}
         delete:

@@ -6,6 +6,7 @@ description: >
 imports:
   - http://www.getcloudify.org/spec/cloudify/3.4/types.yaml
   - plugin:cloudify-azure-plugin
+  - plugin:cloudify-kubernetes-plugin
 
 inputs:
   # Azure account information
@@ -41,6 +42,14 @@ inputs:
   public_key:
     type: string
     default: ''
+
+  service_account_name:
+    type: string
+    default: examples-user
+
+  service_account_namespace:
+    type: string
+    default: default
 
 dsl_definitions:
   azure_config: &azure_config
@@ -104,6 +113,99 @@ node_templates:
       cluster_name: { get_input: managed_cluster_name }
       resource_config: *resource_config
       azure_config: *azure_config
+      store_kube_config_in_runtime: true
     relationships:
     - type: cloudify.azure.relationships.contained_in_resource_group
       target: resource_group
+
+  kubernetes_master:
+    type: cloudify.kubernetes.nodes.Master
+    properties:
+      configuration:
+        file_content: { get_attribute: [ managed_cluster, kubeconf ] }
+    relationships:
+      - type: cloudify.relationships.depends_on
+        target: managed_cluster
+
+  new_service_account:
+    type: cloudify.kubernetes.resources.ServiceAccount
+    properties:
+      definition:
+        apiVersion: v1
+        kind: ServiceAccount
+        metadata:
+          name: { get_input: service_account_name }
+          namespace: { get_input: service_account_namespace }
+      options:
+        namespace: { get_input: service_account_namespace }
+    relationships:
+      - type: cloudify.kubernetes.relationships.managed_by_master
+        target: kubernetes_master
+
+  new_role_binding:
+    type: cloudify.kubernetes.resources.RoleBinding
+    properties:
+      definition:
+        apiVersion: rbac.authorization.k8s.io/v1beta1
+        kind: ClusterRoleBinding
+        metadata:
+          name: { get_input: service_account_name }
+        roleRef:
+          apiGroup: rbac.authorization.k8s.io
+          kind: ClusterRole
+          name: cluster-admin
+        subjects:
+        - kind: ServiceAccount
+          name: { get_input: service_account_name }
+          namespace: { get_input: service_account_namespace }
+      options:
+        namespace: { get_input: service_account_namespace }
+    relationships:
+      - type: cloudify.kubernetes.relationships.managed_by_master
+        target: kubernetes_master
+
+  secret:
+    type: cloudify.kubernetes.resources.CustomBlueprintDefinedResource
+    properties:
+      use_external_resource: true
+      definition:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: {get_attribute: [new_service_account, kubernetes, secrets, 0, name]}
+      api_mapping:
+        create:
+          api: CoreV1Api
+          method: create_namespaced_secret
+          payload: V1Secret
+        read:
+          api: CoreV1Api
+          method: read_namespaced_secret
+        update:
+          api: CoreV1Api
+          method: replace_namespaced_secret
+          payload: V1Secret
+        delete:
+          api: CoreV1Api
+          method: delete_namespaced_secret
+          payload: V1DeleteOptions
+    relationships:
+      - type: cloudify.kubernetes.relationships.managed_by_master
+        target: kubernetes_master
+      - type: cloudify.relationships.depends_on
+        target: new_role_binding
+      - type: cloudify.relationships.depends_on
+        target: new_service_account
+
+  store_token:
+    type: cloudify.nodes.Root
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: scripts/store_kube_token.py
+          executor: central_deployment_agent
+          inputs:
+            kube_token: {get_attribute: [secret, kubernetes, data, token ]}
+    relationships:
+      - type: cloudify.relationships.depends_on
+        target: secret

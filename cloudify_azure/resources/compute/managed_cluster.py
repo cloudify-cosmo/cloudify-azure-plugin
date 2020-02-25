@@ -12,6 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import base64
+import yaml
+
 from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.containerservice import ContainerServiceClient
 from msrestazure.azure_exceptions import CloudError
@@ -24,11 +27,11 @@ from cloudify_azure.resources.base import ResourceSDK
 class ManagedCluster(ResourceSDK):
     def __init__(
             self, logger, credentials, resource_group, cluster_name,
-            cluster_config=None):
+            resource_config=None):
         self.resource_group = resource_group
         self.cluster_name = cluster_name
         self.logger = logger
-        self.cluster_config = cluster_config
+        self.resource_config = resource_config
         self.resource_verify = bool(credentials.get('endpoint_verify', True))
         super(ManagedCluster, self).__init__(credentials)
         self.client = ContainerServiceClient(
@@ -41,17 +44,17 @@ class ManagedCluster(ResourceSDK):
     def create_or_update(self):
         """Create Managed Cluster with Resource Group"""
 
-        location = self.cluster_config.get('location')
-        dns_prefix = self.cluster_config.get('dns_prefix')
-        kubernetes_version = self.cluster_config.get('kubernetes_version')
-        tags = self.cluster_config.get('tags')
-        sp_profile = self.cluster_config.get('service_principal_profile')
-        agent_pool_profiles = self.cluster_config.get('agent_pool_profiles')
-        linux_profile = self.cluster_config.get('linux_profile')
-        network_profile = self.cluster_config.get('network_profile')
-        windows_profile = self.cluster_config.get('windows_profile')
-        addon_profiles = self.cluster_config.get('addon_profiles')
-        enable_rbac = self.cluster_config.get('enable_rbac')
+        location = self.resource_config.get('location')
+        dns_prefix = self.resource_config.get('dns_prefix')
+        kubernetes_version = self.resource_config.get('kubernetes_version')
+        tags = self.resource_config.get('tags')
+        sp_profile = self.resource_config.get('service_principal_profile')
+        agent_pool_profiles = self.resource_config.get('agent_pool_profiles')
+        linux_profile = self.resource_config.get('linux_profile')
+        network_profile = self.resource_config.get('network_profile')
+        windows_profile = self.resource_config.get('windows_profile')
+        addon_profiles = self.resource_config.get('addon_profiles')
+        enable_rbac = self.resource_config.get('enable_rbac')
         managedClusterParams = {
             'location': location,
             'dns_prefix': dns_prefix,
@@ -65,10 +68,6 @@ class ManagedCluster(ResourceSDK):
             'addon_profiles': addon_profiles,
             'enable_rbac': enable_rbac
         }
-        self.logger.info("Create/Updating Resource Group...")
-
-        self.resourceClient.resource_groups.create_or_update(
-            self.resource_group, {'location': location})
 
         self.logger.info("Create/Updating Managed Cluster...")
         managed_cluster_async = self.client.managed_clusters.create_or_update(
@@ -87,19 +86,27 @@ class ManagedCluster(ResourceSDK):
         """Deletes the managed cluster with a specified
         resource group and name"""
         self.logger.info("Delete managed cluster...")
-        self.client.managed_clusters.delete(
+        managed_cluster_async = self.client.managed_clusters.delete(
             resource_group_name=self.resource_group,
             resource_name=self.cluster_name)
-        self.logger.info("Delete resource group...")
-        self.resourceClient.resource_groups.delete(
-            self.resource_group)
+        managed_cluster_async.result()
+
+    def get_admin_kubeconf(self):
+        admin_credentials = \
+            self.client.managed_clusters.list_cluster_admin_credentials(
+                self.resource_group,
+                self.cluster_name
+            )
+        return admin_credentials.as_dict().get("kubeconfigs")[0].get("value")
 
 
 @operation(resumable=True)
-def create(ctx, resource_group, cluster_name, cluster_config, **kwargs):
+def create(ctx, resource_group, cluster_name, resource_config, **kwargs):
     azure_auth = ctx.node.properties['azure_config']
+    store_kube_config_in_runtime = \
+        ctx.node.properties['store_kube_config_in_runtime']
     managedCluster = ManagedCluster(ctx.logger, azure_auth, resource_group,
-                                    cluster_name, cluster_config)
+                                    cluster_name, resource_config)
     if ctx.node.properties.get('use_external_resource', False):
         try:
             managedCluster.get()
@@ -113,6 +120,9 @@ def create(ctx, resource_group, cluster_name, cluster_config, **kwargs):
         managedCluster.create_or_update()
         ctx.instance.runtime_properties['resource_group'] = resource_group
         ctx.instance.runtime_properties['cluster_name'] = cluster_name
+    if store_kube_config_in_runtime:
+        ctx.instance.runtime_properties['kubeconf'] = \
+            yaml.load(base64.b64decode(managedCluster.get_admin_kubeconf()))
 
 
 @operation(resumable=True)

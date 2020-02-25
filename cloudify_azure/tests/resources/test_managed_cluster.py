@@ -52,6 +52,7 @@ class AzureSDKResourceTest(unittest.TestCase):
 class ManagedClusterTest(AzureSDKResourceTest):
     def test_create(self, resourceClient, client, credentials):
         self.node.properties['azure_config'] = self.dummy_azure_credentials
+        self.node.properties['store_kube_config_in_runtime'] = False
         managed_cluster_config = {
             'network_profile': None,
             'addon_profiles': None,
