@@ -49,7 +49,7 @@ dsl_definitions:
     client_id: { get_input: client_id }
     client_secret: { get_input: client_secret }
 
-  cluster_config: &cluster_config
+  resource_config: &resource_config
     location: { get_input: location }
     tags:
       Name: "AKS_Test"
@@ -90,10 +90,20 @@ dsl_definitions:
 
 node_templates:
 
+  resource_group:
+    type: cloudify.azure.nodes.ResourceGroup
+    properties:
+      name: { get_input: resource_group_name }
+      location: { get_input: location }
+      azure_config: *azure_config
+
   managed_cluster:
     type: cloudify.azure.nodes.compute.ManagedCluster
     properties:
       resource_group: { get_input: resource_group_name }
       cluster_name: { get_input: managed_cluster_name }
-      cluster_config: *cluster_config
+      resource_config: *resource_config
       azure_config: *azure_config
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_resource_group
+      target: resource_group
