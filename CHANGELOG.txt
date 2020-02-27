@@ -1,3 +1,5 @@
+2.1.10:
+  - Support AKS -ManagedCluster-.
 2.1.9:
   - Support resumable actions.
 2.1.8:
