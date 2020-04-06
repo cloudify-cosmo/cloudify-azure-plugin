@@ -14,6 +14,7 @@
 # limitations under the License.
 from azure.mgmt.web import WebSiteManagementClient
 from cloudify.decorators import operation
+from cloudify._compat import text_type
 
 from cloudify_azure.resources.base import ResourceSDK
 
@@ -25,7 +26,7 @@ class PublishingUser(ResourceSDK):
         self.resource_verify = bool(credentials.get('endpoint_verify', True))
         super(PublishingUser, self).__init__(credentials)
         self.client = WebSiteManagementClient(
-            self.credentials, str(credentials['subscription_id']))
+            self.credentials, text_type(credentials['subscription_id']))
         self.logger.info("Use subscription: {}"
                          .format(credentials['subscription_id']))
 

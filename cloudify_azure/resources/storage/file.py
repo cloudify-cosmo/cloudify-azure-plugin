@@ -114,7 +114,7 @@ def create_file_share(**_):
         # Generate a new File Share name if needed
         if not share_name:
             ctx.logger.info('Generating a new File Share name')
-            for _ in xrange(0, 10):
+            for _ in range(0, 10):
                 tmpname = file_share_name_generator()
                 if not file_share_exists(filesvc, tmpname):
                     share_name = tmpname

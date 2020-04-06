@@ -20,6 +20,7 @@
 
 # Node properties and logger
 from cloudify import ctx
+from cloudify._compat import text_type
 # Base resource class
 from cloudify_azure.resources.base import Resource
 # Lifecycle operation decorator
@@ -153,7 +154,7 @@ def start(**_):
         pubip_id = ip_cfg.get(
             'properties', dict()).get(
             'publicIPAddress', dict()).get('id')
-        if isinstance(pubip_id, basestring):
+        if isinstance(pubip_id, text_type):
             # use the ID to get the data on the public ip
             pubip = PublicIPAddress(
                 _ctx=ctx,

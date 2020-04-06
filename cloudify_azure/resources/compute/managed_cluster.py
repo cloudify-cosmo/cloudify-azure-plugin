@@ -21,6 +21,7 @@ from msrestazure.azure_exceptions import CloudError
 
 from cloudify.decorators import operation
 from cloudify import exceptions as cfy_exc
+from cloudify._compat import text_type
 from cloudify_azure.resources.base import ResourceSDK
 
 
@@ -35,9 +36,9 @@ class ManagedCluster(ResourceSDK):
         self.resource_verify = bool(credentials.get('endpoint_verify', True))
         super(ManagedCluster, self).__init__(credentials)
         self.client = ContainerServiceClient(
-            self.credentials, str(credentials['subscription_id']))
+            self.credentials, text_type(credentials['subscription_id']))
         self.resourceClient = ResourceManagementClient(
-            self.credentials, str(credentials['subscription_id']))
+            self.credentials, text_type(credentials['subscription_id']))
         self.logger.info("Use subscription: {}"
                          .format(credentials['subscription_id']))
 

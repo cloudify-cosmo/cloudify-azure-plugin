@@ -25,6 +25,7 @@ except ImportError:
     from urlparse import urlparse
     from urllib2 import urlopen
 
+from cloudify._compat import text_type
 from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
 
@@ -37,7 +38,7 @@ from cloudify_azure.auth.oauth2 import to_service_principle_credentials
 
 
 def is_url(string):
-    parse_info = urlparse(str(string))
+    parse_info = urlparse(text_type(string))
     return parse_info.scheme and (parse_info.netloc or parse_info.path)
 
 
@@ -49,22 +50,23 @@ class Deployment(object):
         self.timeout = timeout or 900
         self.resource_verify = bool(credentials.get('endpoint_verify', True))
         self.credentials = to_service_principle_credentials(
-            client_id=str(credentials['client_id']),
-            certificate=str(credentials.get('certificate', '')),
-            thumbprint=str(credentials.get('thumbprint', '')),
-            cloud_environment=str(credentials.get('cloud_environment', '')),
-            secret=str(credentials.get('client_secret', '')),
-            tenant=str(credentials['tenant_id']),
+            client_id=text_type(credentials['client_id']),
+            certificate=text_type(credentials.get('certificate', '')),
+            thumbprint=text_type(credentials.get('thumbprint', '')),
+            cloud_environment=text_type(
+                credentials.get('cloud_environment', '')),
+            secret=text_type(credentials.get('client_secret', '')),
+            tenant=text_type(credentials['tenant_id']),
             verify=self.resource_verify,
-            endpoints_active_directory=str(credentials.get(
+            endpoints_active_directory=text_type(credentials.get(
                 'endpoints_active_directory', '')),
-            resource=str(credentials.get('endpoint_resource',
-                                         constants.OAUTH2_MGMT_RESOURCE),)
+            resource=text_type(credentials.get('endpoint_resource',
+                               constants.OAUTH2_MGMT_RESOURCE),)
         )
         self.client = ResourceManagementClient(
-            self.credentials, str(credentials['subscription_id']),
-            base_url=str(credentials.get('endpoints_resource_manager',
-                                         constants.CONN_API_ENDPOINT)))
+            self.credentials, text_type(credentials['subscription_id']),
+            base_url=text_type(credentials.get('endpoints_resource_manager',
+                               constants.CONN_API_ENDPOINT)))
 
         self.logger.info("Using subscription: {0}"
                          .format(credentials['subscription_id']))
@@ -94,16 +96,18 @@ class Deployment(object):
         def convert_value(v):
             if v is None:
                 return None
-            if isinstance(v, int) or isinstance(v, bool) or isinstance(v, str):
+            if isinstance(v, int) or \
+                    isinstance(v, bool) or \
+                    isinstance(v, text_type):
                 return v
-            if isinstance(v, unicode):
+            if isinstance(v, str):
                 return ast.literal_eval(repr(v))
             if isinstance(v, dict):
                 for k, y in v.items():
                     v[k] = convert_value(y)
                 return v
             raise Exception("Unhandled data type: {0} ({1})".format(
-                type(v), str(v)))
+                type(v), text_type(v)))
 
         if params is None:
             return None
@@ -152,7 +156,7 @@ class Deployment(object):
 def get_template(ctx, properties):
     template = properties.get('template')
     if template:
-        if isinstance(template, basestring):
+        if isinstance(template, (text_type, bytes)):
             ctx.logger.info("Template provided as a string in blueprint")
             ctx.logger.debug("Template string: %s", template)
             template = json.loads(template)

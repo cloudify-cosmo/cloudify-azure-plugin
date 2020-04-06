@@ -31,6 +31,7 @@ from cloudify_azure import connection, utils
 from cloudify_azure.exceptions import UnexpectedResponse
 # Runtime properties
 from cloudify import ctx
+from cloudify._compat import text_type
 
 from cloudify_azure.auth.oauth2 import to_service_principle_credentials
 
@@ -568,10 +569,10 @@ class Resource(object):
 class ResourceSDK(object):
     def __init__(self, credentials):
         self.credentials = to_service_principle_credentials(
-            client_id=str(credentials['client_id']),
-            secret=str(credentials.get('client_secret')),
-            thumbprint=str(credentials.get('thumbprint')),
-            certificate=str(credentials.get('certificate')),
-            tenant=str(credentials['tenant_id']),
+            client_id=text_type(credentials['client_id']),
+            secret=text_type(credentials.get('client_secret')),
+            thumbprint=text_type(credentials.get('thumbprint')),
+            certificate=text_type(credentials.get('certificate')),
+            tenant=text_type(credentials['tenant_id']),
             verify=self.resource_verify
         )

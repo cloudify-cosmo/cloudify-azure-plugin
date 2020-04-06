@@ -22,6 +22,7 @@ from copy import deepcopy
 from cloudify import exceptions as cfy_exc
 from cloudify import mocks as cfy_mocks
 from cloudify.state import current_ctx
+from cloudify._compat import text_type
 
 from cloudify_azure.resources.deployment import Deployment
 
@@ -138,7 +139,7 @@ class DeploymentTest(unittest.TestCase):
                 azure_config=self.azure_config
             )
         self.assertTrue(
-            "Deployment template not provided" in str(ex.exception))
+            "Deployment template not provided" in text_type(ex.exception))
 
     def test_create_with_template_string(self):
         deployment.create(
@@ -230,7 +231,8 @@ class DeploymentTest(unittest.TestCase):
     def test_get_template_none(self):
         with self.assertRaises(cfy_exc.NonRecoverableError) as ex:
             deployment.get_template(self.fake_ctx, {})
-        self.assertTrue("Deployment template not provided", str(ex.exception))
+        self.assertTrue(
+            "Deployment template not provided", text_type(ex.exception))
 
     def test_get_template_dict(self):
         properties = {
