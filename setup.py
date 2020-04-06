@@ -34,7 +34,7 @@ setup(
         'cloudify-common==5.1.0.dev1',
         'requests==2.20.0',
         'urllib3==1.25.3',
-        'pyyaml==3.10',
+        'pyyaml==3.12',
         'azure==4.0.0'
     ]
 )

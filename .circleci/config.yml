@@ -24,7 +24,7 @@ jobs:
       - run:
           name: install tox
           command: pip install tox
-      - run: tox -e flake8
+      - run: tox -e pep8
       - run: tox -e py27
 
   wagon:
