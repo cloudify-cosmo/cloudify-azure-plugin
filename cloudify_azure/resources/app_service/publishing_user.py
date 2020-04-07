@@ -14,7 +14,6 @@
 # limitations under the License.
 from azure.mgmt.web import WebSiteManagementClient
 from cloudify.decorators import operation
-from cloudify._compat import text_type
 
 from cloudify_azure.resources.base import ResourceSDK
 

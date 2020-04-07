@@ -17,7 +17,6 @@ from msrestazure.azure_exceptions import CloudError
 
 from cloudify.decorators import operation
 from cloudify import exceptions as cfy_exc
-from cloudify._compat import text_type
 
 from cloudify_azure.resources.base import ResourceSDK
 

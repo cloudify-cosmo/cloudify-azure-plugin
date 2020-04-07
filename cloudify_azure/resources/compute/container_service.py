@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from cloudify._compat import text_type
 from cloudify.decorators import operation
 from azure.mgmt.containerservice import ContainerServiceClient
 

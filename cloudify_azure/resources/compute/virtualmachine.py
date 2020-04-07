@@ -226,7 +226,7 @@ def _handle_userdata(existing_userdata):
     elif isinstance(existing_userdata, dict) or \
             isinstance(existing_userdata, list):
         existing_userdata = json.dumps(existing_userdata)
-    elif not isinstance(existing_userdata, basestring):
+    elif not isinstance(existing_userdata, (text_type, str)):
         existing_userdata = '{0}'.format(existing_userdata)
 
     install_agent_userdata = ctx.agent.init_script()
@@ -460,7 +460,7 @@ def configure(command_to_execute, file_uris, type_handler_version='v2.0', **_):
             pubip_id = ip_cfg.get(
                 'properties', dict()).get(
                     'publicIPAddress', dict()).get('id')
-            if not isinstance(pubip_id, basestring):
+            if not isinstance(pubip_id, (text_type, str)):
                 return
 
             # use the ID to get the data on the public ip

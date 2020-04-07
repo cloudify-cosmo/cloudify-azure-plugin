@@ -31,7 +31,6 @@ from cloudify_azure import connection, utils
 from cloudify_azure.exceptions import UnexpectedResponse
 # Runtime properties
 from cloudify import ctx
-from cloudify._compat import text_type
 
 from cloudify_azure.auth.oauth2 import to_service_principle_credentials
 

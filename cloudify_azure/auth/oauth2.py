@@ -45,7 +45,6 @@ from adal.constants import Jwt
 from cloudify_azure import \
     (constants, exceptions)
 # Context
-from cloudify._compat import text_type
 from cloudify import ctx
 from cloudify.exceptions import NonRecoverableError
 

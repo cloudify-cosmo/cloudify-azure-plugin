@@ -16,18 +16,8 @@
 import ast
 import json
 
-try:
-    # Python 3.x
-    from urllib.parse import urlparse
-    from urllib.request import urlopen
-except ImportError:
-    # Python 2.x
-    from urlparse import urlparse
-    from urllib2 import urlopen
-
-# uncomment when both are in cloudify._compat
-# from cloudify._compat import urlparse
-# from cloudify._compat import urlopen
+from cloudify._compat import urlopen
+from cloudify._compat import urlparse
 from cloudify._compat import text_type
 from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
@@ -63,16 +53,19 @@ class Deployment(object):
             verify=self.resource_verify,
             endpoints_active_directory='{0}'.format(credentials.get(
                 'endpoints_active_directory', '')),
-            resource='{0}'.format(credentials.get('endpoint_resource',
-                               constants.OAUTH2_MGMT_RESOURCE),)
+            resource='{0}'.format(
+                credentials.get('endpoint_resource',
+                                constants.OAUTH2_MGMT_RESOURCE),)
         )
         self.client = ResourceManagementClient(
-            self.credentials, '{0}'.format(credentials['subscription_id']),
-            base_url='{0}'.format(credentials.get('endpoints_resource_manager',
-                               constants.CONN_API_ENDPOINT)))
+            self.credentials,
+            '{0}'.format(credentials['subscription_id']),
+            base_url='{0}'.format(
+                credentials.get('endpoints_resource_manager',
+                                constants.CONN_API_ENDPOINT)))
 
-        self.logger.info("Using subscription: {0}"
-                         .format(credentials['subscription_id']))
+        self.logger.info("Using subscription: {0}".format(
+            credentials['subscription_id']))
 
     def create(self, location):
         """Deploy the template to a resource group."""

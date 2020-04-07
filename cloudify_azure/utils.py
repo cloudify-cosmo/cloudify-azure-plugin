@@ -33,7 +33,6 @@ from ConfigParser import SafeConfigParser
 # Logger, default context
 from logging import DEBUG
 from cloudify import ctx
-from cloudify._compat import text_type
 
 # Constants
 from cloudify_azure import constants

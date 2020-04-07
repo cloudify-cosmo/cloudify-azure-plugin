@@ -22,7 +22,6 @@ from copy import deepcopy
 from cloudify import exceptions as cfy_exc
 from cloudify import mocks as cfy_mocks
 from cloudify.state import current_ctx
-from cloudify._compat import text_type
 
 from cloudify_azure.resources.deployment import Deployment
 
