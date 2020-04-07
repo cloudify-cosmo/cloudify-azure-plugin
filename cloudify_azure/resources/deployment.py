@@ -16,9 +16,7 @@
 import ast
 import json
 
-from cloudify._compat import urlopen
-from cloudify._compat import urlparse
-from cloudify._compat import text_type
+from cloudify._compat import (urlopen, urlparse, text_type)
 from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
 
