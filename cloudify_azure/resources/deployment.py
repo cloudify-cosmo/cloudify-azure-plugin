@@ -25,6 +25,9 @@ except ImportError:
     from urlparse import urlparse
     from urllib2 import urlopen
 
+# uncomment when both are in cloudify._compat
+# from cloudify._compat import urlparse
+# from cloudify._compat import urlopen
 from cloudify._compat import text_type
 from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
