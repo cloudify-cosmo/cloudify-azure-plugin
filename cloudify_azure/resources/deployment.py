@@ -38,7 +38,7 @@ from cloudify_azure.auth.oauth2 import to_service_principle_credentials
 
 
 def is_url(string):
-    parse_info = urlparse(text_type(string))
+    parse_info = urlparse('{0}'.format(string))
     return parse_info.scheme and (parse_info.netloc or parse_info.path)
 
 
@@ -50,22 +50,22 @@ class Deployment(object):
         self.timeout = timeout or 900
         self.resource_verify = bool(credentials.get('endpoint_verify', True))
         self.credentials = to_service_principle_credentials(
-            client_id=text_type(credentials['client_id']),
-            certificate=text_type(credentials.get('certificate', '')),
-            thumbprint=text_type(credentials.get('thumbprint', '')),
-            cloud_environment=text_type(
+            client_id='{0}'.format(credentials['client_id']),
+            certificate='{0}'.format(credentials.get('certificate', '')),
+            thumbprint='{0}'.format(credentials.get('thumbprint', '')),
+            cloud_environment='{0}'.format(
                 credentials.get('cloud_environment', '')),
-            secret=text_type(credentials.get('client_secret', '')),
-            tenant=text_type(credentials['tenant_id']),
+            secret='{0}'.format(credentials.get('client_secret', '')),
+            tenant='{0}'.format(credentials['tenant_id']),
             verify=self.resource_verify,
-            endpoints_active_directory=text_type(credentials.get(
+            endpoints_active_directory='{0}'.format(credentials.get(
                 'endpoints_active_directory', '')),
-            resource=text_type(credentials.get('endpoint_resource',
+            resource='{0}'.format(credentials.get('endpoint_resource',
                                constants.OAUTH2_MGMT_RESOURCE),)
         )
         self.client = ResourceManagementClient(
-            self.credentials, text_type(credentials['subscription_id']),
-            base_url=text_type(credentials.get('endpoints_resource_manager',
+            self.credentials, '{0}'.format(credentials['subscription_id']),
+            base_url='{0}'.format(credentials.get('endpoints_resource_manager',
                                constants.CONN_API_ENDPOINT)))
 
         self.logger.info("Using subscription: {0}"
@@ -107,7 +107,7 @@ class Deployment(object):
                     v[k] = convert_value(y)
                 return v
             raise Exception("Unhandled data type: {0} ({1})".format(
-                type(v), text_type(v)))
+                type(v), '{0}'.format(v)))
 
         if params is None:
             return None

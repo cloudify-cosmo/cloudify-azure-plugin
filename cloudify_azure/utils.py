@@ -135,7 +135,7 @@ def generate_resource_name(resource, generator=None, name=None, _ctx=ctx):
             if generator:
                 name = generator()
             else:
-                name = text_type(uuid4())
+                name = '{0}'.format(uuid4())
             # Check if we have a duplicate name
             try:
                 if not resource.exists(name):

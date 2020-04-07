@@ -185,7 +185,7 @@ def build_network_profile():
 
 def vm_name_generator():
     '''Generates a unique VM resource name'''
-    return text_type(uuid4())
+    return '{0}'.format(uuid4())
 
 
 def extract_powershell_content(string_with_powershell):
@@ -227,7 +227,7 @@ def _handle_userdata(existing_userdata):
             isinstance(existing_userdata, list):
         existing_userdata = json.dumps(existing_userdata)
     elif not isinstance(existing_userdata, text_type):
-        existing_userdata = text_type(existing_userdata)
+        existing_userdata = '{0}'.format(existing_userdata)
 
     install_agent_userdata = ctx.agent.init_script()
     os_family = ctx.node.properties['os_family']
