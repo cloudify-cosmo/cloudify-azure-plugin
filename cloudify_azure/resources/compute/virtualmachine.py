@@ -226,7 +226,7 @@ def _handle_userdata(existing_userdata):
     elif isinstance(existing_userdata, dict) or \
             isinstance(existing_userdata, list):
         existing_userdata = json.dumps(existing_userdata)
-    elif not isinstance(existing_userdata, (text_type, str)):
+    else:
         existing_userdata = '{0}'.format(existing_userdata)
 
     install_agent_userdata = ctx.agent.init_script()
