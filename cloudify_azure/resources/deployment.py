@@ -95,7 +95,7 @@ class Deployment(object):
                     isinstance(v, bool) or \
                     isinstance(v, text_type):
                 return v
-            if PY2 and isinstance(v, unicode):
+            if (PY2 and isinstance(v, unicode)) or isinstance(v, text_type):
                 return ast.literal_eval(repr(v))
             if isinstance(v, dict):
                 for k, y in v.items():
