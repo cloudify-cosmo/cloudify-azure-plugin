@@ -16,9 +16,10 @@
 import ast
 import json
 
-from cloudify._compat import (urlopen, urlparse, text_type)
-from cloudify import exceptions as cfy_exc
+from cloudify._compat import PY2
 from cloudify.decorators import operation
+from cloudify import exceptions as cfy_exc
+from cloudify._compat import (urlopen, urlparse, text_type)
 
 from cloudify_azure import constants
 
@@ -94,7 +95,7 @@ class Deployment(object):
                     isinstance(v, bool) or \
                     isinstance(v, text_type):
                 return v
-            if isinstance(v, str):
+            if PY2 and isinstance(v, unicode):
                 return ast.literal_eval(repr(v))
             if isinstance(v, dict):
                 for k, y in v.items():

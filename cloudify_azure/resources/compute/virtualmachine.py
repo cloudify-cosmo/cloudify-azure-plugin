@@ -460,36 +460,34 @@ def configure(command_to_execute, file_uris, type_handler_version='v2.0', **_):
             pubip_id = ip_cfg.get(
                 'properties', dict()).get(
                     'publicIPAddress', dict()).get('id')
-            if not isinstance(pubip_id, (text_type, str)):
-                return
-
-            # use the ID to get the data on the public ip
-            pubip = PublicIPAddress(
-                _ctx=rel_nic.target,
-                api_version=rel_nic.target.node.properties.get(
-                    'api_version',
-                    constants.API_VER_NETWORK))
-            pubip.endpoint = '{0}{1}'.format(
-                creds.endpoints_resource_manager, pubip_id)
-            pubip_data = pubip.get()
-            if isinstance(pubip_data, dict):
-                public_ip = \
-                    pubip_data.get('properties', dict()).get('ipAddress')
-                # Maintained for backwards compatibility.
-                ctx.instance.runtime_properties['public_ip'] = \
-                    public_ip
-                # For consistency with other plugins.
-                ctx.instance.runtime_properties[PUBLIC_IP_PROPERTY] = \
-                    public_ip
-                # We should also consider that maybe there will be many
-                # public ip addresses.
-                public_ip_addresses = \
-                    ctx.instance.runtime_properties.get(
-                        PUBLIC_IP_PROPERTY, [])
-                if public_ip not in public_ip_addresses:
-                    public_ip_addresses.append(public_ip)
-                ctx.instance.runtime_properties['public_ip_addresses'] = \
-                    public_ip_addresses
+            if isinstance(pubip_id, text_type):
+                # use the ID to get the data on the public ip
+                pubip = PublicIPAddress(
+                    _ctx=rel_nic.target,
+                    api_version=rel_nic.target.node.properties.get(
+                        'api_version',
+                        constants.API_VER_NETWORK))
+                pubip.endpoint = '{0}{1}'.format(
+                    creds.endpoints_resource_manager, pubip_id)
+                pubip_data = pubip.get()
+                if isinstance(pubip_data, dict):
+                    public_ip = \
+                        pubip_data.get('properties', dict()).get('ipAddress')
+                    # Maintained for backwards compatibility.
+                    ctx.instance.runtime_properties['public_ip'] = \
+                        public_ip
+                    # For consistency with other plugins.
+                    ctx.instance.runtime_properties[PUBLIC_IP_PROPERTY] = \
+                        public_ip
+                    # We should also consider that maybe there will be many
+                    # public ip addresses.
+                    public_ip_addresses = \
+                        ctx.instance.runtime_properties.get(
+                            PUBLIC_IP_PROPERTY, [])
+                    if public_ip not in public_ip_addresses:
+                        public_ip_addresses.append(public_ip)
+                    ctx.instance.runtime_properties['public_ip_addresses'] = \
+                        public_ip_addresses
 
         # See if the user wants to use the public IP as primary IP
         if ctx.node.properties.get('use_public_ip') and \
