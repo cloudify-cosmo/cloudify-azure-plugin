@@ -106,7 +106,7 @@ class DeploymentTest(unittest.TestCase):
         deployment.create(
             ctx=self.fake_ctx,
             name="check",
-            template="{}",
+            template=json.dumps("{}"),
             location="west",
             timeout=10,
             azure_config=self.azure_config
@@ -159,13 +159,13 @@ class DeploymentTest(unittest.TestCase):
 
     def test_create_with_template_file(self):
         self.node.properties['template_file'] = "check.json"
-        self.fake_ctx.get_resource.return_value = '{"a":"b"}'
+        self.fake_ctx.get_resource.return_value = json.dumps({'a': 'b'})
 
         deployment.create(
             ctx=self.fake_ctx,
             name="check",
             location="west",
-            params="{'c': 'd'}",
+            params={'c': 'd'},
             azure_config=self.azure_config
         )
 
@@ -174,7 +174,7 @@ class DeploymentTest(unittest.TestCase):
             'check', 'check', {
                 'parameters': {'c': {'value': 'd'}},
                 'mode': DeploymentMode.incremental,
-                'template': json.dumps({'a': 'b'})
+                'template': {'a': 'b'}
             }, verify=True
         )
         async_call = self.client.deployments.create_or_update.return_value
@@ -207,7 +207,7 @@ class DeploymentTest(unittest.TestCase):
             name="check",
             location="west",
             template="{}",
-            params={'c': 'd'},
+            params=json.dumps({'c': 'd'}),
             azure_config=self.azure_config
         )
 

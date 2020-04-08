@@ -13,8 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import ast
 import json
 
+from cloudify._compat import PY2
 from cloudify.decorators import operation
 from cloudify import exceptions as cfy_exc
 from cloudify._compat import (urlopen, urlparse, text_type)
@@ -82,6 +84,14 @@ class Deployment(object):
             self.resource_group,  # deployment name
         )
 
+    @staticmethod
+    def format_params(params):
+        if not isinstance(params, dict):
+            return params
+        for k, v in params.items():
+            params[k] = {"value": v}
+        return params
+
     def update(self, template, params):
 
         self.logger.info("Creating deployment: {0}".format(
@@ -90,7 +100,7 @@ class Deployment(object):
         deployment_properties = {
             'mode': DeploymentMode.incremental,
             'template': template,
-            'parameters': json.loads(params)
+            'parameters': self.format_params(params)
         }
 
         deployment_async_operation = self.client.deployments.create_or_update(
