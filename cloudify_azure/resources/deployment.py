@@ -13,10 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import ast
 import json
 
-from cloudify._compat import PY2
 from cloudify.decorators import operation
 from cloudify import exceptions as cfy_exc
 from cloudify._compat import (urlopen, urlparse, text_type)
@@ -84,34 +82,6 @@ class Deployment(object):
             self.resource_group,  # deployment name
         )
 
-    @staticmethod
-    def format_params(params):
-        # We need to traverse the parameters' dictionary
-        # and convert all unicode strings to regular strings
-        def convert_value(v):
-            if v is None:
-                return None
-            if isinstance(v, int) or \
-                    isinstance(v, bool) or \
-                    isinstance(v, text_type):
-                return v
-            if (PY2 and isinstance(v, unicode)) or \
-                    isinstance(v, (text_type, str)):
-                return ast.literal_eval(repr(v))
-            if isinstance(v, dict):
-                for k, y in v.items():
-                    v[k] = convert_value(y)
-                return v
-            raise Exception("Unhandled data type: {0} ({1})".format(
-                type(v), '{0}'.format(v)))
-
-        if params is None:
-            return None
-        for k, v in params.items():
-            updated_value = convert_value(v)
-            params[k] = {"value": updated_value}
-        return params
-
     def update(self, template, params):
 
         self.logger.info("Creating deployment: {0}".format(
@@ -120,7 +90,7 @@ class Deployment(object):
         deployment_properties = {
             'mode': DeploymentMode.incremental,
             'template': template,
-            'parameters': self.format_params(params)
+            'parameters': json.loads(params)
         }
 
         deployment_async_operation = self.client.deployments.create_or_update(

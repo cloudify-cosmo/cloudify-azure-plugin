@@ -13,17 +13,14 @@
 # limitations under the License.
 import os
 import mock
+import json
 import unittest
 import tempfile
 import pathlib
 
-from copy import deepcopy
-
 from cloudify import exceptions as cfy_exc
 from cloudify import mocks as cfy_mocks
 from cloudify.state import current_ctx
-
-from cloudify_azure.resources.deployment import Deployment
 
 from azure.mgmt.resource.resources.models import DeploymentMode
 
@@ -168,7 +165,7 @@ class DeploymentTest(unittest.TestCase):
             ctx=self.fake_ctx,
             name="check",
             location="west",
-            params={'c': 'd'},
+            params="{'c': 'd'}",
             azure_config=self.azure_config
         )
 
@@ -177,7 +174,7 @@ class DeploymentTest(unittest.TestCase):
             'check', 'check', {
                 'parameters': {'c': {'value': 'd'}},
                 'mode': DeploymentMode.incremental,
-                'template': {'a': 'b'}
+                'template': json.dumps({'a': 'b'})
             }, verify=True
         )
         async_call = self.client.deployments.create_or_update.return_value
@@ -219,13 +216,11 @@ class DeploymentTest(unittest.TestCase):
 
     def test_get_template_string(self):
         properties = {
-            'template': '{"key": "value"}',
+            'template': json.dumps('{"key": "value"}'),
             'template_file': 'missing/file'
         }
         template = deployment.get_template(self.fake_ctx, properties)
-        self.assertEqual(template, {
-            'key': 'value'
-        })
+        self.assertEqual(template, json.dumps({'key': 'value'}))
 
     def test_get_template_none(self):
         with self.assertRaises(cfy_exc.NonRecoverableError) as ex:
@@ -256,54 +251,6 @@ class DeploymentTest(unittest.TestCase):
             })
         finally:
             os.remove(tmp_file.name)
-
-
-class FormatParamsTest(unittest.TestCase):
-    def test_empty(self):
-        self.assertEqual(Deployment.format_params(None), None)
-        self.assertEqual(Deployment.format_params({}), {})
-
-    def test_simple(self):
-        d = {
-            'key1': 4,
-            'key2': False,
-            'key3': 'hello'
-        }
-        result = Deployment.format_params(deepcopy(d))
-        self.assertEqual(result, {
-            'key1': {
-                'value': 4
-            },
-            'key2': {
-                'value': False
-            },
-            'key3': {
-                'value': 'hello'
-            }
-        })
-
-    def test_recursive(self):
-        d = {
-            'key1': 4,
-            'key2': {
-                'subkey1': 3,
-                'subkey2': True,
-                'subkey3': 'hello'
-            }
-        }
-        result = Deployment.format_params(deepcopy(d))
-        self.assertEqual(result, {
-            'key1': {
-                'value': 4
-            },
-            'key2': {
-                'value': {
-                    'subkey1': 3,
-                    'subkey2': True,
-                    'subkey3': 'hello'
-                }
-            }
-        })
 
 
 if __name__ == '__main__':
