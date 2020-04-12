@@ -1,4 +1,4 @@
-cloudify-plugins-common===4.3.2
+https://github.com/cloudify-cosmo/cloudify-common/archive/master.zip
 requests==2.7.0
 pyyaml==3.10
 azure==4.0.0
