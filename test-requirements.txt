@@ -14,3 +14,4 @@ testtools>=2.3.0
 requests_mock
 coverage
 testfixtures
+networkx
