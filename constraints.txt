@@ -1,4 +1,4 @@
-cloudify-plugins-common===4.3.2
 requests==2.7.0
 pyyaml==3.10
 azure==4.0.0
+git+https://github.com/cloudify-cosmo/cloudify-common@master#egg=cloudify-common[dispatcher]==master

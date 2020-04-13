@@ -13,10 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import ast
 import json
 
-from cloudify._compat import PY2
 from cloudify.decorators import operation
 from cloudify import exceptions as cfy_exc
 from cloudify._compat import (urlopen, urlparse, text_type)
