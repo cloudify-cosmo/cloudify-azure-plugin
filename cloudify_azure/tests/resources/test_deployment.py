@@ -106,7 +106,7 @@ class DeploymentTest(unittest.TestCase):
         deployment.create(
             ctx=self.fake_ctx,
             name="check",
-            template=json.dumps("{}"),
+            template=json.dumps({}),
             location="west",
             timeout=10,
             azure_config=self.azure_config
@@ -158,8 +158,14 @@ class DeploymentTest(unittest.TestCase):
         async_call.wait.assert_called_with(timeout=10)
 
     def test_create_with_template_file(self):
-        self.node.properties['template_file'] = "check.json"
-        self.fake_ctx.get_resource.return_value = json.dumps({'a': 'b'})
+
+        fock = tempfile.NamedTemporaryFile(delete=False)
+        fock.write(json.dumps({'a': 'b'}))
+        fock.close()
+
+        self.node.properties['template'] = None
+        self.node.properties['template_file'] = fock.name
+        self.fake_ctx.get_resource.return_value = open(fock.name).read()
 
         deployment.create(
             ctx=self.fake_ctx,
@@ -169,7 +175,7 @@ class DeploymentTest(unittest.TestCase):
             azure_config=self.azure_config
         )
 
-        self.fake_ctx.get_resource.assert_called_with("check.json")
+        self.fake_ctx.get_resource.assert_called_with(fock.name)
         self.client.deployments.create_or_update.assert_called_with(
             'check', 'check', {
                 'parameters': {'c': {'value': 'd'}},
@@ -215,12 +221,13 @@ class DeploymentTest(unittest.TestCase):
         self.assertDictEqual(outputs, mock_outputs)
 
     def test_get_template_string(self):
+        #  For case that user provides a string.
         properties = {
-            'template': json.dumps('{"key": "value"}'),
+            'template': json.dumps({"key": "value"}),
             'template_file': 'missing/file'
         }
         template = deployment.get_template(self.fake_ctx, properties)
-        self.assertEqual(template, json.dumps({'key': 'value'}))
+        self.assertEqual(template, {"key": "value"})
 
     def test_get_template_none(self):
         with self.assertRaises(cfy_exc.NonRecoverableError) as ex:
