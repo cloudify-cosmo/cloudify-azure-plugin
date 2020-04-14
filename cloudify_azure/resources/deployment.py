@@ -130,7 +130,9 @@ class Deployment(object):
 def get_template(ctx, properties):
     template = properties.get('template')
     if template:
-        if isinstance(template, (text_type, bytes)):
+        template = template if not isinstance(template, bytes) \
+            else template.decode('utf-8')
+        if isinstance(template, text_type):
             ctx.logger.info("Template provided as a string in blueprint")
             ctx.logger.debug("Template string: %s", template)
             template = json.loads(template)
