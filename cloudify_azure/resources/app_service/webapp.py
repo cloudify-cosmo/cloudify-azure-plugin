@@ -17,6 +17,7 @@ from msrestazure.azure_exceptions import CloudError
 
 from cloudify.decorators import operation
 from cloudify import exceptions as cfy_exc
+
 from cloudify_azure.resources.base import ResourceSDK
 
 
@@ -30,7 +31,7 @@ class WebApp(ResourceSDK):
         self.resource_verify = bool(credentials.get('endpoint_verify', True))
         super(WebApp, self).__init__(credentials)
         self.client = WebSiteManagementClient(
-            self.credentials, str(credentials['subscription_id']))
+            self.credentials, '{0}'.format(credentials['subscription_id']))
         self.logger.info("Use subscription: {}"
                          .format(credentials['subscription_id']))
 

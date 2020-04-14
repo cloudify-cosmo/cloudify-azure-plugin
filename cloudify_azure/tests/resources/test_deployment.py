@@ -13,17 +13,14 @@
 # limitations under the License.
 import os
 import mock
+import json
 import unittest
 import tempfile
 import pathlib
 
-from copy import deepcopy
-
 from cloudify import exceptions as cfy_exc
 from cloudify import mocks as cfy_mocks
 from cloudify.state import current_ctx
-
-from cloudify_azure.resources.deployment import Deployment
 
 from azure.mgmt.resource.resources.models import DeploymentMode
 
@@ -109,7 +106,7 @@ class DeploymentTest(unittest.TestCase):
         deployment.create(
             ctx=self.fake_ctx,
             name="check",
-            template="{}",
+            template=json.dumps({}),
             location="west",
             timeout=10,
             azure_config=self.azure_config
@@ -138,7 +135,7 @@ class DeploymentTest(unittest.TestCase):
                 azure_config=self.azure_config
             )
         self.assertTrue(
-            "Deployment template not provided" in str(ex.exception))
+            "Deployment template not provided" in '{0}'.format(ex.exception))
 
     def test_create_with_template_string(self):
         deployment.create(
@@ -161,8 +158,14 @@ class DeploymentTest(unittest.TestCase):
         async_call.wait.assert_called_with(timeout=10)
 
     def test_create_with_template_file(self):
-        self.node.properties['template_file'] = "check.json"
-        self.fake_ctx.get_resource.return_value = '{"a":"b"}'
+
+        fock = tempfile.NamedTemporaryFile(delete=False)
+        fock.write(json.dumps({'a': 'b'}))
+        fock.close()
+
+        self.node.properties['template'] = None
+        self.node.properties['template_file'] = fock.name
+        self.fake_ctx.get_resource.return_value = open(fock.name).read()
 
         deployment.create(
             ctx=self.fake_ctx,
@@ -172,7 +175,7 @@ class DeploymentTest(unittest.TestCase):
             azure_config=self.azure_config
         )
 
-        self.fake_ctx.get_resource.assert_called_with("check.json")
+        self.fake_ctx.get_resource.assert_called_with(fock.name)
         self.client.deployments.create_or_update.assert_called_with(
             'check', 'check', {
                 'parameters': {'c': {'value': 'd'}},
@@ -210,7 +213,7 @@ class DeploymentTest(unittest.TestCase):
             name="check",
             location="west",
             template="{}",
-            params={'c': 'd'},
+            params=json.dumps({'c': 'd'}),
             azure_config=self.azure_config
         )
 
@@ -218,19 +221,19 @@ class DeploymentTest(unittest.TestCase):
         self.assertDictEqual(outputs, mock_outputs)
 
     def test_get_template_string(self):
+        #  For case that user provides a string.
         properties = {
-            'template': '{"key": "value"}',
+            'template': json.dumps({"key": "value"}),
             'template_file': 'missing/file'
         }
         template = deployment.get_template(self.fake_ctx, properties)
-        self.assertEqual(template, {
-            'key': 'value'
-        })
+        self.assertEqual(template, {"key": "value"})
 
     def test_get_template_none(self):
         with self.assertRaises(cfy_exc.NonRecoverableError) as ex:
             deployment.get_template(self.fake_ctx, {})
-        self.assertTrue("Deployment template not provided", str(ex.exception))
+        self.assertTrue(
+            "Deployment template not provided", '{0}'.format(ex.exception))
 
     def test_get_template_dict(self):
         properties = {
@@ -255,54 +258,6 @@ class DeploymentTest(unittest.TestCase):
             })
         finally:
             os.remove(tmp_file.name)
-
-
-class FormatParamsTest(unittest.TestCase):
-    def test_empty(self):
-        self.assertEqual(Deployment.format_params(None), None)
-        self.assertEqual(Deployment.format_params({}), {})
-
-    def test_simple(self):
-        d = {
-            'key1': 4,
-            'key2': False,
-            'key3': 'hello'
-        }
-        result = Deployment.format_params(deepcopy(d))
-        self.assertEqual(result, {
-            'key1': {
-                'value': 4
-            },
-            'key2': {
-                'value': False
-            },
-            'key3': {
-                'value': 'hello'
-            }
-        })
-
-    def test_recursive(self):
-        d = {
-            'key1': 4,
-            'key2': {
-                'subkey1': 3,
-                'subkey2': True,
-                'subkey3': 'hello'
-            }
-        }
-        result = Deployment.format_params(deepcopy(d))
-        self.assertEqual(result, {
-            'key1': {
-                'value': 4
-            },
-            'key2': {
-                'value': {
-                    'subkey1': 3,
-                    'subkey2': True,
-                    'subkey3': 'hello'
-                }
-            }
-        })
 
 
 if __name__ == '__main__':

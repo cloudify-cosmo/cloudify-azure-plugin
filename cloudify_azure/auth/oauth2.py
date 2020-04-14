@@ -76,7 +76,7 @@ def generate_jwt_token(certificate, thumbprint, client_id, talent_id):
                 talent_id),
         Jwt.EXPIRES_ON: int(time.mktime(expires.timetuple())),
         Jwt.ISSUER: client_id,
-        Jwt.JWT_ID: str(uuid.uuid4()),
+        Jwt.JWT_ID: '{0}'.format(uuid.uuid4()),
         Jwt.NOT_BEFORE: int(time.mktime(now.timetuple())),
         Jwt.SUBJECT: client_id
     }
@@ -364,7 +364,7 @@ class ServicePrincipalCertificateAuth(CustomAADMixin, AADMixin):
 
 
 def to_service_principle_credentials(**kwargs):
-    for k, v in kwargs.items():
+    for k, v in list(kwargs.items()):
         if not v:
             del kwargs[k]
     if 'certificate' in kwargs:

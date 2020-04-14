@@ -25,9 +25,9 @@ class PublishingUser(ResourceSDK):
         self.resource_verify = bool(credentials.get('endpoint_verify', True))
         super(PublishingUser, self).__init__(credentials)
         self.client = WebSiteManagementClient(
-            self.credentials, str(credentials['subscription_id']))
-        self.logger.info("Use subscription: {}"
-                         .format(credentials['subscription_id']))
+            self.credentials, '{0}'.format(credentials['subscription_id']))
+        self.logger.info("Use subscription: {}".format(
+            credentials['subscription_id']))
 
     def set_or_update(self):
         self.logger.info("Setting/Updating deployment user...")

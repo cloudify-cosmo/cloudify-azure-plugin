@@ -7,7 +7,7 @@ requests>=2.23.0
 pathlib==1.0.1
 flake8==3.7.9
 tox==3.14.6
-https://github.com/cloudify-cosmo/cloudify-common/archive/master.zip
+git+https://github.com/cloudify-cosmo/cloudify-common@master#egg=cloudify-common[dispatcher]==master
 https://github.com/cloudify-cosmo/cloudify-cli/archive/master.zip
 testtools>=2.3.0
 requests_mock

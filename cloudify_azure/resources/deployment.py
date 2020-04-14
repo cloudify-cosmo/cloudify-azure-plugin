@@ -13,20 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import ast
 import json
 
-try:
-    # Python 3.x
-    from urllib.parse import urlparse
-    from urllib.request import urlopen
-except ImportError:
-    # Python 2.x
-    from urlparse import urlparse
-    from urllib2 import urlopen
-
-from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
+from cloudify import exceptions as cfy_exc
+from cloudify._compat import (urlopen, urlparse, text_type)
 
 from cloudify_azure import constants
 
@@ -37,7 +28,7 @@ from cloudify_azure.auth.oauth2 import to_service_principle_credentials
 
 
 def is_url(string):
-    parse_info = urlparse(str(string))
+    parse_info = urlparse('{0}'.format(string))
     return parse_info.scheme and (parse_info.netloc or parse_info.path)
 
 
@@ -49,25 +40,29 @@ class Deployment(object):
         self.timeout = timeout or 900
         self.resource_verify = bool(credentials.get('endpoint_verify', True))
         self.credentials = to_service_principle_credentials(
-            client_id=str(credentials['client_id']),
-            certificate=str(credentials.get('certificate', '')),
-            thumbprint=str(credentials.get('thumbprint', '')),
-            cloud_environment=str(credentials.get('cloud_environment', '')),
-            secret=str(credentials.get('client_secret', '')),
-            tenant=str(credentials['tenant_id']),
+            client_id='{0}'.format(credentials['client_id']),
+            certificate='{0}'.format(credentials.get('certificate', '')),
+            thumbprint='{0}'.format(credentials.get('thumbprint', '')),
+            cloud_environment='{0}'.format(
+                credentials.get('cloud_environment', '')),
+            secret='{0}'.format(credentials.get('client_secret', '')),
+            tenant='{0}'.format(credentials['tenant_id']),
             verify=self.resource_verify,
-            endpoints_active_directory=str(credentials.get(
+            endpoints_active_directory='{0}'.format(credentials.get(
                 'endpoints_active_directory', '')),
-            resource=str(credentials.get('endpoint_resource',
-                                         constants.OAUTH2_MGMT_RESOURCE),)
+            resource='{0}'.format(
+                credentials.get('endpoint_resource',
+                                constants.OAUTH2_MGMT_RESOURCE),)
         )
         self.client = ResourceManagementClient(
-            self.credentials, str(credentials['subscription_id']),
-            base_url=str(credentials.get('endpoints_resource_manager',
-                                         constants.CONN_API_ENDPOINT)))
+            self.credentials,
+            '{0}'.format(credentials['subscription_id']),
+            base_url='{0}'.format(
+                credentials.get('endpoints_resource_manager',
+                                constants.CONN_API_ENDPOINT)))
 
-        self.logger.info("Using subscription: {0}"
-                         .format(credentials['subscription_id']))
+        self.logger.info("Using subscription: {0}".format(
+            credentials['subscription_id']))
 
     def create(self, location):
         """Deploy the template to a resource group."""
@@ -89,27 +84,10 @@ class Deployment(object):
 
     @staticmethod
     def format_params(params):
-        # We need to traverse the parameters' dictionary
-        # and convert all unicode strings to regular strings
-        def convert_value(v):
-            if v is None:
-                return None
-            if isinstance(v, int) or isinstance(v, bool) or isinstance(v, str):
-                return v
-            if isinstance(v, unicode):
-                return ast.literal_eval(repr(v))
-            if isinstance(v, dict):
-                for k, y in v.items():
-                    v[k] = convert_value(y)
-                return v
-            raise Exception("Unhandled data type: {0} ({1})".format(
-                type(v), str(v)))
-
-        if params is None:
-            return None
+        if not isinstance(params, dict):
+            return params
         for k, v in params.items():
-            updated_value = convert_value(v)
-            params[k] = {"value": updated_value}
+            params[k] = {"value": v}
         return params
 
     def update(self, template, params):
@@ -152,7 +130,9 @@ class Deployment(object):
 def get_template(ctx, properties):
     template = properties.get('template')
     if template:
-        if isinstance(template, basestring):
+        template = template if not isinstance(template, bytes) \
+            else template.decode('utf-8')
+        if isinstance(template, text_type):
             ctx.logger.info("Template provided as a string in blueprint")
             ctx.logger.debug("Template string: %s", template)
             template = json.loads(template)

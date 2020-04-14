@@ -35,9 +35,9 @@ class ManagedCluster(ResourceSDK):
         self.resource_verify = bool(credentials.get('endpoint_verify', True))
         super(ManagedCluster, self).__init__(credentials)
         self.client = ContainerServiceClient(
-            self.credentials, str(credentials['subscription_id']))
+            self.credentials, '{0}'.format(credentials['subscription_id']))
         self.resourceClient = ResourceManagementClient(
-            self.credentials, str(credentials['subscription_id']))
+            self.credentials, '{0}'.format(credentials['subscription_id']))
         self.logger.info("Use subscription: {}"
                          .format(credentials['subscription_id']))
 

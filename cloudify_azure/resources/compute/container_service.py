@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from cloudify.decorators import operation
 from azure.mgmt.containerservice import ContainerServiceClient
 
@@ -30,7 +31,7 @@ class ContainerService(ResourceSDK):
         self.resource_verify = bool(credentials.get('endpoint_verify', True))
         super(ContainerService, self).__init__(credentials)
         self.client = ContainerServiceClient(
-            self.credentials, str(credentials['subscription_id']))
+            self.credentials, '{0}'.format(credentials['subscription_id']))
 
         self.logger.info("Use subscription: {}"
                          .format(credentials['subscription_id']))

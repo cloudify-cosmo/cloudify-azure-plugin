@@ -106,7 +106,7 @@ def create_data_disk(**_):
     # Generate a VHD Data Disk name if needed
     if not disk_name:
         ctx.logger.info('Generating a new Data Disk name')
-        for _ in xrange(0, 10):
+        for _ in range(0, 10):
             tmpname = disk_name_generator()
             if not data_disk_exists(pageblobsvc, disk_container, tmpname):
                 disk_name = tmpname

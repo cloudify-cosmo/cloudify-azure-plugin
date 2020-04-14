@@ -33,6 +33,7 @@ from ConfigParser import SafeConfigParser
 # Logger, default context
 from logging import DEBUG
 from cloudify import ctx
+
 # Constants
 from cloudify_azure import constants
 # AzureCredentials namedtuple
@@ -42,7 +43,7 @@ from cloudify.context import RelationshipSubjectContext
 
 def dict_update(orig, updates):
     '''Recursively merges two objects'''
-    for key, val in updates.iteritems():
+    for key, val in updates.items():
         if isinstance(val, Mapping):
             orig[key] = dict_update(orig.get(key, {}), val)
         else:
@@ -54,8 +55,7 @@ def runtime_properties_cleanup(ctx, force=False):
     # cleanup runtime properties
     if not force and ctx.instance.runtime_properties.get('async_op'):
         return
-    keys = [key for key in ctx.instance.runtime_properties.keys()]
-    for key in keys:
+    for key in list(ctx.instance.runtime_properties.keys()):
         del ctx.instance.runtime_properties[key]
 
 
@@ -130,11 +130,11 @@ def generate_resource_name(resource, generator=None, name=None, _ctx=ctx):
     name = name or get_resource_name(_ctx)
     # Generate a new name (if needed)
     if not name:
-        for _ in xrange(0, 15):
+        for _ in range(0, 15):
             if generator:
                 name = generator()
             else:
-                name = str(uuid4())
+                name = '{0}'.format(uuid4())
             # Check if we have a duplicate name
             try:
                 if not resource.exists(name):

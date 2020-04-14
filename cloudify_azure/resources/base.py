@@ -568,10 +568,10 @@ class Resource(object):
 class ResourceSDK(object):
     def __init__(self, credentials):
         self.credentials = to_service_principle_credentials(
-            client_id=str(credentials['client_id']),
-            secret=str(credentials.get('client_secret')),
-            thumbprint=str(credentials.get('thumbprint')),
-            certificate=str(credentials.get('certificate')),
-            tenant=str(credentials['tenant_id']),
+            client_id='{0}'.format(credentials['client_id']),
+            secret='{0}'.format(credentials.get('client_secret')),
+            thumbprint='{0}'.format(credentials.get('thumbprint')),
+            certificate='{0}'.format(credentials.get('certificate')),
+            tenant='{0}'.format(credentials['tenant_id']),
             verify=self.resource_verify
         )

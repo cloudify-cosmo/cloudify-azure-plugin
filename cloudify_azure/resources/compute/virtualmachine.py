@@ -27,6 +27,7 @@ from uuid import uuid4
 # Node properties and logger
 from cloudify import compute
 from cloudify import ctx
+from cloudify._compat import text_type
 # Exception handling
 from cloudify.exceptions import NonRecoverableError
 # Life-cycle operation decorator
@@ -184,7 +185,7 @@ def build_network_profile():
 
 def vm_name_generator():
     '''Generates a unique VM resource name'''
-    return str(uuid4())
+    return '{0}'.format(uuid4())
 
 
 def extract_powershell_content(string_with_powershell):
@@ -225,8 +226,8 @@ def _handle_userdata(existing_userdata):
     elif isinstance(existing_userdata, dict) or \
             isinstance(existing_userdata, list):
         existing_userdata = json.dumps(existing_userdata)
-    elif not isinstance(existing_userdata, basestring):
-        existing_userdata = str(existing_userdata)
+    else:
+        existing_userdata = '{0}'.format(existing_userdata)
 
     install_agent_userdata = ctx.agent.init_script()
     os_family = ctx.node.properties['os_family']
@@ -437,7 +438,7 @@ def configure(command_to_execute, file_uris, type_handler_version='v2.0', **_):
             nic_data = nic_iface.get(nic_name)
             if virtual_machine_name not in nic_data.get(
                     'properties', dict()).get(
-                        'virtualMachine', dict()).get('id', str()):
+                        'virtualMachine', dict()).get('id', ''):
                 return ctx.operation.retry(
                     message='Waiting for NIC {0} to '
                             'attach to VM {1}..'
@@ -459,7 +460,7 @@ def configure(command_to_execute, file_uris, type_handler_version='v2.0', **_):
             pubip_id = ip_cfg.get(
                 'properties', dict()).get(
                     'publicIPAddress', dict()).get('id')
-            if isinstance(pubip_id, basestring):
+            if isinstance(pubip_id, text_type):
                 # use the ID to get the data on the public ip
                 pubip = PublicIPAddress(
                     _ctx=rel_nic.target,
