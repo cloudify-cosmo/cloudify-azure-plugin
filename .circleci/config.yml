@@ -99,7 +99,7 @@ jobs:
           command: pip install cloudify==4.3.2
       - run:
           name: install azure plugin from branch
-          command: pip install -e .
+          command: pip install -r dev-requirements.txt -e .
       - run:
           name: install test requirements
           command: pip install nose testtools https://github.com/cloudify-cosmo/cloudify-fabric-plugin/archive/1.5.1.zip https://github.com/cloudify-incubator/cloudify-utilities-plugin/archive/1.7.1.zip https://github.com/cloudify-incubator/cloudify-ecosystem-test/archive/cd624d0f7eaf67ce998ea7b70fbc9b6c7f7c0398.zip
