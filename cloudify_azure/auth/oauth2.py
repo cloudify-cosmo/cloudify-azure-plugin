@@ -17,18 +17,19 @@
     ~~~~~~~~~~~
     OAuth 2.0 authorization interface for the Microsoft Azure REST API
 '''
+
+from cloudify._compat import httplib
+
 import binascii
 import importlib
 import base64
 import re
 # For credentials structuring
 from collections import namedtuple
-# Used for HTTP requests / verification
-import httplib
 import datetime
 import time
 import uuid
-
+from builtins import range
 import requests
 import jwt
 

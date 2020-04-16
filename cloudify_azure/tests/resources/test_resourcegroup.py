@@ -18,9 +18,10 @@
     Tests Microsoft Azure Resource Group interface
 '''
 
+from cloudify._compat import httplib
+
 from os import path
 import unittest
-import httplib
 import requests_mock
 
 from cloudify.test_utils import workflow_test

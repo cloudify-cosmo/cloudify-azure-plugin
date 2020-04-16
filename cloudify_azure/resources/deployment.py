@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import json
+from builtins import object
 
 from cloudify.decorators import operation
 from cloudify import exceptions as cfy_exc

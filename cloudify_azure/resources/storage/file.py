@@ -21,6 +21,7 @@
 # Name generation
 import random
 import string
+from builtins import range
 # Node properties and logger
 from cloudify import ctx
 # Exception handling

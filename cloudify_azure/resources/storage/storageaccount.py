@@ -18,10 +18,12 @@
     Microsoft Azure Storage Account interface
 '''
 
-import httplib
+from cloudify._compat import httplib
+
 # Random string
 import random
 import string
+from builtins import range
 # Node properties and logger
 from cloudify import ctx
 # Exception handling

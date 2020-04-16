@@ -18,10 +18,11 @@
     Tests Microsoft Azure REST API connection helpers
 '''
 
+from cloudify._compat import httplib
+
 from sys import stdout
 import logging
 import unittest
-import httplib
 import requests_mock
 
 from cloudify.mocks import MockCloudifyContext

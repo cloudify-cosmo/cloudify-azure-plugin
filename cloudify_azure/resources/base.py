@@ -18,11 +18,13 @@
     Microsoft Azure API abstraction layer
 '''
 
-# HTTP status codes
-import httplib
+from cloudify._compat import httplib
+
 # JSON serializing
 import json
 import yaml
+from builtins import object
+
 # Exception handling
 from cloudify.exceptions import NonRecoverableError, RecoverableError
 # API connection

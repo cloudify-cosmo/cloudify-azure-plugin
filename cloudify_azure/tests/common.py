@@ -18,7 +18,11 @@
     Test utilities
 '''
 
-import httplib
+from cloudify._compat import httplib
+from cloudify._compat import urlparse
+
+from builtins import object
+
 from cloudify_azure import constants
 
 # pylint: disable=R0913

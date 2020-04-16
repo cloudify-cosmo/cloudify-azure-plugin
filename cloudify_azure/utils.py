@@ -18,6 +18,8 @@
     Microsoft Azure plugin for Cloudify helper utilities
 '''
 
+from cloudify._compat import SafeConfigParser
+
 # Deep Copy
 from copy import deepcopy
 # OS path
@@ -28,10 +30,10 @@ from collections import Mapping
 from datetime import datetime
 # UUID
 from uuid import uuid4
-# Config parser
-from ConfigParser import SafeConfigParser
 # Logger, default context
 from logging import DEBUG
+from builtins import range
+
 from cloudify import ctx
 
 # Constants
