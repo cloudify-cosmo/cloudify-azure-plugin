@@ -18,22 +18,23 @@
     Microsoft Azure Storage Account interface
 '''
 
-from cloudify._compat import httplib
+from future import standard_library
+standard_library.install_aliases()
+from builtins import range
 
 # Random string
 import random
 import string
-from builtins import range
+
 # Node properties and logger
 from cloudify import ctx
-# Exception handling
+from cloudify._compat import httplib
 from cloudify.exceptions import RecoverableError
+
 # Base resource class
-from cloudify_azure.resources.base import Resource
-# Lifecycle operation decorator
 from cloudify.decorators import operation
-# Logger, API version
 from cloudify_azure import (constants, utils)
+from cloudify_azure.resources.base import Resource
 
 
 class StorageAccount(Resource):

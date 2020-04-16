@@ -18,21 +18,21 @@
     Microsoft Azure REST API connection helpers
 '''
 
+# Py3 Compatibility
+from future import standard_library
+standard_library.install_aliases()
+from builtins import object
+
+import json
+import requests
+from requests.packages import urllib3
+
+from cloudify import ctx
 from cloudify._compat import urlparse
 
-# Used for HTTP requests
-import requests
-# Used to implement connection retrying
-from requests.packages import urllib3
-# Used for pretty-printing JSON
-import json
-# Constants, exceptions, logging
-from cloudify_azure import (exceptions, utils)
-# Used to get a Azure access token
 from cloudify_azure.auth.oauth2 import OAuth2
-# Context
-from cloudify import ctx
-from builtins import range
+from cloudify_azure import (exceptions, utils)
+
 
 class AzureConnection(object):
     '''

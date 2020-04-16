@@ -18,22 +18,23 @@
     Microsoft Azure Storage Disk interface
 '''
 
-# Name generation
+from future import standard_library
+standard_library.install_aliases()
+from builtins import range
+
 import random
 import string
-from builtins import range
-# Node properties and logger
+
 from cloudify import ctx
-# Exception handling
-from cloudify.exceptions import RecoverableError, NonRecoverableError
-# Lifecycle operation decorator
 from cloudify.decorators import operation
-# Storage Account resource class
+from cloudify.exceptions import RecoverableError, NonRecoverableError
+
+from azure.storage.common.cloudstorageaccount import CloudStorageAccount
+
 from cloudify_azure.resources.storage.storageaccount import StorageAccount
 # Logger, API version
 from cloudify_azure import (constants, utils)
 # Azure storage API interface
-from azure.storage.common.cloudstorageaccount import CloudStorageAccount
 
 # pylint: disable=W0703
 

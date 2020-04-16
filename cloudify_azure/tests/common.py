@@ -18,10 +18,10 @@
     Test utilities
 '''
 
-from cloudify._compat import httplib
-from cloudify._compat import urlparse
+from future import standard_library
+standard_library.install_aliases()
 
-from builtins import object
+from cloudify._compat import httplib
 
 from cloudify_azure import constants
 

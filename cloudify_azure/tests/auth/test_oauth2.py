@@ -18,16 +18,18 @@
     Tests OAuth 2.0 authorization interface for the Microsoft Azure REST API
 '''
 
-from cloudify._compat import httplib
+from future import standard_library
+standard_library.install_aliases()
 
-from sys import stdout
+import mock
 import logging
 import unittest
-import mock
 import requests_mock
+from sys import stdout
 
-from cloudify.mocks import MockCloudifyContext
+from cloudify._compat import httplib
 from cloudify.state import current_ctx
+from cloudify.mocks import MockCloudifyContext
 
 from cloudify_azure.auth import oauth2
 from cloudify_azure import constants, exceptions

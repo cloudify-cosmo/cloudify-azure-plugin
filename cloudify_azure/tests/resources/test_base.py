@@ -18,21 +18,23 @@
     Tests Microsoft Azure API abstraction layer
 '''
 
-from cloudify._compat import httplib
+# pylint: disable=R0913
 
-from sys import stdout
+from future import standard_library
+standard_library.install_aliases()
+
 import logging
 import unittest
 import requests_mock
+from sys import stdout
 
-from cloudify.mocks import MockCloudifyContext
+from cloudify._compat import httplib
 from cloudify.state import current_ctx
+from cloudify.mocks import MockCloudifyContext
 from cloudify.exceptions import RecoverableError
 
 from cloudify_azure import constants
 from cloudify_azure.resources.base import Resource
-
-# pylint: disable=R0913
 
 
 class ResourcesBaseTestCase(unittest.TestCase):

@@ -18,18 +18,19 @@
     Tests Microsoft Azure Resource Group interface
 '''
 
-from cloudify._compat import httplib
-
-from os import path
-import unittest
-import requests_mock
-
-from cloudify.test_utils import workflow_test
-
-from cloudify_azure import constants
-
 # pylint: disable=R0201
 # pylint: disable=R0913
+
+from future import standard_library
+standard_library.install_aliases()
+
+import unittest
+from os import path
+import requests_mock
+
+from cloudify_azure import constants
+from cloudify._compat import httplib
+from cloudify.test_utils import workflow_test
 
 
 class TestResourceGroup(unittest.TestCase):

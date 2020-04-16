@@ -18,22 +18,23 @@
     Microsoft Azure API abstraction layer
 '''
 
-from cloudify._compat import httplib
+from future import standard_library
+standard_library.install_aliases()
+from builtins import object
+
 
 # JSON serializing
 import json
 import yaml
-from builtins import object
 
-# Exception handling
+from cloudify import ctx
+from cloudify._compat import httplib
 from cloudify.exceptions import NonRecoverableError, RecoverableError
+
 # API connection
 from cloudify_azure import connection, utils
 # Exceptions
 from cloudify_azure.exceptions import UnexpectedResponse
-# Runtime properties
-from cloudify import ctx
-
 from cloudify_azure.auth.oauth2 import to_service_principle_credentials
 
 

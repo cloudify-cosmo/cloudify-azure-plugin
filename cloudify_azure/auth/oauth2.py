@@ -18,38 +18,38 @@
     OAuth 2.0 authorization interface for the Microsoft Azure REST API
 '''
 
-from cloudify._compat import httplib
+# pylint: disable=R0903
 
-import binascii
-import importlib
-import base64
+from future import standard_library
+standard_library.install_aliases()
+from builtins import object
+
 import re
-# For credentials structuring
-from collections import namedtuple
-import datetime
+import jwt
 import time
 import uuid
-from builtins import range
+import base64
+import datetime
 import requests
-import jwt
+import binascii
+import importlib
+from collections import namedtuple
 
-# Used to implement connection retrying
+import adal
+from adal.constants import Jwt
 from requests.packages import urllib3
+
 from msrestazure.azure_active_directory import AADMixin
 from msrestazure.azure_cloud import (AZURE_PUBLIC_CLOUD, AZURE_CHINA_CLOUD)
 from msrest.exceptions import AuthenticationError, raise_with_traceback
 from azure.common.credentials import ServicePrincipalCredentials
-import adal
-from adal.constants import Jwt
 
-# Exception handling, constants, logging
-from cloudify_azure import \
-    (constants, exceptions)
-# Context
 from cloudify import ctx
+from cloudify._compat import httplib
 from cloudify.exceptions import NonRecoverableError
 
-# pylint: disable=R0903
+from cloudify_azure import \
+    (constants, exceptions)
 
 
 AzureCredentials = namedtuple(
