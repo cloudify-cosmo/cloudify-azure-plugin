@@ -27,7 +27,7 @@ from requests.packages import urllib3
 from builtins import object
 
 from cloudify import ctx
-from cloudify._compat import urlparse
+from cloudify._compat import urlparse, parse_qs
 
 from cloudify_azure.auth.oauth2 import OAuth2
 from cloudify_azure import (exceptions, utils)
@@ -99,7 +99,7 @@ class AzureConnection(object):
         kwargs['verify'] = creds.endpoint_verify
 
         # Update the params list with the api version
-        url_params = urlparse.parse_qs(urlparse.urlparse(url).query)
+        url_params = parse_qs(urlparse.urlparse(url).query)
         if not url_params.get('api-version'):
             params = kwargs.pop('params', dict())
             params['api-version'] = params.get('api-version', self.api_version)
