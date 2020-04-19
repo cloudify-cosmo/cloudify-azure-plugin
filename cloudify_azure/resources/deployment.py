@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import json
-from builtins import object
 
 from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.resource.resources.models import DeploymentMode

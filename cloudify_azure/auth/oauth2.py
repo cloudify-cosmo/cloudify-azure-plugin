@@ -20,8 +20,6 @@
 
 # pylint: disable=R0903
 
-from builtins import object
-
 import re
 import jwt
 import time

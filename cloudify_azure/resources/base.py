@@ -20,7 +20,6 @@
 
 import json
 import yaml
-from builtins import object
 
 from cloudify import ctx
 from cloudify._compat import httplib
