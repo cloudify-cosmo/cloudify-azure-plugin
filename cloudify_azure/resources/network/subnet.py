@@ -12,11 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-'''
+"""
     resources.network.Subnet
     ~~~~~~~~~~~~~~~~~~~~~~~~
     Microsoft Azure Subnet interface
-'''
+"""
 
 # Node properties and logger
 from cloudify import ctx
@@ -36,7 +36,7 @@ from cloudify_azure.resources.network.routetable \
 
 
 class Subnet(Resource):
-    '''
+    """
         Microsoft Azure Subnet interface
 
     .. warning::
@@ -48,7 +48,7 @@ class Subnet(Resource):
     :param string api_version: API version to use for all requests
     :param `logging.Logger` logger:
         Parent logger for the class to use. Defaults to `ctx.logger`
-    '''
+    """
     def __init__(self,
                  resource_group=None,
                  virtual_network=None,
@@ -75,7 +75,7 @@ class Subnet(Resource):
 
 @operation(resumable=True)
 def create(**_):
-    '''Uses an existing, or creates a new, Subnet'''
+    """Uses an existing, or creates a new, Subnet"""
     # Create a resource (if necessary)
     utils.task_resource_create(
         Subnet(api_version=ctx.node.properties.get(
@@ -90,7 +90,7 @@ def create(**_):
 
 @operation(resumable=True)
 def delete(**_):
-    '''Deletes a Subnet'''
+    """Deletes a Subnet"""
     # Delete the resource
     utils.task_resource_delete(
         Subnet(api_version=ctx.node.properties.get(
@@ -101,7 +101,7 @@ def delete(**_):
 
 @operation(resumable=True)
 def attach_network_security_group(**_):
-    '''Attaches a Network Security Group (source) to the Subnet (target)'''
+    """Attaches a Network Security Group (source) to the Subnet (target)"""
     nsg = NetworkSecurityGroup(_ctx=ctx.source)
     nsg_name = utils.get_resource_name(ctx.source)
     # Attach
@@ -122,7 +122,7 @@ def attach_network_security_group(**_):
 
 @operation(resumable=True)
 def detach_network_security_group(**_):
-    '''Detaches a Network Security Group to the Subnet'''
+    """Detaches a Network Security Group to the Subnet"""
     # Detach
     utils.task_resource_update(
         Subnet(_ctx=ctx.target, api_version=ctx.source.node.properties.get(
@@ -136,7 +136,7 @@ def detach_network_security_group(**_):
 
 @operation(resumable=True)
 def attach_route_table(**_):
-    '''Attaches a Route Table (source) to the Subnet (target)'''
+    """Attaches a Route Table (source) to the Subnet (target)"""
     rtbl = RouteTable(_ctx=ctx.source)
     rtbl_name = utils.get_resource_name(ctx.source)
     # Attach
@@ -157,7 +157,7 @@ def attach_route_table(**_):
 
 @operation(resumable=True)
 def detach_route_table(**_):
-    '''Detaches a Route Table to the Subnet'''
+    """Detaches a Route Table to the Subnet"""
     # Detach
     utils.task_resource_update(
         Subnet(_ctx=ctx.target, api_version=ctx.source.node.properties.get(

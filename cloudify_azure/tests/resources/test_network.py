@@ -12,11 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-'''
+"""
     tests.resources.network
     ~~~~~~~~~~~~~~~~~~~~~~~
     Tests Microsoft Azure Network interfaces
-'''
+"""
 
 from os import path
 import unittest
@@ -30,7 +30,7 @@ from cloudify_azure.tests import common as tutils
 
 
 class TestNetwork(unittest.TestCase):
-    '''Tests Network interfaces'''
+    """Tests Network interfaces"""
     blueprint_path = path.join('blueprints',
                                'test_network.yaml')
 
@@ -45,19 +45,19 @@ class TestNetwork(unittest.TestCase):
         }
 
     def mock_install_endpoints(self, mock):
-        '''Mock install endpoints'''
+        """Mock install endpoints"""
         tutils.mock_oauth2_endpoint(mock, self.params)
         tutils.mock_retry_async_endpoint(mock, self.params)
         tutils.mock_resourcegroup_endpoint(mock, self.params)
 
     def mock_uninstall_endpoints(self, mock):
-        '''Mock uninstall endpoints'''
+        """Mock uninstall endpoints"""
         tutils.mock_oauth2_endpoint(mock, self.params)
         tutils.mock_retry_async_endpoint(mock, self.params)
         tutils.mock_resourcegroup_endpoint(mock, self.params)
 
     def mock_network_endpoints(self, mock):
-        '''Mock network endpoints'''
+        """Mock network endpoints"""
         tutils.mock_network_endpoints(mock, self.params,
                                       'virtualNetworks', 'mockvnet')
         tutils.mock_network_endpoints(mock, self.params,
@@ -99,7 +99,7 @@ class TestNetwork(unittest.TestCase):
     @requests_mock.Mocker(real_http=True)
     @workflow_test(blueprint_path, copy_plugin_yaml=True)
     def test_lifecycle_install(self, cfy_local, mock, *_):
-        '''network install workflow'''
+        """network install workflow"""
         self.mock_install_endpoints(mock)
         self.mock_network_endpoints(mock)
         cfy_local.execute('install', task_retries=1)
@@ -108,7 +108,7 @@ class TestNetwork(unittest.TestCase):
     @requests_mock.Mocker(real_http=True)
     @workflow_test(blueprint_path, copy_plugin_yaml=True)
     def test_lifecycle_uninstall(self, cfy_local, mock, *_):
-        '''network uninstall workflow'''
+        """network uninstall workflow"""
         self.mock_uninstall_endpoints(mock)
         self.mock_network_endpoints(mock)
         cfy_local.execute('uninstall', task_retries=2)

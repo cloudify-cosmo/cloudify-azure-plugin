@@ -12,18 +12,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-'''
+"""
     resources.storage.Disk
     ~~~~~~~~~~~~~~~~~~~~~~
     Microsoft Azure Storage Disk interface
-'''
+"""
 
-from future import standard_library
-standard_library.install_aliases()
-from builtins import range
 
 import random
 import string
+from builtins import range
 
 from cloudify import ctx
 from cloudify.decorators import operation
@@ -40,19 +38,19 @@ from cloudify_azure import (constants, utils)
 
 
 def disk_name_generator():
-    '''Generates a unique Disk resource name'''
+    """Generates a unique Disk resource name"""
     return ''.join(random.choice(string.lowercase + string.digits)
                    for i in range(random.randint(32, 76))) + '.vhd'
 
 
 def data_disk_exists(pageblobsvc, disk_container, disk_name):
-    '''
+    """
         Checks if a Data Disk already exists
 
     :rtype: `azure.storage.blob.models.Blob` or `None`
     :returns: Azure Page Blob object if the Data Disk
         exists or None if it does not
-    '''
+    """
     ctx.logger.debug('Checking if Data Disk "{0}/{1}" exists'
                      .format(disk_container, disk_name))
     try:
@@ -67,7 +65,7 @@ def data_disk_exists(pageblobsvc, disk_container, disk_name):
 
 
 def get_cloud_storage_account(_ctx=ctx):
-    '''Gets the Azure Blob storage service'''
+    """Gets the Azure Blob storage service"""
     # Get the storage account
     storage_account = utils.get_parent(
         _ctx.instance,
@@ -87,7 +85,7 @@ def get_cloud_storage_account(_ctx=ctx):
 
 @operation(resumable=True)
 def create_data_disk(**_):
-    '''Uses an existing, or creates a new, Data Disk placeholder'''
+    """Uses an existing, or creates a new, Data Disk placeholder"""
     res_cfg = utils.get_resource_config() or dict()
     disk_name = ctx.node.properties.get('name')
     disk_container = res_cfg.get('container_name')
@@ -128,7 +126,7 @@ def create_data_disk(**_):
 
 @operation(resumable=True)
 def delete_data_disk(**_):
-    '''Deletes a Data Disk'''
+    """Deletes a Data Disk"""
     res_cfg = utils.get_resource_config() or dict()
     disk_name = ctx.instance.runtime_properties.get('name')
     disk_container = ctx.instance.runtime_properties.get('container')

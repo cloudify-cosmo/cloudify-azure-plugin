@@ -12,11 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-'''
+"""
     resources.network.NetworkInterfaceCard
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Microsoft Azure Network Interface Card interface
-'''
+"""
 
 # Node properties and logger
 from cloudify import ctx
@@ -41,7 +41,7 @@ from cloudify_azure.resources.network.publicipaddress \
 
 
 class NetworkInterfaceCard(Resource):
-    '''
+    """
         Microsoft Azure Network Interface Card interface
 
     .. warning::
@@ -52,7 +52,7 @@ class NetworkInterfaceCard(Resource):
     :param string api_version: API version to use for all requests
     :param `logging.Logger` logger:
         Parent logger for the class to use. Defaults to `ctx.logger`
-    '''
+    """
     def __init__(self,
                  resource_group=None,
                  api_version=constants.API_VER_NETWORK,
@@ -73,7 +73,7 @@ class NetworkInterfaceCard(Resource):
 
 
 def get_connected_nsg():
-    '''Finds a connected Network Security Group'''
+    """Finds a connected Network Security Group"""
     nsg = None
     nsg_name = None
     for rel in ctx.instance.relationships:
@@ -90,7 +90,7 @@ def get_connected_nsg():
 
 @operation(resumable=True)
 def create(**_):
-    '''Uses an existing, or creates a new, Network Interface Card'''
+    """Uses an existing, or creates a new, Network Interface Card"""
     utils.generate_resource_name(NetworkInterfaceCard(
         api_version=ctx.node.properties.get('api_version',
                                             constants.API_VER_NETWORK)))
@@ -98,7 +98,7 @@ def create(**_):
 
 @operation(resumable=True)
 def configure(**_):
-    '''
+    """
         Uses an existing, or creates a new, Network Interface Card
 
     .. warning::
@@ -109,7 +109,7 @@ def configure(**_):
         it's actually created.  The actual "create" operation
         simply assigns a UUID for the node and the "configure"
         operation creates the object
-    '''
+    """
     # Create a resource (if necessary)
     utils.task_resource_create(
         NetworkInterfaceCard(api_version=ctx.node.properties.get(
@@ -128,9 +128,9 @@ def configure(**_):
 
 @operation(resumable=True)
 def start(**_):
-    '''
+    """
         Stores NIC IPs in runtime properties.
-    '''
+    """
 
     creds = utils.get_credentials(_ctx=ctx)
 
@@ -187,7 +187,7 @@ def start(**_):
 
 @operation(resumable=True)
 def delete(**_):
-    '''Deletes a Network Interface Card'''
+    """Deletes a Network Interface Card"""
     # Delete the resource
     utils.task_resource_delete(
         NetworkInterfaceCard(api_version=ctx.node.properties.get(
@@ -196,7 +196,7 @@ def delete(**_):
 
 @operation(resumable=True)
 def attach_ip_configuration(**_):
-    '''Generates a usable UUID for the NIC's IP Configuration'''
+    """Generates a usable UUID for the NIC's IP Configuration"""
     # Generate the IPConfiguration's name
     utils.generate_resource_name(IPConfiguration(
         network_interface_card=utils.get_resource_name(_ctx=ctx.source),

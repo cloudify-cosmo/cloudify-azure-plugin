@@ -12,11 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-'''
+"""
     resources.compute.VirtualMachine
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Microsoft Azure Virtual Machine interface
-'''
+"""
 
 import base64
 import json
@@ -51,7 +51,7 @@ PS_CLOSE = '</powershell>'
 
 
 class VirtualMachine(Resource):
-    '''
+    """
         Microsoft Azure Virtual Machine interface
 
     .. warning::
@@ -62,7 +62,7 @@ class VirtualMachine(Resource):
     :param string api_version: API version to use for all requests
     :param `logging.Logger` logger:
         Parent logger for the class to use. Defaults to `ctx.logger`
-    '''
+    """
     def __init__(self,
                  resource_group=None,
                  api_version=constants.API_VER_COMPUTE,
@@ -84,14 +84,14 @@ class VirtualMachine(Resource):
 
 
 def build_osdisk_profile(usr_osdisk=None):
-    '''
+    """
         Creates a storageProfile::osDisk object for use when
         creating a Virtual Machine
 
     :param dict usr_osdisk: User-override data
     :returns: storageProfile::osDisk object
     :rtype: dict
-    '''
+    """
     osdisk = dict()
     if isinstance(usr_osdisk, dict):
         osdisk = deepcopy(usr_osdisk)
@@ -114,14 +114,14 @@ def build_osdisk_profile(usr_osdisk=None):
 
 
 def build_datadisks_profile(usr_datadisks):
-    '''
+    """
         Creates a list of storageProfile::dataDisk objects for use when
         creating a Virtual Machine
 
     :param dict usr_datadisks: User data
     :returns: List of storageProfile::dataDisk objects
     :rtype: list
-    '''
+    """
     datadisks = list()
     if not usr_datadisks:
         return list()
@@ -146,13 +146,13 @@ def build_datadisks_profile(usr_datadisks):
 
 
 def build_network_profile():
-    '''
+    """
         Creates a networkProfile object complete with
         a list of networkInterface objects
 
     :returns: networkProfile object
     :rtype: dict
-    '''
+    """
     network_interfaces = list()
     net_rels = utils.get_relationships_by_type(
         ctx.instance.relationships,
@@ -184,7 +184,7 @@ def build_network_profile():
 
 
 def vm_name_generator():
-    '''Generates a unique VM resource name'''
+    """Generates a unique VM resource name"""
     return '{0}'.format(uuid4())
 
 
@@ -282,7 +282,7 @@ def _handle_userdata(existing_userdata):
 
 @operation(resumable=True)
 def create(args=None, **_):
-    '''Uses an existing, or creates a new, Virtual Machine'''
+    """Uses an existing, or creates a new, Virtual Machine"""
     # Generate a resource name (if needed)
     utils.generate_resource_name(
         VirtualMachine(api_version=ctx.node.properties.get(
@@ -369,7 +369,7 @@ def create(args=None, **_):
 
 @operation(resumable=True)
 def configure(command_to_execute, file_uris, type_handler_version='v2.0', **_):
-    '''Configures the resource'''
+    """Configures the resource"""
     os_family = ctx.node.properties.get('os_family', '').lower()
     if os_family == 'windows':
         utils.task_resource_create(
@@ -506,7 +506,7 @@ def configure(command_to_execute, file_uris, type_handler_version='v2.0', **_):
 
 @operation(resumable=True)
 def delete(**_):
-    '''Deletes a Virtual Machine'''
+    """Deletes a Virtual Machine"""
     # Delete the resource
     utils.task_resource_delete(
         VirtualMachine(api_version=ctx.node.properties.get(
@@ -527,7 +527,7 @@ def delete(**_):
 
 @operation(resumable=True)
 def attach_data_disk(lun, **_):
-    '''Attaches a data disk'''
+    """Attaches a data disk"""
     vm_iface = VirtualMachine(_ctx=ctx.source,
                               api_version=ctx.source.node.properties.get(
                                     'api_version', constants.API_VER_COMPUTE))
@@ -573,7 +573,7 @@ def attach_data_disk(lun, **_):
 
 @operation(resumable=True)
 def detach_data_disk(**_):
-    '''Detaches a data disk'''
+    """Detaches a data disk"""
     vm_iface = VirtualMachine(_ctx=ctx.source,
                               api_version=ctx.source.node.properties.get(
                                 'api_version', constants.API_VER_COMPUTE))

@@ -12,17 +12,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-'''
+"""
     tests.resources.ResourceGroup
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Tests Microsoft Azure Resource Group interface
-'''
+"""
 
 # pylint: disable=R0201
 # pylint: disable=R0913
-
-from future import standard_library
-standard_library.install_aliases()
 
 import unittest
 from os import path
@@ -34,7 +31,7 @@ from cloudify.test_utils import workflow_test
 
 
 class TestResourceGroup(unittest.TestCase):
-    '''Tests Resource Group interface'''
+    """Tests Resource Group interface"""
     blueprint_path = path.join('blueprints',
                                'test_resourcegroup.yaml')
 
@@ -46,7 +43,7 @@ class TestResourceGroup(unittest.TestCase):
         self.mock_endpoint = '/resourceGroups'
 
     def mock_oauth2_endpoint(self, mock):
-        '''Mock endpoint URLs'''
+        """Mock endpoint URLs"""
         token = '1234-1234-1234-1234'
         mock.register_uri(
             'POST',
@@ -60,7 +57,7 @@ class TestResourceGroup(unittest.TestCase):
     @requests_mock.Mocker(real_http=True)
     @workflow_test(blueprint_path, copy_plugin_yaml=True)
     def test_lifecycle_install(self, cfy_local, mock, *_):
-        '''ResourceGroup install workflow'''
+        """ResourceGroup install workflow"""
         self.mock_oauth2_endpoint(mock)
         # Mock the Azure async "retry" endpoint
         mock.register_uri(
@@ -92,7 +89,7 @@ class TestResourceGroup(unittest.TestCase):
     @requests_mock.Mocker(real_http=True)
     @workflow_test(blueprint_path, copy_plugin_yaml=True)
     def test_lifecycle_uninstall(self, cfy_local, mock, *_):
-        '''ResourceGroup uninstall workflow'''
+        """ResourceGroup uninstall workflow"""
         self.mock_oauth2_endpoint(mock)
         mock.register_uri(
             'DELETE',

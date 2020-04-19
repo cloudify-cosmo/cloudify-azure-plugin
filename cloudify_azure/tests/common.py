@@ -12,24 +12,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-'''
+
+"""
     tests.common
     ~~~~~~~~~~~~
     Test utilities
-'''
+"""
 
-from future import standard_library
-standard_library.install_aliases()
+# pylint: disable=R0913
 
 from cloudify._compat import httplib
 
 from cloudify_azure import constants
 
-# pylint: disable=R0913
-
 
 def mock_oauth2_endpoint(mock, params):
-    '''Mock endpoint URLs'''
+    """Mock endpoint URLs"""
     mock.register_uri(
         'POST',
         '{0}/{1}/oauth2/token'.format(
@@ -41,7 +39,7 @@ def mock_oauth2_endpoint(mock, params):
 
 
 def mock_retry_async_endpoint(mock, params):
-    '''Mock the Azure async "retry" endpoint'''
+    """Mock the Azure async "retry" endpoint"""
     mock.register_uri(
         'GET',
         params['mock_retry_url'],
@@ -51,7 +49,7 @@ def mock_retry_async_endpoint(mock, params):
 
 
 def mock_resourcegroup_endpoint(mock, params):
-    '''Mock ResourceGroup endpoint URLs'''
+    """Mock ResourceGroup endpoint URLs"""
     mock.register_uri(
         'GET',
         '{0}/subscriptions/{1}{2}'.format(
@@ -66,7 +64,7 @@ def mock_resourcegroup_endpoint(mock, params):
 
 
 def mock_storageaccount_endpoint(mock, params):
-    '''Mock StorageAccount endpoint URLs'''
+    """Mock StorageAccount endpoint URLs"""
     mock.register_uri(
         'POST',
         '{0}/subscriptions/{1}{2}'.format(
@@ -87,7 +85,7 @@ def mock_storageaccount_endpoint(mock, params):
 
 def mock_endpoints(mock, params, res_type,
                    res_name, api_version, cls, get_json=None):
-    '''Mock an endpoint'''
+    """Mock an endpoint"""
     endpoint = '{0}/subscriptions/{1}{2}'.format(
         constants.CONN_API_ENDPOINT,
         params['subscription_id'],
@@ -123,18 +121,18 @@ def mock_endpoints(mock, params, res_type,
 
 
 def mock_network_endpoints(mock, params, res_type, res_name, get_json=None):
-    '''Mock a network endpoint'''
+    """Mock a network endpoint"""
     mock_endpoints(mock, params, res_type, res_name,
                    constants.API_VER_NETWORK, 'Microsoft.Network', get_json)
 
 
 def mock_compute_endpoints(mock, params, res_type, res_name, get_json=None):
-    '''Mock a compute endpoint'''
+    """Mock a compute endpoint"""
     mock_endpoints(mock, params, res_type, res_name,
                    constants.API_VER_COMPUTE, 'Microsoft.Compute', get_json)
 
 
 def mock_storage_endpoints(mock, params, res_type, res_name, get_json=None):
-    '''Mock a storage endpoint'''
+    """Mock a storage endpoint"""
     mock_endpoints(mock, params, res_type, res_name,
                    constants.API_VER_STORAGE, 'Microsoft.Storage', get_json)

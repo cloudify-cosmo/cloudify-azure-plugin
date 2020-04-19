@@ -13,11 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from future import standard_library
-standard_library.install_aliases()
-from builtins import object
-
 import json
+from builtins import object
 
 from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.resource.resources.models import DeploymentMode

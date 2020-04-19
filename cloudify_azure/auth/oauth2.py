@@ -12,16 +12,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-'''
+"""
     auth.OAuth2
     ~~~~~~~~~~~
     OAuth 2.0 authorization interface for the Microsoft Azure REST API
-'''
+"""
 
 # pylint: disable=R0903
 
-from future import standard_library
-standard_library.install_aliases()
 from builtins import object
 
 import re
@@ -86,25 +84,25 @@ def generate_jwt_token(certificate, thumbprint, client_id, talent_id):
     return jwt_token
 
 
-'''
+"""
     Microsoft Azure credentials and access information
 
 :param string tenant_id: Azure tenant ID
 :param string client_id: Azure client ID (AD username)
 :param string client_secret: Azure client secret (AD password)
 :param string subscription_id: Azure subscription ID
-'''
+"""
 
 
 class OAuth2(object):
-    '''
+    """
         OAuth 2.0 interface for the Microsoft Azure REST API
 
     :param `AzureCredentials` credentials:
         Azure credentials and access information
     :param `logging.Logger` logger:
         Logger for the class to use. Defaults to `ctx.logger`
-    '''
+    """
 
     def __init__(self, credentials, logger=None, _ctx=ctx):
         # Set the active context
@@ -119,7 +117,7 @@ class OAuth2(object):
         self.credentials = credentials
 
     def request_access_token(self):
-        '''Tenant-specific access token request.
+        """Tenant-specific access token request.
 
         .. note::
 
@@ -132,7 +130,7 @@ class OAuth2(object):
         :raises: :exc:`cloudify_azure.exceptions.UnauthorizedRequest`,
                  :exc:`cloudify_azure.exceptions.UnexpectedResponse`,
                  :exc:`requests.RequestException`
-        '''
+        """
         payload = {
             'client_id': self.credentials.client_id,
             'grant_type': constants.OAUTH2_GRANT_TYPE,

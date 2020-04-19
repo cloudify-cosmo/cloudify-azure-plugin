@@ -12,20 +12,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-'''
+
+"""
     Connection
     ~~~~~~~~~~
     Microsoft Azure REST API connection helpers
-'''
+"""
 
 # Py3 Compatibility
-from future import standard_library
-standard_library.install_aliases()
-from builtins import object
 
 import json
 import requests
 from requests.packages import urllib3
+from builtins import object
 
 from cloudify import ctx
 from cloudify._compat import urlparse
@@ -35,12 +34,12 @@ from cloudify_azure import (exceptions, utils)
 
 
 class AzureConnection(object):
-    '''
+    """
         Connection handler for the Microsoft Azure REST API
 
     :param `logging.Logger` logger:
         Logger for the class to use. Defaults to `ctx.logger`
-    '''
+    """
     def __init__(self, api_version=None, logger=None, _ctx=ctx):
         # Set the active context
         self.ctx = _ctx
@@ -61,7 +60,7 @@ class AzureConnection(object):
             self.session.close()
 
     def request(self, **kwargs):
-        '''
+        """
             Builds, and executes, a request to the
             Microsoft Azure API service.  The parameters
             are passed as-is (with one exception, see notes)
@@ -83,7 +82,7 @@ class AzureConnection(object):
 
         :returns: A configured requests.Session instance
         :rtype: :class:`requests.Response`
-        '''
+        """
         # Get current credentials
         creds = utils.get_credentials(_ctx=self.ctx)
         # Rework the URL
@@ -128,14 +127,14 @@ class AzureConnection(object):
         return res
 
     def get_session_connection(self):
-        '''
+        """
             Creates a `requests.Session` instance with
             an Azure API access token and includes basic
             connection fault tolerance.
 
         :returns: A configured requests.Session instance
         :rtype: :class:`requests.Session`
-        '''
+        """
         # Build a session object with some fault tolerance
         # Retry up to 10 times with increasing backoff time
         # up to 120 seconds.
@@ -160,13 +159,13 @@ class AzureConnection(object):
         return session
 
     def get_access_token(self):
-        '''
+        """
             Requests a new access token from the Azure
             authorization service
 
         :returns: An Azure API access token
         :rtype: string
-        '''
+        """
         # Load the credentials
         creds = utils.get_credentials(_ctx=self.ctx)
         # Prepare the OAuth 2.0 client

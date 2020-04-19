@@ -12,18 +12,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-'''
+"""
     resources.storage.FileShare
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Microsoft Azure Storage File Share interface
-'''
+"""
 
-from future import standard_library
-standard_library.install_aliases()
-from builtins import range
+# pylint: disable=W0703
+# pylint: disable=R0914
 
 import random
 import string
+from builtins import range
 
 from cloudify import ctx
 from cloudify.decorators import operation
@@ -34,24 +34,21 @@ from cloudify_azure.resources.storage.storageaccount import StorageAccount
 
 from azure.storage.common.cloudstorageaccount import CloudStorageAccount
 
-# pylint: disable=W0703
-# pylint: disable=R0914
-
 
 def file_share_name_generator():
-    '''Generates a unique File Share resource name'''
+    """Generates a unique File Share resource name"""
     return ''.join(random.choice(string.lowercase + string.digits)
                    for i in range(random.randint(24, 63)))
 
 
 def file_share_exists(filesvc, share_name):
-    '''
+    """
         Checks if a File Share already exists
 
     :rtype: `azure.storage.file.models.Share` or `None`
     :returns: Azure File Share object if the File Share
         exists or None if it does not
-    '''
+    """
     ctx.logger.debug('Checking if File Share "{0}" exists'
                      .format(share_name))
     try:
@@ -67,7 +64,7 @@ def file_share_exists(filesvc, share_name):
 
 @operation(resumable=True)
 def create_file_share(**_):
-    '''Creates an Azure File Share'''
+    """Creates an Azure File Share"""
     # Get resource config values
     res_cfg = utils.get_resource_config() or dict()
     share_name = ctx.node.properties.get('name')
