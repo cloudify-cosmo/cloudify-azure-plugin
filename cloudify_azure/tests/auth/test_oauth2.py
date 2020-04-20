@@ -124,7 +124,8 @@ class OAuth2TestCase(unittest.TestCase):
     @mock.patch('requests.sessions.Session.post')
     def test_auth_with_certificate(self, post_mock, jwt_encode_mock):
         post_mock.return_value = mock.MagicMock()
-        jwt_encode_mock.return_value = "sample_client_assertion"
+        jwt_encode_mock.return_value = "sample_client_assertion".encode(
+            'utf-8')
         post_mock.return_value.json = mock.MagicMock(
             return_value={'access_token': '123'})
         post_mock.return_value.status_code = httplib.OK

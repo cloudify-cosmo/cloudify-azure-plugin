@@ -18,10 +18,10 @@
     Microsoft Azure Storage Disk interface
 """
 
+# pylint: disable=W0703
 
 import random
 import string
-from builtins import range
 
 from cloudify import ctx
 from cloudify.decorators import operation
@@ -29,17 +29,13 @@ from cloudify.exceptions import RecoverableError, NonRecoverableError
 
 from azure.storage.common.cloudstorageaccount import CloudStorageAccount
 
-from cloudify_azure.resources.storage.storageaccount import StorageAccount
-# Logger, API version
 from cloudify_azure import (constants, utils)
-# Azure storage API interface
-
-# pylint: disable=W0703
+from cloudify_azure.resources.storage.storageaccount import StorageAccount
 
 
 def disk_name_generator():
     """Generates a unique Disk resource name"""
-    return ''.join(random.choice(string.lowercase + string.digits)
+    return ''.join(random.choice(string.ascii_lowercase + string.digits)
                    for i in range(random.randint(32, 76))) + '.vhd'
 
 
