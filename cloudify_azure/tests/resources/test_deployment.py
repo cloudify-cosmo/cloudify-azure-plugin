@@ -160,7 +160,7 @@ class DeploymentTest(unittest.TestCase):
     def test_create_with_template_file(self):
 
         fock = tempfile.NamedTemporaryFile(delete=False)
-        fock.write(json.dumps({'a': 'b'}))
+        fock.write(json.dumps({'a': 'b'}).encode('utf-8'))
         fock.close()
 
         self.node.properties['template'] = None

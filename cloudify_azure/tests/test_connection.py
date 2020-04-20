@@ -12,26 +12,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-'''
+
+"""
     tests.Connection
     ~~~~~~~~~~~~~~~~
     Tests Microsoft Azure REST API connection helpers
-'''
+"""
 
-from sys import stdout
 import logging
 import unittest
-import httplib
 import requests_mock
+from sys import stdout
 
-from cloudify.mocks import MockCloudifyContext
+from cloudify._compat import httplib
 from cloudify.state import current_ctx
+from cloudify.mocks import MockCloudifyContext
 
 from cloudify_azure import constants, exceptions, connection
 
 
 class ConnectionTestCase(unittest.TestCase):
-    '''Tests connection interface'''
+    """Tests connection interface"""
     def setUp(self):
         self.tenant_id = '123456'
         self.subscription_id = '12345-12345-12345'
@@ -64,7 +65,7 @@ class ConnectionTestCase(unittest.TestCase):
 
     @requests_mock.Mocker()
     def test_good_init(self, mock):
-        '''Test for a successful init'''
+        """Test for a successful init"""
         token = '1234-1234-1234-1234'
         mock.register_uri(
             'POST',
@@ -78,7 +79,7 @@ class ConnectionTestCase(unittest.TestCase):
 
     @requests_mock.Mocker()
     def test_good_request(self, mock):
-        '''Test for a successful request'''
+        """Test for a successful request"""
         token = '1234-1234-1234-1234'
         mock.register_uri(
             'POST',
@@ -106,7 +107,7 @@ class ConnectionTestCase(unittest.TestCase):
 
     @requests_mock.Mocker()
     def test_bad_credentials_request(self, mock):
-        '''Test for a request using bad credentials'''
+        """Test for a request using bad credentials"""
         token = '1234-1234-1234-1234'
         mock.register_uri(
             'POST',
@@ -134,7 +135,7 @@ class ConnectionTestCase(unittest.TestCase):
 
     @requests_mock.Mocker()
     def test_unauthorized_request(self, mock):
-        '''Test for an unauthorized request'''
+        """Test for an unauthorized request"""
         token = '1234-1234-1234-1234'
         mock.register_uri(
             'POST',

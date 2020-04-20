@@ -12,30 +12,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-'''
+"""
     resources.storage.StorageAccount
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Microsoft Azure Storage Account interface
-'''
+"""
 
-import httplib
-# Random string
+
 import random
 import string
-# Node properties and logger
+
 from cloudify import ctx
-# Exception handling
+from cloudify._compat import httplib
 from cloudify.exceptions import RecoverableError
-# Base resource class
-from cloudify_azure.resources.base import Resource
-# Lifecycle operation decorator
+
 from cloudify.decorators import operation
-# Logger, API version
 from cloudify_azure import (constants, utils)
+from cloudify_azure.resources.base import Resource
 
 
 class StorageAccount(Resource):
-    '''
+    """
         Microsoft Azure Storage Account interface
 
     .. warning::
@@ -46,7 +43,7 @@ class StorageAccount(Resource):
     :param string api_version: API version to use for all requests
     :param `logging.Logger` logger:
         Parent logger for the class to use. Defaults to `ctx.logger`
-    '''
+    """
     def __init__(self,
                  resource_group=None,
                  api_version=constants.API_VER_STORAGE,
@@ -66,14 +63,14 @@ class StorageAccount(Resource):
             _ctx=_ctx)
 
     def list_keys(self, name=None):
-        '''
+        """
             Calls /listKeys
 
         :param string name: Name of the existing resource
         :returns: Response data from the Azure API call
         :rtype: dict
         :raises: :exc:`cloudify.exceptions.RecoverableError`
-        '''
+        """
         # Get the resource name
         name = name or utils.get_resource_name(self.ctx)
         url = '{0}/{1}/listKeys'.format(self.endpoint, name)
@@ -95,14 +92,14 @@ class StorageAccount(Resource):
 
 
 def sa_name_generator():
-    '''Generates a unique SA resource name'''
+    """Generates a unique SA resource name"""
     return ''.join(random.choice(
         string.ascii_lowercase + string.digits) for i in range(3, 24))
 
 
 @operation(resumable=True)
 def create(**_):
-    '''Uses an existing, or creates a new, Storage Account'''
+    """Uses an existing, or creates a new, Storage Account"""
     # Generate a resource name (if needed)
     utils.generate_resource_name(
         StorageAccount(api_version=ctx.node.properties.get(
@@ -125,7 +122,7 @@ def create(**_):
 
 @operation(resumable=True)
 def delete(**_):
-    '''Deletes a Storage Account'''
+    """Deletes a Storage Account"""
     # Delete the resource
     utils.task_resource_delete(
         StorageAccount(api_version=ctx.node.properties.get(

@@ -12,11 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-'''
+"""
     resources.compute.VirtualMachineExtensions
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Microsoft Azure Virtual Machine Extension interface
-'''
+"""
 
 # Node properties and logger
 from cloudify import ctx
@@ -29,7 +29,7 @@ from cloudify_azure import (constants, utils)
 
 
 class VirtualMachineExtension(Resource):
-    '''
+    """
         Microsoft Azure Virtual Machine Extension interface
 
     .. warning::
@@ -41,7 +41,7 @@ class VirtualMachineExtension(Resource):
     :param string api_version: API version to use for all requests
     :param `logging.Logger` logger:
         Parent logger for the class to use. Defaults to `ctx.logger`
-    '''
+    """
     def __init__(self,
                  resource_group=None,
                  virtual_machine=None,
@@ -68,7 +68,7 @@ class VirtualMachineExtension(Resource):
 
 @operation(resumable=True)
 def create(resource_config, **_):
-    '''Uses an existing, or creates a new, Virtual Machine Extension'''
+    """Uses an existing, or creates a new, Virtual Machine Extension"""
     # Work around for the reserved "type" name
     props = resource_config
     if 'ext_type' in props:
@@ -90,7 +90,7 @@ def create(resource_config, **_):
 
 @operation(resumable=True)
 def delete(**_):
-    '''Deletes a Virtual Machine Extension'''
+    """Deletes a Virtual Machine Extension"""
     # Delete the resource
     utils.task_resource_delete(
         VirtualMachineExtension(api_version=ctx.node.properties.get(

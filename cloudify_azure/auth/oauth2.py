@@ -12,43 +12,40 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-'''
+"""
     auth.OAuth2
     ~~~~~~~~~~~
     OAuth 2.0 authorization interface for the Microsoft Azure REST API
-'''
-import binascii
-import importlib
-import base64
+"""
+
+# pylint: disable=R0903
+
 import re
-# For credentials structuring
-from collections import namedtuple
-# Used for HTTP requests / verification
-import httplib
-import datetime
+import jwt
 import time
 import uuid
-
+import base64
+import datetime
 import requests
-import jwt
+import binascii
+import importlib
+from collections import namedtuple
 
-# Used to implement connection retrying
+import adal
+from adal.constants import Jwt
 from requests.packages import urllib3
+
 from msrestazure.azure_active_directory import AADMixin
 from msrestazure.azure_cloud import (AZURE_PUBLIC_CLOUD, AZURE_CHINA_CLOUD)
 from msrest.exceptions import AuthenticationError, raise_with_traceback
 from azure.common.credentials import ServicePrincipalCredentials
-import adal
-from adal.constants import Jwt
 
-# Exception handling, constants, logging
-from cloudify_azure import \
-    (constants, exceptions)
-# Context
 from cloudify import ctx
+from cloudify._compat import httplib
 from cloudify.exceptions import NonRecoverableError
 
-# pylint: disable=R0903
+from cloudify_azure import \
+    (constants, exceptions)
 
 
 AzureCredentials = namedtuple(
@@ -61,7 +58,8 @@ AzureCredentials = namedtuple(
 
 
 def generate_jwt_token(certificate, thumbprint, client_id, talent_id):
-    x5t = base64.urlsafe_b64encode(binascii.a2b_hex(thumbprint)).decode()
+    x5t = base64.urlsafe_b64encode(
+        binascii.a2b_hex(thumbprint)).decode()
     now = datetime.datetime.now()
     minutes = datetime.timedelta(0, 0, 0, 0, Jwt.SELF_SIGNED_JWT_LIFETIME)
     expires = now + minutes
@@ -85,25 +83,25 @@ def generate_jwt_token(certificate, thumbprint, client_id, talent_id):
     return jwt_token
 
 
-'''
+"""
     Microsoft Azure credentials and access information
 
 :param string tenant_id: Azure tenant ID
 :param string client_id: Azure client ID (AD username)
 :param string client_secret: Azure client secret (AD password)
 :param string subscription_id: Azure subscription ID
-'''
+"""
 
 
 class OAuth2(object):
-    '''
+    """
         OAuth 2.0 interface for the Microsoft Azure REST API
 
     :param `AzureCredentials` credentials:
         Azure credentials and access information
     :param `logging.Logger` logger:
         Logger for the class to use. Defaults to `ctx.logger`
-    '''
+    """
 
     def __init__(self, credentials, logger=None, _ctx=ctx):
         # Set the active context
@@ -118,7 +116,7 @@ class OAuth2(object):
         self.credentials = credentials
 
     def request_access_token(self):
-        '''Tenant-specific access token request.
+        """Tenant-specific access token request.
 
         .. note::
 
@@ -131,7 +129,7 @@ class OAuth2(object):
         :raises: :exc:`cloudify_azure.exceptions.UnauthorizedRequest`,
                  :exc:`cloudify_azure.exceptions.UnexpectedResponse`,
                  :exc:`requests.RequestException`
-        '''
+        """
         payload = {
             'client_id': self.credentials.client_id,
             'grant_type': constants.OAUTH2_GRANT_TYPE,

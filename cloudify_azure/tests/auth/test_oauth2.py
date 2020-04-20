@@ -12,28 +12,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-'''
+
+"""
     tests.auth.OAuth2
     ~~~~~~~~~~~~~~~~~
     Tests OAuth 2.0 authorization interface for the Microsoft Azure REST API
-'''
+"""
 
-from sys import stdout
+import mock
 import logging
 import unittest
-import mock
-import httplib
 import requests_mock
+from sys import stdout
 
-from cloudify.mocks import MockCloudifyContext
+from cloudify._compat import httplib
 from cloudify.state import current_ctx
+from cloudify.mocks import MockCloudifyContext
 
 from cloudify_azure.auth import oauth2
 from cloudify_azure import constants, exceptions
 
 
 class OAuth2TestCase(unittest.TestCase):
-    '''Tests OAuth2 interface'''
+    """Tests OAuth2 interface"""
 
     def setUp(self):
         self.ctx = MockCloudifyContext(node_id='test_oauth2',
@@ -76,7 +77,7 @@ class OAuth2TestCase(unittest.TestCase):
         current_ctx.clear()
 
     def test_bad_credentials_type(self):
-        '''Send credentials in a non-AzureCredentials format'''
+        """Send credentials in a non-AzureCredentials format"""
         self.assertRaises(
             exceptions.InvalidCredentials,
             oauth2.OAuth2, {'username': 'cloudify'})
@@ -123,7 +124,8 @@ class OAuth2TestCase(unittest.TestCase):
     @mock.patch('requests.sessions.Session.post')
     def test_auth_with_certificate(self, post_mock, jwt_encode_mock):
         post_mock.return_value = mock.MagicMock()
-        jwt_encode_mock.return_value = "sample_client_assertion"
+        jwt_encode_mock.return_value = "sample_client_assertion".encode(
+            'utf-8')
         post_mock.return_value.json = mock.MagicMock(
             return_value={'access_token': '123'})
         post_mock.return_value.status_code = httplib.OK
@@ -143,7 +145,7 @@ class OAuth2TestCase(unittest.TestCase):
 
     @requests_mock.Mocker()
     def test_missing_return(self, mock):
-        '''Test for missing return data'''
+        """Test for missing return data"""
         mock.register_uri(
             'POST',
             '{0}/{1}/oauth2/token'.format(
@@ -159,7 +161,7 @@ class OAuth2TestCase(unittest.TestCase):
 
     @requests_mock.Mocker()
     def test_bad_return_type(self, mock):
-        '''Test for wrong JSON return type'''
+        """Test for wrong JSON return type"""
         mock.register_uri(
             'POST',
             '{0}/{1}/oauth2/token'.format(
@@ -175,7 +177,7 @@ class OAuth2TestCase(unittest.TestCase):
 
     @requests_mock.Mocker()
     def test_non_json_return_type(self, mock):
-        '''Test for invalid JSON return type'''
+        """Test for invalid JSON return type"""
         mock.register_uri(
             'POST',
             '{0}/{1}/oauth2/token'.format(
@@ -191,7 +193,7 @@ class OAuth2TestCase(unittest.TestCase):
 
     @requests_mock.Mocker()
     def test_bad_credentials(self, mock):
-        '''Test for invalid credentials return'''
+        """Test for invalid credentials return"""
         mock.register_uri(
             'POST',
             '{0}/{1}/oauth2/token'.format(
@@ -209,7 +211,7 @@ class OAuth2TestCase(unittest.TestCase):
 
     @requests_mock.Mocker()
     def test_unauthorized(self, mock):
-        '''Test for general "unauthorized" return'''
+        """Test for general "unauthorized" return"""
         mock.register_uri(
             'POST',
             '{0}/{1}/oauth2/token'.format(
@@ -227,7 +229,7 @@ class OAuth2TestCase(unittest.TestCase):
 
     @requests_mock.Mocker()
     def test_unexpected_http_code(self, mock):
-        '''Test for unexpected HTTP status code'''
+        """Test for unexpected HTTP status code"""
         mock.register_uri(
             'POST',
             '{0}/{1}/oauth2/token'.format(
@@ -243,7 +245,7 @@ class OAuth2TestCase(unittest.TestCase):
 
     @requests_mock.Mocker()
     def test_missing_token(self, mock):
-        '''Test for missing token response'''
+        """Test for missing token response"""
         mock.register_uri(
             'POST',
             '{0}/{1}/oauth2/token'.format(
@@ -259,7 +261,7 @@ class OAuth2TestCase(unittest.TestCase):
 
     @requests_mock.Mocker()
     def test_good_token(self, mock):
-        '''Test for good token response'''
+        """Test for good token response"""
         token = '1234-1234-1234-1234'
         mock.register_uri(
             'POST',

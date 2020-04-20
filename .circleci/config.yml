@@ -12,20 +12,26 @@ checkout:
 jobs:
 
   unittests:
-    machine:
-      enabled: true
-      python:
-        version: pypy-2.2.1
+    docker:
+      - image: circleci/python:2.7.15-stretch
     steps:
       - checkout
       - run:
-          name: Upgrade pip
-          command: pip install --upgrade pip==9.0.1
+          name: install tox
+          command: pip install --user tox
+      - run: /home/circleci/.local/bin/tox -e flake8
+      - run: /home/circleci/.local/bin/tox -e nosetests
+
+  unittests_py36:
+    docker:
+      - image: circleci/python:3.6-stretch
+    steps:
+      - checkout
       - run:
           name: install tox
-          command: pip install tox
-      - run: tox -e pep8
-      - run: tox -e py27
+          command: pip install --user tox
+      - run: /home/circleci/.local/bin/tox -e flake8
+      - run: /home/circleci/.local/bin/tox -e nosetests
 
   wagon:
     docker:
@@ -143,6 +149,7 @@ workflows:
     jobs:
       - py3_compat
       - unittests
+      - unittests_py36
       - wagon:
           filters:
             branches:
@@ -164,6 +171,7 @@ workflows:
               - master
     jobs:
       - unittests
+      - unittests_py36
       - wagon:
           filters:
             branches:

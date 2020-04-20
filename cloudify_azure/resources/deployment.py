@@ -15,15 +15,14 @@
 
 import json
 
+from azure.mgmt.resource import ResourceManagementClient
+from azure.mgmt.resource.resources.models import DeploymentMode
+
 from cloudify.decorators import operation
 from cloudify import exceptions as cfy_exc
 from cloudify._compat import (urlopen, urlparse, text_type)
 
 from cloudify_azure import constants
-
-from azure.mgmt.resource import ResourceManagementClient
-from azure.mgmt.resource.resources.models import DeploymentMode
-
 from cloudify_azure.auth.oauth2 import to_service_principle_credentials
 
 

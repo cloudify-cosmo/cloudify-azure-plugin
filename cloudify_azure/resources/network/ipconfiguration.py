@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-'''
+"""
     resources.network.IPConfiguration
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Microsoft Azure IP Configuration psuedo-interface
@@ -29,7 +29,7 @@
     as a Subnet and Public IP Address first, then create one or more
     IP Configuration node(s) that connects to them, then create a Network
     Interface Card which connects to the IP Configuration(s).
-'''
+"""
 # Node properties and logger
 from cloudify import ctx
 # Base resource class
@@ -47,7 +47,7 @@ from cloudify_azure.resources.network.publicipaddress \
 
 
 class IPConfiguration(Resource):
-    '''
+    """
         Microsoft Azure IP Configuration interface
 
     .. warning::
@@ -59,7 +59,7 @@ class IPConfiguration(Resource):
     :param string api_version: API version to use for all requests
     :param `logging.Logger` logger:
         Parent logger for the class to use. Defaults to `ctx.logger`
-    '''
+    """
     def __init__(self,
                  resource_group=None,
                  network_interface_card=None,
@@ -86,7 +86,7 @@ class IPConfiguration(Resource):
 
 def get_ip_configurations(_ctx=ctx,
                           rel=constants.REL_NIC_CONNECTED_TO_IPC):
-    '''
+    """
         Finds all IP Configurations associated with the current node.
         This method searches for any IP Configuration-specific
         relationships and, later, traverses the IP Configuration
@@ -94,7 +94,7 @@ def get_ip_configurations(_ctx=ctx,
 
     :returns: Array of IP Configuration dicts
     :rtype: list
-    '''
+    """
     ipconfigs = list()
     for node_rel in _ctx.instance.relationships:
         if rel in node_rel.type_hierarchy:
@@ -105,7 +105,7 @@ def get_ip_configurations(_ctx=ctx,
 
 
 def build_ip_configuration(ipc):
-    '''
+    """
         Attempts to construct a proper IP Configuration from
         a context object
 
@@ -113,7 +113,7 @@ def build_ip_configuration(ipc):
         IP Configuration context object
     :returns: IP Configuration dict
     :rtype: dict or None
-    '''
+    """
     if not ipc or not ipc.instance.relationships:
         return None
     # Find a referenced Subnet

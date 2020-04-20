@@ -12,11 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-'''
+"""
     resources.ResourceGroup
     ~~~~~~~~~~~~~~~~~~~~~~~
     Microsoft Azure Resource Group interface
-'''
+"""
 
 # Node properties and logger
 from cloudify import ctx
@@ -29,7 +29,7 @@ from cloudify_azure import (constants, utils)
 
 
 class ResourceGroup(Resource):
-    '''
+    """
         Microsoft Azure Resource Group interface
 
     .. warning::
@@ -39,7 +39,7 @@ class ResourceGroup(Resource):
     :param string api_version: API version to use for all requests
     :param `logging.Logger` logger:
         Parent logger for the class to use. Defaults to `ctx.logger`
-    '''
+    """
     def __init__(self,
                  api_version=constants.API_VER_RESOURCES,
                  logger=None,
@@ -55,7 +55,7 @@ class ResourceGroup(Resource):
 
 @operation(resumable=True)
 def create(**_):
-    '''Uses an existing, or creates a new, Resource Group'''
+    """Uses an existing, or creates a new, Resource Group"""
     # Create a resource (if necessary)
     utils.task_resource_create(
         ResourceGroup(api_version=ctx.node.properties.get(
@@ -68,7 +68,7 @@ def create(**_):
 
 @operation(resumable=True)
 def delete(**_):
-    '''Deletes a Resource Group'''
+    """Deletes a Resource Group"""
     # Delete the resource
     utils.task_resource_delete(
         ResourceGroup(api_version=ctx.node.properties.get(

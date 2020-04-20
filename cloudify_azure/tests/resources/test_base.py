@@ -12,30 +12,30 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-'''
+"""
     tests.resources.Base
     ~~~~~~~~~~~~~~~~~~~~
     Tests Microsoft Azure API abstraction layer
-'''
+"""
 
-from sys import stdout
+# pylint: disable=R0913
+
 import logging
 import unittest
-import httplib
 import requests_mock
+from sys import stdout
 
-from cloudify.mocks import MockCloudifyContext
+from cloudify._compat import httplib
 from cloudify.state import current_ctx
+from cloudify.mocks import MockCloudifyContext
 from cloudify.exceptions import RecoverableError
 
 from cloudify_azure import constants
 from cloudify_azure.resources.base import Resource
 
-# pylint: disable=R0913
-
 
 class ResourcesBaseTestCase(unittest.TestCase):
-    '''Tests base interface'''
+    """Tests base interface"""
     def setUp(self):
         self.tenant_id = '123456'
         self.subscription_id = '12345-12345-12345'
@@ -70,7 +70,7 @@ class ResourcesBaseTestCase(unittest.TestCase):
     def mock_endpoints(self, mock, endpoint, res_name,
                        json=None, status_code=httplib.OK,
                        headers=None):
-        '''Mock endpoint URLs'''
+        """Mock endpoint URLs"""
         token = '1234-1234-1234-1234'
         endpoint = '/{0}/{1}/{2}'.format(
             'resourceGroups/test_resource_group',
@@ -98,7 +98,7 @@ class ResourcesBaseTestCase(unittest.TestCase):
 
     @requests_mock.Mocker()
     def test_good_get(self, mock):
-        '''Test for a successful get request'''
+        """Test for a successful get request"""
         name = 'Virtual Machine'
         res_name = 'testvm'
         endpoint = '/{0}/{1}/{2}'.format(
@@ -119,7 +119,7 @@ class ResourcesBaseTestCase(unittest.TestCase):
 
     @requests_mock.Mocker()
     def test_accepted_no_location(self, mock):
-        '''Test for ACCEPTED without request URL'''
+        """Test for ACCEPTED without request URL"""
         name = 'Virtual Machine'
         res_name = 'testvm'
         endpoint = '/{0}/{1}/{2}'.format(
@@ -150,7 +150,7 @@ class ResourcesBaseTestCase(unittest.TestCase):
 
     @requests_mock.Mocker()
     def test_accepted_no_id(self, mock):
-        '''Test for ACCEPTED without request ID'''
+        """Test for ACCEPTED without request ID"""
         name = 'Virtual Machine'
         res_name = 'testvm'
         endpoint = '/{0}/{1}/{2}'.format(
@@ -179,7 +179,7 @@ class ResourcesBaseTestCase(unittest.TestCase):
 
     @requests_mock.Mocker()
     def test_accepted(self, mock):
-        '''Test for ACCEPTED with proper headers'''
+        """Test for ACCEPTED with proper headers"""
         name = 'Virtual Machine'
         res_name = 'testvm'
         endpoint = '/{0}/{1}/{2}'.format(

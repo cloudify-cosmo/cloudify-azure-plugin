@@ -35,6 +35,6 @@ setup(
         'requests==2.20.0',
         'urllib3==1.25.3',
         'pyyaml==3.12',
-        'azure==4.0.0'
+        'azure==4.0.0',
     ]
 )

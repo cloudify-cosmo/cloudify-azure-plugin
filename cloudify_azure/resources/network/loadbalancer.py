@@ -12,11 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-'''
+"""
     resources.network.LoadBalancer
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Microsoft Azure Load Balancer interface
-'''
+"""
 
 # Node properties and logger
 from cloudify import ctx
@@ -40,7 +40,7 @@ LB_ADDRPOOLS_KEY = 'loadBalancerBackendAddressPools'
 
 
 class LoadBalancer(Resource):
-    '''
+    """
         Microsoft Azure Load Balancer interface
 
     .. warning::
@@ -51,7 +51,7 @@ class LoadBalancer(Resource):
     :param string api_version: API version to use for all requests
     :param `logging.Logger` logger:
         Parent logger for the class to use. Defaults to `ctx.logger`
-    '''
+    """
     def __init__(self,
                  resource_group=None,
                  api_version=constants.API_VER_NETWORK,
@@ -72,7 +72,7 @@ class LoadBalancer(Resource):
 
 
 class BackendAddressPool(Resource):
-    '''
+    """
         Microsoft Azure Backend Address Pool interface
 
     .. warning::
@@ -84,7 +84,7 @@ class BackendAddressPool(Resource):
     :param string api_version: API version to use for all requests
     :param `logging.Logger` logger:
         Parent logger for the class to use. Defaults to `ctx.logger`
-    '''
+    """
     def __init__(self,
                  resource_group=None,
                  load_balancer_name=None,
@@ -113,7 +113,7 @@ class BackendAddressPool(Resource):
 
 
 class Probe(Resource):
-    '''
+    """
         Microsoft Azure Probe interface
 
     .. warning::
@@ -125,7 +125,7 @@ class Probe(Resource):
     :param string api_version: API version to use for all requests
     :param `logging.Logger` logger:
         Parent logger for the class to use. Defaults to `ctx.logger`
-    '''
+    """
     def __init__(self,
                  resource_group=None,
                  load_balancer_name=None,
@@ -154,7 +154,7 @@ class Probe(Resource):
 
 
 class InboundNATRule(Resource):
-    '''
+    """
         Microsoft Azure Inbound NAT Rule interface
 
     .. warning::
@@ -166,7 +166,7 @@ class InboundNATRule(Resource):
     :param string api_version: API version to use for all requests
     :param `logging.Logger` logger:
         Parent logger for the class to use. Defaults to `ctx.logger`
-    '''
+    """
     def __init__(self,
                  resource_group=None,
                  load_balancer_name=None,
@@ -195,7 +195,7 @@ class InboundNATRule(Resource):
 
 
 class LoadBalancerRule(Resource):
-    '''
+    """
         Microsoft Azure Load Balancer Rule interface
 
     .. warning::
@@ -207,7 +207,7 @@ class LoadBalancerRule(Resource):
     :param string api_version: API version to use for all requests
     :param `logging.Logger` logger:
         Parent logger for the class to use. Defaults to `ctx.logger`
-    '''
+    """
     def __init__(self,
                  resource_group=None,
                  load_balancer_name=None,
@@ -236,7 +236,7 @@ class LoadBalancerRule(Resource):
 
 
 class FrontendIPConfiguration(Resource):
-    '''
+    """
         Microsoft Azure Frontend IP Configuration interface
 
     .. warning::
@@ -248,7 +248,7 @@ class FrontendIPConfiguration(Resource):
     :param string api_version: API version to use for all requests
     :param `logging.Logger` logger:
         Parent logger for the class to use. Defaults to `ctx.logger`
-    '''
+    """
     def __init__(self,
                  resource_group=None,
                  load_balancer_name=None,
@@ -278,7 +278,7 @@ class FrontendIPConfiguration(Resource):
 
 @operation(resumable=True)
 def create(**_):
-    '''Uses an existing, or creates a new, Load Balancer'''
+    """Uses an existing, or creates a new, Load Balancer"""
     utils.generate_resource_name(LoadBalancer(
         api_version=ctx.node.properties.get('api_version',
                                             constants.API_VER_NETWORK)))
@@ -286,7 +286,7 @@ def create(**_):
 
 @operation(resumable=True)
 def configure(**_):
-    '''Uses an existing, or creates a new, Load Balancer'''
+    """Uses an existing, or creates a new, Load Balancer"""
     # Get the Frontend IP Configuration
     fe_ip_cfg = get_ip_configurations(rel=constants.REL_LB_CONNECTED_TO_IPC)
     ctx.logger.debug('fe_ip_cfg: {0}'.format(fe_ip_cfg))
@@ -345,7 +345,7 @@ def configure(**_):
 
 @operation(resumable=True)
 def delete(**_):
-    '''Deletes a Load Balancer'''
+    """Deletes a Load Balancer"""
     # Delete the resource
     utils.task_resource_delete(
         LoadBalancer(api_version=ctx.node.properties.get(
@@ -354,7 +354,7 @@ def delete(**_):
 
 @operation(resumable=True)
 def attach_ip_configuration(**_):
-    '''Generates a usable UUID for the NIC's IP Configuration'''
+    """Generates a usable UUID for the NIC's IP Configuration"""
     # Generate the IPConfiguration's name
     utils.generate_resource_name(FrontendIPConfiguration(
         load_balancer_name=utils.get_resource_name(_ctx=ctx.source),
@@ -364,7 +364,7 @@ def attach_ip_configuration(**_):
 
 @operation(resumable=True)
 def create_backend_pool(**_):
-    '''Uses an existing, or creates a new, Load Balancer Backend Pool'''
+    """Uses an existing, or creates a new, Load Balancer Backend Pool"""
     # Check if invalid external resource
     if ctx.node.properties.get('use_external_resource', False) and \
        not ctx.node.properties.get('name'):
@@ -399,7 +399,7 @@ def create_backend_pool(**_):
 
 @operation(resumable=True)
 def delete_backend_pool(**_):
-    '''Deletes a Load Balancer Backend Pool'''
+    """Deletes a Load Balancer Backend Pool"""
     if ctx.node.properties.get('use_external_resource', False):
         return
     # Get an interface to the Load Balancer
@@ -431,7 +431,7 @@ def delete_backend_pool(**_):
 
 @operation(resumable=True)
 def create_probe(**_):
-    '''Uses an existing, or creates a new, Load Balancer Probe'''
+    """Uses an existing, or creates a new, Load Balancer Probe"""
     # Check if invalid external resource
     if ctx.node.properties.get('use_external_resource', False) and \
        not ctx.node.properties.get('name'):
@@ -468,7 +468,7 @@ def create_probe(**_):
 
 @operation(resumable=True)
 def delete_probe(**_):
-    '''Deletes a Load Balancer Probe'''
+    """Deletes a Load Balancer Probe"""
     if ctx.node.properties.get('use_external_resource', False):
         return
     # Get an interface to the Load Balancer
@@ -500,7 +500,7 @@ def delete_probe(**_):
 
 @operation(resumable=True)
 def create_incoming_nat_rule(**_):
-    '''Uses an existing, or creates a new, Load Balancer Incoming NAT Rule'''
+    """Uses an existing, or creates a new, Load Balancer Incoming NAT Rule"""
     # Check if invalid external resource
     if ctx.node.properties.get('use_external_resource', False) and \
        not ctx.node.properties.get('name'):
@@ -548,7 +548,7 @@ def create_incoming_nat_rule(**_):
 
 @operation(resumable=True)
 def delete_incoming_nat_rule(**_):
-    '''Deletes a Load Balancer Incoming NAT Rule'''
+    """Deletes a Load Balancer Incoming NAT Rule"""
     if ctx.node.properties.get('use_external_resource', False):
         return
     # Get an interface to the Load Balancer
@@ -580,7 +580,7 @@ def delete_incoming_nat_rule(**_):
 
 @operation(resumable=True)
 def create_rule(**_):
-    '''Uses an existing, or creates a new, Load Balancer Rule'''
+    """Uses an existing, or creates a new, Load Balancer Rule"""
     # Check if invalid external resource
     if ctx.node.properties.get('use_external_resource', False) and \
        not ctx.node.properties.get('name'):
@@ -636,10 +636,10 @@ def create_rule(**_):
 
 @operation(resumable=True)
 def delete_rule(**_):
-    '''
+    """
         Deletes a Load Balancer Rule
         TODO: Rewrite this to occur inside of a Relationship Operation
-    '''
+    """
     if ctx.node.properties.get('use_external_resource', False):
         return
     # Get an interface to the Load Balancer
@@ -670,10 +670,10 @@ def delete_rule(**_):
 
 @operation(resumable=True)
 def attach_nic_to_backend_pool(**_):
-    '''
+    """
         Attaches a Network Interface Card's IPConfigurations
         to a Load Balancer Backend Pool
-    '''
+    """
     # Get the ID of the Backend Pool
     be_pool_id = utils.get_full_id_reference(
         BackendAddressPool, _ctx=ctx.target)
@@ -702,10 +702,10 @@ def attach_nic_to_backend_pool(**_):
 
 @operation(resumable=True)
 def detach_nic_from_backend_pool(**_):
-    '''
+    """
         Detaches a Network Interface Card's IPConfigurations
         from a Load Balancer Backend Pool
-    '''
+    """
     # Get the ID of the Backend Pool
     be_pool_id = utils.get_full_id_reference(
         BackendAddressPool, _ctx=ctx.target)

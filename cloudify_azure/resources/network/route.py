@@ -12,11 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-'''
+"""
     resources.network.Route
     ~~~~~~~~~~~~~~~~~~~~~~~
     Microsoft Azure Route interface
-'''
+"""
 
 # Node properties and logger
 from cloudify import ctx
@@ -29,7 +29,7 @@ from cloudify_azure import (constants, utils)
 
 
 class Route(Resource):
-    '''
+    """
         Microsoft Azure Route interface
 
     .. warning::
@@ -41,7 +41,7 @@ class Route(Resource):
     :param string api_version: API version to use for all requests
     :param `logging.Logger` logger:
         Parent logger for the class to use. Defaults to `ctx.logger`
-    '''
+    """
     def __init__(self,
                  resource_group=None,
                  route_table=None,
@@ -68,7 +68,7 @@ class Route(Resource):
 
 @operation(resumable=True)
 def create(**_):
-    '''Uses an existing, or creates a new, Route'''
+    """Uses an existing, or creates a new, Route"""
     # Create a resource (if necessary)
     utils.task_resource_create(
         Route(api_version=ctx.node.properties.get(
@@ -82,7 +82,7 @@ def create(**_):
 
 @operation(resumable=True)
 def delete(**_):
-    '''Deletes a Route'''
+    """Deletes a Route"""
     # Delete the resource
     utils.task_resource_delete(
         Route(api_version=ctx.node.properties.get(

@@ -12,31 +12,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-'''
+"""
     resources.Base
     ~~~~~~~~~~~~~~
     Microsoft Azure API abstraction layer
-'''
+"""
 
-# HTTP status codes
-import httplib
-# JSON serializing
 import json
 import yaml
-# Exception handling
-from cloudify.exceptions import NonRecoverableError, RecoverableError
-# API connection
-from cloudify_azure import connection, utils
-# Exceptions
-from cloudify_azure.exceptions import UnexpectedResponse
-# Runtime properties
-from cloudify import ctx
 
+from cloudify import ctx
+from cloudify._compat import httplib
+from cloudify.exceptions import NonRecoverableError, RecoverableError
+
+from cloudify_azure import connection, utils
+from cloudify_azure.exceptions import UnexpectedResponse
 from cloudify_azure.auth.oauth2 import to_service_principle_credentials
 
 
 class Resource(object):
-    '''
+    """
         Microsoft Azure base resource interface
 
     .. warning::
@@ -53,7 +48,7 @@ class Resource(object):
         *ctx* object to handle situations such as relationship
         operations where a source or target interface is used instead
         of a global one
-    '''
+    """
     def __init__(self, name, endpoint,
                  api_version=None, logger=None,
                  _ctx=ctx):
@@ -74,7 +69,7 @@ class Resource(object):
             _ctx=self.ctx)
 
     def get(self, name=None):
-        '''
+        """
             Gets details about an existing resource
 
         :param string name: Name of the existing resource
@@ -83,7 +78,7 @@ class Resource(object):
         :raises: :exc:`cloudify.exceptions.RecoverableError`,
                  :exc:`cloudify.exceptions.NonRecoverableError`,
                  :exc:`requests.RequestException`
-        '''
+        """
         self.log.info('Retrieving {0} "{1}"'.format(self.name, name))
         # Make the request
         if name:
@@ -128,7 +123,7 @@ class Resource(object):
         return res.json()
 
     def create(self, name, params=None):
-        '''
+        """
             Creates a new resource
 
         :param string name: Name of the new resource
@@ -136,7 +131,7 @@ class Resource(object):
         :raises: :exc:`cloudify.exceptions.RecoverableError`,
                  :exc:`cloudify.exceptions.NonRecoverableError`,
                  :exc:`requests.RequestException`
-        '''
+        """
         self.log.info('Creating {0} "{1}"'.format(self.name, name))
         if self.ctx.instance._modifiable:
             self.ctx.instance.runtime_properties['async_op'] = None
@@ -225,7 +220,7 @@ class Resource(object):
             .format(httplib.CREATED, res.status_code))
 
     def update(self, name, params, force=False):
-        '''
+        """
             Updates an existing resource
 
         :param string name: Name of the resource
@@ -235,7 +230,7 @@ class Resource(object):
         :raises: :exc:`cloudify.exceptions.RecoverableError`,
                  :exc:`cloudify.exceptions.NonRecoverableError`,
                  :exc:`requests.RequestException`
-        '''
+        """
         if not force:
             # Get the existing data (since partial updates seem to
             # be in a questionable state on Azure's side of things)
@@ -315,14 +310,14 @@ class Resource(object):
                 .format(httplib.CREATED, res.status_code))
 
     def delete(self, name):
-        '''
+        """
             Deletes an existing resource
 
         :param string name: Name of the existing resource
         :raises: :exc:`cloudify.exceptions.RecoverableError`,
                  :exc:`cloudify.exceptions.NonRecoverableError`,
                  :exc:`requests.RequestException`
-        '''
+        """
         self.log.info('Deleting {0} "{1}"'.format(self.name, name))
         if self.ctx.instance._modifiable:
             self.ctx.instance.runtime_properties['async_op'] = None
@@ -409,7 +404,7 @@ class Resource(object):
                 .format(httplib.CREATED, res.status_code))
 
     def exists(self, name=None):
-        '''
+        """
             Determines if a resource exists or not
 
         :param string name: Name of the existing resource
@@ -417,7 +412,7 @@ class Resource(object):
         :rtype: boolean
         :raises: :exc:`cloudify_azure.exceptions.UnexpectedResponse`,
                  :exc:`requests.RequestException`
-        '''
+        """
         self.log.info('Checking {0} "{1}"'.format(self.name, name))
         # Make the request
         if name:
@@ -447,14 +442,14 @@ class Resource(object):
             .format(res.status_code), res.json())
 
     def operation_complete(self, op_info):
-        '''
+        """
             Checks the status of an asynchronous operation
 
         :param dict op_info: Long-running operation headers
         :raises: :exc:`cloudify.exceptions.RecoverableError`,
                  :exc:`cloudify.exceptions.NonRecoverableError`,
                  :exc:`requests.RequestException`
-        '''
+        """
         # Get the operation ID
         op_id = op_info.get('x-ms-request-id', 'not-reported')
         # Make the request
@@ -510,19 +505,19 @@ class Resource(object):
         res.raise_for_status()
 
     def get_retry_after(self, headers):
-        '''
+        """
             Gets the amount of seconds to wait before retrying an operation
 
         :param dict headers: :class:`requests.Response` headers
         :returns: Seconds to wait before retrying an operation
         :rtype: int
-        '''
+        """
         return utils.get_retry_after(_ctx=self.ctx) or \
             int(headers.get('retry-after', 60))
 
     @staticmethod
     def validate_res_json(res):
-        '''Validates that a status exists'''
+        """Validates that a status exists"""
         try:
             return res.json().get('status')
         except ValueError:
@@ -531,18 +526,18 @@ class Resource(object):
 
     @staticmethod
     def get_operation_id(headers):
-        '''
+        """
             Gets the asynchronous operation ID as reported by Azure
 
         :param dict headers: :class:`requests.Response` headers
         :returns: Operation ID
         :rtype: string
-        '''
+        """
         return headers.get('x-ms-request-id', 'not-reported')
 
     @staticmethod
     def sanitize_json_input(us_data):
-        '''
+        """
             Sanitizes data before going to Requests. This mostly
             handles cases where there are mixed-encoded objects
             where part of the object is ASCII/UTF-8 and the other
@@ -551,7 +546,7 @@ class Resource(object):
         :param obj us_data: JSON-serializable Python object
         :returns: UTF-8 JSON object
         :rtype: JSON object
-        '''
+        """
         if not us_data:
             return None
         if not isinstance(us_data, dict) and not isinstance(us_data, list):
