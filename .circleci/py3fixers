@@ -21,3 +21,5 @@
 -f libfuturize.fixes.fix_division_safe
 -f lib2to3.fixes.fix_metaclass
 -f libfuturize.fixes.fix_unicode_keep_u
+-f libfuturize.fixes.fix_print_with_import
+-f libfuturize.fixes.fix_execfile

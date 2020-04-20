@@ -356,7 +356,7 @@ def create(args=None, **_):
         ctx.logger.warn(
             'Azure customData implementation is dependent on '
             'Virtual Machine image support.')
-        os_profile['customData'] = base64.b64encode(userdata.encode())
+        os_profile['customData'] = base64.b64encode(userdata.encode('utf-8'))
     # Remove customData from osProfile if empty to avoid 400 Error.
     elif 'customData' in resource_create_payload['properties']['osProfile']:
         del resource_create_payload['properties']['osProfile']['customData']

@@ -58,7 +58,7 @@ AzureCredentials = namedtuple(
 
 
 def generate_jwt_token(certificate, thumbprint, client_id, talent_id):
-    x5t = base64.urlsafe_b64encode(binascii.a2b_hex(thumbprint)).decode()
+    x5t = base64.urlsafe_b64encode(binascii.a2b_hex(thumbprint)).decode('utf-8')
     now = datetime.datetime.now()
     minutes = datetime.timedelta(0, 0, 0, 0, Jwt.SELF_SIGNED_JWT_LIFETIME)
     expires = now + minutes
