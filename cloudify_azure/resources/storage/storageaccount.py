@@ -21,7 +21,6 @@
 
 import random
 import string
-from builtins import range
 
 from cloudify import ctx
 from cloudify._compat import httplib

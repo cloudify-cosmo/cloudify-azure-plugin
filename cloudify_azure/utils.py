@@ -20,19 +20,12 @@
 
 from cloudify._compat import SafeConfigParser
 
-# Deep Copy
-from copy import deepcopy
-# OS path
-from os import path, environ
-# Dict updating
-from collections import Mapping
-# Time format
-from datetime import datetime
-# UUID
 from uuid import uuid4
-# Logger, default context
 from logging import DEBUG
-from builtins import range
+from copy import deepcopy
+from os import path, environ
+from datetime import datetime
+from collections import Mapping
 
 from cloudify import ctx
 
