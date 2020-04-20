@@ -12,20 +12,15 @@ checkout:
 jobs:
 
   unittests:
-    machine:
-      enabled: true
-      python:
-        version: pypy-2.2.1
+    docker:
+      - image: circleci/python:2.7.15-stretch
     steps:
       - checkout
       - run:
-          name: Upgrade pip
-          command: pip install --upgrade pip==9.0.1
-      - run:
           name: install tox
-          command: pip install tox
-      - run: tox -e pep8
-      - run: tox -e py27
+          command: pip install --user tox
+      - run: /home/circleci/.local/bin/tox -e flake8
+      - run: /home/circleci/.local/bin/tox -e nosetests
 
   unittests_py36:
     docker:
@@ -35,12 +30,8 @@ jobs:
       - run:
           name: install tox
           command: pip install --user tox
-      - run:
-          name: FLAKE 8
-          command: /home/circleci/.local/bin/tox -e flake8
-      - run:
-          name: NOSE
-          command: /home/circleci/.local/bin/tox -e py3
+      - run: /home/circleci/.local/bin/tox -e flake8
+      - run: /home/circleci/.local/bin/tox -e nosetests
 
   wagon:
     docker:
