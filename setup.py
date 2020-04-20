@@ -36,6 +36,5 @@ setup(
         'urllib3==1.25.3',
         'pyyaml==3.12',
         'azure==4.0.0',
-        'future'
     ]
 )
