@@ -40,7 +40,7 @@ jobs:
           command: /home/circleci/.local/bin/tox -e flake8
       - run:
           name: NOSE
-          command: /home/circleci/.local/bin/tox -e nosetests
+          command: /home/circleci/.local/bin/tox -e py27
 
   wagon:
     docker:
