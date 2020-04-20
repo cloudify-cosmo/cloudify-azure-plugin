@@ -27,6 +27,17 @@ jobs:
       - run: tox -e pep8
       - run: tox -e py27
 
+  unittests_py36:
+    docker:
+      - image: circleci/python:3.6-stretch
+    steps:
+      - checkout
+      - run:
+          name: install tox
+          command: pip install --user tox
+      - run: /home/circleci/.local/bin/tox -e flake8
+      - run: /home/circleci/.local/bin/tox -e nosetests
+
   wagon:
     docker:
       - image: amd64/centos:centos7.3.1611
@@ -143,6 +154,7 @@ workflows:
     jobs:
       - py3_compat
       - unittests
+      - unittests_py36
       - wagon:
           filters:
             branches:
@@ -164,6 +176,7 @@ workflows:
               - master
     jobs:
       - unittests
+      - unittests_py36
       - wagon:
           filters:
             branches:
