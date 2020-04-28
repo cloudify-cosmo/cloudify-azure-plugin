@@ -78,43 +78,43 @@ jobs:
       enabled: true
       python:
         version: pypy-2.2.1
+    environment:
+      CLOUDIFY_SSL_TRUST_ALL: true
+      IAAS: azure
     steps:
       - checkout
+      - run:
+          name: "Pull Submodules"
+          command: |
+            git submodule init
+            git submodule update --remote
       - attach_workspace:
           at: workspace
       - run:
-          name: Upgrade pip
-          command: pip install --upgrade pip==9.0.1
-      - run:
-          name: Add Azure Repo Part one # Cloudify and Azure have conflicts in PyPI
-          command: echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $(lsb_release -cs) main" > azure-cli.list
-      - run:
-          name: Add Azure Repo Part Two # Cloudify and Azure have conflicts in PyPI
-          command: sudo mv azure-cli.list /etc/apt/sources.list.d/
-      - run:
-          name: Download Azure Key # Cloudify and Azure have conflicts in PyPI
-          command: curl -L https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
-      - run:
-          name: Install apt-transport-https # Cloudify and Azure have conflicts in PyPI
-          command: sudo apt-get install apt-transport-https
-      - run:
-          name: Install Azure CLI # Cloudify and Azure have conflicts in PyPI
-          command: sudo apt-get update && sudo apt-get install azure-cli
+          name: update pip
+          command: pip install -U pip
       - run:
           name: install cloudify
-          command: pip install cloudify==4.3.2
+          command: pip install -U cloudify==5.0.0 pytest==4.6.3 pyyaml==3.10
       - run:
-          name: install azure plugin from branch
-          command: pip install -r dev-requirements.txt -e .
+          name: download manager docker image
+          command: wget http://repository.cloudifysource.org/cloudify/5.0.0/ga-release/cloudify-docker-manager-5.0.0.tar
       - run:
-          name: install test requirements
-          command: pip install nose testtools https://github.com/cloudify-cosmo/cloudify-fabric-plugin/archive/1.5.1.zip https://github.com/cloudify-incubator/cloudify-utilities-plugin/archive/1.7.1.zip https://github.com/cloudify-incubator/cloudify-ecosystem-test/archive/cd624d0f7eaf67ce998ea7b70fbc9b6c7f7c0398.zip
+          name: load docker image
+          command: docker load -i cloudify-docker-manager-5.0.0.tar
       - run:
-          name: initialize az cli
-          command: az login --service-principal -u $AZURE_CLI_ID -p $AZURE_CLI_SE --tenant $AZURE_TEN_ID > /dev/null 2>&1
+          name: retain space by dumping the tar
+          command: rm cloudify-docker-manager-5.0.0.tar
       - run:
-          name: execute test
-          command: nosetests -s manager_tests/test_azure.py
+          name: show images
+          command: docker images
+      - run:
+          name: start docker container
+          command: docker run --name cfy_manager -d --restart unless-stopped -v /sys/fs/cgroup:/sys/fs/cgroup:ro --tmpfs /run --tmpfs /run/lock --security-opt seccomp:unconfined --cap-add SYS_ADMIN --network host cloudifyplatform/premium-cloudify-manager-aio
+      - run:
+          name: install local project
+          command: pip install https://github.com/cloudify-incubator/cloudify-ecosystem-test/archive/CY-2570-Plugins-Build.zip
+      - run: pytest -s .circleci/test_examples.py
 
   py3_compat:
     docker:
@@ -153,14 +153,14 @@ workflows:
       - wagon:
           filters:
             branches:
-              only: /([0-9\.]*\-build|master|dev)/
+              only: /([0-9\.]*\-build|master|dev|blueprint-test)/
       - cloudify-manager:
           context: ecosystem
           requires:
             - wagon
           filters:
             branches:
-              only: /([0-9\.]*\-build|master|dev)/
+              only: /([0-9\.]*\-build|master|dev|blueprint-test)/
   nightly:
     triggers:
     - schedule:
