@@ -32,8 +32,8 @@ class PublishingUser(AzureResource):
         self.logger.info("Set/Updating publishing_user...")
         publishing_user = self.client.update_publishing_user(
             user_details=user_details
-        )
+        ).as_dict()
         self.logger.info(
             'Set/Update publishing_user result: {0}'.format(
-                utils.secure_logging_content(publishing_user.as_dict())))
-        return publishing_user.as_dict()
+                utils.secure_logging_content(publishing_user)))
+        return publishing_user

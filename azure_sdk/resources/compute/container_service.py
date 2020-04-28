@@ -34,11 +34,11 @@ class ContainerService(AzureResource):
         container_service = self.client.container_services.get(
             resource_group_name=group_name,
             container_service_name=container_service_name
-        )
+        ).as_dict()
         self.logger.info(
             'Get container_service result: {0}'.format(
-                utils.secure_logging_content(container_service.as_dict())))
-        return container_service.as_dict()
+                utils.secure_logging_content(container_service)))
+        return container_service
 
     def create_or_update(self, group_name, container_service_name, params):
         self.logger.info("Create/Updating container_service...{0}".format(
@@ -50,11 +50,11 @@ class ContainerService(AzureResource):
                 parameters=params,
             )
         create_async_operation.wait()
-        container_service = create_async_operation.result()
+        container_service = create_async_operation.result().as_dict()
         self.logger.info(
             'Create container_service result: {0}'.format(
-                utils.secure_logging_content(container_service.as_dict())))
-        return container_service.as_dict()
+                utils.secure_logging_content(container_service)))
+        return container_service
 
     def delete(self, group_name, container_service_name):
         self.logger.info("Deleting container_service...{0}".format(

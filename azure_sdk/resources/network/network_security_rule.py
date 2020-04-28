@@ -36,11 +36,12 @@ class NetworkSecurityRule(AzureResource):
             resource_group_name=group_name,
             network_security_group_name=network_security_group_name,
             security_rule_name=security_rule_name
-        )
+        ).as_dict()
         self.logger.info(
             'Get network_security_rule result: {0}'.format(
-                utils.secure_logging_content(network_security_rule.as_dict())))
-        return network_security_rule.as_dict()
+                utils.secure_logging_content(network_security_rule))
+            )
+        return network_security_rule
 
     def create_or_update(self, group_name, network_security_group_name,
                          security_rule_name, params):
@@ -54,11 +55,12 @@ class NetworkSecurityRule(AzureResource):
             security_rule_parameters=params,
         )
         async_nsr_creation.wait()
-        network_security_rule = async_nsr_creation.result()
+        network_security_rule = async_nsr_creation.result().as_dict()
         self.logger.info(
             'create network_security_rule result: {0}'.format(
-                utils.secure_logging_content(network_security_rule.as_dict())))
-        return network_security_rule.as_dict()
+                utils.secure_logging_content(network_security_rule))
+            )
+        return network_security_rule
 
     def delete(self, group_name, network_security_group_name,
                security_rule_name):

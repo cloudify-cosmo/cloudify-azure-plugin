@@ -33,11 +33,11 @@ class Deployment(AzureResource):
         deployment = self.client.deployments.get(
             resource_group_name=group_name,
             deployment_name=deployment_name,
-        )
+        ).as_dict()
         self.logger.info(
             'Get deployment result: {0}'.format(
-                utils.secure_logging_content(deployment.as_dict())))
-        return deployment.as_dict()
+                utils.secure_logging_content(deployment)))
+        return deployment
 
     def create_or_update(self, group_name, deployment_name, properties,
                          timeout):
@@ -52,11 +52,11 @@ class Deployment(AzureResource):
             verify=resource_verify,
         )
         async_deployment_creation.wait(timeout=timeout)
-        deployment = async_deployment_creation.result()
+        deployment = async_deployment_creation.result().as_dict()
         self.logger.info(
             'Create deployment result: {0}'.format(
-                utils.secure_logging_content(deployment.as_dict())))
-        return deployment.as_dict()
+                utils.secure_logging_content(deployment)))
+        return deployment
 
     def delete(self, group_name, deployment_name):
         self.logger.info("Deleting deployment...{0}".format(deployment_name))

@@ -35,11 +35,11 @@ class PublicIPAddress(AzureResource):
         public_ip_address = self.client.public_ip_addresses.get(
             resource_group_name=group_name,
             public_ip_address_name=public_ip_address_name
-        )
+        ).as_dict()
         self.logger.info(
             'Get public_ip_address result: {0}'.format(
-                utils.secure_logging_content(public_ip_address.as_dict())))
-        return public_ip_address.as_dict()
+                utils.secure_logging_content(public_ip_address)))
+        return public_ip_address
 
     def create_or_update(self, group_name, public_ip_address_name, params):
         self.logger.info(
@@ -52,11 +52,11 @@ class PublicIPAddress(AzureResource):
                 parameters=params,
             )
         async_public_ip_address_creation.wait()
-        public_ip_address = async_public_ip_address_creation.result()
+        public_ip_address = async_public_ip_address_creation.result().as_dict()
         self.logger.info(
             'create public_ip_address result: {0}'.format(
-                utils.secure_logging_content(public_ip_address.as_dict())))
-        return public_ip_address.as_dict()
+                utils.secure_logging_content(public_ip_address)))
+        return public_ip_address
 
     def delete(self, group_name, public_ip_address_name):
         self.logger.info(

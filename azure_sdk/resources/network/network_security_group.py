@@ -36,12 +36,12 @@ class NetworkSecurityGroup(AzureResource):
         network_security_group = self.client.network_security_groups.get(
             resource_group_name=group_name,
             network_security_group_name=network_security_group_name
-        )
+        ).as_dict()
         self.logger.info(
             'Get network_security_group result: {0}'.format(
-                utils.secure_logging_content(network_security_group.as_dict()))
+                utils.secure_logging_content(network_security_group))
             )
-        return network_security_group.as_dict()
+        return network_security_group
 
     def create_or_update(self, group_name, network_security_group_name,
                          params):
@@ -55,12 +55,12 @@ class NetworkSecurityGroup(AzureResource):
                 parameters=params,
             )
         async_nsg_creation.wait()
-        network_security_group = async_nsg_creation.result()
+        network_security_group = async_nsg_creation.result().as_dict()
         self.logger.info(
             'create network_security_group result: {0}'.format(
-                utils.secure_logging_content(network_security_group.as_dict()))
+                utils.secure_logging_content(network_security_group))
             )
-        return network_security_group.as_dict()
+        return network_security_group
 
     def delete(self, group_name, network_security_group_name):
         self.logger.info(

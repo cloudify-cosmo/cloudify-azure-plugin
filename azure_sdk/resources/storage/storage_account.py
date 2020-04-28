@@ -34,11 +34,11 @@ class StorageAccount(AzureResource):
         storage_account = self.client.storage_accounts.get_properties(
             resource_group_name=group_name,
             account_name=account_name
-        )
+        ).as_dict()
         self.logger.info(
             'Get storage_account result: {0}'.format(
-                utils.secure_logging_content(storage_account.as_dict())))
-        return storage_account.as_dict()
+                utils.secure_logging_content(storage_account)))
+        return storage_account
 
     def create(self, group_name, account_name, parameters):
         self.logger.info(
@@ -49,11 +49,11 @@ class StorageAccount(AzureResource):
             parameters=parameters
         )
         async_storage_account_creation.wait()
-        storage_account = async_storage_account_creation.result()
+        storage_account = async_storage_account_creation.result().as_dict()
         self.logger.info(
             'storage_account : {0}'.format(
-                utils.secure_logging_content(storage_account.as_dict())))
-        return storage_account.as_dict()
+                utils.secure_logging_content(storage_account)))
+        return storage_account
 
     def delete(self, group_name, account_name):
         self.logger.info("Deleting Storage Account...{0}".format(account_name))
@@ -70,8 +70,9 @@ class StorageAccount(AzureResource):
         storage_keys = self.client.storage_accounts.list_keys(
             resource_group_name=group_name,
             account_name=account_name
-        )
+        ).as_dict()
         self.logger.debug(
             'Storage Account Keys {0}'.format(
-                utils.secure_logging_content(storage_keys.as_dict())))
-        return storage_keys.as_dict()
+                utils.secure_logging_content(storage_keys))
+            )
+        return storage_keys

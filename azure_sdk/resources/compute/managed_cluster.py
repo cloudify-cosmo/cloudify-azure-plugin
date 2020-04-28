@@ -33,11 +33,11 @@ class ManagedCluster(AzureResource):
         managed_cluster = self.client.managed_clusters.get(
             resource_group_name=group_name,
             resource_name=resource_name
-        )
+        ).as_dict()
         self.logger.info(
             'Get managed_cluster result: {0}'.format(
-                utils.secure_logging_content(managed_cluster.as_dict())))
-        return managed_cluster.as_dict()
+                utils.secure_logging_content(managed_cluster)))
+        return managed_cluster
 
     def create_or_update(self, group_name, resource_name, params):
         self.logger.info(
@@ -48,11 +48,12 @@ class ManagedCluster(AzureResource):
             parameters=params,
         )
         create_async_operation.wait()
-        managed_cluster = create_async_operation.result()
+        managed_cluster = create_async_operation.result().as_dict()
         self.logger.info(
             'Create managed_cluster result: {0}'.format(
-                utils.secure_logging_content(managed_cluster.as_dict())))
-        return managed_cluster.as_dict()
+                utils.secure_logging_content(managed_cluster))
+            )
+        return managed_cluster
 
     def delete(self, group_name, resource_name):
         self.logger.info(
@@ -72,5 +73,5 @@ class ManagedCluster(AzureResource):
             self.client.managed_clusters.list_cluster_admin_credentials(
                 resource_group_name=group_name,
                 resource_name=resource_name
-            )
-        return admin_credentials.as_dict().get("kubeconfigs")[0].get("value")
+            ).as_dict()
+        return admin_credentials.get("kubeconfigs")[0].get("value")

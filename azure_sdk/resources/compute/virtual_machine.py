@@ -34,14 +34,12 @@ class VirtualMachine(AzureResource):
         virtual_machine = self.client.virtual_machines.get(
             resource_group_name=group_name,
             vm_name=vm_name
-        )
+        ).as_dict()
         self.logger.info(
             'Get virtual_machine result: {0}'.format(
-                utils.secure_logging_content(
-                    virtual_machine.as_dict())
-                )
+                utils.secure_logging_content(virtual_machine))
             )
-        return virtual_machine.as_dict()
+        return virtual_machine
 
     def create_or_update(self, group_name, vm_name, params):
         self.logger.info(
@@ -52,12 +50,12 @@ class VirtualMachine(AzureResource):
             parameters=params,
         )
         create_async_operation.wait()
+        virtual_machine = create_async_operation.result().as_dict()
         self.logger.info(
             'Create virtual_machine result: {0}'.format(
-                utils.secure_logging_content(
-                    create_async_operation.result().as_dict()))
+                utils.secure_logging_content(virtual_machine))
             )
-        return create_async_operation.result().as_dict()
+        return virtual_machine
 
     def delete(self, group_name, vm_name):
         self.logger.info(

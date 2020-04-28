@@ -35,11 +35,11 @@ class AvailabilitySet(AzureResource):
         availability_set = self.client.availability_sets.get(
             resource_group_name=group_name,
             availability_set_name=availability_set_name
-        )
+        ).as_dict()
         self.logger.info(
             'Get availability_set result: {0}'.format(
-                utils.secure_logging_content(availability_set.as_dict())))
-        return availability_set.as_dict()
+                utils.secure_logging_content(availability_set)))
+        return availability_set
 
     def create_or_update(self, group_name, availability_set_name, params):
         self.logger.info("Create/Updating availability_set...{0}".format(
@@ -48,11 +48,11 @@ class AvailabilitySet(AzureResource):
             resource_group_name=group_name,
             name=availability_set_name,
             parameters=params,
-        )
+        ).as_dict()
         self.logger.info(
             'Create availability_set result: {0}'.format(
-                utils.secure_logging_content(availability_set.as_dict())))
-        return availability_set.as_dict()
+                utils.secure_logging_content(availability_set)))
+        return availability_set
 
     def delete(self, group_name, availability_set_name):
         self.logger.info(
