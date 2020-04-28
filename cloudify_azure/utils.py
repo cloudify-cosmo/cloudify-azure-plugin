@@ -18,31 +18,21 @@
     Microsoft Azure plugin for Cloudify helper utilities
 """
 
-from cloudify._compat import SafeConfigParser
-
-from uuid import uuid4
-from logging import DEBUG
-from copy import deepcopy
-from os import path, environ
-from datetime import datetime
 from collections import Mapping
 
 from cloudify import ctx
 
-# Constants
 from cloudify_azure import constants
-# AzureCredentials namedtuple
-from cloudify_azure.auth.oauth2 import AzureCredentials
-from cloudify.context import RelationshipSubjectContext
 
 
 def dict_update(orig, updates):
     """Recursively merges two objects"""
-    for key, val in updates.items():
-        if isinstance(val, Mapping):
-            orig[key] = dict_update(orig.get(key, {}), val)
-        else:
-            orig[key] = updates[key]
+    if updates and type(updates) == dict:
+        for key, val in updates.items():
+            if isinstance(val, Mapping):
+                orig[key] = dict_update(orig.get(key, {}), val)
+            else:
+                orig[key] = updates[key]
     return orig
 
 
@@ -63,148 +53,6 @@ def get_resource_name(_ctx=ctx):
     """
     return _ctx.instance.runtime_properties.get('name') or \
         _ctx.node.properties.get('name')
-
-
-def task_resource_get(resource,
-                      name=None,
-                      _ctx=ctx):
-    return resource.get(name or get_resource_name(_ctx))
-
-
-def task_resource_create(resource, params,
-                         name=None, use_external=None,
-                         _ctx=ctx):
-    """
-        Creates a new Microsoft Azure resource and
-        polls, if necessary, until the operation
-        has successfully completed
-
-    :param `cloudify_azure.resources.base.Resource` resource:
-        The resource interface object to perform resource
-        operations on
-    :param string name: The resource name, as identified in Azure. This
-        defaults to *name* in *ctx.node.properties*
-    :param dict params: Resource parameters to be passed as-is to Azure
-    :raises: :exc:`cloudify.exceptions.RecoverableError`,
-             :exc:`cloudify.exceptions.NonRecoverableError`,
-             :exc:`requests.RequestException`
-    """
-    # Get the resource name
-    name = name or get_resource_name(_ctx)
-    # Get use_external_resource boolean
-    if use_external is None:
-        use_external = _ctx.node.properties.get('use_external_resource')
-    # Check for existing resources
-    if use_external:
-        return resource.get(name)
-    # Generate a new name (if needed)
-    name = generate_resource_name(resource, name=name, _ctx=_ctx)
-    # Handle pending asynchrnous operations
-    if _ctx.instance.runtime_properties.get('async_op'):
-        return resource.operation_complete(
-            _ctx.instance.runtime_properties.get('async_op'))
-    if not resource.exists(name):
-        # Create a new resource
-        resource.create(name, params)
-    else:
-        _ctx.logger.info("Resource with name {0} exists".format(name))
-
-
-def generate_resource_name(resource, generator=None, name=None, _ctx=ctx):
-    """
-        Generates a resource name (if needed)
-
-    :param `cloudify_azure.resources.base.Resource` resource:
-        The resource interface object to generate a name for.
-    :param `function` generator: The unique string generator to use. This
-        must be a function that does not take any parameters.
-    :param string name: The resource name to use. If None, it will
-        be generated.
-    """
-    # Get the resource name
-    name = name or get_resource_name(_ctx)
-    # Generate a new name (if needed)
-    if not name:
-        for _ in range(0, 15):
-            if generator:
-                name = generator()
-            else:
-                name = '{0}'.format(uuid4())
-            # Check if we have a duplicate name
-            try:
-                if not resource.exists(name):
-                    break
-            except ValueError:
-                # Catch an HTTP 400 response for invalid name
-                pass
-    # Set the new name in the runtime properties
-    _ctx.instance.runtime_properties['name'] = name
-    return name
-
-
-def task_resource_update(resource, params,
-                         name=None,
-                         force=False,
-                         _ctx=ctx):
-    """
-        Updates an existing Microsoft Azure resource and
-        polls, if necessary, until the operation
-        has successfully completed
-
-    :param `cloudify_azure.resources.base.Resource` resource:
-        The resource interface object to perform resource
-        operations on
-    :param string name: The resource name, as identified in Azure. This
-        defaults to *name* in *ctx.node.properties*
-    :param dict params: Resource parameters to update the resource with
-    :raises: :exc:`cloudify.exceptions.RecoverableError`,
-             :exc:`cloudify.exceptions.NonRecoverableError`,
-             :exc:`requests.RequestException`
-    """
-    # Get the resource name
-    name = name or get_resource_name(_ctx)
-    if resource.exists(name):
-        # Handle pending asynchrnous operations
-        if _ctx.instance.runtime_properties.get('async_op'):
-            return resource.operation_complete(
-                _ctx.instance.runtime_properties.get('async_op'))
-        # Update an existing resource
-        resource.update(name, params, force=force)
-    else:
-        _ctx.logger.info("Resource with name {0} doesn't exist".format(name))
-
-
-def task_resource_delete(resource, name=None, _ctx=ctx):
-    """
-        Deletes a Microsoft Azure resource and
-        polls, if necessary, until the operation
-        has successfully completed
-
-    :param `cloudify_azure.resources.base.Resource` resource:
-        The resource interface object to perform resource
-        operations on
-    :param string name: The resource name, as identified in Azure. This
-        defaults to *name* in *ctx.node.properties*
-    :raises: :exc:`cloudify.exceptions.RecoverableError`,
-             :exc:`cloudify.exceptions.NonRecoverableError`,
-             :exc:`requests.RequestException`
-    """
-    # Get the resource name
-    name = name or get_resource_name(_ctx)
-    # Check for existing resources
-    if _ctx.node.properties.get('use_external_resource'):
-        return resource.get(name)
-    if resource.exists(name):
-        # Handle pending asynchrnous operations
-        if _ctx.instance.runtime_properties.get('async_op'):
-            return resource.operation_complete(
-                _ctx.instance.runtime_properties.get('async_op'))
-        # Delete the resource
-        resource.delete(name)
-        runtime_properties_cleanup(_ctx)
-    else:
-        runtime_properties_cleanup(_ctx, True)
-        _ctx.logger.info("Resource with name {0} doesn't exist".format(name))
 
 
 def get_resource_config(_ctx=ctx, args=None):
@@ -246,20 +94,6 @@ def get_resource_group(_ctx=ctx):
             _ctx.instance, constants.REL_CONTAINED_IN_RG)
 
 
-def get_storage_account(_ctx=ctx):
-    """
-        Finds the Storage Account associated with the current node. This
-        method searches both by node properties (priority) or by
-        node relationships
-
-    :returns: Storage Account name
-    :rtype: string
-    """
-    return _ctx.node.properties.get('storage_account_name') or \
-        get_ancestor_name(
-            _ctx.instance, constants.REL_CONTAINED_IN_SA)
-
-
 def get_virtual_network(_ctx=ctx):
     """
         Finds the Virtual Network associated with the current node. This
@@ -272,20 +106,6 @@ def get_virtual_network(_ctx=ctx):
     return _ctx.node.properties.get('virtual_network_name') or \
         get_ancestor_name(
             _ctx.instance, constants.REL_CONTAINED_IN_VN)
-
-
-def get_subnet(_ctx=ctx):
-    """
-        Finds the Subnet associated with the current node. This
-        method searches both by node properties (priority) or by
-        node relationships
-
-    :returns: Subnet name
-    :rtype: string
-    """
-    return _ctx.node.properties.get('subnet_name') or \
-        get_ancestor_name(
-            _ctx.instance, constants.REL_IPC_CONNECTED_TO_SUBNET)
 
 
 def get_route_table(_ctx=ctx):
@@ -315,38 +135,6 @@ def get_network_security_group(_ctx=ctx,
     return _ctx.node.properties.get('network_security_group_name') or \
         get_ancestor_name(
             _ctx.instance, rel_type)
-
-
-def create_child_logger(name,
-                        plogger=None,
-                        level=DEBUG):
-    """
-        Creates a child logger and sets the log level
-
-    .. note::
-
-           If `plogger` is not specified, this method will default
-           to using `ctx.logger` as the parent logger.
-
-    Example::
-
-        # Import
-        from cloudify_azure import utils
-        # Get a child Cloudify logger for a subroutine
-        log = utils.create_child_logger('myclass.myfunc')
-        # Use the logger as normal
-        log.debug('Child logger!')
-
-    :param string name: Name of the child logger
-    :param `logging.Logger` plogger: Parent logger
-    :param int level: Log level
-    :returns: A configured child logger
-    :rtype: :class:`logging.Logger`
-    """
-    plogger = plogger or ctx.logger
-    log = plogger.getChild(name)
-    log.setLevel(level)
-    return log
 
 
 def get_retry_after(_ctx=ctx):
@@ -434,44 +222,6 @@ def get_parent(inst, rel_type='cloudify.relationships.contained_in'):
     return None
 
 
-def get_parent_property(inst, prop,
-                        rel_type='cloudify.relationships.contained_in'):
-    """
-        Gets a property from an instance's parent
-
-    :param `cloudify.context.NodeInstanceContext` inst: Cloudify instance
-    :param string prop: Property to search for
-    :param string rel_type: Relationship type
-    :returns: Parent node property or None
-    """
-    parent = get_parent(inst, rel_type=rel_type)
-    if parent:
-        return parent.node.properties.get(prop)
-    return None
-
-
-def get_ancestor_property(inst, prop, rel_type):
-    """
-        Gets a property from an ancestor (recursive search)
-
-    :param `cloudify.context.NodeInstanceContext` inst: Cloudify instance
-    :param string prop: Property to search for
-    :param string rel_type: Relationship type
-    :returns: Ancestor node property or None
-    """
-    # Find a parent of a specific type
-    parent = get_parent(inst, rel_type=rel_type)
-    if not parent:
-        # Find a parent of any type
-        parent = get_parent(inst)
-        if not parent:
-            return None
-        # Keep searching
-        return get_ancestor_property(parent.instance, prop, rel_type)
-    # We found a match
-    return parent.node.properties.get(prop)
-
-
 def get_ancestor_name(inst, rel_type):
     """
         Gets the name of an ancestor (recursive search)
@@ -493,81 +243,6 @@ def get_ancestor_name(inst, rel_type):
     return get_resource_name(parent)
 
 
-def get_full_id_reference(resource, api_fmt=True, _ctx=ctx):
-    """
-        Creates a full, usable Azure ID reference
-
-    :param `cloudify_azure.resources.base.Resource` resource:
-        Resource class to map resources to
-    :param boolean api_fmt: If True, returns the resource ID as a dict
-        object with an *id* key. If False, returns just the ID string
-    :param `cloudify.ctx` _ctx: Cloudify context
-    :returns: Azure ID of a resource
-    :rtype: string or dict or None
-    """
-    subscription_id = get_subscription_id(_ctx=_ctx)
-    iface = resource(_ctx=_ctx)
-    name = get_resource_name(_ctx)
-    resid = '/subscriptions/{0}{1}/{2}'.format(
-        subscription_id,
-        iface.endpoint,
-        name)
-    if api_fmt:
-        return {'id': resid}
-    return resid
-
-
-def get_full_resource_id(iface, name, api_fmt=True, _ctx=ctx):
-    """
-        Creates a full, usable Azure ID reference
-
-    :param `cloudify_azure.resources.base.Resource` iface:
-        Existing resource instance interface
-    :param boolean api_fmt: If True, returns the resource ID as a dict
-        object with an *id* key. If False, returns just the ID string
-    :param `cloudify.ctx` _ctx: Cloudify context
-    :returns: Azure ID of a resource
-    :rtype: string or dict or None
-    """
-    subscription_id = get_subscription_id(_ctx=_ctx)
-    resid = '/subscriptions/{0}{1}/{2}'.format(
-        subscription_id,
-        iface.endpoint,
-        name)
-    if api_fmt:
-        return {'id': resid}
-    return resid
-
-
-def get_rel_id_reference(resource, rel_type, api_fmt=True, _ctx=ctx):
-    """
-        Finds a resource by relationship type and
-        returns an Azure ID
-
-    :param `cloudify_azure.resources.base.Resource` resource:
-        Resource class to map resources to
-    :param string rel_type: Cloudify relationship name
-    :param boolean api_fmt: If True, returns the resource ID as a dict
-        object with an *id* key. If False, returns just the ID string
-    :param `cloudify.ctx` _ctx: Cloudify context
-    :returns: Azure ID of a resource
-    :rtype: string or dict or None
-    """
-    subscription_id = get_subscription_id()
-    for rel in _ctx.instance.relationships:
-        if rel_type in rel.type_hierarchy:
-            iface = resource(_ctx=rel.target)
-            name = get_resource_name(rel.target)
-            resid = '/subscriptions/{0}{1}/{2}'.format(
-                subscription_id,
-                iface.endpoint,
-                name)
-            if api_fmt:
-                return {'id': resid}
-            return resid
-    return None
-
-
 def get_rel_node_name(rel_type, _ctx=ctx):
     """
         Finds a resource by relationship type and
@@ -584,164 +259,111 @@ def get_rel_node_name(rel_type, _ctx=ctx):
     return None
 
 
-def get_rel_id_references(resource, rel_type, api_fmt=True, _ctx=ctx):
-    """
-        Finds resources by relationship type and
-        returns Azure IDs
-
-    :param `cloudify_azure.resources.base.Resource` resource:
-        Resource class to map resources to
-    :param string rel_type: Cloudify relationship name
-    :param boolean api_fmt: If True, returns the resource IDs as a dict
-        array with an *id* key. If False, returns just the ID strings
-    :param `cloudify.ctx` _ctx: Cloudify context
-    :returns: Azure ID of resources
-    :rtype: array
-    """
-    ids = list()
-    subscription_id = get_subscription_id()
-    for rel in _ctx.instance.relationships:
-        if rel_type in rel.type_hierarchy:
-            iface = resource(_ctx=rel.target)
-            name = get_resource_name(rel.target)
-            resid = '/subscriptions/{0}{1}/{2}'.format(
-                subscription_id,
-                iface.endpoint,
-                name)
-            ids.append({'id': resid} if api_fmt else resid)
-    return ids
-
-
-def get_credentials(_ctx=ctx):
-    """
-        Gets any Azure API access information from the
-        current node properties or a provider context
-        file created during manager bootstrapping.
-
-    :returns: Azure credentials and access information
-    :rtype: :class:`cloudify_azure.auth.oauth2.AzureCredentials`
-    """
-    f_creds = dict()
-    f_config_path = environ.get(constants.CONFIG_PATH_ENV_VAR_NAME,
-                                constants.CONFIG_PATH)
-
-    if path.exists(f_config_path):
-        f_creds = get_credentials_from_file(f_config_path)
-    n_creds = get_credentials_from_node(_ctx=_ctx)
-    creds = dict_update(f_creds, n_creds)
-    if 'endpoint_verify' not in creds:
-        creds['endpoint_verify'] = True
-    if 'certificate' not in creds:
-        creds['certificate'] = None
-    if 'thumbprint' not in creds:
-        creds['thumbprint'] = None
-    if 'client_secret' not in creds:
-        creds['client_secret'] = None
-    if 'cloud_environment' not in creds:
-        creds['cloud_environment'] = None
-    return AzureCredentials(**creds)
-
-
-def get_credentials_from_file(config_path=constants.CONFIG_PATH):
-    """
-        Gets Azure API access information from
-        the provider context config file
-
-    :returns: Azure credentials and access information
-    :rtype: dict
-    """
-    cred_keys = [
-        'client_id', 'client_secret', 'subscription_id', 'tenant_id',
-        'endpoint_resource', 'endpoint_verify', 'endpoints_resource_manager',
-        'endpoints_active_directory', 'certificate', 'thumbprint',
-        'cloud_environment'
-    ]
-    config = SafeConfigParser()
-    config.read(config_path)
-    return {k: config.get('Credentials', k) for k in cred_keys}
-
-
-def get_credentials_from_node(_ctx=ctx):
-    """
-        Gets any Azure API access information from the
-        current node properties
-
-    :returns: Azure credentials and access information
-    :rtype: dict
-    """
-    cred_keys = [
-        'client_id', 'client_secret', 'subscription_id', 'tenant_id',
-        'endpoint_resource', 'endpoints_resource_manager',
-        'endpoints_active_directory', 'certificate', 'thumbprint',
-        'cloud_environment'
-    ]
-    props = _ctx.node.properties.get('azure_config')
-    properties = {k: props[k] for k in cred_keys if props.get(k)}
-    if 'endpoint_verify' in props:
-        properties['endpoint_verify'] = props['endpoint_verify']
-    return properties
-
-
-def get_subscription_id(_ctx=ctx):
-    """
-        Gets the subscription ID from either the node or
-        the provider context
-    """
-    return get_credentials(_ctx=_ctx).subscription_id
-
-
 def secure_logging_content(content, secure_keywords=constants.SECURE_KW):
-    """Scrubs logging calls containing potentially sensitive information"""
-    def clean(clean_me, secure_keywords=secure_keywords):
-        """Srubs potentially sensitive data from a list or dict"""
-        if isinstance(clean_me, list):
-            for obj in clean_me:
-                clean_me[clean_me.index(obj)] = clean(obj)
-        elif isinstance(clean_me, dict):
-            for key, value in clean_me.items():
-                if isinstance(key, str) and key in secure_keywords:
-                    clean_me[key] = '*'
-                else:
-                    clean(value)
-        return clean_me
-
-    content_copy = deepcopy(content)
-    return clean(content_copy)
-
-
-def get_rfc1123_date():
     """
-        Azure Storage headers use RFC 1123 for date representation.
-        See https://msdn.microsoft.com/en-us/library/azure/dd135714.aspx
+    This function takes dict and check against secure_keywords
+    to hide that sensitive values when logging
     """
-    return datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
+    def _log(content, secure_keywords, log_message="", parent_hide=False):
+        """
+        ::param data : dict to check againt sensitive_keys
+        ::param sensitive_keys : a list of keys we want to hide the values for
+        ::param log_message : a string to append the message to
+        ::param parent_hide : boolean flag to pass if the parent key is
+                              in sensitive_keys
+        """
+        for key in content:
+            # check if key in sensitive_keys or parent_hide
+            hide = parent_hide or (key in secure_keywords)
+            value = content[key]
+            # handle dict value incase sensitive_keys was inside another key
+            if isinstance(value, dict):
+                # call _log function recusivly to handle the dict value
+                log_message += "{0} : \n".format(key)
+                v = _log(value, secure_keywords, "", hide)
+                log_message += "  {0}".format("  ".join(v.splitlines(True)))
+            else:
+                # if hide true hide the value with "*"
+                log_message += "{0} : {1}\n".format(key, '*'*len(value)
+                                                         if hide else value)
+        return log_message
+
+    log_message = _log(content, secure_keywords)
+    return log_message
 
 
-def get_cloudify_endpoint(_ctx):
+def cleanup_empty_params(data):
     """
-        ctx.endpoint collapses the functionality for local and manager
-        rest clients.
+        This method will remove key with empty values, and handle renaming
+        of old [REST] to [SDK] for example dnsSettings will be dns_settings
+        and some more special cases can't be handled here, will be handled
+        manually
+    :param data: dict that holds all parameters that will be passed to sdk api
+    """
 
-    :param _ctx: the NodeInstanceContext
-    :return: endpoint object
-    """
-    if hasattr(_ctx._endpoint, 'storage'):
-        return _ctx._endpoint.storage
-    return _ctx._endpoint
+    def convert_key_val(key):
+        new_key = key[0].lower()
+        for character in key[1:]:
+            # Append an underscore if the character is uppercase.
+            if character.isupper():
+                new_key += '_'
+            new_key += character.lower()
+        return new_key
+
+    if type(data) is dict:
+        new_data = {}
+        for key in data:
+            if data[key]:
+                val = cleanup_empty_params(data[key])
+                if val:
+                    new_data[convert_key_val(key)] = val
+        return new_data
+    elif type(data) is list:
+        new_data = []
+        for index in range(len(data)):
+            if data[index]:
+                val = cleanup_empty_params(data[index])
+                if val:
+                    new_data.append(val)
+        return new_data
+    else:
+        return data
 
 
-def get_relationship_subject_ctx(_ctx, rel_target):
+def handle_resource_config_params(data, resource_config):
     """
-        Get a RelationshipSubjectContext for a given Relationship Target
-    :param _ctx: The NodeInstanceContext
-    :param rel_target: The NodeInstanceContext
-           relationship Target RelationshipContext
-    :return: RelationshipSubjectContext
+        This method will merge the resource_config and handle properties keys,
+         that is required in [REST] but in [SDK] it's values is considered
+    :param data: dict that holds all parameters that will be passed to sdk api
+    :param resource_config: dict the parameters values from blueprint
     """
-    target_context = {
-        'node_name': rel_target.node.id,
-        'node_id': rel_target.instance.id
-    }
-    return RelationshipSubjectContext(context=target_context,
-                                      endpoint=get_cloudify_endpoint(_ctx),
-                                      modifiable=False)
+
+    def handle_properties_keys(data):
+        if type(data) is dict:
+            new_data = {}
+            for key in data:
+                if data[key]:
+                    val = handle_properties_keys(data[key])
+                    if val:
+                        if key == 'properties':
+                            new_data = dict_update(new_data, val)
+                        else:
+                            new_data[key] = val
+            return new_data
+        elif type(data) is list:
+            new_data = []
+            for index in range(len(data)):
+                if data[index]:
+                    val = handle_properties_keys(data[index])
+                    if val:
+                        new_data.append(val)
+            return new_data
+        else:
+            return data
+    if resource_config:
+        resource_config = handle_properties_keys(resource_config)
+        data = dict_update(
+            data,
+            resource_config
+        )
+    return cleanup_empty_params(data)

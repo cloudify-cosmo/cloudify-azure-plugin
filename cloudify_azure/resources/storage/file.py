@@ -17,21 +17,16 @@
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Microsoft Azure Storage File Share interface
 """
-
-# pylint: disable=W0703
-# pylint: disable=R0914
-
 import random
 import string
 
-from cloudify import ctx
+from azure.storage.common.cloudstorageaccount import CloudStorageAccount
+
 from cloudify.decorators import operation
-from cloudify.exceptions import RecoverableError, NonRecoverableError
+from cloudify.exceptions import (RecoverableError, NonRecoverableError)
 
 from cloudify_azure import (constants, utils)
-from cloudify_azure.resources.storage.storageaccount import StorageAccount
-
-from azure.storage.common.cloudstorageaccount import CloudStorageAccount
+from azure_sdk.resources.storage.storage_account import StorageAccount
 
 
 def file_share_name_generator():
@@ -40,7 +35,7 @@ def file_share_name_generator():
                    for i in range(random.randint(24, 63)))
 
 
-def file_share_exists(filesvc, share_name):
+def file_share_exists(ctx, filesvc, share_name):
     """
         Checks if a File Share already exists
 
@@ -62,11 +57,11 @@ def file_share_exists(filesvc, share_name):
 
 
 @operation(resumable=True)
-def create_file_share(**_):
+def create_file_share(ctx, **_):
     """Creates an Azure File Share"""
     # Get resource config values
-    res_cfg = utils.get_resource_config() or dict()
-    share_name = ctx.node.properties.get('name')
+    res_cfg = ctx.node.properties.get("resource_config", {})
+    share_name = utils.get_resource_name(ctx)
     metadata = res_cfg.get('metadata')
     quota = res_cfg.get('quota')
     fail_on_exist = res_cfg.get('fail_on_exist', False)
@@ -78,15 +73,19 @@ def create_file_share(**_):
     # Get the storage account
     storage_account = utils.get_parent(
         ctx.instance,
-        rel_type=constants.REL_CONTAINED_IN_SA)
+        rel_type=constants.REL_CONTAINED_IN_SA
+    )
+    resource_group_name = utils.get_resource_group(ctx)
     storage_account_name = utils.get_resource_name(_ctx=storage_account)
+    azure_config = ctx.node.properties.get("azure_config")
     # Get the storage account keys
-    keys = StorageAccount(_ctx=storage_account).list_keys()
-    if not isinstance(keys, list) or len(keys) < 1:
+    keys = StorageAccount(azure_config, ctx.logger).list_keys(
+        resource_group_name, storage_account_name)
+    if not keys or not keys.get("key1"):
         raise RecoverableError(
             'StorageAccount reported no usable authentication keys')
     # Get an interface to the Storage Account
-    storage_account_key = keys[0].get('key')
+    storage_account_key = keys.get("key1")
     storageacct = CloudStorageAccount(
         account_name=storage_account_name,
         account_key=storage_account_key)
@@ -112,7 +111,7 @@ def create_file_share(**_):
             ctx.logger.info('Generating a new File Share name')
             for _ in range(0, 10):
                 tmpname = file_share_name_generator()
-                if not file_share_exists(filesvc, tmpname):
+                if not file_share_exists(ctx, filesvc, tmpname):
                     share_name = tmpname
                     break
         # Handle name error

@@ -12,18 +12,47 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import sys
 import json
 
-from azure.mgmt.resource import ResourceManagementClient
+from uuid import uuid4
+from msrestazure.azure_exceptions import CloudError
 from azure.mgmt.resource.resources.models import DeploymentMode
 
-from cloudify.decorators import operation
 from cloudify import exceptions as cfy_exc
-from cloudify._compat import (urlopen, urlparse, text_type)
+from cloudify.decorators import operation
 
-from cloudify_azure import constants
-from cloudify_azure.auth.oauth2 import to_service_principle_credentials
+try:
+    from cloudify._compat import (urlopen, urlparse, text_type)
+except ImportError:
+    PY2 = sys.version_info[0] == 2
+    if PY2:
+        from urllib2 import urlopen
+        from urlparse import urlparse
+        text_type = unicode
+    else:
+        from urllib.request import urlopen
+        from urllib.parse import urlparse
+        text_type = str
+
+from cloudify_azure import utils
+from azure_sdk.resources.deployment import Deployment
+from azure_sdk.resources.resource_group import ResourceGroup
+
+
+def get_unique_name(resource_group, name):
+    if not name:
+        for _ in range(0, 15):
+            name = "{0}".format(uuid4())
+            try:
+                result = resource_group.get(name)
+                if result:  # found a resource with same name
+                    name = ""
+                    continue
+            except CloudError:  # if exception that means name is not used
+                return name
+    else:
+        return name
 
 
 def is_url(string):
@@ -31,99 +60,12 @@ def is_url(string):
     return parse_info.scheme and (parse_info.netloc or parse_info.path)
 
 
-class Deployment(object):
-
-    def __init__(self, logger, credentials, name, timeout=None):
-        self.resource_group = name
-        self.logger = logger
-        self.timeout = timeout or 900
-        self.resource_verify = bool(credentials.get('endpoint_verify', True))
-        self.credentials = to_service_principle_credentials(
-            client_id='{0}'.format(credentials['client_id']),
-            certificate='{0}'.format(credentials.get('certificate', '')),
-            thumbprint='{0}'.format(credentials.get('thumbprint', '')),
-            cloud_environment='{0}'.format(
-                credentials.get('cloud_environment', '')),
-            secret='{0}'.format(credentials.get('client_secret', '')),
-            tenant='{0}'.format(credentials['tenant_id']),
-            verify=self.resource_verify,
-            endpoints_active_directory='{0}'.format(credentials.get(
-                'endpoints_active_directory', '')),
-            resource='{0}'.format(
-                credentials.get('endpoint_resource',
-                                constants.OAUTH2_MGMT_RESOURCE),)
-        )
-        self.client = ResourceManagementClient(
-            self.credentials,
-            '{0}'.format(credentials['subscription_id']),
-            base_url='{0}'.format(
-                credentials.get('endpoints_resource_manager',
-                                constants.CONN_API_ENDPOINT)))
-
-        self.logger.info("Using subscription: {0}".format(
-            credentials['subscription_id']))
-
-    def create(self, location):
-        """Deploy the template to a resource group."""
-        self.logger.info("Creating resource group: {0}".format(
-            self.resource_group))
-        self.client.resource_groups.create_or_update(
-            self.resource_group,
-            {
-                "location": location
-            },
-            verify=self.resource_verify
-        )
-
-    def get(self):
-        return self.client.deployments.get(
-            self.resource_group,  # resource group name
-            self.resource_group,  # deployment name
-        )
-
-    @staticmethod
-    def format_params(params):
-        if not isinstance(params, dict):
-            return params
-        for k, v in params.items():
-            params[k] = {"value": v}
+def format_params(params):
+    if not isinstance(params, dict):
         return params
-
-    def update(self, template, params):
-
-        self.logger.info("Creating deployment: {0}".format(
-            self.resource_group))
-
-        deployment_properties = {
-            'mode': DeploymentMode.incremental,
-            'template': template,
-            'parameters': self.format_params(params)
-        }
-
-        deployment_async_operation = self.client.deployments.create_or_update(
-            self.resource_group,  # resource group name
-            self.resource_group,  # deployment name
-            deployment_properties,
-            verify=self.resource_verify
-        )
-        self.logger.info(
-            "Waiting for deployment to finish (timeout: {0} seconds)".format(
-                repr(self.timeout)))
-
-        deployment_async_operation.wait(timeout=self.timeout)
-
-    def delete(self):
-        """Destroy the given resource group"""
-        self.logger.info("Deleting resource group: {0}".format(
-            self.resource_group))
-        deployment_async_operation = self.client.resource_groups.delete(
-            self.resource_group,
-            verify=self.resource_verify
-        )
-        self.logger.info(
-            "Waiting for deployment to be deleted (timeout: {0} "
-            "seconds)".format(repr(self.timeout)))
-        deployment_async_operation.wait(timeout=self.timeout)
+    for k, v in params.items():
+        params[k] = {"value": v}
+    return params
 
 
 def get_template(ctx, properties):
@@ -162,41 +104,98 @@ def get_template(ctx, properties):
 
 @operation(resumable=True)
 def create(ctx, **kwargs):
+
+    azure_config = ctx.node.properties.get('azure_config')
+    name = utils.get_resource_name(ctx)
+    resource_group_params = {
+        'location': ctx.node.properties.get('location'),
+    }
+    resource_group = ResourceGroup(azure_config, ctx.logger)
+    # generate name if not provided
+    name = get_unique_name(resource_group, name)
+    ctx.instance.runtime_properties['name'] = name
+    try:
+        resource_group.get(name)
+        if ctx.node.properties.get('use_external_resource', False):
+            ctx.logger.info("Using external resource")
+        else:
+            ctx.logger.info("Resource with name {0} exists".format(name))
+            return
+    except CloudError:
+        if ctx.node.properties.get('use_external_resource', False):
+            raise cfy_exc.NonRecoverableError(
+                "Can't use non-existing resource_group '{0}'.".format(name))
+        else:
+            try:
+                resource_group.create_or_update(name, resource_group_params)
+            except CloudError as cr:
+                raise cfy_exc.NonRecoverableError(
+                    "create deployment resource_group '{0}' "
+                    "failed with this error : {1}".format(name,
+                                                          cr.message)
+                    )
+
+    # load template
     properties = {}
     properties.update(ctx.node.properties)
     properties.update(kwargs)
+    template = get_template(ctx, properties)
+    ctx.logger.debug("Parsed template: %s", json.dumps(template, indent=4))
 
-    deployment = Deployment(ctx.logger, properties['azure_config'],
-                            properties['name'],
-                            timeout=properties.get('timeout'))
+    deployment = Deployment(azure_config, ctx.logger)
+    deployment_params = {
+        'mode': DeploymentMode.incremental,
+        'template': template,
+        'parameters': format_params(properties.get('params', {}))
+    }
 
-    if ctx.node.properties.get('use_external_resource', False):
-        ctx.logger.info("Using external resource")
-    else:
-        # load template
-        template = get_template(ctx, properties)
-        ctx.logger.debug("Parsed template: %s", json.dumps(template, indent=4))
+    try:
+        result = deployment.get(name, name)
+        if ctx.node.properties.get('use_external_resource', False):
+            ctx.logger.info("Using external resource")
+        else:
+            ctx.logger.info("Resource with name {0} exists".format(name))
+            return
+    except CloudError:
+        if ctx.node.properties.get('use_external_resource', False):
+            raise cfy_exc.NonRecoverableError(
+                "Can't use non-existing deployment '{0}'.".format(name))
+        else:
+            try:
+                result = \
+                    deployment.create_or_update(name, name, deployment_params,
+                                                properties.get('timeout'))
+            except CloudError as cr:
+                raise cfy_exc.NonRecoverableError(
+                    "create deployment '{0}' "
+                    "failed with this error : {1}".format(name,
+                                                          cr.message)
+                    )
 
-        # create deployment
-        deployment.create(location=properties['location'])
-        ctx.instance.runtime_properties['resource_id'] = properties['name']
-
-        # update deployment
-        deployment.update(template=template,
-                          params=properties.get('params', {}))
-
-    resource = deployment.get()
-    ctx.instance.runtime_properties['outputs'] = resource.properties.outputs
+    ctx.instance.runtime_properties['resouce'] = result
+    ctx.instance.runtime_properties['resource_id'] = result.get("id", "")
+    ctx.instance.runtime_properties['outputs'] = \
+        result.get("properties", {}).get("outputs")
 
 
 @operation(resumable=True)
 def delete(ctx, **kwargs):
     if ctx.node.properties.get('use_external_resource', False):
         return
-    properties = {}
-    properties.update(ctx.node.properties)
-    properties.update(kwargs)
-    deployment = Deployment(ctx.logger, properties['azure_config'],
-                            ctx.instance.runtime_properties['resource_id'],
-                            timeout=properties.get('timeout'))
-    deployment.delete()
+    azure_config = ctx.node.properties.get('azure_config')
+    name = ctx.instance.runtime_properties.get('name')
+    resource_group = ResourceGroup(azure_config, ctx.logger)
+    try:
+        resource_group.get(name)
+    except CloudError:
+        ctx.logger.info("Resource with name {0} doesn't exist".format(name))
+        return
+    try:
+        resource_group.delete(name)
+        utils.runtime_properties_cleanup(ctx)
+    except CloudError as cr:
+        raise cfy_exc.NonRecoverableError(
+            "delete deployment resource_group '{0}' "
+            "failed with this error : {1}".format(name,
+                                                  cr.message)
+            )

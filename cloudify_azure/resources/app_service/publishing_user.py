@@ -12,31 +12,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from azure.mgmt.web import WebSiteManagementClient
+
+from msrestazure.azure_exceptions import CloudError
+
+from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
 
-from cloudify_azure.resources.base import ResourceSDK
-
-
-class PublishingUser(ResourceSDK):
-    def __init__(self, logger, credentials, user_details):
-        self.logger = logger
-        self.user_details = user_details
-        self.resource_verify = bool(credentials.get('endpoint_verify', True))
-        super(PublishingUser, self).__init__(credentials)
-        self.client = WebSiteManagementClient(
-            self.credentials, '{0}'.format(credentials['subscription_id']))
-        self.logger.info("Use subscription: {}".format(
-            credentials['subscription_id']))
-
-    def set_or_update(self):
-        self.logger.info("Setting/Updating deployment user...")
-        user = self.client.update_publishing_user(self.user_details)
-        return user
+from azure_sdk.resources.app_service.publishing_user import PublishingUser
 
 
 @operation(resumable=True)
 def set_user(ctx, user_details, **kwargs):
-    azure_auth = ctx.node.properties['azure_config']
-    webapp = PublishingUser(ctx.logger, azure_auth, user_details)
-    webapp.set_or_update()
+    azure_config = ctx.node.properties.get('azure_config')
+    publishing_user = PublishingUser(azure_config, ctx.logger)
+    if not user_details:
+        raise cfy_exc.NonRecoverableError(
+            "check user_details value")
+    try:
+        publishing_user.set_or_update(user_details)
+    except CloudError as cr:
+        raise cfy_exc.NonRecoverableError(
+            "set publishing_user '{0}' "
+            "failed with this error : {1}".format(user_details,
+                                                  cr.message)
+            )

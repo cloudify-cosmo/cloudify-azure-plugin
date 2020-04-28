@@ -17,87 +17,129 @@
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Microsoft Azure Public IP Address interface
 """
+from uuid import uuid4
+from msrestazure.azure_exceptions import CloudError
 
-# Node properties and logger
-from cloudify import ctx
-# Base resource class
-from cloudify_azure.resources.base import Resource
-# Lifecycle operation decorator
+from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
-# Logger, API version
-from cloudify_azure import (constants, utils)
+
+from cloudify_azure import utils
+from azure_sdk.resources.network.public_ip_address import PublicIPAddress
 
 PUBLIC_IP_PROPERTY = 'public_ip_address'
 
 
-class PublicIPAddress(Resource):
-    """
-        Microsoft Azure Public IP Address interface
-
-    .. warning::
-        This interface should only be instantiated from
-        within a Cloudify Lifecycle Operation
-
-    :param string resource_group: Name of the parent Resource Group
-    :param string api_version: API version to use for all requests
-    :param `logging.Logger` logger:
-        Parent logger for the class to use. Defaults to `ctx.logger`
-    """
-    def __init__(self,
-                 resource_group=None,
-                 api_version=constants.API_VER_NETWORK,
-                 logger=None,
-                 _ctx=ctx):
-        resource_group = resource_group or \
-            utils.get_resource_group(_ctx=_ctx)
-        Resource.__init__(
-            self,
-            'Public IP Address',
-            '/{0}/{1}'.format(
-                'resourceGroups/{0}'.format(resource_group),
-                'providers/Microsoft.Network/publicIPAddresses'
-            ),
-            api_version=api_version,
-            logger=logger,
-            _ctx=_ctx)
+def get_unique_name(public_ip_address, resource_group_name, name):
+    if not name:
+        for _ in range(0, 15):
+            name = "{0}".format(uuid4())
+            try:
+                result = public_ip_address.get(resource_group_name, name)
+                if result:  # found a resource with same name
+                    name = ""
+                    continue
+            except CloudError:  # if exception that means name is not used
+                return name
+    else:
+        return name
 
 
 @operation(resumable=True)
-def create(**_):
+def create(ctx, **_):
     """Uses an existing, or creates a new, Public IP Address"""
     # Create a resource (if necessary)
-    utils.task_resource_create(
-        PublicIPAddress(api_version=ctx.node.properties.get(
-            'api_version', constants.API_VER_NETWORK)
-        ),
-        {
-            'location': ctx.node.properties.get('location'),
-            'tags': ctx.node.properties.get('tags'),
-            'properties': utils.get_resource_config()
-        })
+    azure_config = ctx.node.properties.get('azure_config')
+    name = utils.get_resource_name(ctx)
+    resource_group_name = utils.get_resource_group(ctx)
+    public_ip_address_params = {
+        'location': ctx.node.properties.get('location'),
+        'tags': ctx.node.properties.get('tags'),
+    }
+    public_ip_address_params = \
+        utils.handle_resource_config_params(public_ip_address_params,
+                                            ctx.node.properties.get(
+                                                'resource_config', {}))
+    # Special Case dnsSettings
+    public_ip_address_params['dns_settings'] = {
+        'domain_name_label':
+            public_ip_address_params.pop('domain_name_label', None),
+        'reverse_fqdn':
+            public_ip_address_params.pop('reverse_fqdn', None)
+    }
+    public_ip_address = PublicIPAddress(azure_config, ctx.logger)
+    # generate name if not provided
+    name = get_unique_name(public_ip_address, resource_group_name, name)
+    ctx.instance.runtime_properties['name'] = name
+    # clean empty values from params
+    public_ip_address_params = \
+        utils.cleanup_empty_params(public_ip_address_params)
+    try:
+        result = public_ip_address.get(resource_group_name, name)
+        if ctx.node.properties.get('use_external_resource', False):
+            ctx.logger.info("Using external resource")
+        else:
+            ctx.logger.info("Resource with name {0} exists".format(name))
+            return
+    except CloudError:
+        if ctx.node.properties.get('use_external_resource', False):
+            raise cfy_exc.NonRecoverableError(
+                "Can't use non-existing public_ip_address '{0}'.".format(name))
+        else:
+            try:
+                result = \
+                    public_ip_address.create_or_update(
+                        resource_group_name,
+                        name,
+                        public_ip_address_params)
+            except CloudError as cr:
+                raise cfy_exc.NonRecoverableError(
+                    "create public_ip_address '{0}' "
+                    "failed with this error : {1}".format(name,
+                                                          cr.message)
+                    )
+
+    ctx.instance.runtime_properties['resource_group'] = resource_group_name
+    ctx.instance.runtime_properties['resouce'] = result
+    ctx.instance.runtime_properties['resource_id'] = result.get("id", "")
 
 
 @operation(resumable=True)
-def start(**_):
+def start(ctx, **_):
     """Update IP runtime property"""
-    data = utils.task_resource_get(
-        PublicIPAddress(
-            _ctx=ctx,
-            api_version=ctx.node.properties.get(
-                'api_version',
-                constants.API_VER_NETWORK)
-        ),
-        _ctx=ctx)
-    if isinstance(data, dict):
+    azure_config = ctx.node.properties.get('azure_config')
+    name = ctx.instance.runtime_properties.get('name')
+    resource_group_name = utils.get_resource_group(ctx)
+    public_ip_address = PublicIPAddress(azure_config, ctx.logger)
+    try:
+        result = public_ip_address.get(resource_group_name, name)
         ctx.instance.runtime_properties[PUBLIC_IP_PROPERTY] = \
-            data.get('properties', dict()).get('ipAddress')
+            result.get('ip_address')
+    except CloudError:
+        raise cfy_exc.NonRecoverableError(
+            "Resource with name {0} doesn't exist".format(name))
 
 
 @operation(resumable=True)
-def delete(**_):
+def delete(ctx, **_):
     """Deletes a Public IP Address"""
     # Delete the resource
-    utils.task_resource_delete(
-        PublicIPAddress(api_version=ctx.node.properties.get(
-            'api_version', constants.API_VER_NETWORK)
-        ))
+    if ctx.node.properties.get('use_external_resource', False):
+        return
+    azure_config = ctx.node.properties.get('azure_config')
+    resource_group_name = ctx.instance.runtime_properties.get('resource_group')
+    name = ctx.instance.runtime_properties.get('name')
+    public_ip_address = PublicIPAddress(azure_config, ctx.logger)
+    try:
+        public_ip_address.get(resource_group_name, name)
+    except CloudError:
+        ctx.logger.info("Resource with name {0} doesn't exist".format(name))
+        return
+    try:
+        public_ip_address.delete(resource_group_name, name)
+        utils.runtime_properties_cleanup(ctx)
+    except CloudError as cr:
+        raise cfy_exc.NonRecoverableError(
+            "delete public_ip_address '{0}' "
+            "failed with this error : {1}".format(name,
+                                                  cr.message)
+            )

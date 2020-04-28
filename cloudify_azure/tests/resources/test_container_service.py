@@ -11,23 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import unittest
 import mock
+import unittest
+import requests
+
+from msrestazure.azure_exceptions import CloudError
+
 from cloudify import mocks as cfy_mocks
-from mock import patch
+
 from cloudify_azure.resources.compute import container_service
+from cloudify_azure.utils import handle_resource_config_params
 
 
-class AzureSDKResourceTest(unittest.TestCase):
-    def setUp(self):
-        self.fake_ctx, self.node, self.instance = \
-            self._get_mock_context_for_run()
-        self.dummy_azure_credentials = {
-            'client_id': 'dummy',
-            'client_secret': 'dummy',
-            'subscription_id': 'dummy',
-            'tenant_id': 'dummy'
-        }
+@mock.patch('azure_sdk.common.ServicePrincipalCredentials')
+@mock.patch('azure_sdk.resources.compute.'
+            'container_service.ContainerServiceClient')
+class ContainerServiceTest(unittest.TestCase):
 
     def _get_mock_context_for_run(self):
         fake_ctx = cfy_mocks.MockCloudifyContext()
@@ -43,34 +42,117 @@ class AzureSDKResourceTest(unittest.TestCase):
         )
         return fake_ctx, node, instance
 
-
-@patch('cloudify_azure.auth.oauth2.CustomServicePrincipalCredentials')
-@patch('cloudify_azure.resources.compute.'
-       'container_service.ContainerServiceClient')
-class ContainerServiceTest(AzureSDKResourceTest):
-    def test_create(self, client, credentials):
-        self.node.properties['azure_config'] = self.dummy_azure_credentials
-        container_service_config = {
-            'key': 'value'
-        }
-        container_service.create(self.fake_ctx, 'sample_resource_group',
-                                 'cs_name', container_service_config)
-        client().container_services.create_or_update.create_or_update(
-            resource_group_name='sample_resource_group',
-            container_service_name='cs_name',
-            parameters=container_service_config)
-
-    def test_delete(self, client, credentials):
-        self.node.properties['azure_config'] = {
+    def setUp(self):
+        self.fake_ctx, self.node, self.instance = \
+            self._get_mock_context_for_run()
+        self.dummy_azure_credentials = {
             'client_id': 'dummy',
             'client_secret': 'dummy',
             'subscription_id': 'dummy',
             'tenant_id': 'dummy'
         }
-        self.instance.runtime_properties['resource_group'] = \
-            'sample_resource_group'
-        self.instance.runtime_properties['name'] = 'cs_name'
-        container_service.delete(self.fake_ctx)
-        client().container_services.delete.assert_called_with(
-            resource_group_name='sample_resource_group',
-            container_service_name='cs_name')
+
+    def test_create(self, client, credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_resource_group'
+        name = 'cs_name'
+        container_service_config = {
+            'network_profile': None,
+            'addon_profiles': None,
+            'kubernetes_version': None,
+            'dns_prefix': 'dummy-dns',
+            'linux_profile': None,
+            'agent_pool_profiles': None,
+            'service_principal_profile': None,
+            'location': 'westus',
+            'enable_rbac': True,
+            'tags': None
+        }
+        service_payload = {}
+        service_payload = \
+            handle_resource_config_params(service_payload,
+                                          container_service_config)
+        response = requests.Response()
+        response.status_code = 404
+        message = 'resource not found'
+        client().container_services.get.side_effect = \
+            CloudError(response, message)
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            container_service.create(self.fake_ctx, resource_group, name,
+                                     container_service_config)
+            client().container_services.get.assert_called_with(
+                resource_group_name=resource_group,
+                container_service_name=name
+            )
+            client().container_services.create_or_update.assert_called_with(
+                resource_group_name=resource_group,
+                container_service_name=name,
+                parameters=service_payload
+            )
+            self.assertEquals(
+                self.fake_ctx.instance.runtime_properties.get("name"),
+                name
+            )
+            self.assertEquals(
+                self.fake_ctx.instance.runtime_properties.get(
+                    "resource_group"),
+                resource_group
+            )
+
+    def test_create_already_exists(self, client, credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_resource_group'
+        name = 'cs_name'
+        container_service_config = {
+            'network_profile': None,
+            'addon_profiles': None,
+            'kubernetes_version': None,
+            'dns_prefix': 'dummy-dns',
+            'linux_profile': None,
+            'agent_pool_profiles': None,
+            'service_principal_profile': None,
+            'location': 'westus',
+            'enable_rbac': True,
+            'tags': None
+        }
+        client().container_services.get.return_value = mock.Mock()
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            container_service.create(self.fake_ctx, resource_group, name,
+                                     container_service_config)
+            client().container_services.get.assert_called_with(
+                resource_group_name=resource_group,
+                container_service_name=name
+            )
+            client().container_services.create_or_update.assert_not_called()
+
+    def test_delete(self, client, credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_resource_group'
+        name = 'cs_name'
+        self.instance.runtime_properties['resource_group'] = resource_group
+        self.instance.runtime_properties['name'] = name
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            container_service.delete(self.fake_ctx)
+            client().container_services.delete.assert_called_with(
+                resource_group_name=resource_group,
+                container_service_name=name
+            )
+
+    def test_delete_do_not_exist(self, client, credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_resource_group'
+        name = 'cs_name'
+        self.instance.runtime_properties['resource_group'] = resource_group
+        self.instance.runtime_properties['name'] = name
+        response = requests.Response()
+        response.status_code = 404
+        message = 'resource not found'
+        client().container_services.get.side_effect = \
+            CloudError(response, message)
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            container_service.delete(self.fake_ctx)
+            client().container_services.delete.assert_not_called()

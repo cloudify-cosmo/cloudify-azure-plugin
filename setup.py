@@ -15,20 +15,14 @@
 '''Microsoft Azure plugin for Cloudify package config'''
 
 from setuptools import setup
+from setuptools import find_packages
+
 
 setup(
     name='cloudify-azure-plugin',
-    version='2.1.10',
+    version='3.0.0',
     license='LICENSE',
-    packages=[
-        'cloudify_azure',
-        'cloudify_azure.auth',
-        'cloudify_azure.resources',
-        'cloudify_azure.resources.compute',
-        'cloudify_azure.resources.app_service',
-        'cloudify_azure.resources.network',
-        'cloudify_azure.resources.storage'
-    ],
+    packages=find_packages(exclude=['tests*']),
     description='Cloudify plugin for Microsoft Azure',
     install_requires=[
         'cloudify-common==5.1.0.dev1',

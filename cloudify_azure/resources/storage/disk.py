@@ -17,20 +17,17 @@
     ~~~~~~~~~~~~~~~~~~~~~~
     Microsoft Azure Storage Disk interface
 """
-
-# pylint: disable=W0703
-
 import random
 import string
+
+from azure.storage.common.cloudstorageaccount import CloudStorageAccount
 
 from cloudify import ctx
 from cloudify.decorators import operation
 from cloudify.exceptions import RecoverableError, NonRecoverableError
 
-from azure.storage.common.cloudstorageaccount import CloudStorageAccount
-
 from cloudify_azure import (constants, utils)
-from cloudify_azure.resources.storage.storageaccount import StorageAccount
+from azure_sdk.resources.storage.storage_account import StorageAccount
 
 
 def disk_name_generator():
@@ -65,25 +62,29 @@ def get_cloud_storage_account(_ctx=ctx):
     # Get the storage account
     storage_account = utils.get_parent(
         _ctx.instance,
-        rel_type=constants.REL_CONTAINED_IN_SA)
+        rel_type=constants.REL_CONTAINED_IN_SA
+    )
+    resource_group_name = utils.get_resource_group(_ctx)
     storage_account_name = utils.get_resource_name(_ctx=storage_account)
+    azure_config = _ctx.node.properties.get("azure_config")
     # Get the storage account keys
-    keys = StorageAccount(_ctx=storage_account).list_keys()
-    if not isinstance(keys, list) or len(keys) < 1:
+    keys = StorageAccount(azure_config, _ctx.logger).list_keys(
+        resource_group_name, storage_account_name)
+    if not keys or not keys.get("key1"):
         raise RecoverableError(
             'StorageAccount reported no usable authentication keys')
     # Get an interface to the Storage Account
-    storage_account_key = keys[0].get('key')
+    storage_account_key = keys.get("key1")
     return CloudStorageAccount(
         account_name=storage_account_name,
         account_key=storage_account_key)
 
 
 @operation(resumable=True)
-def create_data_disk(**_):
+def create_data_disk(ctx, **_):
     """Uses an existing, or creates a new, Data Disk placeholder"""
-    res_cfg = utils.get_resource_config() or dict()
-    disk_name = ctx.node.properties.get('name')
+    res_cfg = ctx.node.properties.get("resource_config", {})
+    disk_name = utils.get_resource_name(ctx)
     disk_container = res_cfg.get('container_name')
     # Validation
     if ctx.node.properties.get('use_external_resource', False):
@@ -121,9 +122,9 @@ def create_data_disk(**_):
 
 
 @operation(resumable=True)
-def delete_data_disk(**_):
+def delete_data_disk(ctx, **_):
     """Deletes a Data Disk"""
-    res_cfg = utils.get_resource_config() or dict()
+    res_cfg = ctx.node.properties.get("resource_config", {})
     disk_name = ctx.instance.runtime_properties.get('name')
     disk_container = ctx.instance.runtime_properties.get('container')
     # If we're not deleting the disk, skip the lifecycle operation

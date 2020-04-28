@@ -30,58 +30,8 @@
     IP Configuration node(s) that connects to them, then create a Network
     Interface Card which connects to the IP Configuration(s).
 """
-# Node properties and logger
 from cloudify import ctx
-# Base resource class
-from cloudify_azure.resources.base import Resource
-# Logger, API version
 from cloudify_azure import (constants, utils)
-# IP configurations
-# Relationship interfaces
-from cloudify_azure.resources.network.subnet \
-    import Subnet
-from cloudify_azure.resources.network.publicipaddress \
-    import PublicIPAddress
-
-# pylint: disable=R0913
-
-
-class IPConfiguration(Resource):
-    """
-        Microsoft Azure IP Configuration interface
-
-    .. warning::
-        This interface should only be instantiated from
-        within a Cloudify Lifecycle Operation
-
-    :param string resource_group: Name of the parent Resource Group
-    :param string resource_group: Name of the parent Resource Group
-    :param string api_version: API version to use for all requests
-    :param `logging.Logger` logger:
-        Parent logger for the class to use. Defaults to `ctx.logger`
-    """
-    def __init__(self,
-                 resource_group=None,
-                 network_interface_card=None,
-                 api_version=constants.API_VER_NETWORK,
-                 logger=None,
-                 _ctx=ctx):
-        resource_group = resource_group or \
-            utils.get_resource_group(_ctx=_ctx)
-        network_interface_card = network_interface_card or \
-            _ctx.node.properties.get('network_interface_card_name')
-        Resource.__init__(
-            self,
-            'IP Configuration',
-            '/{0}/{1}/{2}/{3}'.format(
-                'resourceGroups/{0}'.format(resource_group),
-                'providers/Microsoft.Network/',
-                'networkInterfaces/{0}'.format(network_interface_card),
-                'ipConfigurations'
-            ),
-            api_version=api_version,
-            logger=logger,
-            _ctx=_ctx)
 
 
 def get_ip_configurations(_ctx=ctx,
@@ -116,24 +66,24 @@ def build_ip_configuration(ipc):
     """
     if not ipc or not ipc.instance.relationships:
         return None
-    # Find a referenced Subnet
-    subnet = utils.get_rel_id_reference(
-        Subnet,
-        constants.REL_IPC_CONNECTED_TO_SUBNET,
-        _ctx=ipc)
-    # Find a referenced Public IP
-    pubip = utils.get_rel_id_reference(
-        PublicIPAddress,
-        constants.REL_IPC_CONNECTED_TO_PUBIP,
-        _ctx=ipc)
+    # Find a referenced Subnet/PublicIPAddress
+    for rel in ipc.instance.relationships:
+        if constants.REL_IPC_CONNECTED_TO_SUBNET in rel.type_hierarchy:
+            subnet = {
+                'id': rel.target.instance.runtime_properties['resource_id']
+            }
+        if constants.REL_IPC_CONNECTED_TO_PUBIP in rel.type_hierarchy:
+            pubip = {
+                'id': rel.target.instance.runtime_properties['resource_id']
+            }
+
     ip_configuration = {
         'name': utils.get_resource_name(ipc),
-        'properties': {
-            'subnet': subnet,
-            'publicIPAddress': pubip
-        }
+        'subnet': subnet,
+        'public_ip_address': pubip
     }
-    ip_configuration['properties'] = utils.dict_update(
-        ip_configuration['properties'],
-        utils.get_resource_config(_ctx=ipc))
+    ip_configuration = \
+        utils.handle_resource_config_params(ip_configuration,
+                                            ipc.node.properties.get(
+                                                "resource_config", {}))
     return ip_configuration

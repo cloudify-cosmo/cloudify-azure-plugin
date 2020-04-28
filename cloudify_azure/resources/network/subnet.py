@@ -17,153 +17,212 @@
     ~~~~~~~~~~~~~~~~~~~~~~~~
     Microsoft Azure Subnet interface
 """
+from uuid import uuid4
+from msrestazure.azure_exceptions import CloudError
 
-# Node properties and logger
-from cloudify import ctx
-# Base resource class
-from cloudify_azure.resources.base import Resource
-# Lifecycle operation decorator
+from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
-# Logger, API version
-from cloudify_azure import (constants, utils)
-# Relationship interfaces
-from cloudify_azure.resources.network.networksecuritygroup \
-    import NetworkSecurityGroup
-from cloudify_azure.resources.network.routetable \
-    import RouteTable
 
-# pylint: disable=R0913
+from cloudify_azure import utils
+from azure_sdk.resources.network.subnet import Subnet
 
 
-class Subnet(Resource):
-    """
-        Microsoft Azure Subnet interface
-
-    .. warning::
-        This interface should only be instantiated from
-        within a Cloudify Lifecycle Operation
-
-    :param string resource_group: Name of the parent Resource Group
-    :param string virtual_network: Name of the parent Virtual Network
-    :param string api_version: API version to use for all requests
-    :param `logging.Logger` logger:
-        Parent logger for the class to use. Defaults to `ctx.logger`
-    """
-    def __init__(self,
-                 resource_group=None,
-                 virtual_network=None,
-                 api_version=constants.API_VER_NETWORK,
-                 logger=None,
-                 _ctx=ctx):
-        resource_group = resource_group or \
-            utils.get_resource_group(_ctx=_ctx)
-        virtual_network = virtual_network or \
-            utils.get_virtual_network(_ctx=_ctx)
-        Resource.__init__(
-            self,
-            'Subnet',
-            '/{0}/{1}/{2}/{3}'.format(
-                'resourceGroups/{0}'.format(resource_group),
-                'providers/Microsoft.Network',
-                'virtualNetworks/{0}'.format(virtual_network),
-                'subnets'
-            ),
-            api_version=api_version,
-            logger=logger,
-            _ctx=_ctx)
+def get_unique_name(subnet, resource_group_name, vnet_name, name):
+    if not name:
+        for _ in range(0, 15):
+            name = "{0}".format(uuid4())
+            try:
+                result = subnet.get(resource_group_name, vnet_name, name)
+                if result:  # found a resource with same name
+                    name = ""
+                    continue
+            except CloudError:  # if exception that means name is not used
+                return name
+    else:
+        return name
 
 
 @operation(resumable=True)
-def create(**_):
+def create(ctx, **_):
     """Uses an existing, or creates a new, Subnet"""
     # Create a resource (if necessary)
-    utils.task_resource_create(
-        Subnet(api_version=ctx.node.properties.get(
-            'api_version', constants.API_VER_NETWORK)
-        ),
-        {
-            'location': ctx.node.properties.get('location'),
-            'tags': ctx.node.properties.get('tags'),
-            'properties': utils.get_resource_config()
-        })
+    azure_config = ctx.node.properties.get('azure_config')
+    name = utils.get_resource_name(ctx)
+    resource_group_name = utils.get_resource_group(ctx)
+    vnet_name = utils.get_virtual_network(ctx)
+    subnet_params = {}
+    subnet_params = \
+        utils.handle_resource_config_params(subnet_params,
+                                            ctx.node.properties.get(
+                                                'resource_config', {}))
+    subnet = Subnet(azure_config, ctx.logger)
+    # generate name if not provided
+    name = get_unique_name(subnet, resource_group_name, vnet_name, name)
+    ctx.instance.runtime_properties['name'] = name
+    # clean empty values from params
+    subnet_params = \
+        utils.cleanup_empty_params(subnet_params)
+    try:
+        result = subnet.get(resource_group_name, vnet_name, name)
+        if ctx.node.properties.get('use_external_resource', False):
+            ctx.logger.info("Using external resource")
+        else:
+            ctx.logger.info("Resource with name {0} exists".format(name))
+            return
+    except CloudError:
+        if ctx.node.properties.get('use_external_resource', False):
+            raise cfy_exc.NonRecoverableError(
+                "Can't use non-existing subnet '{0}'.".format(name))
+        else:
+            try:
+                result = \
+                    subnet.create_or_update(resource_group_name,
+                                            vnet_name,
+                                            name,
+                                            subnet_params)
+            except CloudError as cr:
+                raise cfy_exc.NonRecoverableError(
+                    "create subnet '{0}' "
+                    "failed with this error : {1}".format(name,
+                                                          cr.message)
+                    )
+
+    ctx.instance.runtime_properties['resource_group'] = resource_group_name
+    ctx.instance.runtime_properties['virtual_network'] = vnet_name
+    ctx.instance.runtime_properties['resouce'] = result
+    ctx.instance.runtime_properties['resource_id'] = result.get("id", "")
 
 
 @operation(resumable=True)
-def delete(**_):
+def delete(ctx, **_):
     """Deletes a Subnet"""
     # Delete the resource
-    utils.task_resource_delete(
-        Subnet(api_version=ctx.node.properties.get(
-            'api_version', constants.API_VER_NETWORK)
-        )
-    )
+    if ctx.node.properties.get('use_external_resource', False):
+        return
+    azure_config = ctx.node.properties.get('azure_config')
+    resource_group_name = ctx.instance.runtime_properties.get('resource_group')
+    vnet_name = ctx.instance.runtime_properties.get('virtual_network')
+    name = ctx.instance.runtime_properties.get('name')
+    subnet = Subnet(azure_config, ctx.logger)
+    try:
+        subnet.get(resource_group_name, vnet_name, name)
+    except CloudError:
+        ctx.logger.info("Resource with name {0} doesn't exist".format(name))
+        return
+    try:
+        subnet.delete(resource_group_name, vnet_name, name)
+        utils.runtime_properties_cleanup(ctx)
+    except CloudError as cr:
+        raise cfy_exc.NonRecoverableError(
+            "delete subnet '{0}' "
+            "failed with this error : {1}".format(name,
+                                                  cr.message)
+            )
 
 
 @operation(resumable=True)
-def attach_network_security_group(**_):
+def attach_network_security_group(ctx, **_):
     """Attaches a Network Security Group (source) to the Subnet (target)"""
-    nsg = NetworkSecurityGroup(_ctx=ctx.source)
-    nsg_name = utils.get_resource_name(ctx.source)
+    nsg_id = ctx.source.instance.runtime_properties.get("resource_id", "")
     # Attach
-    utils.task_resource_update(
-        Subnet(_ctx=ctx.target, api_version=ctx.source.node.properties.get(
-            'api_version', constants.API_VER_NETWORK)
-        ), {
-            'properties': {
-                'networkSecurityGroup': {
-                    'id': '/subscriptions/{0}{1}/{2}'.format(
-                        utils.get_subscription_id(_ctx=ctx.source),
-                        nsg.endpoint,
-                        nsg_name)
-                }
-            }
-        }, _ctx=ctx.target)
+    azure_config = ctx.target.node.properties['azure_config']
+    resource_group_name = \
+        ctx.target.instance.runtime_properties.get('resource_group')
+    vnet_name = ctx.target.instance.runtime_properties.get('virtual_network')
+    name = ctx.target.instance.runtime_properties.get('name')
+    subnet_params = {
+        'network_security_group': {'id': nsg_id}
+    }
+    subnet = Subnet(azure_config, ctx.logger)
+    try:
+        subnet.create_or_update(resource_group_name,
+                                vnet_name,
+                                name,
+                                subnet_params)
+    except CloudError as cr:
+        raise cfy_exc.NonRecoverableError(
+            "attach_network_security_group to subnet '{0}' "
+            "failed with this error : {1}".format(name,
+                                                  cr.message)
+            )
 
 
 @operation(resumable=True)
-def detach_network_security_group(**_):
+def detach_network_security_group(ctx, **_):
     """Detaches a Network Security Group to the Subnet"""
     # Detach
-    utils.task_resource_update(
-        Subnet(_ctx=ctx.target, api_version=ctx.source.node.properties.get(
-            'api_version', constants.API_VER_NETWORK)
-        ), {
-            'properties': {
-                'networkSecurityGroup': None
-            }
-        }, _ctx=ctx.target)
+    azure_config = ctx.target.node.properties['azure_config']
+    resource_group_name = \
+        ctx.target.instance.runtime_properties.get('resource_group')
+    vnet_name = ctx.target.instance.runtime_properties.get('virtual_network')
+    name = ctx.target.instance.runtime_properties.get('name')
+    subnet_params = {
+        'network_security_group': None
+    }
+    subnet = Subnet(azure_config, ctx.logger)
+    try:
+        subnet.create_or_update(resource_group_name,
+                                vnet_name,
+                                name,
+                                subnet_params)
+    except CloudError as cr:
+        raise cfy_exc.NonRecoverableError(
+            "detach_network_security_group from subnet '{0}' "
+            "failed with this error : {1}".format(name,
+                                                  cr.message)
+            )
 
 
 @operation(resumable=True)
-def attach_route_table(**_):
+def attach_route_table(ctx, **_):
     """Attaches a Route Table (source) to the Subnet (target)"""
-    rtbl = RouteTable(_ctx=ctx.source)
-    rtbl_name = utils.get_resource_name(ctx.source)
+    rtbl_id = ctx.source.instance.runtime_properties.get("resource_id", "")
     # Attach
-    utils.task_resource_update(
-        Subnet(_ctx=ctx.target, api_version=ctx.source.node.properties.get(
-            'api_version', constants.API_VER_NETWORK)
-        ), {
-            'properties': {
-                'routeTable': {
-                    'id': '/subscriptions/{0}{1}/{2}'.format(
-                        utils.get_subscription_id(_ctx=ctx.source),
-                        rtbl.endpoint,
-                        rtbl_name)
-                }
-            }
-        }, _ctx=ctx.target)
+    azure_config = ctx.target.node.properties['azure_config']
+    resource_group_name = \
+        ctx.target.instance.runtime_properties.get('resource_group')
+    vnet_name = ctx.target.instance.runtime_properties.get('virtual_network')
+    name = ctx.target.instance.runtime_properties.get('name')
+    subnet_params = {
+        'route_table': {
+            'id': rtbl_id
+        }
+    }
+    subnet = Subnet(azure_config, ctx.logger)
+    try:
+        subnet.create_or_update(resource_group_name,
+                                vnet_name,
+                                name,
+                                subnet_params)
+    except CloudError as cr:
+        raise cfy_exc.NonRecoverableError(
+            "attach_route_table to subnet '{0}' "
+            "failed with this error : {1}".format(name,
+                                                  cr.message)
+            )
 
 
 @operation(resumable=True)
-def detach_route_table(**_):
+def detach_route_table(ctx, **_):
     """Detaches a Route Table to the Subnet"""
     # Detach
-    utils.task_resource_update(
-        Subnet(_ctx=ctx.target, api_version=ctx.source.node.properties.get(
-            'api_version', constants.API_VER_NETWORK)
-        ), {
-            'properties': {
-                'routeTable': None
-            }
-        }, _ctx=ctx.target)
+    azure_config = ctx.target.node.properties['azure_config']
+    resource_group_name = \
+        ctx.target.instance.runtime_properties.get('resource_group')
+    vnet_name = ctx.target.instance.runtime_properties.get('virtual_network')
+    name = ctx.target.instance.runtime_properties.get('name')
+    subnet_params = {
+        'route_table': None
+    }
+    subnet = Subnet(azure_config, ctx.logger)
+    try:
+        subnet.create_or_update(resource_group_name,
+                                vnet_name,
+                                name,
+                                subnet_params)
+    except CloudError as cr:
+        raise cfy_exc.NonRecoverableError(
+            "detach_route_table from subnet '{0}' "
+            "failed with this error : {1}".format(name,
+                                                  cr.message)
+            )

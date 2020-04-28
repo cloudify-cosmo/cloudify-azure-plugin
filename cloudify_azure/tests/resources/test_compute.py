@@ -1,116 +1,372 @@
-# #######
-# Copyright (c) 2016-2020 Cloudify Platform Ltd. All rights reserved
+# Copyright (c) 2015-2020 Cloudify Platform Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#        http://www.apache.org/licenses/LICENSE-2.0
+#       http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-    tests.resources.compute
-    ~~~~~~~~~~~~~~~~~~~~~~~
-    Tests Microsoft Azure Compute interfaces
-"""
-
-from os import path
+import mock
 import unittest
-import requests_mock
+import requests
 
-from cloudify.test_utils import workflow_test
-from cloudify_azure.tests import common as tutils
+from msrestazure.azure_exceptions import CloudError
 
-# pylint: disable=R0201
-# pylint: disable=R0913
+from cloudify import mocks as cfy_mocks
+from cloudify import constants
+
+from cloudify_azure import utils
+from cloudify_azure.resources.compute import (availabilityset, virtualmachine)
 
 
-class TestCompute(unittest.TestCase):
-    """Tests Compute interfaces"""
-    blueprint_path = path.join('blueprints',
-                               'test_compute.yaml')
-    ps1_url = 'https://raw.githubusercontent.com/cloudify-cosmo/'\
-              'cloudify-azure-plugin/rebuild/scripts/'\
-              'ps_enable_winrm_http.ps1'
+@mock.patch('azure_sdk.common.ServicePrincipalCredentials')
+@mock.patch('azure_sdk.resources.compute.'
+            'availability_set.ComputeManagementClient')
+class AvailabilitySetTest(unittest.TestCase):
+
+    def _get_mock_context_for_run(self):
+        fake_ctx = cfy_mocks.MockCloudifyContext()
+        instance = mock.Mock()
+        instance.runtime_properties = {}
+        fake_ctx._instance = instance
+        node = mock.Mock()
+        fake_ctx._node = node
+        node.properties = {}
+        node.runtime_properties = {}
+        fake_ctx.get_resource = mock.MagicMock(
+            return_value=""
+        )
+        return fake_ctx, node, instance
 
     def setUp(self):
-        self.mock_rg_name = 'mockrg'
-        self.params = {
-            'tenant_id': '123456',
-            'subscription_id': '12345-12345-12345',
-            'oauth2_token': '12345-1234-12345678',
-            'mock_retry_url': 'mock://mock-retry-url.com',
-            'mock_rg_name': self.mock_rg_name
+        self.fake_ctx, self.node, self.instance = \
+            self._get_mock_context_for_run()
+        self.dummy_azure_credentials = {
+            'client_id': 'dummy',
+            'client_secret': 'dummy',
+            'subscription_id': 'dummy',
+            'tenant_id': 'dummy'
         }
 
-    def mock_install_endpoints(self, mock):
-        """Mock install endpoints"""
-        tutils.mock_oauth2_endpoint(mock, self.params)
-        tutils.mock_retry_async_endpoint(mock, self.params)
-        tutils.mock_resourcegroup_endpoint(mock, self.params)
+    def test_create(self, client, credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_resource_group'
+        name = 'mockavailset'
+        self.node.properties['resource_group_name'] = resource_group
+        self.node.properties['name'] = name
+        self.node.properties['location'] = 'eastus'
+        self.node.properties['resource_config'] = {
+            'platformUpdateDomainCount': 1,
+            'platformFaultDomainCount': 2
+        }
+        availability_set_conf = {
+            'location': self.node.properties.get('location'),
+            'platform_update_domain_count': 1,
+            'platform_fault_domain_count': 2
+        }
+        response = requests.Response()
+        response.status_code = 404
+        message = 'resource not found'
+        client().availability_sets.get.side_effect = \
+            CloudError(response, message)
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            availabilityset.create(self.fake_ctx)
+            client().availability_sets.get.assert_called_with(
+                resource_group_name=resource_group,
+                availability_set_name=name
+            )
+            client().availability_sets.create_or_update.assert_called_with(
+                resource_group_name=resource_group,
+                name=name,
+                parameters=availability_set_conf
+            )
 
-    def mock_uninstall_endpoints(self, mock):
-        """Mock uninstall endpoints"""
-        tutils.mock_oauth2_endpoint(mock, self.params)
-        tutils.mock_retry_async_endpoint(mock, self.params)
-        tutils.mock_resourcegroup_endpoint(mock, self.params)
+    def test_create_already_exists(self, client, credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_resource_group'
+        name = 'mockavailset'
+        self.node.properties['resource_group_name'] = resource_group
+        self.node.properties['name'] = name
+        self.node.properties['location'] = 'eastus'
+        self.node.properties['resource_config'] = {
+            'platformUpdateDomainCount': 1,
+            'platformFaultDomainCount': 2
+        }
+        client().availability_sets.get.return_value = mock.Mock()
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            availabilityset.create(self.fake_ctx)
+            client().availability_sets.get.assert_called_with(
+                resource_group_name=resource_group,
+                availability_set_name=name
+            )
+            client().availability_sets.create_or_update.assert_not_called()
 
-    def mock_network_endpoints(self, mock, _get_json=None):
-        """Mock network endpoints"""
-        tutils.mock_network_endpoints(mock, self.params,
-                                      'virtualNetworks', 'mockvnet')
-        tutils.mock_network_endpoints(mock, self.params,
-                                      'networkInterfaces', 'mocknic',
-                                      get_json=_get_json)
-        tutils.mock_network_endpoints(mock, self.params,
-                                      'publicIPAddresses', 'mocknicpip')
-        tutils.mock_network_endpoints(
-            mock, self.params,
-            'virtualNetworks/{0}/subnets'.format('mockvnet'),
-            'mocksubnet')
+    def test_delete(self, client, credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_resource_group'
+        name = 'mockavailset'
+        self.instance.runtime_properties['resource_group'] = resource_group
+        self.instance.runtime_properties['name'] = name
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            availabilityset.delete(self.fake_ctx)
+            client().availability_sets.delete.assert_called_with(
+                resource_group_name=resource_group,
+                availability_set_name=name
+            )
 
-    def mock_compute_endpoints(self, mock):
-        """Mock compute endpoints"""
-        tutils.mock_compute_endpoints(mock, self.params,
-                                      'virtualMachines', 'mockvm')
-        tutils.mock_compute_endpoints(mock, self.params,
-                                      'availabilitySets', 'mockavailset')
+    def test_delete_do_not_exist(self, client, credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_resource_group'
+        name = 'mockavailset'
+        self.instance.runtime_properties['resource_group'] = resource_group
+        self.instance.runtime_properties['name'] = name
+        response = requests.Response()
+        response.status_code = 404
+        message = 'resource not found'
+        client().availability_sets.get.side_effect = \
+            CloudError(response, message)
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            availabilityset.delete(self.fake_ctx)
+            client().availability_sets.delete.assert_not_called()
 
-    def mock_storage_endpoints(self, mock):
-        """Mock storage endpoints"""
-        tutils.mock_storage_endpoints(mock, self.params,
-                                      'storageAccounts', 'mocksa')
-        tutils.mock_storageaccount_endpoint(mock, self.params)
 
-    @requests_mock.Mocker(real_http=True)
-    @workflow_test(blueprint_path, copy_plugin_yaml=True)
-    def test_lifecycle_install(self, cfy_local, mock, *_):
-        """network install workflow"""
-        self.mock_install_endpoints(mock)
-        response_data = {
-            'name': 'mocknic',
-            'properties': {
-                'virtualMachine': {
-                    'id': 'mockvm'
+@mock.patch('azure_sdk.common.ServicePrincipalCredentials')
+@mock.patch('azure_sdk.resources.compute.'
+            'virtual_machine.ComputeManagementClient')
+class VirtualMachineTest(unittest.TestCase):
+
+    def _get_mock_context_for_run(self):
+        fake_ctx = cfy_mocks.MockCloudifyContext()
+        instance = mock.Mock()
+        instance.runtime_properties = {}
+        instance.relationships = {}
+        fake_ctx._instance = instance
+        node = mock.Mock()
+        fake_ctx._node = node
+        node.properties = {}
+        node.type_hierarchy = {constants.COMPUTE_NODE_TYPE}
+        node.runtime_properties = {}
+        fake_ctx.get_resource = mock.MagicMock(
+            return_value=""
+        )
+        return fake_ctx, node, instance
+
+    def setUp(self):
+        self.fake_ctx, self.node, self.instance = \
+            self._get_mock_context_for_run()
+        self.dummy_azure_credentials = {
+            'client_id': 'dummy',
+            'client_secret': 'dummy',
+            'subscription_id': 'dummy',
+            'tenant_id': 'dummy'
+        }
+
+    def test_create(self, client, credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_resource_group'
+        name = 'mockvm'
+        self.node.properties['resource_group_name'] = resource_group
+        self.node.properties['name'] = name
+        self.node.properties['location'] = 'eastus'
+        self.node.properties['os_family'] = 'linux'
+        self.node.properties['resource_config'] = {
+            'hardwareProfile': {
+                'vmSize': 'Standard_A2',
+            },
+            'storageProfile': {
+                'imageReference': {
+                    'publisher': 'Canonical',
+                    'offer': 'UbuntuServer',
+                    'sku': '14.04.4-LTS',
+                    'version': '14.04.201604060'
                 }
+            },
+            'osProfile': {
+                'computerName': name,
+                'adminUsername': 'cloudify',
+                'adminPassword': 'Cl0ud1fy!',
+                'linuxConfiguration': {
+                  'ssh': {
+                    'publicKeys': {
+                        'path': '/home/cloudify/.ssh/authorized_keys',
+                        'keyData': 'ssh-rsa AAAAA3----MOCK----aabbzz'
+                    }
+                  },
+                  'disablePasswordAuthentication': True
+                 }
             }
         }
-        self.mock_network_endpoints(mock, _get_json=response_data)
-        self.mock_compute_endpoints(mock)
-        self.mock_storage_endpoints(mock)
-        cfy_local.execute('install', task_retries=1)
-        vars(cfy_local)
+        storage_profile = {
+            'os_disk': {
+              'caching': 'ReadWrite',
+              'vhd': {
+                'uri': 'http://None.blob./vhds/mockvm.vhd'
+              },
+              'name': 'mockvm',
+              'create_option': 'FromImage'
+            }
+        }
+        vm_params = {
+            'location': self.node.properties.get('location'),
+            'storageProfile': storage_profile,
+        }
+        vm_params = utils.handle_resource_config_params(
+            vm_params,
+            self.node.properties.get("resource_config")
+        )
+        response = requests.Response()
+        response.status_code = 404
+        message = 'resource not found'
+        client().virtual_machines.get.side_effect = \
+            CloudError(response, message)
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            virtualmachine.create(self.fake_ctx)
+            client().virtual_machines.get.assert_called_with(
+                resource_group_name=resource_group,
+                vm_name=name
+            )
+            client().virtual_machines.create_or_update.assert_called_with(
+                resource_group_name=resource_group,
+                vm_name=name,
+                parameters=vm_params
+            )
+            self.assertEquals(
+                self.fake_ctx.instance.runtime_properties.get("name"),
+                name
+            )
+            self.assertEquals(
+                self.fake_ctx.instance.runtime_properties.get(
+                    "resource_group"),
+                resource_group
+            )
 
-    @requests_mock.Mocker(real_http=True)
-    @workflow_test(blueprint_path, copy_plugin_yaml=True)
-    def test_lifecycle_uninstall(self, cfy_local, mock, *_):
-        """network uninstall workflow"""
-        self.mock_uninstall_endpoints(mock)
-        self.mock_network_endpoints(mock)
-        self.mock_compute_endpoints(mock)
-        self.mock_storage_endpoints(mock)
-        cfy_local.execute('uninstall', task_retries=1)
+    def test_create_already_exists(self, client, credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_resource_group'
+        name = 'mockvm'
+        self.node.properties['resource_group_name'] = resource_group
+        self.node.properties['name'] = name
+        self.node.properties['location'] = 'eastus'
+        self.node.properties['os_family'] = 'linux'
+        self.node.properties['resource_config'] = {
+            'hardwareProfile': {
+                'vmSize': 'Standard_A2',
+            },
+            'storageProfile': {
+                'imageReference': {
+                    'publisher': 'Canonical',
+                    'offer': 'UbuntuServer',
+                    'sku': '14.04.4-LTS',
+                    'version': '14.04.201604060'
+                }
+            },
+            'osProfile': {
+                'computerName': name,
+                'adminUsername': 'cloudify',
+                'adminPassword': 'Cl0ud1fy!',
+                'linuxConfiguration': {
+                  'ssh': {
+                    'publicKeys': {
+                        'path': '/home/cloudify/.ssh/authorized_keys',
+                        'keyData': 'ssh-rsa AAAAA3----MOCK----aabbzz'
+                    }
+                  },
+                  'disablePasswordAuthentication': True
+                 }
+            }
+        }
+        client().virtual_machines.get.return_value = mock.Mock()
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            virtualmachine.create(self.fake_ctx)
+            client().virtual_machines.get.assert_called_with(
+                resource_group_name=resource_group,
+                vm_name=name
+            )
+            client().virtual_machines.create_or_update.assert_not_called()
+
+    def test_create_with_external_resource(self, client, credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_resource_group'
+        name = 'mockvm'
+        self.node.properties['resource_group_name'] = resource_group
+        self.node.properties['name'] = name
+        self.node.properties['location'] = 'eastus'
+        self.node.properties['os_family'] = 'linux'
+        self.node.properties['resource_config'] = {
+            'hardwareProfile': {
+                'vmSize': 'Standard_A2',
+            },
+            'storageProfile': {
+                'imageReference': {
+                    'publisher': 'Canonical',
+                    'offer': 'UbuntuServer',
+                    'sku': '14.04.4-LTS',
+                    'version': '14.04.201604060'
+                }
+            },
+            'osProfile': {
+                'computerName': name,
+                'adminUsername': 'cloudify',
+                'adminPassword': 'Cl0ud1fy!',
+                'linuxConfiguration': {
+                  'ssh': {
+                    'publicKeys': {
+                        'path': '/home/cloudify/.ssh/authorized_keys',
+                        'keyData': 'ssh-rsa AAAAA3----MOCK----aabbzz'
+                    }
+                  },
+                  'disablePasswordAuthentication': True
+                 }
+            }
+        }
+        self.node.properties['use_external_resource'] = True
+        client().virtual_machines.get.return_value = mock.Mock()
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            virtualmachine.create(self.fake_ctx)
+            client().virtual_machines.get.assert_called_with(
+                resource_group_name=resource_group,
+                vm_name=name
+            )
+            client().virtual_machines.create_or_update.assert_not_called()
+
+    def test_delete(self, client, credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_resource_group'
+        name = 'mockvm'
+        self.instance.runtime_properties['resource_group'] = resource_group
+        self.instance.runtime_properties['name'] = name
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            virtualmachine.delete(self.fake_ctx)
+            client().virtual_machines.delete.assert_called_with(
+                resource_group_name=resource_group,
+                vm_name=name
+            )
+
+    def test_delete_do_not_exist(self, client, credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_resource_group'
+        name = 'mockvm'
+        self.instance.runtime_properties['resource_group'] = resource_group
+        self.instance.runtime_properties['name'] = name
+        response = requests.Response()
+        response.status_code = 404
+        message = 'resource not found'
+        client().virtual_machines.get.side_effect = \
+            CloudError(response, message)
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            virtualmachine.delete(self.fake_ctx)
+            client().virtual_machines.delete.assert_not_called()

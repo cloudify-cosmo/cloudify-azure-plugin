@@ -5,9 +5,9 @@
 plugins:
   azure:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-incubator/cloudify-azure-plugin/archive/2.1.10.zip
+    source: https://github.com/cloudify-incubator/cloudify-azure-plugin/archive/3.0.0.zip
     package_name: cloudify-azure-plugin
-    package_version: '2.1.10'
+    package_version: '3.0.0'
 
 data_types:
   cloudify.datatypes.azure.Config:
@@ -660,7 +660,7 @@ node_types:
         type: string
         description: >
           Network API Version
-        default: "2016-03-30"
+        default: "2017-03-01"
       name:
         type: string
         description: >
@@ -717,7 +717,7 @@ node_types:
         type: string
         description: >
           Network API Version
-        default: "2016-03-30"
+        default: "2017-03-01"
       name:
         type: string
         description: >
@@ -774,7 +774,7 @@ node_types:
         type: string
         description: >
           Network API Version
-        default: "2016-03-30"
+        default: "2017-03-01"
       name:
         type: string
         description: >
@@ -838,7 +838,7 @@ node_types:
         type: string
         description: >
           Network API Version
-        default: "2016-03-30"
+        default: "2017-03-01"
       name:
         type: string
         description: >
@@ -902,7 +902,7 @@ node_types:
         type: string
         description: >
           Network API Version
-        default: "2016-03-30"
+        default: "2017-03-01"
       name:
         type: string
         description: >
@@ -959,7 +959,7 @@ node_types:
         type: string
         description: >
           Network API Version
-        default: "2016-03-30"
+        default: "2017-03-01"
       name:
         type: string
         description: >
@@ -1023,7 +1023,7 @@ node_types:
         type: string
         description: >
           Network API Version
-        default: "2016-03-30"
+        default: "2017-03-01"
       name:
         type: string
         description: >
@@ -1087,7 +1087,7 @@ node_types:
         type: string
         description: >
           Network API Version
-        default: "2016-03-30"
+        default: "2017-03-01"
       name:
         type: string
         description: >
@@ -1140,7 +1140,7 @@ node_types:
         type: string
         description: >
           Network API Version
-        default: "2016-03-30"
+        default: "2017-03-01"
       name:
         type: string
         description: >
@@ -1451,7 +1451,7 @@ node_types:
         type: string
         description: >
           Network API Version
-        default: "2016-03-30"
+        default: "2017-03-01"
       name:
         type: string
         description: >
@@ -1509,7 +1509,7 @@ node_types:
         type: string
         description: >
           Network API Version
-        default: "2016-03-30"
+        default: "2017-03-01"
       name:
         type: string
         description: >
@@ -1564,7 +1564,7 @@ node_types:
         type: string
         description: >
           Network API Version
-        default: "2016-03-30"
+        default: "2017-03-01"
       name:
         type: string
         description: >
@@ -1624,7 +1624,7 @@ node_types:
         type: string
         description: >
           Network API Version
-        default: "2016-03-30"
+        default: "2017-03-01"
       name:
         type: string
         description: >
@@ -1684,7 +1684,7 @@ node_types:
         type: string
         description: >
           Network API Version
-        default: "2016-03-30"
+        default: "2017-03-01"
       name:
         type: string
         description: >
