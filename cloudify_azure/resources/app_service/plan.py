@@ -33,7 +33,7 @@ def create(ctx, resource_group, name, plan_details, **kwargs):
         else:
             ctx.logger.info("Resource with name {0} exists".format(name))
             return
-    except CloudError:  #  Customized error message will be avialable on PY3
+    except CloudError:   # Customized error message will be avialable on PY3
         if ctx.node.properties.get('use_external_resource', False):
             raise cfy_exc.NonRecoverableError(
                 "Can't use non-existing plan '{0}'.".format(name))

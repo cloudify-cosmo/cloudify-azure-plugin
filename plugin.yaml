@@ -5,7 +5,7 @@
 plugins:
   azure:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-incubator/cloudify-azure-plugin/archive/3.0.0.zip
+    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/3.0.0.zip
     package_name: cloudify-azure-plugin
     package_version: '3.0.0'
 
@@ -315,6 +315,41 @@ data_types:
       platformFaultDomainCount:
         type: integer
         required: false
+      sku:
+        description: >
+          dict to represent sku [for now we only provide name]
+        required: false
+
+  cloudify.datatypes.azure.compute.VirtualMachineSpotConfig:
+    description: >
+      check the paramaters from this link : https://www.shorturl.at/wHTU2
+    properties:
+      is_spot_instance:
+        description: >
+          set true if you want to consider spot instance params
+        type: boolean
+        default: false
+        required: false
+      priority:
+        type: string
+        description: >
+          Possible values include: 'Regular', 'Low', 'Spot'
+        default: 'Spot'
+        required: false
+      eviction_policy:
+        type: string
+        description: >
+          the only supported value is 'Deallocate'
+        default: 'Deallocate'
+        required: false
+      billing_profile:
+        default:
+          max_price:
+            description: >
+              the default max price is -1 if it is not provided
+            default: -1.0
+            required: false
+
 
   cloudify.datatypes.azure.compute.VirtualMachineConfig:
     description: >
@@ -326,6 +361,9 @@ data_types:
         required: true
       osProfile:
         required: true
+      spot_instance:
+        type: cloudify.datatypes.azure.compute.VirtualMachineSpotConfig
+        required: false
 
   cloudify.datatypes.azure.network.LoadBalancerConfig:
     description: >

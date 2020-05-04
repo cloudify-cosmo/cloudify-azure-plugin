@@ -25,6 +25,7 @@ class AvailabilitySet(AzureResource):
                  api_version=constants.API_VER_COMPUTE):
         super(AvailabilitySet, self).__init__(azure_config)
         self.logger = logger
+        self.api_version = api_version
         self.client = \
             ComputeManagementClient(self.credentials, self.subscription_id,
                                     api_version=api_version)
@@ -44,11 +45,20 @@ class AvailabilitySet(AzureResource):
     def create_or_update(self, group_name, availability_set_name, params):
         self.logger.info("Create/Updating availability_set...{0}".format(
             availability_set_name))
-        availability_set = self.client.availability_sets.create_or_update(
-            resource_group_name=group_name,
-            name=availability_set_name,
-            parameters=params,
-        ).as_dict()
+        old_naming = ['2015', '2016']
+        # the above years the parameter is name - others availability_set_name
+        if any(x in self.api_version for x in old_naming):
+            availability_set = self.client.availability_sets.create_or_update(
+                resource_group_name=group_name,
+                name=availability_set_name,
+                parameters=params,
+            ).as_dict()
+        else:
+            availability_set = self.client.availability_sets.create_or_update(
+                resource_group_name=group_name,
+                availability_set_name=availability_set_name,
+                parameters=params,
+            ).as_dict()
         self.logger.info(
             'Create availability_set result: {0}'.format(
                 utils.secure_logging_content(availability_set)))

@@ -1,4 +1,12 @@
 requests==2.7.0
 PyYAML==3.12
-azure==4.0.0
+azure-mgmt-web==0.46.0
+azure-mgmt-compute==12.0.0
+azure-mgmt-containerservice==9.0.1
+azure-mgmt-network==10.1.0
+azure-mgmt-storage==9.0.0
+azure-storage-common==2.1.0
+azure-mgmt-resource==9.0.0
+azure-common==1.1.25
+msrestazure==0.6.3
 git+https://github.com/cloudify-cosmo/cloudify-common@master#egg=cloudify-common[dispatcher]==master

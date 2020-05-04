@@ -24,7 +24,7 @@ from msrestazure.azure_exceptions import CloudError
 from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
 
-from cloudify_azure import utils
+from cloudify_azure import (constants, utils)
 from azure_sdk.resources.compute.availability_set import AvailabilitySet
 
 
@@ -47,6 +47,8 @@ def get_unique_name(availability_set, resource_group_name, name):
 def create(ctx, **_):
     """Uses an existing, or creates a new, Availability Set"""
     azure_config = ctx.node.properties.get('azure_config')
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_COMPUTE)
     name = utils.get_resource_name(ctx)
     resource_group_name = utils.get_resource_group(ctx)
     resource_config = ctx.node.properties.get('resource_config')
@@ -57,7 +59,7 @@ def create(ctx, **_):
     availability_set_conf = \
         utils.handle_resource_config_params(availability_set_conf,
                                             resource_config)
-    availability_set = AvailabilitySet(azure_config, ctx.logger)
+    availability_set = AvailabilitySet(azure_config, ctx.logger, api_version)
     # generate name if not provided
     name = get_unique_name(availability_set, resource_group_name, name)
     ctx.instance.runtime_properties['name'] = name
@@ -97,10 +99,12 @@ def delete(ctx, **_):
     """Deletes a Availability Set"""
     if ctx.node.properties.get('use_external_resource', False):
         return
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_COMPUTE)
     azure_config = ctx.node.properties.get('azure_config')
     resource_group_name = ctx.instance.runtime_properties.get('resource_group')
     name = ctx.instance.runtime_properties.get('name')
-    availability_set = AvailabilitySet(azure_config, ctx.logger)
+    availability_set = AvailabilitySet(azure_config, ctx.logger, api_version)
     try:
         availability_set.get(resource_group_name, name)
     except CloudError:
