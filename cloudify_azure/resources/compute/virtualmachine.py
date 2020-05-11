@@ -252,6 +252,7 @@ def create(ctx, args=None, **_):
         ctx.node.properties.get('api_version', constants.API_VER_COMPUTE)
     virtual_machine = VirtualMachine(azure_config, ctx.logger, api_version)
     res_cfg = ctx.node.properties.get("resource_config", {})
+    spot_instance = res_cfg.pop("spot_instance", None)
     # Build storage profile
     osdisk = build_osdisk_profile(ctx, res_cfg.get(
         'storageProfile', dict()).get('osDisk', dict()))
@@ -319,6 +320,13 @@ def create(ctx, args=None, **_):
         'storageProfile': storage_profile,
         'osProfile': os_profile
     }
+    # check if spot_instance
+    if spot_instance and spot_instance.get("is_spot_instance"):
+        # this is just an indacator not part of the api
+        spot_instance.pop("is_spot_instance")
+        #  handle the params
+        resource_create_payload = \
+            utils.dict_update(resource_create_payload, spot_instance)
     resource_create_payload = \
         utils.handle_resource_config_params(resource_create_payload,
                                             utils.get_resource_config(
@@ -482,6 +490,8 @@ def delete(ctx, **_):
     # Delete the resource
     if ctx.node.properties.get('use_external_resource', False):
         return
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_COMPUTE)
     azure_config = ctx.node.properties.get('azure_config')
     if not azure_config.get("subscription_id"):
         azure_config = ctx.node.properties.get('client_config')
@@ -513,14 +523,17 @@ def delete(ctx, **_):
 def attach_data_disk(ctx, lun, **_):
     """Attaches a data disk"""
     azure_config = ctx.source.node.properties.get("azure_config")
+    api_version = \
+        ctx.source.node.properties.get('api_version',
+                                       constants.API_VER_COMPUTE)
     if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
+        azure_config = ctx.source.node.properties.get('client_config')
     else:
         ctx.logger.warn("azure_config is deprecated please use client_config, "
                         "in later version it will be removed")
     resource_group_name = ctx.source.node.properties.get("resource_group_name")
     name = ctx.source.instance.runtime_properties.get("name")
-    vm_iface = VirtualMachine(azure_config, ctx.logger)
+    vm_iface = VirtualMachine(azure_config, ctx.logger, api_version)
     vm_state = vm_iface.get(resource_group_name, name)
     data_disks = vm_state.get('storage_profile', dict()).get(
         'data_disks', list())
@@ -560,14 +573,17 @@ def attach_data_disk(ctx, lun, **_):
 def detach_data_disk(ctx, **_):
     """Detaches a data disk"""
     azure_config = ctx.source.node.properties.get("azure_config")
+    api_version = \
+        ctx.source.node.properties.get('api_version',
+                                       constants.API_VER_COMPUTE)
     if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
+        azure_config = ctx.source.node.properties.get('client_config')
     else:
         ctx.logger.warn("azure_config is deprecated please use client_config, "
                         "in later version it will be removed")
     resource_group_name = ctx.source.node.properties.get("resource_group_name")
     name = ctx.source.instance.runtime_properties.get("name")
-    vm_iface = VirtualMachine(azure_config, ctx.logger)
+    vm_iface = VirtualMachine(azure_config, ctx.logger, api_version)
     vm_state = vm_iface.get(resource_group_name, name)
     data_disks = [
         x for x in vm_state.get('storage_profile', dict()).get(
