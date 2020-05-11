@@ -34,13 +34,12 @@ class LoadBalancer(AzureResource):
         load_balancer = self.client.load_balancers.get(
             resource_group_name=group_name,
             load_balancer_name=load_balancer_name
-        )
+        ).as_dict()
         self.logger.info(
             'Get load_balancer result: {0}'.format(
-                utils.secure_logging_content(load_balancer.as_dict())
-                )
+                utils.secure_logging_content(load_balancer))
             )
-        return load_balancer.as_dict()
+        return load_balancer
 
     def create_or_update(self, group_name, load_balancer_name, params):
         self.logger.info(
@@ -52,13 +51,12 @@ class LoadBalancer(AzureResource):
                 parameters=params,
             )
         async_load_balancer_creation.wait()
-        load_balancer = async_load_balancer_creation.result()
+        load_balancer = async_load_balancer_creation.result().as_dict()
         self.logger.info(
             'create load_balancer result: {0}'.format(
-                utils.secure_logging_content(load_balancer.as_dict())
-                )
+                utils.secure_logging_content(load_balancer))
             )
-        return load_balancer.as_dict()
+        return load_balancer
 
     def delete(self, group_name, load_balancer_name):
         self.logger.info(

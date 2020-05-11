@@ -35,11 +35,11 @@ class Route(AzureResource):
             resource_group_name=group_name,
             route_table_name=route_table_name,
             route_name=route_name
-        )
+        ).as_dict()
         self.logger.info(
             'Get route result: {0}'.format(
-                utils.secure_logging_content(route.as_dict())))
-        return route.as_dict()
+                utils.secure_logging_content(route)))
+        return route
 
     def create_or_update(self, group_name, route_table_name, route_name,
                          params):
@@ -51,11 +51,11 @@ class Route(AzureResource):
             route_parameters=params,
         )
         async_route_creation.wait()
-        route = async_route_creation.result()
+        route = async_route_creation.result().as_dict()
         self.logger.info(
             'create route result: {0}'.format(
-                utils.secure_logging_content(route.as_dict())))
-        return route.as_dict()
+                utils.secure_logging_content(route)))
+        return route
 
     def delete(self, group_name, route_table_name, route_name):
         self.logger.info("Deleting route...{0}".format(route_name))

@@ -76,7 +76,7 @@ class AvailabilitySetTest(unittest.TestCase):
             CloudError(response, message)
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            availabilityset.create(self.fake_ctx)
+            availabilityset.create(ctx=self.fake_ctx)
             client().availability_sets.get.assert_called_with(
                 resource_group_name=resource_group,
                 availability_set_name=name
@@ -101,7 +101,7 @@ class AvailabilitySetTest(unittest.TestCase):
         client().availability_sets.get.return_value = mock.Mock()
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            availabilityset.create(self.fake_ctx)
+            availabilityset.create(ctx=self.fake_ctx)
             client().availability_sets.get.assert_called_with(
                 resource_group_name=resource_group,
                 availability_set_name=name
@@ -116,7 +116,7 @@ class AvailabilitySetTest(unittest.TestCase):
         self.instance.runtime_properties['name'] = name
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            availabilityset.delete(self.fake_ctx)
+            availabilityset.delete(ctx=self.fake_ctx)
             client().availability_sets.delete.assert_called_with(
                 resource_group_name=resource_group,
                 availability_set_name=name
@@ -135,7 +135,7 @@ class AvailabilitySetTest(unittest.TestCase):
             CloudError(response, message)
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            availabilityset.delete(self.fake_ctx)
+            availabilityset.delete(ctx=self.fake_ctx)
             client().availability_sets.delete.assert_not_called()
 
 
@@ -230,7 +230,7 @@ class VirtualMachineTest(unittest.TestCase):
             CloudError(response, message)
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            virtualmachine.create(self.fake_ctx)
+            virtualmachine.create(ctx=self.fake_ctx)
             client().virtual_machines.get.assert_called_with(
                 resource_group_name=resource_group,
                 vm_name=name
@@ -288,7 +288,7 @@ class VirtualMachineTest(unittest.TestCase):
         client().virtual_machines.get.return_value = mock.Mock()
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            virtualmachine.create(self.fake_ctx)
+            virtualmachine.create(ctx=self.fake_ctx)
             client().virtual_machines.get.assert_called_with(
                 resource_group_name=resource_group,
                 vm_name=name
@@ -334,7 +334,7 @@ class VirtualMachineTest(unittest.TestCase):
         client().virtual_machines.get.return_value = mock.Mock()
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            virtualmachine.create(self.fake_ctx)
+            virtualmachine.create(ctx=self.fake_ctx)
             client().virtual_machines.get.assert_called_with(
                 resource_group_name=resource_group,
                 vm_name=name
@@ -349,7 +349,7 @@ class VirtualMachineTest(unittest.TestCase):
         self.instance.runtime_properties['name'] = name
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            virtualmachine.delete(self.fake_ctx)
+            virtualmachine.delete(ctx=self.fake_ctx)
             client().virtual_machines.delete.assert_called_with(
                 resource_group_name=resource_group,
                 vm_name=name
@@ -368,5 +368,5 @@ class VirtualMachineTest(unittest.TestCase):
             CloudError(response, message)
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            virtualmachine.delete(self.fake_ctx)
+            virtualmachine.delete(ctx=self.fake_ctx)
             client().virtual_machines.delete.assert_not_called()

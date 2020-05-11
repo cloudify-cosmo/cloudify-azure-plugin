@@ -18,13 +18,22 @@ from msrestazure.azure_exceptions import CloudError
 from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
 
+from cloudify_azure import constants
+
 from azure_sdk.resources.app_service.publishing_user import PublishingUser
 
 
 @operation(resumable=True)
 def set_user(ctx, user_details, **kwargs):
     azure_config = ctx.node.properties.get('azure_config')
-    publishing_user = PublishingUser(azure_config, ctx.logger)
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_APP_SERVICE)
+    publishing_user = PublishingUser(azure_config, ctx.logger, api_version)
     if not user_details:
         raise cfy_exc.NonRecoverableError(
             "check user_details value")

@@ -17,33 +17,19 @@
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Microsoft Azure Virtual Machine Extension interface
 """
-from uuid import uuid4
 from msrestazure.azure_exceptions import CloudError
 
 from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
 
-from cloudify_azure import utils
+from cloudify_azure import (constants, decorators, utils)
 from azure_sdk.resources.compute.virtual_machine_extension \
     import VirtualMachineExtension
 
 
-def get_unique_name(vm_extension, resource_group_name, vm_name, name):
-    if not name:
-        for _ in range(0, 15):
-            name = "{0}".format(uuid4())
-            try:
-                result = vm_extension.get(resource_group_name, vm_name, name)
-                if result:  # found a resource with same name
-                    name = ""
-                    continue
-            except CloudError:  # if exception that means name is not used
-                return name
-    else:
-        return name
-
-
 @operation(resumable=True)
+@decorators.with_generate_name(VirtualMachineExtension)
+@decorators.with_azure_resource(VirtualMachineExtension)
 def create(ctx, resource_config, **_):
     """Uses an existing, or creates a new, Virtual Machine Extension"""
     # Create a resource (if necessary)
@@ -51,6 +37,11 @@ def create(ctx, resource_config, **_):
         'Azure customData implementation is dependent on '
         'Virtual Machine image support.')
     azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
     name = utils.get_resource_name(ctx)
     resource_group_name = utils.get_resource_group(ctx)
     vm_name = ctx.node.properties['virtual_machine_name']
@@ -62,35 +53,23 @@ def create(ctx, resource_config, **_):
         'type_handler_version': resource_config.get('typeHandlerVersion'),
         'settings': resource_config.get('settings'),
     }
-    vm_extension = VirtualMachineExtension(azure_config, ctx.logger)
-    # generate name if not provided
-    name = get_unique_name(vm_extension, resource_group_name, vm_name, name)
-    ctx.instance.runtime_properties['name'] = name
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_COMPUTE)
+    vm_extension = VirtualMachineExtension(azure_config, ctx.logger,
+                                           api_version)
     # clean empty values from params
     vm_extension_params = \
         utils.cleanup_empty_params(vm_extension_params)
     try:
-        result = vm_extension.get(resource_group_name, vm_name, name)
-        if ctx.node.properties.get('use_external_resource', False):
-            ctx.logger.info("Using external resource")
-        else:
-            ctx.logger.info("Resource with name {0} exists".format(name))
-            return
-    except CloudError:
-        if ctx.node.properties.get('use_external_resource', False):
-            raise cfy_exc.NonRecoverableError(
-                "Can't use non-existing vm_extension '{0}'.".format(name))
-        else:
-            try:
-                result = \
-                    vm_extension.create_or_update(resource_group_name, vm_name,
-                                                  name, vm_extension_params)
-            except CloudError as cr:
-                raise cfy_exc.NonRecoverableError(
-                    "create vm_extension '{0}' "
-                    "failed with this error : {1}".format(name,
-                                                          cr.message)
-                    )
+        result = \
+            vm_extension.create_or_update(resource_group_name, vm_name,
+                                          name, vm_extension_params)
+    except CloudError as cr:
+        raise cfy_exc.NonRecoverableError(
+            "create vm_extension '{0}' "
+            "failed with this error : {1}".format(name,
+                                                  cr.message)
+            )
 
     ctx.instance.runtime_properties['resource_group'] = resource_group_name
     ctx.instance.runtime_properties['virtual_machine'] = vm_name
@@ -103,10 +82,18 @@ def delete(ctx, **_):
     """Deletes a Virtual Machine Extension"""
     # Delete the resource
     azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
     resource_group_name = ctx.instance.runtime_properties.get('resource_group')
     vm_name = ctx.instance.runtime_properties.get('virtual_machine')
     name = ctx.instance.runtime_properties.get('name')
-    vm_extension = VirtualMachineExtension(azure_config, ctx.logger)
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_COMPUTE)
+    vm_extension = VirtualMachineExtension(azure_config, ctx.logger,
+                                           api_version)
     try:
         vm_extension.get(resource_group_name, vm_name, name)
     except CloudError:

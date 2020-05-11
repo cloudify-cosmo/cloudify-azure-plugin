@@ -24,7 +24,7 @@ from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
 
 
-from cloudify_azure import (constants, utils)
+from cloudify_azure import (constants, decorators, utils)
 from cloudify_azure.resources.network.ipconfiguration \
     import get_ip_configurations
 from cloudify_azure.resources.network.publicipaddress import PUBLIC_IP_PROPERTY
@@ -32,21 +32,6 @@ from azure_sdk.resources.network.network_interface_card \
     import NetworkInterfaceCard
 from azure_sdk.resources.network.public_ip_address \
     import PublicIPAddress
-
-
-def get_unique_name(network_interface_card, resource_group_name, name):
-    if not name:
-        for _ in range(0, 15):
-            name = "{0}".format(uuid4())
-            try:
-                result = network_interface_card.get(resource_group_name, name)
-                if result:  # found a resource with same name
-                    name = ""
-                    continue
-            except CloudError:  # if exception that means name is not used yet
-                return name
-    else:
-        return name
 
 
 def get_unique_ip_conf_name(nic, resource_group_name,
@@ -71,27 +56,33 @@ def get_unique_ip_conf_name(nic, resource_group_name,
 def get_connected_nsg(ctx):
     """Finds a connected Network Security Group"""
     nsg = None
+    rel_type = constants.REL_NIC_CONNECTED_TO_NSG
     for rel in ctx.instance.relationships:
-        if constants.REL_NIC_CONNECTED_TO_NSG in rel.type_hierarchy:
-            nsg = rel.target
+        if isinstance(rel_type, tuple):
+            if any(x in rel.type_hierarchy for x in rel_type):
+                nsg = rel.target
+        else:
+            if rel_type in rel.type_hierarchy:
+                nsg = rel.target
     return {
         'id': nsg.instance.runtime_properties.get("resource_id", "")
     } if nsg else None
 
 
 @operation(resumable=True)
+@decorators.with_generate_name(NetworkInterfaceCard)
 def create(ctx, **_):
     """Uses an existing, or creates a new, Network Interface Card"""
-    azure_config = ctx.node.properties.get('azure_config')
     name = utils.get_resource_name(ctx)
     resource_group_name = utils.get_resource_group(ctx)
-    network_interface_card = NetworkInterfaceCard(azure_config, ctx.logger)
-    name = get_unique_name(network_interface_card, resource_group_name, name)
-    ctx.instance.runtime_properties['name'] = name
+    ctx.logger.info("Created NIC with name {0} "
+                    "inside ResourceGroup {1}".format(name,
+                                                      resource_group_name))
     ctx.instance.runtime_properties['resource_group'] = resource_group_name
 
 
 @operation(resumable=True)
+@decorators.with_azure_resource(NetworkInterfaceCard)
 def configure(ctx, **_):
     """
         Uses an existing, or creates a new, Network Interface Card
@@ -107,9 +98,17 @@ def configure(ctx, **_):
     """
     # Create a resource (if necessary)
     azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
     name = ctx.instance.runtime_properties.get('name')
     resource_group_name = utils.get_resource_group(ctx)
-    network_interface_card = NetworkInterfaceCard(azure_config, ctx.logger)
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_NETWORK)
+    network_interface_card = NetworkInterfaceCard(azure_config, ctx.logger,
+                                                  api_version)
     nic_params = {
         'location': ctx.node.properties.get('location'),
         'tags': ctx.node.properties.get('tags'),
@@ -134,30 +133,19 @@ def configure(ctx, **_):
     # clean empty values from params
     nic_params = \
         utils.cleanup_empty_params(nic_params)
+
     try:
-        result = network_interface_card.get(resource_group_name, name)
-        if ctx.node.properties.get('use_external_resource', False):
-            ctx.logger.info("Using external resource")
-        else:
-            ctx.logger.info("Resource with name {0} exists".format(name))
-            return
-    except CloudError:
-        if ctx.node.properties.get('use_external_resource', False):
-            raise cfy_exc.NonRecoverableError(
-                "Can't use non-existing nic '{0}'.".format(name))
-        else:
-            try:
-                result = \
-                    network_interface_card.create_or_update(
-                        resource_group_name,
-                        name,
-                        nic_params)
-            except CloudError as cr:
-                raise cfy_exc.NonRecoverableError(
-                    "configure nic '{0}' "
-                    "failed with this error : {1}".format(name,
-                                                          cr.message)
-                    )
+        result = \
+            network_interface_card.create_or_update(
+                resource_group_name,
+                name,
+                nic_params)
+    except CloudError as cr:
+        raise cfy_exc.NonRecoverableError(
+            "configure nic '{0}' "
+            "failed with this error : {1}".format(name,
+                                                  cr.message)
+            )
 
     ctx.instance.runtime_properties['resource_group'] = resource_group_name
     ctx.instance.runtime_properties['resouce'] = result
@@ -172,9 +160,17 @@ def start(ctx, **_):
     """
 
     azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
     name = ctx.instance.runtime_properties.get('name')
     resource_group_name = utils.get_resource_group(ctx)
-    network_interface_card = NetworkInterfaceCard(azure_config, ctx.logger)
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_NETWORK)
+    network_interface_card = NetworkInterfaceCard(azure_config, ctx.logger,
+                                                  api_version)
     nic_data = network_interface_card.get(resource_group_name, name)
 
     for ip_cfg in nic_data.get('ip_configurations', list()):
@@ -213,9 +209,17 @@ def delete(ctx, **_):
     """Deletes a Network Interface Card"""
     # Delete the resource
     azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
     resource_group_name = ctx.instance.runtime_properties.get('resource_group')
     name = ctx.instance.runtime_properties.get('name')
-    network_interface_card = NetworkInterfaceCard(azure_config, ctx.logger)
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_NETWORK)
+    network_interface_card = NetworkInterfaceCard(azure_config, ctx.logger,
+                                                  api_version)
     try:
         network_interface_card.get(resource_group_name, name)
     except CloudError:
@@ -236,7 +240,12 @@ def delete(ctx, **_):
 def attach_ip_configuration(ctx, **_):
     """Generates a usable UUID for the NIC's IP Configuration"""
     # Generate the IPConfiguration's name
-    azure_config = ctx.source.node.properties['azure_config']
+    azure_config = ctx.source.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.source.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
     resource_group_name = \
         ctx.source.instance.runtime_properties.get('resource_group')
     nic_name = ctx.source.instance.runtime_properties.get('name')

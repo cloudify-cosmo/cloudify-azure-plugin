@@ -34,11 +34,11 @@ class RouteTable(AzureResource):
         route_table = self.client.route_tables.get(
             resource_group_name=group_name,
             route_table_name=route_table_name
-        )
+        ).as_dict()
         self.logger.info(
             'Get route_table result: {0}'.format(
-                utils.secure_logging_content(route_table.as_dict())))
-        return route_table.as_dict()
+                utils.secure_logging_content(route_table)))
+        return route_table
 
     def create_or_update(self, group_name, route_table_name, params):
         self.logger.info(
@@ -49,11 +49,12 @@ class RouteTable(AzureResource):
             parameters=params,
         )
         async_route_table_creation.wait()
-        route_table = async_route_table_creation.result()
+        route_table = async_route_table_creation.result().as_dict()
         self.logger.info(
             'create route_table result: {0}'.format(
-                utils.secure_logging_content(route_table.as_dict())))
-        return route_table.as_dict()
+                utils.secure_logging_content(route_table))
+            )
+        return route_table
 
     def delete(self, group_name, route_table_name):
         self.logger.info("Deleting route_table...{0}".format(route_table_name))

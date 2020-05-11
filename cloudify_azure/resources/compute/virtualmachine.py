@@ -28,7 +28,7 @@ from cloudify import compute
 from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
 
-from cloudify_azure import (constants, utils)
+from cloudify_azure import (constants, decorators, utils)
 from cloudify_azure.resources.network.publicipaddress import PUBLIC_IP_PROPERTY
 from azure_sdk.resources.network.public_ip_address import PublicIPAddress
 from azure_sdk.resources.compute.virtual_machine import VirtualMachine
@@ -142,26 +142,6 @@ def build_network_profile(ctx):
     }
 
 
-def vm_name_generator():
-    """Generates a unique VM resource name"""
-    return '{0}'.format(uuid4())
-
-
-def get_unique_name(virtual_machine, resource_group_name, name):
-    if not name:
-        for _ in range(0, 15):
-            name = vm_name_generator()
-            try:
-                result = virtual_machine.get(resource_group_name, name)
-                if result:  # found a resource with same name
-                    name = ""
-                    continue
-            except CloudError:  # if exception that means name is not used
-                return name
-    else:
-        return name
-
-
 def extract_powershell_content(string_with_powershell):
     """We want to filter user data for powershell scripts.
     However, AWS EC2 allows only one segment that is Powershell.
@@ -255,15 +235,22 @@ def _handle_userdata(ctx, existing_userdata):
 
 
 @operation(resumable=True)
+@decorators.with_generate_name(VirtualMachine)
+@decorators.with_azure_resource(VirtualMachine)
 def create(ctx, args=None, **_):
     """Uses an existing, or creates a new, Virtual Machine"""
     # Generate a resource name (if needed)
     azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
     name = utils.get_resource_name(ctx)
     resource_group_name = utils.get_resource_group(ctx)
-    virtual_machine = VirtualMachine(azure_config, ctx.logger)
-    name = get_unique_name(virtual_machine, resource_group_name, name)
-    ctx.instance.runtime_properties['name'] = name
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_COMPUTE)
+    virtual_machine = VirtualMachine(azure_config, ctx.logger, api_version)
     res_cfg = ctx.node.properties.get("resource_config", {})
     # Build storage profile
     osdisk = build_osdisk_profile(ctx, res_cfg.get(
@@ -309,11 +296,20 @@ def create(ctx, args=None, **_):
         ).get('computerName', name)
 
     availability_set = None
+    rel_type = constants.REL_CONNECTED_TO_AS
     for rel in ctx.instance.relationships:
-        if constants.REL_CONNECTED_TO_AS in rel.type_hierarchy:
-            availability_set = {
-                'id': rel.target.instance.runtime_properties.get("resource_id")
-            }
+        if isinstance(rel_type, tuple):
+            if any(x in rel.type_hierarchy for x in rel_type):
+                availability_set = {
+                    'id': rel.target.instance.runtime_properties.get(
+                        "resource_id")
+                }
+        else:
+            if rel_type in rel.type_hierarchy:
+                availability_set = {
+                    'id': rel.target.instance.runtime_properties.get(
+                        "resource_id")
+                }
     resource_create_payload = {
         'location': ctx.node.properties.get('location'),
         'tags': ctx.node.properties.get('tags'),
@@ -342,27 +338,15 @@ def create(ctx, args=None, **_):
         del resource_create_payload['os_profile']['custom_data']
     # Create a resource (if necessary)
     try:
-        result = virtual_machine.get(resource_group_name, name)
-        if ctx.node.properties.get('use_external_resource', False):
-            ctx.logger.info("Using external resource")
-        else:
-            ctx.logger.info("Resource with name {0} exists".format(name))
-            return
-    except CloudError:
-        if ctx.node.properties.get('use_external_resource', False):
-            raise cfy_exc.NonRecoverableError(
-                "Can't use non-existing virtual_machine '{0}'.".format(name))
-        else:
-            try:
-                result = \
-                    virtual_machine.create_or_update(resource_group_name, name,
-                                                     resource_create_payload)
-            except CloudError as cr:
-                raise cfy_exc.NonRecoverableError(
-                    "create virtual_machine '{0}' "
-                    "failed with this error : {1}".format(name,
-                                                          cr.message)
-                    )
+        result = \
+            virtual_machine.create_or_update(resource_group_name, name,
+                                             resource_create_payload)
+    except CloudError as cr:
+        raise cfy_exc.NonRecoverableError(
+            "create virtual_machine '{0}' "
+            "failed with this error : {1}".format(name,
+                                                  cr.message)
+            )
 
     ctx.instance.runtime_properties['resource_group'] = resource_group_name
     ctx.instance.runtime_properties['resouce'] = result
@@ -376,6 +360,12 @@ def configure(ctx, command_to_execute, file_uris, type_handler_version='v2.0',
     os_family = ctx.node.properties.get('os_family', '').lower()
     if os_family == 'windows':
         azure_config = ctx.node.properties.get('azure_config')
+        if not azure_config.get("subscription_id"):
+            azure_config = ctx.node.properties.get('client_config')
+        else:
+            ctx.logger.warn("azure_config is deprecated please use "
+                            "client_config, in later version it will be "
+                            "removed")
         vm_name = ctx.instance.runtime_properties.get('name')
         resource_group_name = utils.get_resource_group(ctx)
         vm_extension = VirtualMachineExtension(azure_config, ctx.logger)
@@ -493,9 +483,16 @@ def delete(ctx, **_):
     if ctx.node.properties.get('use_external_resource', False):
         return
     azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
     resource_group_name = ctx.instance.runtime_properties.get('resource_group')
     name = ctx.instance.runtime_properties.get('name')
-    virtual_machine = VirtualMachine(azure_config, ctx.logger)
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_COMPUTE)
+    virtual_machine = VirtualMachine(azure_config, ctx.logger, api_version)
     try:
         virtual_machine.get(resource_group_name, name)
     except CloudError:
@@ -516,6 +513,11 @@ def delete(ctx, **_):
 def attach_data_disk(ctx, lun, **_):
     """Attaches a data disk"""
     azure_config = ctx.source.node.properties.get("azure_config")
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
     resource_group_name = ctx.source.node.properties.get("resource_group_name")
     name = ctx.source.instance.runtime_properties.get("name")
     vm_iface = VirtualMachine(azure_config, ctx.logger)
@@ -558,6 +560,11 @@ def attach_data_disk(ctx, lun, **_):
 def detach_data_disk(ctx, **_):
     """Detaches a data disk"""
     azure_config = ctx.source.node.properties.get("azure_config")
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
     resource_group_name = ctx.source.node.properties.get("resource_group_name")
     name = ctx.source.instance.runtime_properties.get("name")
     vm_iface = VirtualMachine(azure_config, ctx.logger)

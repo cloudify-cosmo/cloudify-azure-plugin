@@ -27,7 +27,7 @@ from cloudify_azure import constants
 
 def dict_update(orig, updates):
     """Recursively merges two objects"""
-    if updates and type(updates) == dict:
+    if updates and isinstance(updates, dict):
         for key, val in updates.items():
             if isinstance(val, Mapping):
                 orig[key] = dict_update(orig.get(key, {}), val)
@@ -173,8 +173,12 @@ def get_relationship_by_type(rels, rel_type):
     if not isinstance(rels, list):
         return None
     for rel in rels:
-        if rel_type in rel.type_hierarchy:
-            return rel
+        if isinstance(rel_type, tuple):
+            if any(x in rel.type_hierarchy for x in rel_type):
+                return rel
+        else:
+            if rel_type in rel.type_hierarchy:
+                return rel
     return None
 
 
@@ -202,8 +206,12 @@ def get_relationships_by_type(rels, rel_type):
     if not isinstance(rels, list):
         return ret
     for rel in rels:
-        if rel_type in rel.type_hierarchy:
-            ret.append(rel)
+        if isinstance(rel_type, tuple):
+            if any(x in rel.type_hierarchy for x in rel_type):
+                ret.append(rel)
+        else:
+            if rel_type in rel.type_hierarchy:
+                ret.append(rel)
     return ret
 
 
@@ -217,8 +225,12 @@ def get_parent(inst, rel_type='cloudify.relationships.contained_in'):
     :rtype: :class:`cloudify.context.RelationshipSubjectContext` or None
     """
     for rel in inst.relationships:
-        if rel_type in rel.type_hierarchy:
-            return rel.target
+        if isinstance(rel_type, tuple):
+            if any(x in rel.type_hierarchy for x in rel_type):
+                return rel.target
+        else:
+            if rel_type in rel.type_hierarchy:
+                return rel.target
     return None
 
 
@@ -254,8 +266,12 @@ def get_rel_node_name(rel_type, _ctx=ctx):
     :rtype: string or None
     """
     for rel in _ctx.instance.relationships:
-        if rel_type in rel.type_hierarchy:
-            return get_resource_name(rel.target)
+        if isinstance(rel_type, tuple):
+            if any(x in rel.type_hierarchy for x in rel_type):
+                return get_resource_name(rel.target)
+        else:
+            if rel_type in rel.type_hierarchy:
+                return get_resource_name(rel.target)
     return None
 
 

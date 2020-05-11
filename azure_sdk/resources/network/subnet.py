@@ -35,11 +35,11 @@ class Subnet(AzureResource):
             resource_group_name=group_name,
             virtual_network_name=virtual_network_name,
             subnet_name=subnet_name
-        )
+        ).as_dict()
         self.logger.info(
             'Get subnet result: {0}'.format(
-                utils.secure_logging_content(subnet.as_dict())))
-        return subnet.as_dict()
+                utils.secure_logging_content(subnet)))
+        return subnet
 
     def create_or_update(self, group_name, vnet_name, subnet_name, params):
         self.logger.info("Create/Updating subnet...{0}".format(subnet_name))
@@ -50,11 +50,11 @@ class Subnet(AzureResource):
             subnet_parameters=params,
         )
         async_subnet_creation.wait()
-        subnet = async_subnet_creation.result()
+        subnet = async_subnet_creation.result().as_dict()
         self.logger.info(
             'create subnet result: {0}'.format(
-                utils.secure_logging_content(subnet.as_dict())))
-        return subnet.as_dict()
+                utils.secure_logging_content(subnet)))
+        return subnet
 
     def delete(self, group_name, vnet_name, subnet_name):
         self.logger.info("Deleting subnet...{0}".format(subnet_name))

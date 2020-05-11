@@ -12,47 +12,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import sys
 import json
 
-from uuid import uuid4
 from msrestazure.azure_exceptions import CloudError
 from azure.mgmt.resource.resources.models import DeploymentMode
 
 from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
 
-try:
-    from cloudify._compat import (urlopen, urlparse, text_type)
-except ImportError:
-    PY2 = sys.version_info[0] == 2
-    if PY2:
-        from urllib2 import urlopen
-        from urlparse import urlparse
-        text_type = unicode
-    else:
-        from urllib.request import urlopen
-        from urllib.parse import urlparse
-        text_type = str
-
-from cloudify_azure import utils
+from cloudify_azure import (constants, decorators, utils)
+from cloudify_azure._compat import (urlopen, urlparse, text_type)
 from azure_sdk.resources.deployment import Deployment
 from azure_sdk.resources.resource_group import ResourceGroup
-
-
-def get_unique_name(resource_group, name):
-    if not name:
-        for _ in range(0, 15):
-            name = "{0}".format(uuid4())
-            try:
-                result = resource_group.get(name)
-                if result:  # found a resource with same name
-                    name = ""
-                    continue
-            except CloudError:  # if exception that means name is not used
-                return name
-    else:
-        return name
 
 
 def is_url(string):
@@ -103,37 +74,31 @@ def get_template(ctx, properties):
 
 
 @operation(resumable=True)
+@decorators.with_generate_name(ResourceGroup)
+@decorators.with_azure_resource(ResourceGroup)
 def create(ctx, **kwargs):
 
     azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
     name = utils.get_resource_name(ctx)
     resource_group_params = {
         'location': ctx.node.properties.get('location'),
     }
-    resource_group = ResourceGroup(azure_config, ctx.logger)
-    # generate name if not provided
-    name = get_unique_name(resource_group, name)
-    ctx.instance.runtime_properties['name'] = name
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_RESOURCES)
+    resource_group = ResourceGroup(azure_config, ctx.logger, api_version)
     try:
-        resource_group.get(name)
-        if ctx.node.properties.get('use_external_resource', False):
-            ctx.logger.info("Using external resource")
-        else:
-            ctx.logger.info("Resource with name {0} exists".format(name))
-            return
-    except CloudError:
-        if ctx.node.properties.get('use_external_resource', False):
-            raise cfy_exc.NonRecoverableError(
-                "Can't use non-existing resource_group '{0}'.".format(name))
-        else:
-            try:
-                resource_group.create_or_update(name, resource_group_params)
-            except CloudError as cr:
-                raise cfy_exc.NonRecoverableError(
-                    "create deployment resource_group '{0}' "
-                    "failed with this error : {1}".format(name,
-                                                          cr.message)
-                    )
+        resource_group.create_or_update(name, resource_group_params)
+    except CloudError as cr:
+        raise cfy_exc.NonRecoverableError(
+            "create deployment resource_group '{0}' "
+            "failed with this error : {1}".format(name,
+                                                  cr.message)
+            )
 
     # load template
     properties = {}
@@ -142,7 +107,7 @@ def create(ctx, **kwargs):
     template = get_template(ctx, properties)
     ctx.logger.debug("Parsed template: %s", json.dumps(template, indent=4))
 
-    deployment = Deployment(azure_config, ctx.logger)
+    deployment = Deployment(azure_config, ctx.logger, api_version)
     deployment_params = {
         'mode': DeploymentMode.incremental,
         'template': template,
@@ -150,27 +115,15 @@ def create(ctx, **kwargs):
     }
 
     try:
-        result = deployment.get(name, name)
-        if ctx.node.properties.get('use_external_resource', False):
-            ctx.logger.info("Using external resource")
-        else:
-            ctx.logger.info("Resource with name {0} exists".format(name))
-            return
-    except CloudError:
-        if ctx.node.properties.get('use_external_resource', False):
-            raise cfy_exc.NonRecoverableError(
-                "Can't use non-existing deployment '{0}'.".format(name))
-        else:
-            try:
-                result = \
-                    deployment.create_or_update(name, name, deployment_params,
-                                                properties.get('timeout'))
-            except CloudError as cr:
-                raise cfy_exc.NonRecoverableError(
-                    "create deployment '{0}' "
-                    "failed with this error : {1}".format(name,
-                                                          cr.message)
-                    )
+        result = \
+            deployment.create_or_update(name, name, deployment_params,
+                                        properties.get('timeout'))
+    except CloudError as cr:
+        raise cfy_exc.NonRecoverableError(
+            "create deployment '{0}' "
+            "failed with this error : {1}".format(name,
+                                                  cr.message)
+            )
 
     ctx.instance.runtime_properties['resouce'] = result
     ctx.instance.runtime_properties['resource_id'] = result.get("id", "")
@@ -183,7 +136,12 @@ def delete(ctx, **kwargs):
     if ctx.node.properties.get('use_external_resource', False):
         return
     azure_config = ctx.node.properties.get('azure_config')
-    name = ctx.instance.runtime_properties.get('name')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
+    name = utils.get_resource_name(ctx)
     resource_group = ResourceGroup(azure_config, ctx.logger)
     try:
         resource_group.get(name)

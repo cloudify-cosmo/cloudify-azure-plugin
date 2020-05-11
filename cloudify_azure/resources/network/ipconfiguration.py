@@ -47,9 +47,14 @@ def get_ip_configurations(_ctx=ctx,
     """
     ipconfigs = list()
     for node_rel in _ctx.instance.relationships:
-        if rel in node_rel.type_hierarchy:
-            ipconfigs.append(
-                build_ip_configuration(node_rel.target))
+        if isinstance(rel, tuple):
+            if any(x in node_rel.type_hierarchy for x in rel):
+                ipconfigs.append(
+                    build_ip_configuration(node_rel.target))
+        else:
+            if rel in node_rel.type_hierarchy:
+                ipconfigs.append(
+                    build_ip_configuration(node_rel.target))
     # Weed out bad IP Configurations
     return [x for x in ipconfigs if x is not None]
 
@@ -67,15 +72,29 @@ def build_ip_configuration(ipc):
     if not ipc or not ipc.instance.relationships:
         return None
     # Find a referenced Subnet/PublicIPAddress
+    rel_sub_type = constants.REL_IPC_CONNECTED_TO_SUBNET
+    rel_pip_type = constants.REL_IPC_CONNECTED_TO_PUBIP
     for rel in ipc.instance.relationships:
-        if constants.REL_IPC_CONNECTED_TO_SUBNET in rel.type_hierarchy:
-            subnet = {
-                'id': rel.target.instance.runtime_properties['resource_id']
-            }
-        if constants.REL_IPC_CONNECTED_TO_PUBIP in rel.type_hierarchy:
-            pubip = {
-                'id': rel.target.instance.runtime_properties['resource_id']
-            }
+        if isinstance(rel_sub_type, tuple):
+            if any(x in rel.type_hierarchy for x in rel_sub_type):
+                subnet = {
+                    'id': rel.target.instance.runtime_properties['resource_id']
+                }
+        else:
+            if rel_sub_type in rel.type_hierarchy:
+                subnet = {
+                    'id': rel.target.instance.runtime_properties['resource_id']
+                }
+        if isinstance(rel_pip_type, tuple):
+            if any(x in rel.type_hierarchy for x in rel_pip_type):
+                pubip = {
+                    'id': rel.target.instance.runtime_properties['resource_id']
+                }
+        else:
+            if rel_pip_type in rel.type_hierarchy:
+                pubip = {
+                    'id': rel.target.instance.runtime_properties['resource_id']
+                }
 
     ip_configuration = {
         'name': utils.get_resource_name(ipc),

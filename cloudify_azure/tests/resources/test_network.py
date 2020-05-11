@@ -72,7 +72,7 @@ class VirtualNetworkTest(unittest.TestCase):
             CloudError(response, message)
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            virtualnetwork.create(self.fake_ctx)
+            virtualnetwork.create(ctx=self.fake_ctx)
             client().virtual_networks.get.assert_called_with(
                 resource_group_name=resource_group,
                 virtual_network_name=vnet_name
@@ -105,7 +105,7 @@ class VirtualNetworkTest(unittest.TestCase):
         client().virtual_networks.get.return_value = mock.Mock()
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            virtualnetwork.create(self.fake_ctx)
+            virtualnetwork.create(ctx=self.fake_ctx)
             client().virtual_networks.get.assert_called_with(
                 resource_group_name=resource_group,
                 virtual_network_name=vnet_name
@@ -120,7 +120,7 @@ class VirtualNetworkTest(unittest.TestCase):
         self.instance.runtime_properties['name'] = vnet_name
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            virtualnetwork.delete(self.fake_ctx)
+            virtualnetwork.delete(ctx=self.fake_ctx)
             client().virtual_networks.delete.assert_called_with(
                 resource_group_name=resource_group,
                 virtual_network_name=vnet_name
@@ -139,5 +139,5 @@ class VirtualNetworkTest(unittest.TestCase):
             CloudError(response, message)
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            virtualnetwork.delete(self.fake_ctx)
+            virtualnetwork.delete(ctx=self.fake_ctx)
             client().virtual_networks.delete.assert_not_called()

@@ -35,11 +35,12 @@ class NetworkInterfaceCard(AzureResource):
         network_interface = self.client.network_interfaces.get(
             resource_group_name=group_name,
             network_interface_name=network_interface_name
-        )
+        ).as_dict()
         self.logger.info(
             'Get network_interface result: {0}'.format(
-                utils.secure_logging_content(network_interface.as_dict())))
-        return network_interface.as_dict()
+                utils.secure_logging_content(network_interface))
+            )
+        return network_interface
 
     def create_or_update(self, group_name, network_interface_name, params):
         self.logger.info(
@@ -52,11 +53,12 @@ class NetworkInterfaceCard(AzureResource):
                 parameters=params,
             )
         async_network_interface_creation.wait()
-        network_interface = async_network_interface_creation.result()
+        network_interface = async_network_interface_creation.result().as_dict()
         self.logger.info(
             'create network_interface result: {0}'.format(
-                utils.secure_logging_content(network_interface.as_dict())))
-        return network_interface.as_dict()
+                utils.secure_logging_content(network_interface))
+            )
+        return network_interface
 
     def delete(self, group_name, network_interface_name):
         self.logger.info(

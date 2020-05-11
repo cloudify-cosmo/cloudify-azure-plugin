@@ -32,11 +32,11 @@ class ResourceGroup(AzureResource):
     def get(self, group_name):
         self.logger.info("Get resource_group...{0}".format(group_name))
         resource_group = self.client.resource_groups.get(
-            resource_group_name=group_name)
+            resource_group_name=group_name).as_dict()
         self.logger.info(
             'Get resource_group result: {0}'.format(
-                utils.secure_logging_content(resource_group.as_dict())))
-        return resource_group.as_dict()
+                utils.secure_logging_content(resource_group)))
+        return resource_group
 
     def create_or_update(self, group_name, resource_group_params):
         self.logger.info(
@@ -44,11 +44,11 @@ class ResourceGroup(AzureResource):
         resource_group = self.client.resource_groups.create_or_update(
             resource_group_name=group_name,
             parameters=resource_group_params,
-        )
+        ).as_dict()
         self.logger.info(
             'Create resource_group result: {0}'.format(
-                utils.secure_logging_content(resource_group.as_dict())))
-        return resource_group.as_dict()
+                utils.secure_logging_content(resource_group)))
+        return resource_group
 
     def delete(self, group_name):
         self.logger.info("Deleting resource_group...{0}".format(group_name))

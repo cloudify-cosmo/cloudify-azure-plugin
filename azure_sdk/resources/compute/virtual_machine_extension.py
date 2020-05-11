@@ -35,14 +35,12 @@ class VirtualMachineExtension(AzureResource):
             resource_group_name=group_name,
             vm_name=vm_name,
             vm_extension_name=vm_extension_name
-        )
+        ).as_dict()
         self.logger.info(
             'Get virtual_machine_extension result: {0}'.format(
-                utils.secure_logging_content(
-                    virtual_machine_extension.as_dict())
-                )
+                utils.secure_logging_content(virtual_machine_extension))
             )
-        return virtual_machine_extension.as_dict()
+        return virtual_machine_extension
 
     def create_or_update(self, group_name, vm_name, vm_extension_name, params):
         self.logger.info("Create/Updating vm_extension...{0}".format(
@@ -55,14 +53,12 @@ class VirtualMachineExtension(AzureResource):
                 extension_parameters=params,
             )
         create_async_operation.wait()
-        virtual_machine_extension = create_async_operation.result()
+        virtual_machine_extension = create_async_operation.result().as_dict()
         self.logger.info(
             'Create virtual_machine_extension result: {0}'.format(
-                utils.secure_logging_content(
-                    virtual_machine_extension.as_dict())
-                )
+                utils.secure_logging_content(virtual_machine_extension))
             )
-        return virtual_machine_extension.as_dict()
+        return virtual_machine_extension
 
     def delete(self, group_name, vm_name, vm_extension_name):
         self.logger.info("Deleting vm_extension...{0}".format(

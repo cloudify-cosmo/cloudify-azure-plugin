@@ -69,7 +69,7 @@ class ResourceGroupTest(unittest.TestCase):
             CloudError(response, message)
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            resourcegroup.create(self.fake_ctx)
+            resourcegroup.create(ctx=self.fake_ctx)
             client().resource_groups.get.assert_called_with(
                 resource_group_name=resource_group
             )
@@ -93,7 +93,7 @@ class ResourceGroupTest(unittest.TestCase):
         client().resource_groups.get.return_value = mock.Mock()
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            resourcegroup.create(self.fake_ctx)
+            resourcegroup.create(ctx=self.fake_ctx)
             client().resource_groups.get.assert_called_with(
                 resource_group_name=resource_group
             )
@@ -105,7 +105,7 @@ class ResourceGroupTest(unittest.TestCase):
         self.instance.runtime_properties['name'] = resource_group
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            resourcegroup.delete(self.fake_ctx)
+            resourcegroup.delete(ctx=self.fake_ctx)
             client().resource_groups.delete.assert_called_with(
                 resource_group_name=resource_group
             )
@@ -121,5 +121,5 @@ class ResourceGroupTest(unittest.TestCase):
             CloudError(response, message)
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            resourcegroup.delete(self.fake_ctx)
+            resourcegroup.delete(ctx=self.fake_ctx)
             client().resource_groups.delete.assert_not_called()

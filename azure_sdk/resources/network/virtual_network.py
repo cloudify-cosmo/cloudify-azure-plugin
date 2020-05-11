@@ -35,11 +35,11 @@ class VirtualNetwork(AzureResource):
         virtual_network = self.client.virtual_networks.get(
             resource_group_name=group_name,
             virtual_network_name=virtual_network_name
-        )
+        ).as_dict()
         self.logger.info(
             'Get virtual_network result: {0}'.format(
-                utils.secure_logging_content(virtual_network.as_dict())))
-        return virtual_network.as_dict()
+                utils.secure_logging_content(virtual_network)))
+        return virtual_network
 
     def create_or_update(self, group_name, virtual_network_name, params):
         self.logger.info(
@@ -51,11 +51,11 @@ class VirtualNetwork(AzureResource):
             parameters=params,
         )
         async_vnet_creation.wait()
-        virtual_network = async_vnet_creation.result()
+        virtual_network = async_vnet_creation.result().as_dict()
         self.logger.info(
             'create virtual_network result: {0}'.format(
-                utils.secure_logging_content(virtual_network.as_dict())))
-        return virtual_network.as_dict()
+                utils.secure_logging_content(virtual_network)))
+        return virtual_network
 
     def delete(self, group_name, virtual_network_name):
         self.logger.info(

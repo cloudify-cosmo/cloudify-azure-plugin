@@ -12,22 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-import sys
 from os import path, environ
 
 from msrestazure.azure_cloud import AZURE_CHINA_CLOUD, AZURE_PUBLIC_CLOUD
 from azure.common.credentials import ServicePrincipalCredentials
-try:
-    from cloudify._compat import SafeConfigParser
-except ImportError:
-    PY2 = sys.version_info[0] == 2
-    if PY2:
-        from ConfigParser import SafeConfigParser
-    else:
-        from configparser import SafeConfigParser
 
 from cloudify_azure import (constants, utils)
+from cloudify_azure._compat import SafeConfigParser
 
 
 class AzureResource(object):
