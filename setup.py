@@ -25,7 +25,7 @@ setup(
     packages=find_packages(exclude=['tests*']),
     description='Cloudify plugin for Microsoft Azure',
     install_requires=[
-        'cloudify-common==5.1.0.dev1',
+        'cloudify-common>=4.5',
         'requests==2.20.0',
         'urllib3==1.25.3',
         'pyyaml==3.12',
@@ -39,5 +39,6 @@ setup(
         'azure-mgmt-resource==9.0.0',
         'azure-common==1.1.25',
         'msrestazure==0.6.3'
+
     ]
 )

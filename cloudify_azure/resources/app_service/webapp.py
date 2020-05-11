@@ -18,14 +18,21 @@ from msrestazure.azure_exceptions import CloudError
 from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
 
-from cloudify_azure import utils
+from cloudify_azure import (constants, utils)
 from azure_sdk.resources.app_service.web_app import WebApp
 
 
 @operation(resumable=True)
 def create(ctx, resource_group, name, app_config, **kwargs):
     azure_config = ctx.node.properties.get('azure_config')
-    web_app = WebApp(azure_config, ctx.logger)
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_APP_SERVICE)
+    web_app = WebApp(azure_config, ctx.logger, api_version)
 
     try:
         result = web_app.get(resource_group, name)
@@ -60,9 +67,16 @@ def delete(ctx, **kwargs):
     if ctx.node.properties.get('use_external_resource', False):
         return
     azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
     resource_group = ctx.instance.runtime_properties.get('resource_group')
     name = ctx.instance.runtime_properties.get('name')
-    web_app = WebApp(azure_config, ctx.logger)
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_APP_SERVICE)
+    web_app = WebApp(azure_config, ctx.logger, api_version)
     try:
         web_app.get(resource_group, name)
     except CloudError:

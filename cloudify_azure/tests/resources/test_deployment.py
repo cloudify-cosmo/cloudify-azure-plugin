@@ -93,17 +93,13 @@ class DeploymentTest(unittest.TestCase):
             CloudError(response, message)
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            deployment.create(self.fake_ctx)
+            deployment.create(ctx=self.fake_ctx)
             rg_client().resource_groups.get.assert_called_with(
                 resource_group_name=resource_group
             )
             rg_client().resource_groups.create_or_update.assert_called_with(
                 resource_group_name=resource_group,
                 parameters=resource_group_params
-            )
-            deployment_client().deployments.get.assert_called_with(
-                resource_group_name=resource_group,
-                deployment_name=resource_group
             )
             deployment_client()\
                 .deployments.create_or_update.assert_called_with(
@@ -126,7 +122,7 @@ class DeploymentTest(unittest.TestCase):
         rg_client().resource_groups.get.return_value = mock.Mock()
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            deployment.create(self.fake_ctx)
+            deployment.create(ctx=self.fake_ctx)
             rg_client().resource_groups.get.assert_called_with(
                 resource_group_name=resource_group
             )
@@ -147,7 +143,6 @@ class DeploymentTest(unittest.TestCase):
             deployment.create(ctx=self.fake_ctx, template="{}")
             deployment_client()\
                 .deployments.create_or_update.assert_not_called()
-            deployment_client().deployments.get.assert_called()
 
     def test_create_without_template(self, rg_client, deployment_client,
                                      credentials):
@@ -164,7 +159,7 @@ class DeploymentTest(unittest.TestCase):
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
             with self.assertRaises(cfy_exc.NonRecoverableError) as ex:
-                deployment.create(self.fake_ctx)
+                deployment.create(ctx=self.fake_ctx)
             self.assertTrue(
                 "Deployment template not provided" in '{0}'.format(
                     ex.exception))
@@ -261,7 +256,7 @@ class DeploymentTest(unittest.TestCase):
         self.instance.runtime_properties['name'] = resource_group
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            deployment.delete(self.fake_ctx)
+            deployment.delete(ctx=self.fake_ctx)
             rg_client().resource_groups.delete.assert_called_with(
                 resource_group_name=resource_group
             )
@@ -280,7 +275,7 @@ class DeploymentTest(unittest.TestCase):
             CloudError(response, message)
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            deployment.delete(self.fake_ctx)
+            deployment.delete(ctx=self.fake_ctx)
             rg_client().resource_groups.delete.assert_not_called()
             deployment_client().deployments.get.assert_not_called()
             deployment_client().deployments.delete.assert_not_called()

@@ -535,6 +535,11 @@ node_types:
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
+      client_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
     interfaces:
       cloudify.interfaces.lifecycle:
         create: azure.cloudify_azure.resources.resourcegroup.create
@@ -598,6 +603,11 @@ node_types:
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
+      client_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
     interfaces:
       cloudify.interfaces.lifecycle:
         create: azure.cloudify_azure.resources.storage.storageaccount.create
@@ -639,6 +649,11 @@ node_types:
         type: cloudify.datatypes.azure.storage.DataDiskConfig
         required: false
       azure_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
+      client_config:
         description: >
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
@@ -687,6 +702,11 @@ node_types:
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
+      client_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
     interfaces:
       cloudify.interfaces.lifecycle:
         create: azure.cloudify_azure.resources.storage.file.create_file_share
@@ -698,7 +718,7 @@ node_types:
         type: string
         description: >
           Network API Version
-        default: "2017-03-01"
+        default: "2016-09-01"
       name:
         type: string
         description: >
@@ -743,6 +763,11 @@ node_types:
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
+      client_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
     interfaces:
       cloudify.interfaces.lifecycle:
         create: azure.cloudify_azure.resources.network.virtualnetwork.create
@@ -755,7 +780,7 @@ node_types:
         type: string
         description: >
           Network API Version
-        default: "2017-03-01"
+        default: "2016-09-01"
       name:
         type: string
         description: >
@@ -800,6 +825,11 @@ node_types:
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
+      client_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
     interfaces:
       cloudify.interfaces.lifecycle:
         create: azure.cloudify_azure.resources.network.networksecuritygroup.create
@@ -812,7 +842,7 @@ node_types:
         type: string
         description: >
           Network API Version
-        default: "2017-03-01"
+        default: "2016-09-01"
       name:
         type: string
         description: >
@@ -864,6 +894,11 @@ node_types:
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
+      client_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
     interfaces:
       cloudify.interfaces.lifecycle:
         create: azure.cloudify_azure.resources.network.networksecurityrule.create
@@ -876,7 +911,7 @@ node_types:
         type: string
         description: >
           Network API Version
-        default: "2017-03-01"
+        default: "2016-09-01"
       name:
         type: string
         description: >
@@ -928,6 +963,11 @@ node_types:
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
+      client_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
     interfaces:
       cloudify.interfaces.lifecycle:
         create: azure.cloudify_azure.resources.network.subnet.create
@@ -940,7 +980,7 @@ node_types:
         type: string
         description: >
           Network API Version
-        default: "2017-03-01"
+        default: "2016-09-01"
       name:
         type: string
         description: >
@@ -985,6 +1025,11 @@ node_types:
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
+      client_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
     interfaces:
       cloudify.interfaces.lifecycle:
         create: azure.cloudify_azure.resources.network.routetable.create
@@ -997,7 +1042,7 @@ node_types:
         type: string
         description: >
           Network API Version
-        default: "2017-03-01"
+        default: "2016-09-01"
       name:
         type: string
         description: >
@@ -1049,6 +1094,11 @@ node_types:
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
+      client_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
     interfaces:
       cloudify.interfaces.lifecycle:
         create: azure.cloudify_azure.resources.network.route.create
@@ -1061,7 +1111,7 @@ node_types:
         type: string
         description: >
           Network API Version
-        default: "2017-03-01"
+        default: "2016-09-01"
       name:
         type: string
         description: >
@@ -1111,6 +1161,11 @@ node_types:
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
+      client_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
     interfaces:
       cloudify.interfaces.lifecycle:
         create: azure.cloudify_azure.resources.network.networkinterfacecard.create
@@ -1125,7 +1180,7 @@ node_types:
         type: string
         description: >
           Network API Version
-        default: "2017-03-01"
+        default: "2016-09-01"
       name:
         type: string
         description: >
@@ -1170,6 +1225,11 @@ node_types:
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
+      client_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
 
   cloudify.azure.nodes.network.PublicIPAddress:
     derived_from: cloudify.nodes.Root
@@ -1178,7 +1238,7 @@ node_types:
         type: string
         description: >
           Network API Version
-        default: "2017-03-01"
+        default: "2016-09-01"
       name:
         type: string
         description: >
@@ -1219,6 +1279,11 @@ node_types:
         type: integer
         required: false
       azure_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
+      client_config:
         description: >
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
@@ -1277,6 +1342,11 @@ node_types:
         type: integer
         required: false
       azure_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
+      client_config:
         description: >
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
@@ -1345,6 +1415,11 @@ node_types:
         type: integer
         required: false
       azure_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
+      client_config:
         description: >
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
@@ -1459,6 +1534,11 @@ node_types:
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
+      client_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
@@ -1489,7 +1569,7 @@ node_types:
         type: string
         description: >
           Network API Version
-        default: "2017-03-01"
+        default: "2016-09-01"
       name:
         type: string
         description: >
@@ -1534,6 +1614,11 @@ node_types:
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
+      client_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
     interfaces:
       cloudify.interfaces.lifecycle:
         create: azure.cloudify_azure.resources.network.loadbalancer.create
@@ -1547,7 +1632,7 @@ node_types:
         type: string
         description: >
           Network API Version
-        default: "2017-03-01"
+        default: "2016-09-01"
       name:
         type: string
         description: >
@@ -1590,6 +1675,11 @@ node_types:
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
+      client_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
     interfaces:
       cloudify.interfaces.lifecycle:
         create: azure.cloudify_azure.resources.network.loadbalancer.create_backend_pool
@@ -1602,7 +1692,7 @@ node_types:
         type: string
         description: >
           Network API Version
-        default: "2017-03-01"
+        default: "2016-09-01"
       name:
         type: string
         description: >
@@ -1650,6 +1740,11 @@ node_types:
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
+      client_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
     interfaces:
       cloudify.interfaces.lifecycle:
         create: azure.cloudify_azure.resources.network.loadbalancer.create_probe
@@ -1662,7 +1757,7 @@ node_types:
         type: string
         description: >
           Network API Version
-        default: "2017-03-01"
+        default: "2016-09-01"
       name:
         type: string
         description: >
@@ -1710,6 +1805,11 @@ node_types:
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
+      client_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
     interfaces:
       cloudify.interfaces.lifecycle:
         create: azure.cloudify_azure.resources.network.loadbalancer.create_incoming_nat_rule
@@ -1722,7 +1822,7 @@ node_types:
         type: string
         description: >
           Network API Version
-        default: "2017-03-01"
+        default: "2016-09-01"
       name:
         type: string
         description: >
@@ -1770,6 +1870,11 @@ node_types:
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
+      client_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
     interfaces:
       cloudify.interfaces.lifecycle:
         create: azure.cloudify_azure.resources.network.loadbalancer.create_rule
@@ -1804,6 +1909,11 @@ node_types:
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
+      client_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
       use_external_resource:
         description: >
           Indicate whether the resource exists or if Cloudify should create the resource
@@ -1834,6 +1944,11 @@ node_types:
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
+      client_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
@@ -1847,6 +1962,8 @@ node_types:
               default: { get_property: [SELF, container_service_config]}
             azure_config:
               default: { get_property: [SELF, azure_config]}
+            client_config:
+              default: { get_property: [SELF, client_config]}
         delete:
           implementation: azure.cloudify_azure.resources.compute.container_service.delete
 
@@ -1865,6 +1982,11 @@ node_types:
         description: >
           SKU details, including location, name, capacity and tier
       azure_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
+      client_config:
         description: >
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
@@ -1888,6 +2010,8 @@ node_types:
               default: { get_property: [SELF, sku]}
             azure_config:
               default: { get_property: [SELF, azure_config]}
+            client_config:
+              default: { get_property: [SELF, client_config]}
         delete:
           implementation: azure.cloudify_azure.resources.app_service.plan.delete
 
@@ -1910,6 +2034,11 @@ node_types:
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
+      client_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
@@ -1923,6 +2052,8 @@ node_types:
               default: { get_property: [SELF, app_config]}
             azure_config:
               default: { get_property: [SELF, azure_config]}
+            client_config:
+              default: { get_property: [SELF, client_config]}
         delete:
           implementation: azure.cloudify_azure.resources.app_service.webapp.delete
 
@@ -1938,6 +2069,11 @@ node_types:
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
+      client_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
@@ -1947,6 +2083,8 @@ node_types:
               default: { get_property: [SELF, user_details]}
             azure_config:
               default: { get_property: [SELF, azure_config]}
+            client_config:
+              default: { get_property: [SELF, client_config]}
 
   cloudify.azure.nodes.compute.ManagedCluster:
     derived_from: cloudify.nodes.Root
@@ -1974,6 +2112,11 @@ node_types:
           A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
+      client_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
@@ -1987,27 +2130,129 @@ node_types:
               default: { get_property: [SELF, resource_config]}
             azure_config:
               default: { get_property: [SELF, azure_config]}
+            client_config:
+              default: { get_property: [SELF, client_config]}
         delete:
           implementation: azure.cloudify_azure.resources.compute.managed_cluster.delete
 
+  cloudify.nodes.azure.ResourceGroup:
+    derived_from: cloudify.azure.nodes.ResourceGroup
+
+  cloudify.nodes.azure.storage.StorageAccount:
+    derived_from: cloudify.azure.nodes.storage.StorageAccount
+
+  cloudify.nodes.azure.storage.DataDisk:
+    derived_from: cloudify.azure.nodes.storage.DataDisk
+
+  cloudify.nodes.azure.storage.FileShare:
+    derived_from: cloudify.azure.nodes.storage.FileShare
+
+  cloudify.nodes.azure.network.VirtualNetwork:
+    derived_from: cloudify.azure.nodes.network.VirtualNetwork
+
+  cloudify.nodes.azure.network.NetworkSecurityGroup:
+    derived_from: cloudify.azure.nodes.network.NetworkSecurityGroup
+
+  cloudify.nodes.azure.network.NetworkSecurityRule:
+    derived_from: cloudify.azure.nodes.network.NetworkSecurityRule
+
+  cloudify.nodes.azure.network.Subnet:
+    derived_from: cloudify.azure.nodes.network.Subnet
+
+  cloudify.nodes.azure.network.RouteTable:
+    derived_from: cloudify.azure.nodes.network.RouteTable
+
+  cloudify.nodes.azure.network.Route:
+    derived_from: cloudify.azure.nodes.network.Route
+
+  cloudify.nodes.azure.network.NetworkInterfaceCard:
+    derived_from: cloudify.azure.nodes.network.NetworkInterfaceCard
+
+  cloudify.nodes.azure.network.IPConfiguration:
+    derived_from: cloudify.azure.nodes.network.IPConfiguration
+
+  cloudify.nodes.azure.network.PublicIPAddress:
+    derived_from: cloudify.azure.nodes.network.PublicIPAddress
+
+  cloudify.nodes.azure.compute.AvailabilitySet:
+    derived_from: cloudify.azure.nodes.compute.AvailabilitySet
+
+  cloudify.nodes.azure.compute.VirtualMachine:
+    derived_from: cloudify.azure.nodes.compute.VirtualMachine
+
+  cloudify.nodes.azure.compute.WindowsVirtualMachine:
+    derived_from: cloudify.azure.nodes.compute.WindowsVirtualMachine
+
+  cloudify.nodes.azure.compute.VirtualMachineExtension:
+    derived_from: cloudify.azure.nodes.compute.VirtualMachineExtension
+
+  cloudify.nodes.azure.network.LoadBalancer:
+    derived_from: cloudify.azure.nodes.network.LoadBalancer
+
+  cloudify.nodes.azure.network.LoadBalancer.BackendAddressPool:
+    derived_from: cloudify.azure.nodes.network.LoadBalancer.BackendAddressPool
+
+  cloudify.nodes.azure.network.LoadBalancer.Probe:
+    derived_from: cloudify.azure.nodes.network.LoadBalancer.Probe
+
+  cloudify.nodes.azure.network.LoadBalancer.IncomingNATRule:
+    derived_from: cloudify.azure.nodes.network.LoadBalancer.IncomingNATRule
+
+  cloudify.nodes.azure.network.LoadBalancer.Rule:
+    derived_from: cloudify.azure.nodes.network.LoadBalancer.Rule
+
+  cloudify.nodes.azure.compute.ContainerService:
+    derived_from: cloudify.azure.nodes.compute.ContainerService
+
+  cloudify.nodes.azure.Plan:
+    derived_from: cloudify.azure.nodes.Plan
+
+  cloudify.nodes.azure.WebApp:
+    derived_from: cloudify.azure.nodes.WebApp
+
+  cloudify.nodes.azure.PublishingUser:
+    derived_from: cloudify.azure.nodes.PublishingUser
+
+  cloudify.nodes.azure.compute.ManagedCluster:
+    derived_from: cloudify.azure.nodes.compute.ManagedCluster
+
 relationships:
+
   cloudify.azure.relationships.contained_in_resource_group:
     derived_from: cloudify.relationships.contained_in
+
+  cloudify.relationships.azure.contained_in_resource_group:
+    derived_from: cloudify.azure.relationships.contained_in_resource_group
 
   cloudify.azure.relationships.contained_in_storage_account:
     derived_from: cloudify.relationships.contained_in
 
+  cloudify.relationships.azure.contained_in_storage_account:
+    derived_from: cloudify.azure.relationships.contained_in_storage_account
+
   cloudify.azure.relationships.contained_in_virtual_network:
     derived_from: cloudify.relationships.contained_in
+
+  cloudify.relationships.azure.contained_in_virtual_network:
+    derived_from: cloudify.azure.relationships.contained_in_virtual_network
 
   cloudify.azure.relationships.contained_in_network_security_group:
     derived_from: cloudify.relationships.contained_in
 
+  cloudify.relationships.azure.contained_in_network_security_group:
+    derived_from: cloudify.azure.relationships.contained_in_network_security_group
+
   cloudify.azure.relationships.contained_in_route_table:
     derived_from: cloudify.relationships.contained_in
 
+  cloudify.relationships.azure.contained_in_route_table:
+    derived_from: cloudify.azure.relationships.contained_in_route_table
+
   cloudify.azure.relationships.contained_in_load_balancer:
     derived_from: cloudify.relationships.contained_in
+
+  cloudify.relationships.azure.contained_in_load_balancer:
+    derived_from: cloudify.azure.relationships.contained_in_load_balancer
 
   cloudify.azure.relationships.network_security_group_attached_to_subnet:
     derived_from: cloudify.relationships.connected_to
@@ -2016,6 +2261,9 @@ relationships:
         establish: azure.cloudify_azure.resources.network.subnet.attach_network_security_group
         unlink: azure.cloudify_azure.resources.network.subnet.detach_network_security_group
 
+  cloudify.relationships.azure.network_security_group_attached_to_subnet:
+    derived_from: cloudify.azure.relationships.network_security_group_attached_to_subnet
+
   cloudify.azure.relationships.route_table_attached_to_subnet:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
@@ -2023,8 +2271,14 @@ relationships:
         establish: azure.cloudify_azure.resources.network.subnet.attach_route_table
         unlink: azure.cloudify_azure.resources.network.subnet.detach_route_table
 
+  cloudify.relationships.azure.route_table_attached_to_subnet:
+    derived_from: cloudify.azure.relationships.route_table_attached_to_subnet
+
   cloudify.azure.relationships.nic_connected_to_network_security_group:
     derived_from: cloudify.relationships.connected_to
+
+  cloudify.relationships.azure.nic_connected_to_network_security_group:
+    derived_from: cloudify.azure.relationships.nic_connected_to_network_security_group
 
   cloudify.azure.relationships.nic_connected_to_ip_configuration:
     derived_from: cloudify.relationships.connected_to
@@ -2032,20 +2286,35 @@ relationships:
       cloudify.interfaces.relationship_lifecycle:
         preconfigure: azure.cloudify_azure.resources.network.networkinterfacecard.attach_ip_configuration
 
+  cloudify.relationships.azure.nic_connected_to_ip_configuration:
+    derived_from: cloudify.azure.relationships.nic_connected_to_ip_configuration
+
   cloudify.azure.relationships.lb_connected_to_ip_configuration:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
         preconfigure: azure.cloudify_azure.resources.network.loadbalancer.attach_ip_configuration
 
+  cloudify.relationships.azure.lb_connected_to_ip_configuration:
+    derived_from: cloudify.azure.relationships.lb_connected_to_ip_configuration
+
   cloudify.azure.relationships.ip_configuration_connected_to_subnet:
     derived_from: cloudify.relationships.connected_to
+
+  cloudify.relationships.azure.ip_configuration_connected_to_subnet:
+    derived_from: cloudify.azure.relationships.ip_configuration_connected_to_subnet
 
   cloudify.azure.relationships.ip_configuration_connected_to_public_ip:
     derived_from: cloudify.relationships.connected_to
 
+  cloudify.relationships.azure.ip_configuration_connected_to_public_ip:
+    derived_from: cloudify.azure.relationships.ip_configuration_connected_to_public_ip
+
   cloudify.azure.relationships.connected_to_storage_account:
     derived_from: cloudify.relationships.connected_to
+
+  cloudify.relationships.azure.connected_to_storage_account:
+    derived_from: cloudify.azure.relationships.connected_to_storage_account
 
   cloudify.azure.relationships.connected_to_data_disk:
     derived_from: cloudify.relationships.connected_to
@@ -2054,23 +2323,44 @@ relationships:
         establish: azure.cloudify_azure.resources.compute.virtualmachine.attach_disk
         unlink: azure.cloudify_azure.resources.compute.virtualmachine.detach_disk
 
+  cloudify.relationships.azure.connected_to_data_disk:
+    derived_from: cloudify.azure.relationships.connected_to_data_disk
+
   cloudify.azure.relationships.connected_to_nic:
     derived_from: cloudify.relationships.connected_to
+
+  cloudify.relationships.azure.connected_to_nic:
+    derived_from: cloudify.azure.relationships.connected_to_nic
 
   cloudify.azure.relationships.connected_to_availability_set:
     derived_from: cloudify.relationships.connected_to
 
+  cloudify.relationships.azure.connected_to_availability_set:
+    derived_from: cloudify.azure.relationships.connected_to_availability_set
+
   cloudify.azure.relationships.connected_to_ip_configuration:
     derived_from: cloudify.relationships.connected_to
+
+  cloudify.relationships.azure.connected_to_ip_configuration:
+    derived_from: cloudify.azure.relationships.connected_to_ip_configuration
 
   cloudify.azure.relationships.connected_to_lb_be_pool:
     derived_from: cloudify.relationships.connected_to
 
+  cloudify.relationships.azure.connected_to_lb_be_pool:
+    derived_from: cloudify.azure.relationships.connected_to_lb_be_pool
+
   cloudify.azure.relationships.connected_to_lb_probe:
     derived_from: cloudify.relationships.connected_to
 
+  cloudify.relationships.azure.connected_to_lb_probe:
+    derived_from: cloudify.azure.relationships.connected_to_lb_probe
+
   cloudify.azure.relationships.vmx_contained_in_vm:
     derived_from: cloudify.relationships.contained_in
+
+  cloudify.relationships.azure.vmx_contained_in_vm:
+    derived_from: cloudify.azure.relationships.vmx_contained_in_vm
 
   cloudify.azure.relationships.nic_connected_to_lb_be_pool:
     derived_from: cloudify.relationships.connected_to
@@ -2078,6 +2368,9 @@ relationships:
       cloudify.interfaces.relationship_lifecycle:
         establish: azure.cloudify_azure.resources.network.loadbalancer.attach_nic_to_backend_pool
         unlink: azure.cloudify_azure.resources.network.loadbalancer.detach_nic_from_backend_pool
+
+  cloudify.relationships.azure.nic_connected_to_lb_be_pool:
+    derived_from: cloudify.azure.relationships.nic_connected_to_lb_be_pool
 
   cloudify.azure.relationships.vm_connected_to_datadisk:
     derived_from: cloudify.relationships.connected_to
@@ -2092,3 +2385,6 @@ relationships:
               default: 0
               required: true
         unlink: azure.cloudify_azure.resources.compute.virtualmachine.detach_data_disk
+
+  cloudify.relationships.azure.vm_connected_to_datadisk:
+    derived_from: cloudify.azure.relationships.vm_connected_to_datadisk

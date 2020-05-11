@@ -17,36 +17,27 @@
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Microsoft Azure Virtual Network interface
 """
-from uuid import uuid4
 from msrestazure.azure_exceptions import CloudError
 
 from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
 
-from cloudify_azure import utils
+from cloudify_azure import (constants, decorators, utils)
 from azure_sdk.resources.network.virtual_network import VirtualNetwork
 
 
-def get_unique_name(virtual_network, resource_group_name, name):
-    if not name:
-        for _ in range(0, 15):
-            name = "{0}".format(uuid4())
-            try:
-                result = virtual_network.get(resource_group_name, name)
-                if result:  # found a resource with same name
-                    name = ""
-                    continue
-            except CloudError:  # if exception that means name is not used
-                return name
-    else:
-        return name
-
-
 @operation(resumable=True)
+@decorators.with_generate_name(VirtualNetwork)
+@decorators.with_azure_resource(VirtualNetwork)
 def create(ctx, **_):
     """Uses an existing, or creates a new, Virtual Network"""
     # Create a resource (if necessary)
     azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
     name = utils.get_resource_name(ctx)
     resource_group_name = utils.get_resource_group(ctx)
     vnet_params = {
@@ -57,35 +48,22 @@ def create(ctx, **_):
         utils.handle_resource_config_params(vnet_params,
                                             ctx.node.properties.get(
                                                 'resource_config', {}))
-    virtual_network = VirtualNetwork(azure_config, ctx.logger)
-    # generate name if not provided
-    name = get_unique_name(virtual_network, resource_group_name, name)
-    ctx.instance.runtime_properties['name'] = name
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_NETWORK)
+    virtual_network = VirtualNetwork(azure_config, ctx.logger, api_version)
     # clean empty values from params
     vnet_params = \
         utils.cleanup_empty_params(vnet_params)
     try:
-        result = virtual_network.get(resource_group_name, name)
-        if ctx.node.properties.get('use_external_resource', False):
-            ctx.logger.info("Using external resource")
-        else:
-            ctx.logger.info("Resource with name {0} exists".format(name))
-            return
-    except CloudError:
-        if ctx.node.properties.get('use_external_resource', False):
-            raise cfy_exc.NonRecoverableError(
-                "Can't use non-existing virtual_network '{0}'.".format(name))
-        else:
-            try:
-                result = \
-                    virtual_network.create_or_update(resource_group_name, name,
-                                                     vnet_params)
-            except CloudError as cr:
-                raise cfy_exc.NonRecoverableError(
-                    "create virtual_network '{0}' "
-                    "failed with this error : {1}".format(name,
-                                                          cr.message)
-                    )
+        result = \
+            virtual_network.create_or_update(resource_group_name, name,
+                                             vnet_params)
+    except CloudError as cr:
+        raise cfy_exc.NonRecoverableError(
+            "create virtual_network '{0}' "
+            "failed with this error : {1}".format(name,
+                                                  cr.message)
+            )
 
     ctx.instance.runtime_properties['resource_group'] = resource_group_name
     ctx.instance.runtime_properties['resouce'] = result
@@ -98,9 +76,16 @@ def delete(ctx, **_):
     if ctx.node.properties.get('use_external_resource', False):
         return
     azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
     resource_group_name = ctx.instance.runtime_properties.get('resource_group')
     name = ctx.instance.runtime_properties.get('name')
-    virtual_network = VirtualNetwork(azure_config, ctx.logger)
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_NETWORK)
+    virtual_network = VirtualNetwork(azure_config, ctx.logger, api_version)
     try:
         virtual_network.get(resource_group_name, name)
     except CloudError:

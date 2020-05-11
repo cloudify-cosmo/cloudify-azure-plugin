@@ -23,7 +23,7 @@ from msrestazure.azure_exceptions import CloudError
 from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
 
-from cloudify_azure import (constants, utils)
+from cloudify_azure import (constants, decorators, utils)
 from cloudify_azure.resources.network.ipconfiguration \
     import get_ip_configurations
 from azure_sdk.resources.network.load_balancer import LoadBalancer
@@ -35,102 +35,14 @@ from azure_sdk.resources.network.public_ip_address \
 LB_ADDRPOOLS_KEY = 'load_balancer_backend_address_pools'
 
 
-def get_unique_name(load_balancer, resource_group_name, name):
-    if not name:
-        for _ in range(0, 15):
-            name = "{0}".format(uuid4())
-            try:
-                result = load_balancer.get(resource_group_name, name)
-                if result:  # found a resource with same name
-                    name = ""
-                    continue
-            except CloudError:  # if exception that means name is not used
-                return name
-    else:
-        return name
-
-
-def get_unique_ip_conf_name(load_balancer, resource_group_name, lb_name, name):
+def get_unique_lb_prop_name(load_balancer, resource_group_name, lb_name,
+                            prop_name, name):
     if not name:
         result = load_balancer.get(resource_group_name, lb_name)
         for _ in range(0, 15):
             name = "{0}".format(uuid4())
             try:
-                for item in result.get("frontend_ip_configurations"):
-                    if item.get("name") == name:
-                        name = ""
-                        break
-                if name:  # found a resource with unique name
-                    return name
-            except CloudError:  # if exception that means name is not used
-                return name
-    else:
-        return name
-
-
-def get_unique_back_pool_name(load_balancer, resource_group_name, lb_name,
-                              name):
-    if not name:
-        result = load_balancer.get(resource_group_name, lb_name)
-        for _ in range(0, 15):
-            name = "{0}".format(uuid4())
-            try:
-                for item in result.get("backend_address_pools"):
-                    if item.get("name") == name:
-                        name = ""
-                        break
-                if name:  # found a resource with unique name
-                    return name
-            except CloudError:  # if exception that means name is not used
-                return name
-    else:
-        return name
-
-
-def get_unique_probe_name(load_balancer, resource_group_name, lb_name, name):
-    if not name:
-        result = load_balancer.get(resource_group_name, lb_name)
-        for _ in range(0, 15):
-            name = "{0}".format(uuid4())
-            try:
-                for item in result.get("probes"):
-                    if item.get("name") == name:
-                        name = ""
-                        break
-                if name:  # found a resource with unique name
-                    return name
-            except CloudError:  # if exception that means name is not used
-                return name
-    else:
-        return name
-
-
-def get_unique_incoming_nat_rule_name(load_balancer, resource_group_name,
-                                      lb_name, name):
-    if not name:
-        result = load_balancer.get(resource_group_name, lb_name)
-        for _ in range(0, 15):
-            name = "{0}".format(uuid4())
-            try:
-                for item in result.get("inbound_nat_rules"):
-                    if item.get("name") == name:
-                        name = ""
-                        break
-                if name:  # found a resource with unique name
-                    return name
-            except CloudError:  # if exception that means name is not used
-                return name
-    else:
-        return name
-
-
-def get_unique_lb_rule_name(load_balancer, resource_group_name, lb_name, name):
-    if not name:
-        result = load_balancer.get(resource_group_name, lb_name)
-        for _ in range(0, 15):
-            name = "{0}".format(uuid4())
-            try:
-                for item in result.get("load_balancing_rules"):
+                for item in result.get(prop_name):
                     if item.get("name") == name:
                         name = ""
                         break
@@ -143,18 +55,19 @@ def get_unique_lb_rule_name(load_balancer, resource_group_name, lb_name, name):
 
 
 @operation(resumable=True)
+@decorators.with_generate_name(LoadBalancer)
 def create(ctx, **_):
     """Uses an existing, or creates a new, Load Balancer"""
-    azure_config = ctx.node.properties.get('azure_config')
     name = utils.get_resource_name(ctx)
     resource_group_name = utils.get_resource_group(ctx)
-    load_balancer = LoadBalancer(azure_config, ctx.logger)
-    # generate name if not provided
-    name = get_unique_name(load_balancer, resource_group_name, name)
-    ctx.instance.runtime_properties['name'] = name
+    ctx.logger.info("Created Load Balancer with name {0} "
+                    "inside ResourceGroup {1}".format(name,
+                                                      resource_group_name))
+    ctx.instance.runtime_properties['resource_group'] = resource_group_name
 
 
 @operation(resumable=True)
+@decorators.with_azure_resource(LoadBalancer)
 def configure(ctx, **_):
     """Uses an existing, or creates a new, Load Balancer"""
     # Get the Frontend IP Configuration
@@ -171,9 +84,16 @@ def configure(ctx, **_):
                 del ip_cfg['subnet']
     # Create a resource (if necessary)
     azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
     name = ctx.instance.runtime_properties.get('name')
     resource_group_name = utils.get_resource_group(ctx)
-    load_balancer = LoadBalancer(azure_config, ctx.logger)
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_NETWORK)
+    load_balancer = LoadBalancer(azure_config, ctx.logger, api_version)
     lb_params = {
         'location': ctx.node.properties.get('location'),
         'tags': ctx.node.properties.get('tags'),
@@ -191,28 +111,16 @@ def configure(ctx, **_):
     lb_params = \
         utils.cleanup_empty_params(lb_params)
     try:
-        result = load_balancer.get(resource_group_name, name)
-        if ctx.node.properties.get('use_external_resource', False):
-            ctx.logger.info("Using external resource")
-        else:
-            ctx.logger.info("Resource with name {0} exists".format(name))
-            return
-    except CloudError:
-        if ctx.node.properties.get('use_external_resource', False):
-            raise cfy_exc.NonRecoverableError(
-                "Can't use non-existing load_balancer '{0}'.".format(name))
-        else:
-            try:
-                result = \
-                    load_balancer.create_or_update(resource_group_name,
-                                                   name,
-                                                   lb_params)
-            except CloudError as cr:
-                raise cfy_exc.NonRecoverableError(
-                    "create load_balancer '{0}' "
-                    "failed with this error : {1}".format(name,
-                                                          cr.message)
-                    )
+        result = \
+            load_balancer.create_or_update(resource_group_name,
+                                           name,
+                                           lb_params)
+    except CloudError as cr:
+        raise cfy_exc.NonRecoverableError(
+            "create load_balancer '{0}' "
+            "failed with this error : {1}".format(name,
+                                                  cr.message)
+            )
 
     ctx.instance.runtime_properties['resource_group'] = resource_group_name
     ctx.instance.runtime_properties['resouce'] = result
@@ -238,9 +146,16 @@ def delete(ctx, **_):
     """Deletes a Load Balancer"""
     # Delete the resource
     azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
     resource_group_name = ctx.instance.runtime_properties.get('resource_group')
     name = ctx.instance.runtime_properties.get('name')
-    load_balancer = LoadBalancer(azure_config, ctx.logger)
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_NETWORK)
+    load_balancer = LoadBalancer(azure_config, ctx.logger, api_version)
     try:
         load_balancer.get(resource_group_name, name)
     except CloudError:
@@ -261,15 +176,22 @@ def delete(ctx, **_):
 def attach_ip_configuration(ctx, **_):
     """Generates a usable UUID for the NIC's IP Configuration"""
     # Generate the IPConfiguration's name
-    azure_config = ctx.source.node.properties['azure_config']
+    azure_config = ctx.source.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.source.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
     resource_group_name = \
         ctx.source.instance.runtime_properties.get('resource_group')
     load_balancer_name = ctx.source.instance.runtime_properties.get('name')
     load_balancer = LoadBalancer(azure_config, ctx.logger)
     ip_configuration_name = ctx.target.node.properties['name']
     ip_configuration_name = \
-        get_unique_ip_conf_name(load_balancer, resource_group_name,
-                                load_balancer_name, ip_configuration_name)
+        get_unique_lb_prop_name(load_balancer, resource_group_name,
+                                load_balancer_name,
+                                "frontend_ip_configurations",
+                                ip_configuration_name)
     ctx.target.instance.runtime_properties['name'] = ip_configuration_name
 
 
@@ -283,6 +205,11 @@ def create_backend_pool(ctx, **_):
             '"use_external_resource" specified without a resource "name"')
     # Generate a name if it doesn't exist
     azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
     resource_group_name = utils.get_resource_group(ctx)
     load_balancer_name = ctx.node.properties.get('load_balancer_name') or \
         utils.get_resource_name_ref(constants.REL_CONTAINED_IN_LB,
@@ -291,8 +218,10 @@ def create_backend_pool(ctx, **_):
     load_balancer = LoadBalancer(azure_config, ctx.logger)
     backend_pool_name = ctx.node.properties.get('name')
     backend_pool_name = \
-        get_unique_back_pool_name(load_balancer, resource_group_name,
-                                  load_balancer_name, backend_pool_name)
+        get_unique_lb_prop_name(load_balancer, resource_group_name,
+                                load_balancer_name,
+                                "backend_address_pools",
+                                backend_pool_name)
     ctx.instance.runtime_properties['name'] = backend_pool_name
     # Get an interface to the Load Balancer
     lb_rel = utils.get_relationship_by_type(
@@ -334,6 +263,11 @@ def delete_backend_pool(ctx, **_):
         return
     # Get an interface to the Load Balancer
     azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
     resource_group_name = utils.get_resource_group(ctx)
     lb_rel = utils.get_relationship_by_type(
         ctx.instance.relationships,
@@ -371,6 +305,11 @@ def create_probe(ctx, **_):
             '"use_external_resource" specified without a resource "name"')
     # Generate a name if it doesn't exist
     azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
     resource_group_name = utils.get_resource_group(ctx)
     load_balancer_name = ctx.node.properties.get('load_balancer_name') or \
         utils.get_resource_name_ref(constants.REL_CONTAINED_IN_LB,
@@ -379,8 +318,8 @@ def create_probe(ctx, **_):
     load_balancer = LoadBalancer(azure_config, ctx.logger)
     probe_name = ctx.node.properties.get('name')
     probe_name = \
-        get_unique_probe_name(load_balancer, resource_group_name,
-                              load_balancer_name, probe_name)
+        get_unique_lb_prop_name(load_balancer, resource_group_name,
+                                load_balancer_name, "probes", probe_name)
     ctx.instance.runtime_properties['name'] = probe_name
     # Get an interface to the Load Balancer
     lb_rel = utils.get_relationship_by_type(
@@ -426,6 +365,11 @@ def delete_probe(ctx, **_):
         return
     # Get an interface to the Load Balancer
     azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
     resource_group_name = utils.get_resource_group(ctx)
     lb_rel = utils.get_relationship_by_type(
         ctx.instance.relationships,
@@ -463,6 +407,11 @@ def create_incoming_nat_rule(ctx, **_):
             '"use_external_resource" specified without a resource "name"')
     # Generate a name if it doesn't exist
     azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
     resource_group_name = utils.get_resource_group(ctx)
     load_balancer_name = ctx.node.properties.get('load_balancer_name') or \
         utils.get_resource_name_ref(constants.REL_CONTAINED_IN_LB,
@@ -471,9 +420,9 @@ def create_incoming_nat_rule(ctx, **_):
     load_balancer = LoadBalancer(azure_config, ctx.logger)
     incoming_nat_rule_name = ctx.node.properties.get('name')
     incoming_nat_rule_name = \
-        get_unique_incoming_nat_rule_name(load_balancer, resource_group_name,
-                                          load_balancer_name,
-                                          incoming_nat_rule_name)
+        get_unique_lb_prop_name(load_balancer, resource_group_name,
+                                load_balancer_name, "inbound_nat_rules",
+                                incoming_nat_rule_name)
     ctx.instance.runtime_properties['name'] = incoming_nat_rule_name
     # Get an interface to the Load Balancer
     lb_rel = utils.get_relationship_by_type(
@@ -485,10 +434,16 @@ def create_incoming_nat_rule(ctx, **_):
     lb_rules = lb_data.get('inbound_nat_rules', list())
     # Get the Load Balancer Frontend IP Configuration
     lb_fe_ipc_id = ""
+    rel_type = constants.REL_CONNECTED_TO_IPC
     for rel in ctx.instance.relationships:
-        if constants.REL_CONNECTED_TO_IPC in rel.type_hierarchy:
-            lb_fe_ipc_id = \
-                rel.target.instance.runtime_properties.get('resource_id')
+        if isinstance(rel_type, tuple):
+            if any(x in rel.type_hierarchy for x in rel_type):
+                lb_fe_ipc_id = \
+                    rel.target.instance.runtime_properties.get('resource_id')
+        else:
+            if constants.REL_CONNECTED_TO_IPC in rel.type_hierarchy:
+                lb_fe_ipc_id = \
+                    rel.target.instance.runtime_properties.get('resource_id')
     lb_rules.append({
         'name': incoming_nat_rule_name,
         'frontend_ip_configuration': {
@@ -528,6 +483,11 @@ def delete_incoming_nat_rule(ctx, **_):
         return
     # Get an interface to the Load Balancer
     azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
     resource_group_name = utils.get_resource_group(ctx)
     lb_rel = utils.get_relationship_by_type(
         ctx.instance.relationships,
@@ -565,6 +525,11 @@ def create_rule(ctx, **_):
             '"use_external_resource" specified without a resource "name"')
     # Generate a name if it doesn't exist
     azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
     resource_group_name = utils.get_resource_group(ctx)
     load_balancer_name = ctx.node.properties.get('load_balancer_name') or \
         utils.get_resource_name_ref(constants.REL_CONTAINED_IN_LB,
@@ -573,8 +538,9 @@ def create_rule(ctx, **_):
     load_balancer = LoadBalancer(azure_config, ctx.logger)
     lb_rule_name = ctx.node.properties.get('name')
     lb_rule_name = \
-        get_unique_lb_rule_name(load_balancer, resource_group_name,
-                                load_balancer_name, lb_rule_name)
+        get_unique_lb_prop_name(load_balancer, resource_group_name,
+                                load_balancer_name, "load_balancing_rules",
+                                lb_rule_name)
     ctx.instance.runtime_properties['name'] = lb_rule_name
     # Get an interface to the Load Balancer
     lb_rel = utils.get_relationship_by_type(
@@ -587,16 +553,34 @@ def create_rule(ctx, **_):
     lb_be_pool_id = ""
     lb_probe_id = ""
     lb_fe_ipc_id = ""
+    rel_pool_type = constants.REL_CONNECTED_TO_LB_BE_POOL
+    rel_probe_type = constants.REL_CONNECTED_TO_LB_PROBE
+    rel_fe_type = constants.REL_CONNECTED_TO_IPC
     for rel in ctx.instance.relationships:
-        if constants.REL_CONNECTED_TO_LB_BE_POOL in rel.type_hierarchy:
-            lb_be_pool_id = \
-                rel.target.instance.runtime_properties.get('resource_id')
-        if constants.REL_CONNECTED_TO_LB_BE_POOL in rel.type_hierarchy:
-            lb_probe_id = \
-                rel.target.instance.runtime_properties.get('resource_id')
-        if constants.REL_CONNECTED_TO_IPC in rel.type_hierarchy:
-            lb_fe_ipc_id = \
-                rel.target.instance.runtime_properties.get('resource_id')
+        if isinstance(rel_pool_type, tuple):
+            if any(x in rel.type_hierarchy for x in rel_pool_type):
+                lb_be_pool_id = \
+                    rel.target.instance.runtime_properties.get('resource_id')
+        else:
+            if rel_pool_type in rel.type_hierarchy:
+                lb_be_pool_id = \
+                    rel.target.instance.runtime_properties.get('resource_id')
+        if isinstance(rel_probe_type, tuple):
+            if any(x in rel.type_hierarchy for x in rel_probe_type):
+                lb_probe_id = \
+                    rel.target.instance.runtime_properties.get('resource_id')
+        else:
+            if constants.REL_CONNECTED_TO_LB_PROBE in rel.type_hierarchy:
+                lb_probe_id = \
+                    rel.target.instance.runtime_properties.get('resource_id')
+        if isinstance(rel_fe_type, tuple):
+            if any(x in rel.type_hierarchy for x in rel_fe_type):
+                lb_fe_ipc_id = \
+                    rel.target.instance.runtime_properties.get('resource_id')
+        else:
+            if constants.REL_CONNECTED_TO_IPC in rel.type_hierarchy:
+                lb_fe_ipc_id = \
+                    rel.target.instance.runtime_properties.get('resource_id')
     # Get the existing Load Balancer Rules
     lb_rules = lb_data.get('load_balancing_rules', list())
     lb_rules.append({
@@ -637,6 +621,11 @@ def delete_rule(ctx, **_):
         return
     # Get an interface to the Load Balancer
     azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
     resource_group_name = utils.get_resource_group(ctx)
     lb_rel = utils.get_relationship_by_type(
         ctx.instance.relationships,
@@ -673,8 +662,13 @@ def attach_nic_to_backend_pool(ctx, **_):
     # Get the ID of the Backend Pool
     be_pool_id = {'id': ctx.target.instance.runtime_properties['resource_id']}
     # Get an interface to the Network Interface Card
-    azure_config = ctx.source.properties['azure_config']
-    resource_group_name = ctx.source.properties['resource_group_name']
+    azure_config = ctx.source.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.source.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
+    resource_group_name = ctx.source.node.properties['resource_group_name']
     name = ctx.source.instance.runtime_properties['name']
     network_interface_card = NetworkInterfaceCard(azure_config, ctx.logger)
     # Get the existing NIC IPConfigurations
@@ -709,8 +703,13 @@ def detach_nic_from_backend_pool(ctx, **_):
     # Get the ID of the Backend Pool
     be_pool_id = {'id': ctx.target.instance.runtime_properties['resource_id']}
     # Get an interface to the Network Interface Card
-    azure_config = ctx.source.properties['azure_config']
-    resource_group_name = ctx.source.properties['resource_group_name']
+    azure_config = ctx.source.node.properties['azure_config']
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.source.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
+    resource_group_name = ctx.source.node.properties['resource_group_name']
     name = ctx.source.instance.runtime_properties['name']
     network_interface_card = NetworkInterfaceCard(azure_config, ctx.logger)
     # Get the existing NIC IPConfigurations

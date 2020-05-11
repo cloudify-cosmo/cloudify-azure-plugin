@@ -21,16 +21,24 @@ from msrestazure.azure_exceptions import CloudError
 from cloudify.decorators import operation
 from cloudify import exceptions as cfy_exc
 
-from cloudify_azure import utils
+from cloudify_azure import (constants, utils)
 from azure_sdk.resources.compute.managed_cluster import ManagedCluster
 
 
 @operation(resumable=True)
 def create(ctx, resource_group, cluster_name, resource_config, **kwargs):
     azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
     store_kube_config_in_runtime = \
         ctx.node.properties.get('store_kube_config_in_runtime')
-    managed_cluster = ManagedCluster(azure_config, ctx.logger)
+    api_version = \
+        ctx.node.properties.get('api_version',
+                                constants.API_VER_MANAGED_CLUSTER)
+    managed_cluster = ManagedCluster(azure_config, ctx.logger, api_version)
     resource_config_payload = {}
     resource_config_payload = \
         utils.handle_resource_config_params(resource_config_payload,
@@ -77,9 +85,17 @@ def delete(ctx, **kwargs):
     if ctx.node.properties.get('use_external_resource', False):
         return
     azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
     resource_group = ctx.instance.runtime_properties.get('resource_group')
     name = ctx.instance.runtime_properties.get('name')
-    managed_cluster = ManagedCluster(azure_config, ctx.logger)
+    api_version = \
+        ctx.node.properties.get('api_version',
+                                constants.API_VER_MANAGED_CLUSTER)
+    managed_cluster = ManagedCluster(azure_config, ctx.logger, api_version)
     try:
         managed_cluster.get(resource_group, name)
     except CloudError:

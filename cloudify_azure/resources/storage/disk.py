@@ -67,6 +67,11 @@ def get_cloud_storage_account(_ctx=ctx):
     resource_group_name = utils.get_resource_group(_ctx)
     storage_account_name = utils.get_resource_name(_ctx=storage_account)
     azure_config = _ctx.node.properties.get("azure_config")
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
     # Get the storage account keys
     keys = StorageAccount(azure_config, _ctx.logger).list_keys(
         resource_group_name, storage_account_name)

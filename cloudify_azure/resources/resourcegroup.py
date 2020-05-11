@@ -17,68 +17,45 @@
     ~~~~~~~~~~~~~~~~~~~~~~~
     Microsoft Azure Resource Group interface
 """
-from uuid import uuid4
 from msrestazure.azure_exceptions import CloudError
 
 from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
 
-from cloudify_azure import utils
+from cloudify_azure import (constants, decorators, utils)
 from azure_sdk.resources.resource_group import ResourceGroup
 
 
-def get_unique_name(resource_group, name):
-    if not name:
-        for _ in range(0, 15):
-            name = "{0}".format(uuid4())
-            try:
-                result = resource_group.get(name)
-                if result:  # found a resource with same name
-                    name = ""
-                    continue
-            except CloudError:  # if exception that means name is not used
-                return name
-    else:
-        return name
-
-
 @operation(resumable=True)
+@decorators.with_generate_name(ResourceGroup)
+@decorators.with_azure_resource(ResourceGroup)
 def create(ctx, **_):
     """Uses an existing, or creates a new, Resource Group"""
-    # Create a resource (if necessary)
     azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
     name = utils.get_resource_name(ctx)
     resource_group_params = {
         'location': ctx.node.properties.get('location'),
         'tags': ctx.node.properties.get('tags')
     }
-    resource_group = ResourceGroup(azure_config, ctx.logger)
-    # generate name if not provided
-    name = get_unique_name(resource_group, name)
-    ctx.instance.runtime_properties['name'] = name
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_RESOURCES)
+    resource_group = ResourceGroup(azure_config, ctx.logger, api_version)
     try:
-        result = resource_group.get(name)
-        if ctx.node.properties.get('use_external_resource', False):
-            ctx.logger.info("Using external resource")
-        else:
-            ctx.logger.info("Resource with name {0} exists".format(name))
-            return
-    except CloudError:
-        if ctx.node.properties.get('use_external_resource', False):
-            raise cfy_exc.NonRecoverableError(
-                "Can't use non-existing resource_group '{0}'.".format(name))
-        else:
-            try:
-                result = \
-                    resource_group.create_or_update(
-                        name,
-                        resource_group_params)
-            except CloudError as cr:
-                raise cfy_exc.NonRecoverableError(
-                    "create resource_group '{0}' "
-                    "failed with this error : {1}".format(name,
-                                                          cr.message)
-                    )
+        result = \
+            resource_group.create_or_update(
+                name,
+                resource_group_params)
+    except CloudError as cr:
+        raise cfy_exc.NonRecoverableError(
+            "create resource_group '{0}' "
+            "failed with this error : {1}".format(name,
+                                                  cr.message)
+            )
 
     ctx.instance.runtime_properties['resouce'] = result
     ctx.instance.runtime_properties['resource_id'] = result.get("id", "")
@@ -90,8 +67,15 @@ def delete(ctx, **_):
     if ctx.node.properties.get('use_external_resource', False):
         return
     azure_config = ctx.node.properties.get('azure_config')
-    name = ctx.instance.runtime_properties.get('name')
-    resource_group = ResourceGroup(azure_config, ctx.logger)
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
+    name = utils.get_resource_name(ctx)
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_RESOURCES)
+    resource_group = ResourceGroup(azure_config, ctx.logger, api_version)
     try:
         resource_group.get(name)
     except CloudError:
