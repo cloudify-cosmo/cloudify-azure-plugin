@@ -1,114 +1,143 @@
-# #######
-# Copyright (c) 2016-2020 Cloudify Platform Ltd. All rights reserved
+# Copyright (c) 2015-2020 Cloudify Platform Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#        http://www.apache.org/licenses/LICENSE-2.0
+#       http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-    tests.resources.network
-    ~~~~~~~~~~~~~~~~~~~~~~~
-    Tests Microsoft Azure Network interfaces
-"""
-
-from os import path
+import mock
 import unittest
-import requests_mock
+import requests
 
-from cloudify.test_utils import workflow_test
-from cloudify_azure.tests import common as tutils
+from msrestazure.azure_exceptions import CloudError
 
-# pylint: disable=R0201
-# pylint: disable=R0913
+from cloudify import mocks as cfy_mocks
+
+from cloudify_azure.resources.network import virtualnetwork
 
 
-class TestNetwork(unittest.TestCase):
-    """Tests Network interfaces"""
-    blueprint_path = path.join('blueprints',
-                               'test_network.yaml')
+@mock.patch('azure_sdk.common.ServicePrincipalCredentials')
+@mock.patch('azure_sdk.resources.network.virtual_network.'
+            'NetworkManagementClient')
+class VirtualNetworkTest(unittest.TestCase):
+
+    def _get_mock_context_for_run(self):
+        fake_ctx = cfy_mocks.MockCloudifyContext()
+        instance = mock.Mock()
+        instance.runtime_properties = {}
+        fake_ctx._instance = instance
+        node = mock.Mock()
+        fake_ctx._node = node
+        node.properties = {}
+        node.runtime_properties = {}
+        fake_ctx.get_resource = mock.MagicMock(
+            return_value=""
+        )
+        return fake_ctx, node, instance
 
     def setUp(self):
-        self.mock_rg_name = 'mockrg'
-        self.params = {
-            'tenant_id': '123456',
-            'subscription_id': '12345-12345-12345',
-            'oauth2_token': '12345-1234-12345678',
-            'mock_retry_url': 'mock://mock-retry-url.com',
-            'mock_rg_name': self.mock_rg_name
+        self.fake_ctx, self.node, self.instance = \
+            self._get_mock_context_for_run()
+        self.dummy_azure_credentials = {
+            'client_id': 'dummy',
+            'client_secret': 'dummy',
+            'subscription_id': 'dummy',
+            'tenant_id': 'dummy'
         }
 
-    def mock_install_endpoints(self, mock):
-        """Mock install endpoints"""
-        tutils.mock_oauth2_endpoint(mock, self.params)
-        tutils.mock_retry_async_endpoint(mock, self.params)
-        tutils.mock_resourcegroup_endpoint(mock, self.params)
+    def test_create(self, client, credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_resource_group'
+        vnet_name = 'sample_vnet'
+        self.node.properties['resource_group_name'] = resource_group
+        self.node.properties['name'] = vnet_name
+        self.node.properties['location'] = 'westus'
+        self.node.properties['tags'] = {
+            'mode': 'testing'
+        }
+        vnet_params = {
+            'location': self.node.properties.get('location'),
+            'tags': self.node.properties.get('tags')
+        }
+        response = requests.Response()
+        response.status_code = 404
+        message = 'resource not found'
+        client().virtual_networks.get.side_effect = \
+            CloudError(response, message)
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            virtualnetwork.create(ctx=self.fake_ctx)
+            client().virtual_networks.get.assert_called_with(
+                resource_group_name=resource_group,
+                virtual_network_name=vnet_name
+            )
+            client().virtual_networks.create_or_update.assert_called_with(
+                resource_group_name=resource_group,
+                virtual_network_name=vnet_name,
+                parameters=vnet_params
+            )
+            self.assertEquals(
+                self.fake_ctx.instance.runtime_properties.get("name"),
+                vnet_name
+            )
+            self.assertEquals(
+                self.fake_ctx.instance.runtime_properties.get(
+                    "resource_group"),
+                resource_group
+            )
 
-    def mock_uninstall_endpoints(self, mock):
-        """Mock uninstall endpoints"""
-        tutils.mock_oauth2_endpoint(mock, self.params)
-        tutils.mock_retry_async_endpoint(mock, self.params)
-        tutils.mock_resourcegroup_endpoint(mock, self.params)
+    def test_create_already_exists(self, client, credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_resource_group'
+        vnet_name = 'sample_vnet'
+        self.node.properties['resource_group_name'] = resource_group
+        self.node.properties['name'] = vnet_name
+        self.node.properties['location'] = 'westus'
+        self.node.properties['tags'] = {
+            'mode': 'testing'
+        }
+        client().virtual_networks.get.return_value = mock.Mock()
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            virtualnetwork.create(ctx=self.fake_ctx)
+            client().virtual_networks.get.assert_called_with(
+                resource_group_name=resource_group,
+                virtual_network_name=vnet_name
+            )
+            client().virtual_networks.create_or_update.assert_not_called()
 
-    def mock_network_endpoints(self, mock):
-        """Mock network endpoints"""
-        tutils.mock_network_endpoints(mock, self.params,
-                                      'virtualNetworks', 'mockvnet')
-        tutils.mock_network_endpoints(mock, self.params,
-                                      'networkSecurityGroups', 'mocknsg')
-        tutils.mock_network_endpoints(mock, self.params,
-                                      'networkSecurityRule', 'mocknsr')
-        tutils.mock_network_endpoints(mock, self.params,
-                                      'routeTables', 'mockroutetable')
-        tutils.mock_network_endpoints(
-            mock, self.params,
-            'routeTables/{0}/routes'.format('mockroutetable'),
-            'mockroute')
-        tutils.mock_network_endpoints(mock, self.params,
-                                      'networkInterfaces', 'mocknic')
-        tutils.mock_network_endpoints(mock, self.params,
-                                      'publicIPAddresses', 'mocknicpip')
-        tutils.mock_network_endpoints(
-            mock, self.params,
-            'virtualNetworks/{0}/subnets'.format('mockvnet'),
-            'mocksubnet')
-        tutils.mock_network_endpoints(
-            mock, self.params,
-            'networkSecurityGroups/{0}/securityRules'.format('mocknsg'),
-            'mocknsr')
-        # Load balancer endpoints
-        tutils.mock_network_endpoints(mock, self.params,
-                                      'loadBalancers', 'mocklb')
-        tutils.mock_network_endpoints(
-            mock, self.params,
-            'loadBalancers/{0}/backendAddressPools'.format('mocklb'),
-            'mocklbbepool')
-        tutils.mock_network_endpoints(
-            mock, self.params,
-            'loadBalancers/{0}/probes'.format('mocklb'),
-            'mocklbprobe')
-        tutils.mock_network_endpoints(mock, self.params,
-                                      'PublicIPAddresses', 'mocklbpip')
+    def test_delete(self, client, credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_resource_group'
+        vnet_name = 'sample_vnet'
+        self.instance.runtime_properties['resource_group'] = resource_group
+        self.instance.runtime_properties['name'] = vnet_name
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            virtualnetwork.delete(ctx=self.fake_ctx)
+            client().virtual_networks.delete.assert_called_with(
+                resource_group_name=resource_group,
+                virtual_network_name=vnet_name
+            )
 
-    @requests_mock.Mocker(real_http=True)
-    @workflow_test(blueprint_path, copy_plugin_yaml=True)
-    def test_lifecycle_install(self, cfy_local, mock, *_):
-        """network install workflow"""
-        self.mock_install_endpoints(mock)
-        self.mock_network_endpoints(mock)
-        cfy_local.execute('install', task_retries=1)
-        vars(cfy_local)
-
-    @requests_mock.Mocker(real_http=True)
-    @workflow_test(blueprint_path, copy_plugin_yaml=True)
-    def test_lifecycle_uninstall(self, cfy_local, mock, *_):
-        """network uninstall workflow"""
-        self.mock_uninstall_endpoints(mock)
-        self.mock_network_endpoints(mock)
-        cfy_local.execute('uninstall', task_retries=2)
+    def test_delete_do_not_exist(self, client, credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_resource_group'
+        vnet_name = 'sample_vnet'
+        self.instance.runtime_properties['resource_group'] = resource_group
+        self.instance.runtime_properties['name'] = vnet_name
+        response = requests.Response()
+        response.status_code = 404
+        message = 'resource not found'
+        client().virtual_networks.get.side_effect = \
+            CloudError(response, message)
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            virtualnetwork.delete(ctx=self.fake_ctx)
+            client().virtual_networks.delete.assert_not_called()

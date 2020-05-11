@@ -1,105 +1,125 @@
-# #######
-# Copyright (c) 2016-2020 Cloudify Platform Ltd. All rights reserved
+# Copyright (c) 2015-2020 Cloudify Platform Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#        http://www.apache.org/licenses/LICENSE-2.0
+#       http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-    tests.resources.ResourceGroup
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Tests Microsoft Azure Resource Group interface
-"""
-
-# pylint: disable=R0201
-# pylint: disable=R0913
-
+import mock
 import unittest
-from os import path
-import requests_mock
+import requests
 
-from cloudify_azure import constants
-from cloudify._compat import httplib
-from cloudify.test_utils import workflow_test
+from msrestazure.azure_exceptions import CloudError
+
+from cloudify import mocks as cfy_mocks
+
+from cloudify_azure.resources import resourcegroup
 
 
-class TestResourceGroup(unittest.TestCase):
-    """Tests Resource Group interface"""
-    blueprint_path = path.join('blueprints',
-                               'test_resourcegroup.yaml')
+@mock.patch('azure_sdk.common.ServicePrincipalCredentials')
+@mock.patch('azure_sdk.resources.resource_group.ResourceManagementClient')
+class ResourceGroupTest(unittest.TestCase):
+
+    def _get_mock_context_for_run(self):
+        fake_ctx = cfy_mocks.MockCloudifyContext()
+        instance = mock.Mock()
+        instance.runtime_properties = {}
+        fake_ctx._instance = instance
+        node = mock.Mock()
+        fake_ctx._node = node
+        node.properties = {}
+        node.runtime_properties = {}
+        fake_ctx.get_resource = mock.MagicMock(
+            return_value=""
+        )
+        return fake_ctx, node, instance
 
     def setUp(self):
-        self.tenant_id = '123456'
-        self.subscription_id = '12345-12345-12345'
-        self.mock_retry_url = 'http://mock-retry-url.com'
-        self.mock_res_name = 'testrg'
-        self.mock_endpoint = '/resourceGroups'
+        self.fake_ctx, self.node, self.instance = \
+            self._get_mock_context_for_run()
+        self.dummy_azure_credentials = {
+            'client_id': 'dummy',
+            'client_secret': 'dummy',
+            'subscription_id': 'dummy',
+            'tenant_id': 'dummy'
+        }
 
-    def mock_oauth2_endpoint(self, mock):
-        """Mock endpoint URLs"""
-        token = '1234-1234-1234-1234'
-        mock.register_uri(
-            'POST',
-            '{0}/{1}/oauth2/token'.format(
-                constants.OAUTH2_ENDPOINT,
-                self.tenant_id),
-            json={'access_token': token},
-            status_code=httplib.OK
-        )
+    def test_create(self, client, credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_resource_group'
+        self.node.properties['name'] = resource_group
+        self.node.properties['location'] = 'westus'
+        self.node.properties['tags'] = {
+            'mode': 'testing'
+        }
+        resource_group_params = {
+            'location': self.node.properties.get('location'),
+            'tags': self.node.properties.get('tags')
+        }
+        response = requests.Response()
+        response.status_code = 404
+        message = 'resource not found'
+        client().resource_groups.get.side_effect = \
+            CloudError(response, message)
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            resourcegroup.create(ctx=self.fake_ctx)
+            client().resource_groups.get.assert_called_with(
+                resource_group_name=resource_group
+            )
+            client().resource_groups.create_or_update.assert_called_with(
+                resource_group_name=resource_group,
+                parameters=resource_group_params
+            )
+            self.assertEquals(
+                self.fake_ctx.instance.runtime_properties.get("name"),
+                resource_group
+            )
 
-    @requests_mock.Mocker(real_http=True)
-    @workflow_test(blueprint_path, copy_plugin_yaml=True)
-    def test_lifecycle_install(self, cfy_local, mock, *_):
-        """ResourceGroup install workflow"""
-        self.mock_oauth2_endpoint(mock)
-        # Mock the Azure async "retry" endpoint
-        mock.register_uri(
-            'GET',
-            self.mock_retry_url,
-            json={'response': 'ok'},
-            status_code=httplib.OK
-        )
-        # Mock endpoint to start an async Azure operation
-        mock.register_uri(
-            'PUT',
-            '{0}/subscriptions/{1}{2}'.format(
-                constants.CONN_API_ENDPOINT,
-                self.subscription_id,
-                '{0}/{1}?api-version={2}'.format(
-                    self.mock_endpoint,
-                    self.mock_res_name,
-                    constants.API_VER_RESOURCES)),
-            headers={
-                'Location': self.mock_retry_url,
-                'x-ms-request-id': '123412341234',
-                'Retry-After': '1'
-            },
-            status_code=httplib.ACCEPTED
-        )
-        cfy_local.execute('install', task_retries=1)
-        vars(cfy_local)
+    def test_create_already_exists(self, client, credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_resource_group'
+        self.node.properties['name'] = 'sample_resource_group'
+        self.node.properties['location'] = 'westus'
+        self.node.properties['tags'] = {
+            'mode': 'testing'
+        }
+        client().resource_groups.get.return_value = mock.Mock()
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            resourcegroup.create(ctx=self.fake_ctx)
+            client().resource_groups.get.assert_called_with(
+                resource_group_name=resource_group
+            )
+            client().resource_groups.create_or_update.assert_not_called()
 
-    @requests_mock.Mocker(real_http=True)
-    @workflow_test(blueprint_path, copy_plugin_yaml=True)
-    def test_lifecycle_uninstall(self, cfy_local, mock, *_):
-        """ResourceGroup uninstall workflow"""
-        self.mock_oauth2_endpoint(mock)
-        mock.register_uri(
-            'DELETE',
-            '{0}/subscriptions/{1}{2}'.format(
-                constants.CONN_API_ENDPOINT,
-                self.subscription_id,
-                '{0}/{1}?api-version={2}'.format(
-                    self.mock_endpoint,
-                    self.mock_res_name,
-                    constants.API_VER_RESOURCES)),
-            status_code=httplib.OK
-        )
-        cfy_local.execute('uninstall', task_retries=1)
+    def test_delete(self, client, credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_resource_group'
+        self.instance.runtime_properties['name'] = resource_group
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            resourcegroup.delete(ctx=self.fake_ctx)
+            client().resource_groups.delete.assert_called_with(
+                resource_group_name=resource_group
+            )
+
+    def test_delete_do_not_exist(self, client, credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_resource_group'
+        self.instance.runtime_properties['name'] = resource_group
+        response = requests.Response()
+        response.status_code = 404
+        message = 'resource not found'
+        client().resource_groups.get.side_effect = \
+            CloudError(response, message)
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            resourcegroup.delete(ctx=self.fake_ctx)
+            client().resource_groups.delete.assert_not_called()

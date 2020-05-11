@@ -17,87 +17,73 @@
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Microsoft Azure Network Interface Card interface
 """
+from uuid import uuid4
+from msrestazure.azure_exceptions import CloudError
 
-# Node properties and logger
-from cloudify import ctx
-from cloudify._compat import text_type
-# Base resource class
-from cloudify_azure.resources.base import Resource
-# Lifecycle operation decorator
+from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
-# Logger, API version
-from cloudify_azure import (constants, utils)
-# IP configurations
+
+
+from cloudify_azure import (constants, decorators, utils)
 from cloudify_azure.resources.network.ipconfiguration \
     import get_ip_configurations
-from cloudify_azure.resources.network.networksecuritygroup \
-    import NetworkSecurityGroup
-from cloudify_azure.resources.network.ipconfiguration \
-    import IPConfiguration
-from cloudify_azure.resources.network.publicipaddress \
-    import PublicIPAddress, PUBLIC_IP_PROPERTY
-
-# pylint: disable=R0913
+from cloudify_azure.resources.network.publicipaddress import PUBLIC_IP_PROPERTY
+from azure_sdk.resources.network.network_interface_card \
+    import NetworkInterfaceCard
+from azure_sdk.resources.network.public_ip_address \
+    import PublicIPAddress
 
 
-class NetworkInterfaceCard(Resource):
-    """
-        Microsoft Azure Network Interface Card interface
-
-    .. warning::
-        This interface should only be instantiated from
-        within a Cloudify Lifecycle Operation
-
-    :param string resource_group: Name of the parent Resource Group
-    :param string api_version: API version to use for all requests
-    :param `logging.Logger` logger:
-        Parent logger for the class to use. Defaults to `ctx.logger`
-    """
-    def __init__(self,
-                 resource_group=None,
-                 api_version=constants.API_VER_NETWORK,
-                 logger=None,
-                 _ctx=ctx):
-        resource_group = resource_group or \
-            utils.get_resource_group(_ctx=_ctx)
-        Resource.__init__(
-            self,
-            'Network Interface Card',
-            '/{0}/{1}'.format(
-                'resourceGroups/{0}'.format(resource_group),
-                'providers/Microsoft.Network/networkInterfaces'
-            ),
-            api_version=api_version,
-            logger=logger,
-            _ctx=_ctx)
+def get_unique_ip_conf_name(nic, resource_group_name,
+                            nic_name, name):
+    if not name:
+        for _ in range(0, 15):
+            name = "{0}".format(uuid4())
+            try:
+                result = nic.get(resource_group_name, nic_name)
+                for ip_conf in result.get("ip_configurations"):
+                    if ip_conf.get("name") == name:  # found ipc with same name
+                        name = ""
+                        break
+                if name:
+                    return name
+            except CloudError:  # if exception that nic_name is not there yet
+                return name
+    else:
+        return name
 
 
-def get_connected_nsg():
+def get_connected_nsg(ctx):
     """Finds a connected Network Security Group"""
     nsg = None
-    nsg_name = None
+    rel_type = constants.REL_NIC_CONNECTED_TO_NSG
     for rel in ctx.instance.relationships:
-        if constants.REL_NIC_CONNECTED_TO_NSG in rel.type_hierarchy:
-            nsg = NetworkSecurityGroup(_ctx=rel.target)
-            nsg_name = utils.get_resource_name(rel.target)
+        if isinstance(rel_type, tuple):
+            if any(x in rel.type_hierarchy for x in rel_type):
+                nsg = rel.target
+        else:
+            if rel_type in rel.type_hierarchy:
+                nsg = rel.target
     return {
-        'id': '/subscriptions/{0}{1}/{2}'.format(
-            utils.get_subscription_id(_ctx=nsg.ctx),
-            nsg.endpoint,
-            nsg_name)
+        'id': nsg.instance.runtime_properties.get("resource_id", "")
     } if nsg else None
 
 
 @operation(resumable=True)
-def create(**_):
+@decorators.with_generate_name(NetworkInterfaceCard)
+def create(ctx, **_):
     """Uses an existing, or creates a new, Network Interface Card"""
-    utils.generate_resource_name(NetworkInterfaceCard(
-        api_version=ctx.node.properties.get('api_version',
-                                            constants.API_VER_NETWORK)))
+    name = utils.get_resource_name(ctx)
+    resource_group_name = utils.get_resource_group(ctx)
+    ctx.logger.info("Created NIC with name {0} "
+                    "inside ResourceGroup {1}".format(name,
+                                                      resource_group_name))
+    ctx.instance.runtime_properties['resource_group'] = resource_group_name
 
 
 @operation(resumable=True)
-def configure(**_):
+@decorators.with_azure_resource(NetworkInterfaceCard)
+def configure(ctx, **_):
     """
         Uses an existing, or creates a new, Network Interface Card
 
@@ -111,94 +97,161 @@ def configure(**_):
         operation creates the object
     """
     # Create a resource (if necessary)
-    utils.task_resource_create(
-        NetworkInterfaceCard(api_version=ctx.node.properties.get(
-            'api_version', constants.API_VER_NETWORK)),
-        {
-            'location': ctx.node.properties.get('location'),
-            'tags': ctx.node.properties.get('tags'),
-            'properties': utils.dict_update(
-                utils.get_resource_config(),
-                {
-                    'networkSecurityGroup': get_connected_nsg(),
-                    'ipConfigurations': get_ip_configurations()
-                })
-        })
+    azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
+    name = ctx.instance.runtime_properties.get('name')
+    resource_group_name = utils.get_resource_group(ctx)
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_NETWORK)
+    network_interface_card = NetworkInterfaceCard(azure_config, ctx.logger,
+                                                  api_version)
+    nic_params = {
+        'location': ctx.node.properties.get('location'),
+        'tags': ctx.node.properties.get('tags'),
+        'primary': ctx.node.properties.get('primary'),
+    }
+    nic_params = \
+        utils.handle_resource_config_params(nic_params,
+                                            ctx.node.properties.get(
+                                                'resource_config', {}))
+    # Special Case network_security_group instead of networkSecurityGroups
+    nic_params['network_security_group'] = \
+        nic_params.pop('network_security_groups', None)
+    # clean empty values from params
+    nic_params = \
+        utils.cleanup_empty_params(nic_params)
+    nic_params = utils.dict_update(
+        nic_params, {
+            'network_security_group': get_connected_nsg(ctx),
+            'ip_configurations': get_ip_configurations(ctx)
+        }
+    )
+    # clean empty values from params
+    nic_params = \
+        utils.cleanup_empty_params(nic_params)
+
+    try:
+        result = \
+            network_interface_card.create_or_update(
+                resource_group_name,
+                name,
+                nic_params)
+    except CloudError as cr:
+        raise cfy_exc.NonRecoverableError(
+            "configure nic '{0}' "
+            "failed with this error : {1}".format(name,
+                                                  cr.message)
+            )
+
+    ctx.instance.runtime_properties['resource_group'] = resource_group_name
+    ctx.instance.runtime_properties['resouce'] = result
+    ctx.instance.runtime_properties['resource_id'] = result.get("id", "")
+    ctx.instance.runtime_properties['name'] = name
 
 
 @operation(resumable=True)
-def start(**_):
+def start(ctx, **_):
     """
         Stores NIC IPs in runtime properties.
     """
 
-    creds = utils.get_credentials(_ctx=ctx)
+    azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
+    name = ctx.instance.runtime_properties.get('name')
+    resource_group_name = utils.get_resource_group(ctx)
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_NETWORK)
+    network_interface_card = NetworkInterfaceCard(azure_config, ctx.logger,
+                                                  api_version)
+    nic_data = network_interface_card.get(resource_group_name, name)
 
-    nic_iface = NetworkInterfaceCard(
-        _ctx=ctx,
-        api_version=ctx.node.properties.get(
-            'api_version',
-            constants.API_VER_NETWORK))
-    nic_name = utils.get_resource_name(ctx)
-    nic_data = nic_iface.get(nic_name)
-
-    for ip_cfg in nic_data.get(
-            'properties', dict()).get(
-                'ipConfigurations', list()):
+    for ip_cfg in nic_data.get('ip_configurations', list()):
 
         # Get the Private IP Address endpoint
         ctx.instance.runtime_properties['ip'] = \
-            ip_cfg.get('properties', dict()).get('privateIPAddress')
+            ip_cfg.get('private_ip_address')
 
+        public_ip = \
+            ip_cfg.get('public_ip_address', {}).get('ip_address', None)
+        if not public_ip:
+            pip = PublicIPAddress(azure_config, ctx.logger)
+            pip_name = \
+                ip_cfg.get('public_ip_address').get('id').rsplit('/', 1)[1]
+            public_ip_data = pip.get(resource_group_name, pip_name)
+            public_ip = public_ip_data.get("ip_address")
         # Get the Public IP Address endpoint
-        pubip_id = ip_cfg.get(
-            'properties', dict()).get(
-            'publicIPAddress', dict()).get('id')
-        if isinstance(pubip_id, text_type):
-            # use the ID to get the data on the public ip
-            pubip = PublicIPAddress(
-                _ctx=ctx,
-                api_version=ctx.node.properties.get(
-                    'api_version',
-                    constants.API_VER_NETWORK))
-            pubip.endpoint = '{0}{1}'.format(
-                creds.endpoints_resource_manager, pubip_id)
-            pubip_data = pubip.get()
-            if isinstance(pubip_data, dict):
-                public_ip = \
-                    pubip_data.get('properties', dict()).get('ipAddress')
-                # Maintained for backwards compatibility.
-                ctx.instance.runtime_properties['public_ip'] = \
-                    public_ip
-                # For consistency with other plugins.
-                ctx.instance.runtime_properties[PUBLIC_IP_PROPERTY] = \
-                    public_ip
+        ctx.instance.runtime_properties['public_ip'] = \
+            public_ip
+        # For consistency with other plugins.
+        ctx.instance.runtime_properties[PUBLIC_IP_PROPERTY] = \
+            public_ip
 
-            # We should also consider that maybe there will be many
-            # public ip addresses.
-            public_ip_addresses = \
-                ctx.instance.runtime_properties.get(
-                    PUBLIC_IP_PROPERTY, [])
-            if public_ip not in public_ip_addresses:
-                public_ip_addresses.append(public_ip)
-            ctx.instance.runtime_properties['public_ip_addresses'] = \
-                public_ip_addresses
+        # We should also consider that maybe there will be many
+        # public ip addresses.
+        public_ip_addresses = \
+            ctx.instance.runtime_properties.get('public_ip_addresses', [])
+        if public_ip not in public_ip_addresses:
+            public_ip_addresses.append(public_ip)
+        ctx.instance.runtime_properties['public_ip_addresses'] = \
+            public_ip_addresses
 
 
 @operation(resumable=True)
-def delete(**_):
+def delete(ctx, **_):
     """Deletes a Network Interface Card"""
     # Delete the resource
-    utils.task_resource_delete(
-        NetworkInterfaceCard(api_version=ctx.node.properties.get(
-            'api_version', constants.API_VER_NETWORK)))
+    azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
+    resource_group_name = ctx.instance.runtime_properties.get('resource_group')
+    name = ctx.instance.runtime_properties.get('name')
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_NETWORK)
+    network_interface_card = NetworkInterfaceCard(azure_config, ctx.logger,
+                                                  api_version)
+    try:
+        network_interface_card.get(resource_group_name, name)
+    except CloudError:
+        ctx.logger.info("Resource with name {0} doesn't exist".format(name))
+        return
+    try:
+        network_interface_card.delete(resource_group_name, name)
+        utils.runtime_properties_cleanup(ctx)
+    except CloudError as cr:
+        raise cfy_exc.NonRecoverableError(
+            "delete nic '{0}' "
+            "failed with this error : {1}".format(name,
+                                                  cr.message)
+            )
 
 
 @operation(resumable=True)
-def attach_ip_configuration(**_):
+def attach_ip_configuration(ctx, **_):
     """Generates a usable UUID for the NIC's IP Configuration"""
     # Generate the IPConfiguration's name
-    utils.generate_resource_name(IPConfiguration(
-        network_interface_card=utils.get_resource_name(_ctx=ctx.source),
-        _ctx=ctx.target
-    ), _ctx=ctx.target)
+    azure_config = ctx.source.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.source.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
+    resource_group_name = \
+        ctx.source.instance.runtime_properties.get('resource_group')
+    nic_name = ctx.source.instance.runtime_properties.get('name')
+    network_interface_card = NetworkInterfaceCard(azure_config, ctx.logger)
+    ip_configuration_name = ctx.target.node.properties.get('name')
+    ip_configuration_name = \
+        get_unique_ip_conf_name(network_interface_card, resource_group_name,
+                                nic_name, ip_configuration_name)
+    ctx.target.instance.runtime_properties['name'] = ip_configuration_name

@@ -2,8 +2,8 @@
 
 ## Docs
 
-See [Cloudify Azure Plugin docs](https://docs.cloudify.co/4.3.0/working_with/official_plugins/azure/).
+See [Cloudify Azure Plugin docs](https://docs.cloudify.co/5.0.5/working_with/official_plugins/infrastructure/azure/).
 
 ## Changelog
 
-See [changelog](https://github.com/cloudify-incubator/cloudify-azure-plugin/blob/master/changelog.txt).
+See [CHANGELOG](https://github.com/cloudify-cosmo/cloudify-azure-plugin/blob/master/CHANGELOG.txt).

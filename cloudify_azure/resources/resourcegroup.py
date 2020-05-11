@@ -17,59 +17,76 @@
     ~~~~~~~~~~~~~~~~~~~~~~~
     Microsoft Azure Resource Group interface
 """
+from msrestazure.azure_exceptions import CloudError
 
-# Node properties and logger
-from cloudify import ctx
-# Base resource class
-from cloudify_azure.resources.base import Resource
-# Lifecycle operation decorator
+from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
-# API version
-from cloudify_azure import (constants, utils)
 
-
-class ResourceGroup(Resource):
-    """
-        Microsoft Azure Resource Group interface
-
-    .. warning::
-        This interface should only be instantiated from
-        within a Cloudify Lifecycle Operation
-
-    :param string api_version: API version to use for all requests
-    :param `logging.Logger` logger:
-        Parent logger for the class to use. Defaults to `ctx.logger`
-    """
-    def __init__(self,
-                 api_version=constants.API_VER_RESOURCES,
-                 logger=None,
-                 _ctx=ctx):
-        Resource.__init__(
-            self,
-            'Resource Group',
-            '/resourceGroups',
-            api_version=api_version,
-            logger=logger,
-            _ctx=_ctx)
+from cloudify_azure import (constants, decorators, utils)
+from azure_sdk.resources.resource_group import ResourceGroup
 
 
 @operation(resumable=True)
-def create(**_):
+@decorators.with_generate_name(ResourceGroup)
+@decorators.with_azure_resource(ResourceGroup)
+def create(ctx, **_):
     """Uses an existing, or creates a new, Resource Group"""
-    # Create a resource (if necessary)
-    utils.task_resource_create(
-        ResourceGroup(api_version=ctx.node.properties.get(
-            'api_version', constants.API_VER_RESOURCES)),
-        {
-            'location': ctx.node.properties.get('location'),
-            'tags': ctx.node.properties.get('tags')
-        })
+    azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
+    name = utils.get_resource_name(ctx)
+    resource_group_params = {
+        'location': ctx.node.properties.get('location'),
+        'tags': ctx.node.properties.get('tags')
+    }
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_RESOURCES)
+    resource_group = ResourceGroup(azure_config, ctx.logger, api_version)
+    try:
+        result = \
+            resource_group.create_or_update(
+                name,
+                resource_group_params)
+    except CloudError as cr:
+        raise cfy_exc.NonRecoverableError(
+            "create resource_group '{0}' "
+            "failed with this error : {1}".format(name,
+                                                  cr.message)
+            )
+
+    ctx.instance.runtime_properties['resouce'] = result
+    ctx.instance.runtime_properties['resource_id'] = result.get("id", "")
 
 
 @operation(resumable=True)
-def delete(**_):
+def delete(ctx, **_):
     """Deletes a Resource Group"""
-    # Delete the resource
-    utils.task_resource_delete(
-        ResourceGroup(api_version=ctx.node.properties.get(
-            'api_version', constants.API_VER_RESOURCES)))
+    if ctx.node.properties.get('use_external_resource', False):
+        return
+    azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
+    name = utils.get_resource_name(ctx)
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_RESOURCES)
+    resource_group = ResourceGroup(azure_config, ctx.logger, api_version)
+    try:
+        resource_group.get(name)
+    except CloudError:
+        ctx.logger.info("Resource with name {0} doesn't exist".format(name))
+        return
+    try:
+        resource_group.delete(name)
+        utils.runtime_properties_cleanup(ctx)
+    except CloudError as cr:
+        raise cfy_exc.NonRecoverableError(
+            "delete resource_group '{0}' "
+            "failed with this error : {1}".format(name,
+                                                  cr.message)
+            )

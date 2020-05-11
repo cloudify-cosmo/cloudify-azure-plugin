@@ -15,26 +15,30 @@
 '''Microsoft Azure plugin for Cloudify package config'''
 
 from setuptools import setup
+from setuptools import find_packages
+
 
 setup(
     name='cloudify-azure-plugin',
-    version='2.1.10',
+    version='3.0.0',
     license='LICENSE',
-    packages=[
-        'cloudify_azure',
-        'cloudify_azure.auth',
-        'cloudify_azure.resources',
-        'cloudify_azure.resources.compute',
-        'cloudify_azure.resources.app_service',
-        'cloudify_azure.resources.network',
-        'cloudify_azure.resources.storage'
-    ],
+    packages=find_packages(exclude=['tests*']),
     description='Cloudify plugin for Microsoft Azure',
     install_requires=[
-        'cloudify-common==5.1.0.dev1',
+        'cloudify-common>=4.5',
         'requests==2.20.0',
         'urllib3==1.25.3',
         'pyyaml==3.12',
-        'azure==4.0.0',
+        # stating from azure v5.0.0 we need to add azure modules like this
+        'azure-mgmt-web==0.46.0',
+        'azure-mgmt-compute==12.0.0',
+        'azure-mgmt-containerservice==9.0.1',
+        'azure-mgmt-network==10.1.0',
+        'azure-mgmt-storage==9.0.0',
+        'azure-storage-common==2.1.0',
+        'azure-mgmt-resource==9.0.0',
+        'azure-common==1.1.25',
+        'msrestazure==0.6.3'
+
     ]
 )

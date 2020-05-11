@@ -11,48 +11,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
-import mock
 import json
-import unittest
+import mock
+import requests
 import tempfile
-import pathlib
+import unittest
 
-from cloudify import exceptions as cfy_exc
-from cloudify import mocks as cfy_mocks
-from cloudify.state import current_ctx
-
+from msrestazure.azure_exceptions import CloudError
 from azure.mgmt.resource.resources.models import DeploymentMode
 
-from cloudify_azure import constants
-import cloudify_azure.resources.deployment as deployment
+from cloudify import mocks as cfy_mocks
+from cloudify import exceptions as cfy_exc
+
+from cloudify_azure.resources import deployment
 
 
+@mock.patch('azure_sdk.common.ServicePrincipalCredentials')
+@mock.patch('azure_sdk.resources.deployment.ResourceManagementClient')
+@mock.patch('azure_sdk.resources.resource_group.ResourceManagementClient')
 class DeploymentTest(unittest.TestCase):
-
-    def setUp(self):
-        patch = mock.patch(
-            'cloudify_azure.resources.deployment.ResourceManagementClient')
-        self.Client = patch.start()
-        self.client = self.Client.return_value
-        self.addCleanup(patch.stop)
-
-        patch = mock.patch('cloudify_azure.resources.deployment.'
-                           'to_service_principle_credentials')
-        self.Credentials = patch.start()
-        self.addCleanup(patch.stop)
-
-        self.fake_ctx, self.node, self.instance = \
-            self._get_mock_context_for_run()
-        current_ctx.set(self.fake_ctx)
-        self.addCleanup(current_ctx.clear)
-
-        self.azure_config = {
-            'client_id': "client_id",
-            'client_secret': "client_secret",
-            'tenant_id': "tenant_id",
-            'subscription_id': "subscription_id",
-        }
 
     def _get_mock_context_for_run(self):
         fake_ctx = cfy_mocks.MockCloudifyContext()
@@ -68,197 +45,248 @@ class DeploymentTest(unittest.TestCase):
         )
         return fake_ctx, node, instance
 
-    def test_delete(self):
-        self.instance.runtime_properties['resource_id'] = 'check_id'
+    def setUp(self):
+        self.fake_ctx, self.node, self.instance = \
+            self._get_mock_context_for_run()
+        self.dummy_azure_credentials = {
+            'client_id': 'dummy',
+            'client_secret': 'dummy',
+            'subscription_id': 'dummy',
+            'tenant_id': 'dummy'
+        }
 
-        deployment.delete(ctx=self.fake_ctx,
-                          name="check",
-                          azure_config=self.azure_config)
+    def test_create(self, rg_client, deployment_client, credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_deployment'
+        self.node.properties['name'] = resource_group
+        self.node.properties['template'] = {
+            "$schema": "http://schema.management.azure.com/Template.json",
+            "contentVersion": "1.0.0.0",
+            "parameters": {
+                "storageEndpoint": {
+                  "type": "string",
+                  "defaultValue": "core.windows.net",
+                  "metadata": {
+                    "description": "Storage Endpoint."
+                  }
+                },
+            }
+        }
+        self.node.properties['location'] = 'westus'
+        resource_group_params = {
+            'location': self.node.properties.get('location'),
+        }
+        properties = self.node.properties
+        template = deployment.get_template(self.fake_ctx, properties)
+        deployment_params = {
+            'mode': DeploymentMode.incremental,
+            'template': template,
+            'parameters': deployment.format_params(properties.get(
+                'params', {}))
+        }
+        response = requests.Response()
+        response.status_code = 404
+        message = 'resource not found'
+        rg_client().resource_groups.get.side_effect = \
+            CloudError(response, message)
+        deployment_client().deployments.get.side_effect = \
+            CloudError(response, message)
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            deployment.create(ctx=self.fake_ctx)
+            rg_client().resource_groups.get.assert_called_with(
+                resource_group_name=resource_group
+            )
+            rg_client().resource_groups.create_or_update.assert_called_with(
+                resource_group_name=resource_group,
+                parameters=resource_group_params
+            )
+            deployment_client()\
+                .deployments.create_or_update.assert_called_with(
+                resource_group_name=resource_group,
+                deployment_name=resource_group,
+                properties=deployment_params,
+                verify=True
+            )
+            self.assertEquals(
+                self.fake_ctx.instance.runtime_properties.get("name"),
+                resource_group
+            )
 
-        self.Credentials.assert_called_with(
-            client_id='client_id',
-            resource=constants.OAUTH2_MGMT_RESOURCE,
-            secret='client_secret',
-            certificate='',
-            thumbprint='',
-            cloud_environment='',
-            endpoints_active_directory='',
-            tenant='tenant_id',
-            verify=True)
-        self.Client.assert_called_with(self.Credentials.return_value,
-                                       "subscription_id",
-                                       base_url='https://management.azure.com')
-        self.client.resource_groups.delete.assert_called_with('check_id',
-                                                              verify=True)
-        async_call = self.client.resource_groups.delete.return_value
-        async_call.wait.assert_called_with(timeout=900)
+    def test_create_already_exists(self, rg_client, deployment_client,
+                                   credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_deployment'
+        self.node.properties['name'] = resource_group
+        self.node.properties['location'] = 'westus'
+        rg_client().resource_groups.get.return_value = mock.Mock()
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            deployment.create(ctx=self.fake_ctx)
+            rg_client().resource_groups.get.assert_called_with(
+                resource_group_name=resource_group
+            )
+            rg_client().resource_groups.create_or_update.assert_not_called()
+            deployment_client().deployments.get.assert_not_called()
+            deployment_client()\
+                .deployments.create_or_update.assert_not_called()
 
-    def test_delete_with_external_resource(self):
+    def test_create_with_external_resource(self, rg_client, deployment_client,
+                                           credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_deployment'
+        self.node.properties['name'] = resource_group
+        self.node.properties['location'] = 'westus'
         self.node.properties['use_external_resource'] = True
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            deployment.create(ctx=self.fake_ctx, template="{}")
+            deployment_client()\
+                .deployments.create_or_update.assert_not_called()
 
-        deployment.delete(ctx=self.fake_ctx,
-                          name="check",
-                          azure_config=self.azure_config)
+    def test_create_without_template(self, rg_client, deployment_client,
+                                     credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_deployment'
+        self.node.properties['name'] = resource_group
+        response = requests.Response()
+        response.status_code = 404
+        message = 'resource not found'
+        rg_client().resource_groups.get.side_effect = \
+            CloudError(response, message)
+        deployment_client().deployments.get.side_effect = \
+            CloudError(response, message)
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            with self.assertRaises(cfy_exc.NonRecoverableError) as ex:
+                deployment.create(ctx=self.fake_ctx)
+            self.assertTrue(
+                "Deployment template not provided" in '{0}'.format(
+                    ex.exception))
 
-        self.client.resource_groups.delete.assert_not_called()
-
-    def test_init(self):
-        deployment.create(
-            ctx=self.fake_ctx,
-            name="check",
-            template=json.dumps({}),
-            location="west",
-            timeout=10,
-            azure_config=self.azure_config
-        )
-
-        self.Credentials.assert_called_with(
-            client_id='client_id',
-            resource=constants.OAUTH2_MGMT_RESOURCE,
-            secret='client_secret',
-            certificate='',
-            thumbprint='',
-            tenant='tenant_id',
-            cloud_environment='',
-            endpoints_active_directory='',
-            verify=True)
-        self.Client.assert_called_with(
-            self.Credentials.return_value, "subscription_id",
-            base_url='https://management.azure.com')
-
-    def test_create_without_template(self):
-        # call without templates
-        with self.assertRaises(cfy_exc.NonRecoverableError) as ex:
+    def test_create_with_template_string(self, rg_client, deployment_client,
+                                         credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_deployment'
+        self.node.properties['name'] = resource_group
+        response = requests.Response()
+        response.status_code = 404
+        message = 'resource not found'
+        rg_client().resource_groups.get.side_effect = \
+            CloudError(response, message)
+        deployment_client().deployments.get.side_effect = \
+            CloudError(response, message)
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
             deployment.create(
                 ctx=self.fake_ctx,
                 name="check",
-                azure_config=self.azure_config
+                template="{}",
+                location="west",
+                timeout=10,
+                azure_config=self.node.properties.get('azure_config')
             )
-        self.assertTrue(
-            "Deployment template not provided" in '{0}'.format(ex.exception))
 
-    def test_create_with_template_string(self):
-        deployment.create(
-            ctx=self.fake_ctx,
-            name="check",
-            template="{}",
-            location="west",
-            timeout=10,
-            azure_config=self.azure_config
-        )
+            deployment_client()\
+                .deployments.create_or_update.assert_called_with(
+                    resource_group_name=resource_group,
+                    deployment_name=resource_group,
+                    properties={
+                        'parameters': {},
+                        'mode': DeploymentMode.incremental,
+                        'template': {}
+                    },
+                    verify=True
+                )
+            async_call = \
+                deployment_client().deployments.create_or_update.return_value
+            async_call.wait.assert_called_with(timeout=10)
 
-        self.client.deployments.create_or_update.assert_called_with(
-            'check', 'check', {
-                'parameters': {},
-                'mode': DeploymentMode.incremental,
-                'template': {}
-            }, verify=True
-        )
-        async_call = self.client.deployments.create_or_update.return_value
-        async_call.wait.assert_called_with(timeout=10)
-
-    def test_create_with_template_file(self):
-
+    def test_create_with_template_file(self, rg_client, deployment_client,
+                                       credentials):
         fock = tempfile.NamedTemporaryFile(delete=False)
         fock.write(json.dumps({'a': 'b'}).encode('utf-8'))
         fock.close()
+
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_deployment'
+        self.node.properties['name'] = resource_group
 
         self.node.properties['template'] = None
         self.node.properties['template_file'] = fock.name
         self.fake_ctx.get_resource.return_value = open(fock.name).read()
 
-        deployment.create(
-            ctx=self.fake_ctx,
-            name="check",
-            location="west",
-            params={'c': 'd'},
-            azure_config=self.azure_config
-        )
+        response = requests.Response()
+        response.status_code = 404
+        message = 'resource not found'
+        rg_client().resource_groups.get.side_effect = \
+            CloudError(response, message)
+        deployment_client().deployments.get.side_effect = \
+            CloudError(response, message)
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            deployment.create(
+                ctx=self.fake_ctx,
+                name="check",
+                location="west",
+                params={'c': 'd'},
+                azure_config=self.node.properties.get('azure_config')
+            )
 
-        self.fake_ctx.get_resource.assert_called_with(fock.name)
-        self.client.deployments.create_or_update.assert_called_with(
-            'check', 'check', {
-                'parameters': {'c': {'value': 'd'}},
-                'mode': DeploymentMode.incremental,
-                'template': {'a': 'b'}
-            }, verify=True
-        )
-        async_call = self.client.deployments.create_or_update.return_value
-        async_call.wait.assert_called_with(timeout=900)
+            self.fake_ctx.get_resource.assert_called_with(fock.name)
 
-    def test_create_with_external_resource(self):
+            deployment_client()\
+                .deployments.create_or_update.assert_called_with(
+                    resource_group_name=resource_group,
+                    deployment_name=resource_group,
+                    properties={
+                        'parameters': {'c': {'value': 'd'}},
+                        'mode': DeploymentMode.incremental,
+                        'template': {'a': 'b'}
+                    },
+                    verify=True
+                )
+            async_call = \
+                deployment_client().deployments.create_or_update.return_value
+            async_call.wait.assert_called_with(timeout=900)
+
+    def test_delete(self, rg_client, deployment_client, credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_deployment'
+        self.instance.runtime_properties['name'] = resource_group
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            deployment.delete(ctx=self.fake_ctx)
+            rg_client().resource_groups.delete.assert_called_with(
+                resource_group_name=resource_group
+            )
+
+    def test_delete_do_not_exist(self, rg_client, deployment_client,
+                                 credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_deployment'
+        self.instance.runtime_properties['name'] = resource_group
+        response = requests.Response()
+        response.status_code = 404
+        message = 'resource not found'
+        rg_client().resource_groups.get.side_effect = \
+            CloudError(response, message)
+        deployment_client().deployments.get.side_effect = \
+            CloudError(response, message)
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            deployment.delete(ctx=self.fake_ctx)
+            rg_client().resource_groups.delete.assert_not_called()
+            deployment_client().deployments.get.assert_not_called()
+            deployment_client().deployments.delete.assert_not_called()
+
+    def test_delete_with_external_resource(self, rg_client, deployment_client,
+                                           credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_deployment'
+        self.instance.runtime_properties['name'] = resource_group
         self.node.properties['use_external_resource'] = True
-
-        deployment.create(
-            ctx=self.fake_ctx,
-            name="check",
-            location="west",
-            azure_config=self.azure_config
-        )
-        self.client.deployments.create_or_update.assert_not_called()
-        self.client.deployments.get.assert_called()
-
-    def test_create_with_deployment_outputs(self):
-        mock_outputs = {
-            "exampleOutput": {
-                "type": "String",
-                "value": "exampleOutput",
-            }
-        }
-        self.client.deployments.get.return_value.properties.outputs = \
-            mock_outputs
-
-        deployment.create(
-            ctx=self.fake_ctx,
-            name="check",
-            location="west",
-            template="{}",
-            params=json.dumps({'c': 'd'}),
-            azure_config=self.azure_config
-        )
-
-        outputs = self.instance.runtime_properties['outputs']
-        self.assertDictEqual(outputs, mock_outputs)
-
-    def test_get_template_string(self):
-        #  For case that user provides a string.
-        properties = {
-            'template': json.dumps({"key": "value"}),
-            'template_file': 'missing/file'
-        }
-        template = deployment.get_template(self.fake_ctx, properties)
-        self.assertEqual(template, {"key": "value"})
-
-    def test_get_template_none(self):
-        with self.assertRaises(cfy_exc.NonRecoverableError) as ex:
-            deployment.get_template(self.fake_ctx, {})
-        self.assertTrue(
-            "Deployment template not provided", '{0}'.format(ex.exception))
-
-    def test_get_template_dict(self):
-        properties = {
-            'template': {
-                'key': 'value'
-            }
-        }
-        template = deployment.get_template(self.fake_ctx, properties)
-        self.assertEquals(template, properties['template'])
-
-    def test_get_template_url(self):
-        with tempfile.NamedTemporaryFile('w', delete=False) as tmp_file:
-            tmp_file.write('{"key": "value"}')
-            tmp_file.close()
-
-        try:
-            template = deployment.get_template(self.fake_ctx, {
-                'template_file': pathlib.Path(tmp_file.name).as_uri()
-            })
-            self.assertEqual(template, {
-                'key': 'value'
-            })
-        finally:
-            os.remove(tmp_file.name)
-
-
-if __name__ == '__main__':
-    unittest.main()
+        deployment.delete(ctx=self.fake_ctx)
+        rg_client().resource_groups.delete.assert_not_called()
+        deployment_client().deployments.get.assert_not_called()
+        deployment_client().deployments.delete.assert_not_called()

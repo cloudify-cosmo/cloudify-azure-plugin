@@ -13,74 +13,89 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from msrestazure.azure_exceptions import CloudError
+
+from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
-from azure.mgmt.containerservice import ContainerServiceClient
 
-from cloudify_azure.resources.base import ResourceSDK
-
-
-class ContainerService(ResourceSDK):
-
-    def __init__(
-            self, logger, credentials, group_name,
-            container_service_name, container_params={}):
-        self.group_name = group_name
-        self.container_service_name = container_service_name
-        self.logger = logger
-        self.container_params = container_params
-        self.resource_verify = bool(credentials.get('endpoint_verify', True))
-        super(ContainerService, self).__init__(credentials)
-        self.client = ContainerServiceClient(
-            self.credentials, '{0}'.format(credentials['subscription_id']))
-
-        self.logger.info("Use subscription: {}"
-                         .format(credentials['subscription_id']))
-
-    def create_or_update(self):
-        """Deploy the template to a resource group."""
-        self.logger.info("Create/Updating container service...")
-
-        service_plan_async = self.client.container_services.create_or_update(
-            resource_group_name=self.group_name,
-            container_service_name=self.container_service_name,
-            parameters=self.container_params,
-        )
-        return service_plan_async.result()
-
-    def get(self):
-        return self.client.container_services.get(
-            resource_group_name=self.group_name,
-            container_service_name=self.container_service_name)
-
-    def delete(self):
-        """Destroy the given resource group"""
-        self.logger.info("Delete container service...")
-        self.client.container_services.delete(
-            resource_group_name=self.group_name,
-            container_service_name=self.container_service_name)
-        self.logger.info("Wait for deleting container service...")
+from cloudify_azure import (constants, utils)
+from azure_sdk.resources.compute.container_service import ContainerService
 
 
 @operation(resumable=True)
 def create(ctx, resource_group, name, container_service_config, **kwargs):
-    if ctx.node.properties.get('use_external_resource', False):
-        ctx.logger.info("Using external resource")
+    azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
     else:
-        azure_auth = ctx.node.properties['azure_config']
-        plan = ContainerService(
-            ctx.logger, azure_auth, resource_group, name,
-            container_service_config)
-        plan.create_or_update()
-        ctx.instance.runtime_properties['resource_group'] = resource_group
-        ctx.instance.runtime_properties['name'] = name
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_CONTAINER)
+    container_service = ContainerService(azure_config, ctx.logger, api_version)
+    container_service_payload = {}
+    container_service_payload = \
+        utils.handle_resource_config_params(container_service_payload,
+                                            container_service_config)
+
+    try:
+        result = container_service.get(resource_group, name)
+        if ctx.node.properties.get('use_external_resource', False):
+            ctx.logger.info("Using external resource")
+        else:
+            ctx.logger.info("Resource with name {0} exists".format(name))
+            return
+    except CloudError:
+        if ctx.node.properties.get('use_external_resource', False):
+            raise cfy_exc.NonRecoverableError(
+                "Can't use non-existing container_service '{0}'.".format(name))
+        else:
+            try:
+                result = \
+                    container_service.create_or_update(
+                        resource_group,
+                        name,
+                        container_service_payload
+                    )
+            except CloudError as cr:
+                raise cfy_exc.NonRecoverableError(
+                    "create container_service '{0}' "
+                    "failed with this error : {1}".format(name,
+                                                          cr.message)
+                    )
+
+    ctx.instance.runtime_properties['resource_group'] = resource_group
+    ctx.instance.runtime_properties['resouce'] = result
+    ctx.instance.runtime_properties['resource_id'] = result.get("id", "")
+    ctx.instance.runtime_properties['name'] = name
 
 
 @operation(resumable=True)
 def delete(ctx, **kwargs):
     if ctx.node.properties.get('use_external_resource', False):
         return
-    azure_auth = ctx.node.properties['azure_config']
+    azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
     resource_group = ctx.instance.runtime_properties.get('resource_group')
     name = ctx.instance.runtime_properties.get('name')
-    plan = ContainerService(ctx.logger, azure_auth, resource_group, name)
-    plan.delete()
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_CONTAINER)
+    container_service = ContainerService(azure_config, ctx.logger, api_version)
+    try:
+        container_service.get(resource_group, name)
+    except CloudError:
+        ctx.logger.info("Resource with name {0} doesn't exist".format(name))
+        return
+    try:
+        container_service.delete(resource_group, name)
+        utils.runtime_properties_cleanup(ctx)
+    except CloudError as cr:
+        raise cfy_exc.NonRecoverableError(
+            "delete container_service '{0}' "
+            "failed with this error : {1}".format(name,
+                                                  cr.message)
+            )

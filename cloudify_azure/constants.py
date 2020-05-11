@@ -40,49 +40,71 @@ CONN_STORAGE_ENDPOINT = "core.windows.net"
 # Each service has its own API version independent of any other services
 API_VER_RESOURCES = '2017-05-10'
 API_VER_STORAGE = '2015-06-15'
-API_VER_NETWORK = '2016-03-30'
+API_VER_NETWORK = '2016-09-01'
 API_VER_COMPUTE = '2016-03-30'
 API_VER_STORAGE_BLOB = '2015-12-11'
+API_VER_CONTAINER = '2017-07-01'
+API_VER_MANAGED_CLUSTER = '2018-03-31'
+API_VER_APP_SERVICE = '2019-08-01'
 
 # Relationship constants
 REL_CONTAINED_IN_RG = \
-    'cloudify.azure.relationships.contained_in_resource_group'
+    ('cloudify.azure.relationships.contained_in_resource_group',
+     'cloudify.relationships.azure.contained_in_resource_group')
 REL_CONTAINED_IN_SA = \
-    'cloudify.azure.relationships.contained_in_storage_account'
+    ('cloudify.azure.relationships.contained_in_storage_account',
+     'cloudify.relationships.azure.contained_in_storage_account')
 REL_CONTAINED_IN_VN = \
-    'cloudify.azure.relationships.contained_in_virtual_network'
+    ('cloudify.azure.relationships.contained_in_virtual_network',
+     'cloudify.relationships.azure.contained_in_virtual_network')
 REL_CONTAINED_IN_NSG = \
-    'cloudify.azure.relationships.contained_in_network_security_group'
+    ('cloudify.azure.relationships.contained_in_network_security_group',
+     'cloudify.relationships.azure.contained_in_network_security_group')
 REL_CONTAINED_IN_RT = \
-    'cloudify.azure.relationships.contained_in_route_table'
+    ('cloudify.azure.relationships.contained_in_route_table',
+     'cloudify.relationships.azure.contained_in_route_table')
 REL_CONTAINED_IN_LB = \
-    'cloudify.azure.relationships.contained_in_load_balancer'
+    ('cloudify.azure.relationships.contained_in_load_balancer',
+     'cloudify.relationships.azure.contained_in_load_balancer')
 REL_NIC_CONNECTED_TO_NSG = \
-    'cloudify.azure.relationships.nic_connected_to_network_security_group'
+    ('cloudify.azure.relationships.nic_connected_to_network_security_group',
+     'cloudify.relationships.azure.nic_connected_to_network_security_group')
 REL_NIC_CONNECTED_TO_IPC = \
-    'cloudify.azure.relationships.nic_connected_to_ip_configuration'
+    ('cloudify.azure.relationships.nic_connected_to_ip_configuration',
+     'cloudify.relationships.azure.nic_connected_to_ip_configuration')
 REL_IPC_CONNECTED_TO_SUBNET = \
-    'cloudify.azure.relationships.ip_configuration_connected_to_subnet'
+    ('cloudify.azure.relationships.ip_configuration_connected_to_subnet',
+     'cloudify.relationships.azure.ip_configuration_connected_to_subnet')
 REL_IPC_CONNECTED_TO_PUBIP = \
-    'cloudify.azure.relationships.ip_configuration_connected_to_public_ip'
+    ('cloudify.azure.relationships.ip_configuration_connected_to_public_ip',
+     'cloudify.relationships.azure.ip_configuration_connected_to_public_ip')
 REL_CONNECTED_TO_SA = \
-    'cloudify.azure.relationships.connected_to_storage_account'
+    ('cloudify.azure.relationships.connected_to_storage_account',
+     'cloudify.relationships.azure.connected_to_storage_account')
 REL_CONNECTED_TO_AS = \
-    'cloudify.azure.relationships.connected_to_availability_set'
+    ('cloudify.azure.relationships.connected_to_availability_set',
+     'cloudify.relationships.azure.connected_to_availability_set')
 REL_CONNECTED_TO_NIC = \
-    'cloudify.azure.relationships.connected_to_nic'
+    ('cloudify.azure.relationships.connected_to_nic',
+     'cloudify.relationships.azure.connected_to_nic')
 REL_CONNECTED_TO_IPC = \
-    'cloudify.azure.relationships.connected_to_ip_configuration'
+    ('cloudify.azure.relationships.connected_to_ip_configuration',
+     'cloudify.relationships.azure.connected_to_ip_configuration')
 REL_CONNECTED_TO_LB_BE_POOL = \
-    'cloudify.azure.relationships.connected_to_lb_be_pool'
+    ('cloudify.azure.relationships.connected_to_lb_be_pool',
+     'cloudify.relationships.azure.connected_to_lb_be_pool')
 REL_CONNECTED_TO_LB_PROBE = \
-    'cloudify.azure.relationships.connected_to_lb_probe'
+    ('cloudify.azure.relationships.connected_to_lb_probe',
+     'cloudify.relationships.azure.connected_to_lb_probe')
 REL_VMX_CONTAINED_IN_VM = \
-    'cloudify.azure.relationships.vmx_contained_in_vm'
+    ('cloudify.azure.relationships.vmx_contained_in_vm',
+     'cloudify.relationships.azure.vmx_contained_in_vm')
 REL_LB_CONNECTED_TO_NIC = \
-    'cloudify.azure.relationships.lb_connected_to_nic'
+    ('cloudify.azure.relationships.lb_connected_to_nic',
+     'cloudify.relationships.azure.lb_connected_to_nic')
 REL_LB_CONNECTED_TO_IPC = \
-    'cloudify.azure.relationships.lb_connected_to_ip_configuration'
+    ('cloudify.azure.relationships.lb_connected_to_ip_configuration',
+     'cloudify.relationships.azure.lb_connected_to_ip_configuration')
 
 SECURE_KW = ['client_id', 'client_secret', 'username',
              'adminUsername', 'adminPassword', 'keyData']

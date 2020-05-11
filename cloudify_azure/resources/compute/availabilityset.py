@@ -17,67 +17,86 @@
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Microsoft Azure Availability Set interface
 """
+from msrestazure.azure_exceptions import CloudError
 
-# Node properties and logger
-from cloudify import ctx
-# Base resource class
-from cloudify_azure.resources.base import Resource
-# Lifecycle operation decorator
+from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
-# Logger, API version
-from cloudify_azure import (constants, utils)
 
-
-class AvailabilitySet(Resource):
-    """
-        Microsoft Azure Availability Set interface
-
-    .. warning::
-        This interface should only be instantiated from
-        within a Cloudify Lifecycle Operation
-
-    :param string resource_group: Name of the parent Resource Group
-    :param string api_version: API version to use for all requests
-    :param `logging.Logger` logger:
-        Parent logger for the class to use. Defaults to `ctx.logger`
-    """
-    def __init__(self,
-                 resource_group=None,
-                 api_version=constants.API_VER_COMPUTE,
-                 logger=None,
-                 _ctx=ctx):
-        resource_group = resource_group or \
-            utils.get_resource_group(_ctx=_ctx)
-        Resource.__init__(
-            self,
-            'Availability Set',
-            '/{0}/{1}'.format(
-                'resourceGroups/{0}'.format(resource_group),
-                'providers/Microsoft.Compute/availabilitySets'
-            ),
-            api_version=api_version,
-            logger=logger,
-            _ctx=_ctx)
+from cloudify_azure import (constants, decorators, utils)
+from azure_sdk.resources.compute.availability_set import AvailabilitySet
 
 
 @operation(resumable=True)
-def create(**_):
+@decorators.with_generate_name(AvailabilitySet)
+@decorators.with_azure_resource(AvailabilitySet)
+def create(ctx, **_):
     """Uses an existing, or creates a new, Availability Set"""
-    # Create a resource (if necessary)
-    utils.task_resource_create(
-        AvailabilitySet(api_version=ctx.node.properties.get(
-            'api_version', constants.API_VER_COMPUTE)),
-        {
-            'location': ctx.node.properties.get('location'),
-            'tags': ctx.node.properties.get('tags'),
-            'properties': utils.get_resource_config()
-        })
+    azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
+    name = utils.get_resource_name(ctx)
+    resource_group_name = utils.get_resource_group(ctx)
+    resource_config = ctx.node.properties.get('resource_config')
+    availability_set_conf = {
+        'location': ctx.node.properties.get('location'),
+        'tags': ctx.node.properties.get('tags'),
+    }
+    availability_set_conf = \
+        utils.handle_resource_config_params(availability_set_conf,
+                                            resource_config)
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_COMPUTE)
+    availability_set = AvailabilitySet(azure_config, ctx.logger, api_version)
+    # clean empty values from params
+    availability_set_conf = utils.cleanup_empty_params(availability_set_conf)
+
+    try:
+        result = \
+            availability_set.create_or_update(resource_group_name,
+                                              name,
+                                              availability_set_conf)
+    except CloudError as cr:
+        raise cfy_exc.NonRecoverableError(
+            "create availability_set '{0}' "
+            "failed with this error : {1}".format(name,
+                                                  cr.message)
+            )
+
+    ctx.instance.runtime_properties['resource_group'] = resource_group_name
+    ctx.instance.runtime_properties['resouce'] = result
+    ctx.instance.runtime_properties['resource_id'] = result.get("id", "")
 
 
 @operation(resumable=True)
-def delete(**_):
+def delete(ctx, **_):
     """Deletes a Availability Set"""
-    # Delete the resource
-    utils.task_resource_delete(
-        AvailabilitySet(api_version=ctx.node.properties.get(
-            'api_version', constants.API_VER_COMPUTE)))
+    if ctx.node.properties.get('use_external_resource', False):
+        return
+    azure_config = ctx.node.properties.get('azure_config')
+    if not azure_config.get("subscription_id"):
+        azure_config = ctx.node.properties.get('client_config')
+    else:
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
+    resource_group_name = ctx.instance.runtime_properties.get('resource_group')
+    name = ctx.instance.runtime_properties.get('name')
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_COMPUTE)
+    availability_set = AvailabilitySet(azure_config, ctx.logger, api_version)
+    try:
+        availability_set.get(resource_group_name, name)
+    except CloudError:
+        ctx.logger.info("Resource with name {0} doesn't exist".format(name))
+        return
+    try:
+        availability_set.delete(resource_group_name, name)
+        utils.runtime_properties_cleanup(ctx)
+    except CloudError as cr:
+        raise cfy_exc.NonRecoverableError(
+            "delete availability_set '{0}' "
+            "failed with this error : {1}".format(name,
+                                                  cr.message)
+            )
