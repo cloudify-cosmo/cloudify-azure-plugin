@@ -524,9 +524,10 @@ def attach_data_disk(ctx, lun, **_):
     """Attaches a data disk"""
     azure_config = ctx.source.node.properties.get("azure_config")
     api_version = \
-        ctx.node.properties.get('api_version', constants.API_VER_COMPUTE)
+        ctx.source.node.properties.get('api_version',
+                                       constants.API_VER_COMPUTE)
     if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
+        azure_config = ctx.source.node.properties.get('client_config')
     else:
         ctx.logger.warn("azure_config is deprecated please use client_config, "
                         "in later version it will be removed")
@@ -573,9 +574,10 @@ def detach_data_disk(ctx, **_):
     """Detaches a data disk"""
     azure_config = ctx.source.node.properties.get("azure_config")
     api_version = \
-        ctx.node.properties.get('api_version', constants.API_VER_COMPUTE)
+        ctx.source.node.properties.get('api_version',
+                                       constants.API_VER_COMPUTE)
     if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
+        azure_config = ctx.source.node.properties.get('client_config')
     else:
         ctx.logger.warn("azure_config is deprecated please use client_config, "
                         "in later version it will be removed")
