@@ -1,3 +1,5 @@
+3.0.1:
+  - Fix Virtual Machine Extension in case of windows machine.
 3.0.0:
   - Update to use azure-sdk for all resources instead of requests.
   - Note: CloudError is customized exception that overwrite base class with new self.message

@@ -170,7 +170,7 @@ def extract_powershell_content(string_with_powershell):
         script_end = split_string.index(PS_CLOSE)
 
     # Return everything between Powershell back as a string.
-    return '\n'.join(split_string[script_start+1:script_end])
+    return '\r\n'.join(split_string[script_start+1:script_end])
 
 
 def _handle_userdata(ctx, existing_userdata):
@@ -205,7 +205,7 @@ def _handle_userdata(ctx, existing_userdata):
 
         # Combine the powershell content from two sources.
         install_agent_userdata = \
-            '#ps1_sysnative\n{0}\n{1}\n{2}\n{3}\n'.format(
+            '#ps1_sysnative\r\n{0}\r\n{1}\r\n{2}\r\n{3}\r\n'.format(
                 PS_OPEN,
                 existing_userdata_powershell,
                 install_agent_userdata,
@@ -340,11 +340,12 @@ def create(ctx, args=None, **_):
             'Azure customData implementation is dependent on '
             'Virtual Machine image support.')
         resource_create_payload['os_profile']['custom_data'] = \
-            base64.b64encode(userdata.encode())
+            base64.b64encode(userdata.encode('utf-8')).decode('utf-8')
     # Remove custom_data from os_profile if empty to avoid Errors.
     elif 'custom_data' in resource_create_payload['os_profile']:
         del resource_create_payload['os_profile']['custom_data']
     # Create a resource (if necessary)
+    # ctx.logger.info("create_vm_payload.{0}".format(resource_create_payload))
     try:
         result = \
             virtual_machine.create_or_update(resource_group_name, name,
@@ -362,7 +363,7 @@ def create(ctx, args=None, **_):
 
 
 @operation(resumable=True)
-def configure(ctx, command_to_execute, file_uris, type_handler_version='v2.0',
+def configure(ctx, command_to_execute, file_uris, type_handler_version='1.8',
               **_):
     """Configures the resource"""
     os_family = ctx.node.properties.get('os_family', '').lower()
@@ -384,12 +385,12 @@ def configure(ctx, command_to_execute, file_uris, type_handler_version='v2.0',
             'publisher': 'Microsoft.Compute',
             'virtual_machine_extension_type': 'CustomScriptExtension',
             'type_handler_version': type_handler_version,
-            'settings': json.dumps({
-                'file_uris': file_uris,
-                'command_to_execute': command_to_execute
-            })
+            'settings': {
+                'fileUris': file_uris,
+                'commandToExecute': command_to_execute
+            }
         }
-
+        # ctx.logger.info("sending {0}".format(vm_extension_params))
         try:
             result = \
                 vm_extension.create_or_update(resource_group_name,
