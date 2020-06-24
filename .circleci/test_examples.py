@@ -22,6 +22,13 @@ from ecosystem_tests.dorkl import (
     cleanup_on_failure, prepare_test
 )
 
+'''Temporary until all the plugins in the bundle will 
+released with py2py3 wagons'''
+UT_VERSION = '1.23.5'
+UT_WAGON = 'https://adar-test-bucket.s3.amazonaws.com/cloudify_utilities_' \
+           'plugin-1.23.5-centos-Core-py27.py36-none-linux_x86_64.wgn'
+UT_PLUGIN = 'https://adar-test-bucket.s3.amazonaws.com/plugin.yaml'
+PLUGINS_TO_UPLOAD = [(UT_WAGON, UT_PLUGIN)]
 SECRETS_TO_CREATE = {
     'azure_subscription_id': False,
     'azure_tenant_id': False,
@@ -30,9 +37,10 @@ SECRETS_TO_CREATE = {
     'azure_location': False,
 }
 
-prepare_test(secrets=SECRETS_TO_CREATE)
+prepare_test(plugins=PLUGINS_TO_UPLOAD, secrets=SECRETS_TO_CREATE,
+             execute_bundle_upload=False)
 
-blueprint_list = ['examples/blueprint-examples/hello-world-example/azure.yaml',
+blueprint_list = ['examples/blueprint-examples/virtual-machine/azure.yaml',
                   'examples/blueprint-examples/virtual-machine/azure-arm.yaml']
 
 
