@@ -40,8 +40,7 @@ SECRETS_TO_CREATE = {
 prepare_test(plugins=PLUGINS_TO_UPLOAD, secrets=SECRETS_TO_CREATE,
              execute_bundle_upload=False)
 
-blueprint_list = ['examples/blueprint-examples/virtual-machine/azure.yaml',
-                  'examples/blueprint-examples/virtual-machine/azure-arm.yaml']
+blueprint_list = ['examples/blueprint-examples/virtual-machine/azure-arm.yaml']
 
 
 @pytest.fixture(scope='function', params=blueprint_list)
