@@ -19,6 +19,10 @@ import unittest
 
 from msrestazure.azure_exceptions import CloudError
 from azure.mgmt.resource.resources.models import DeploymentMode
+from azure.mgmt.resource.resources.v2019_10_01.models import \
+    DeploymentProperties
+from azure.mgmt.resource.resources.v2019_10_01.models import \
+    Deployment as AzDeployment
 
 from cloudify import mocks as cfy_mocks
 from cloudify import exceptions as cfy_exc
@@ -84,6 +88,11 @@ class DeploymentTest(unittest.TestCase):
             'parameters': deployment.format_params(properties.get(
                 'params', {}))
         }
+        deployment_properties = DeploymentProperties(
+            mode=deployment_params['mode'],
+            template=deployment_params['template'],
+            parameters=deployment_params['parameters'])
+
         response = requests.Response()
         response.status_code = 404
         message = 'resource not found'
@@ -105,7 +114,7 @@ class DeploymentTest(unittest.TestCase):
                 .deployments.create_or_update.assert_called_with(
                 resource_group_name=resource_group,
                 deployment_name=resource_group,
-                properties=deployment_params,
+                parameters=AzDeployment(properties=deployment_properties),
                 verify=True
             )
             self.assertEquals(
@@ -176,6 +185,10 @@ class DeploymentTest(unittest.TestCase):
             CloudError(response, message)
         deployment_client().deployments.get.side_effect = \
             CloudError(response, message)
+        deployment_properties = DeploymentProperties(
+            mode=DeploymentMode.incremental,
+            template={},
+            parameters={})
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
             deployment.create(
@@ -191,11 +204,7 @@ class DeploymentTest(unittest.TestCase):
                 .deployments.create_or_update.assert_called_with(
                     resource_group_name=resource_group,
                     deployment_name=resource_group,
-                    properties={
-                        'parameters': {},
-                        'mode': DeploymentMode.incremental,
-                        'template': {}
-                    },
+                    parameters=AzDeployment(properties=deployment_properties),
                     verify=True
                 )
             async_call = \
@@ -223,6 +232,10 @@ class DeploymentTest(unittest.TestCase):
             CloudError(response, message)
         deployment_client().deployments.get.side_effect = \
             CloudError(response, message)
+        deployment_properties = DeploymentProperties(
+            mode=DeploymentMode.incremental,
+            template={'a': 'b'},
+            parameters={'c': {'value': 'd'}})
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
             deployment.create(
@@ -235,17 +248,13 @@ class DeploymentTest(unittest.TestCase):
 
             self.fake_ctx.get_resource.assert_called_with(fock.name)
 
-            deployment_client()\
+            deployment_client() \
                 .deployments.create_or_update.assert_called_with(
-                    resource_group_name=resource_group,
-                    deployment_name=resource_group,
-                    properties={
-                        'parameters': {'c': {'value': 'd'}},
-                        'mode': DeploymentMode.incremental,
-                        'template': {'a': 'b'}
-                    },
-                    verify=True
-                )
+                resource_group_name=resource_group,
+                deployment_name=resource_group,
+                parameters=AzDeployment(properties=deployment_properties),
+                verify=True
+            )
             async_call = \
                 deployment_client().deployments.create_or_update.return_value
             async_call.wait.assert_called_with(timeout=900)
