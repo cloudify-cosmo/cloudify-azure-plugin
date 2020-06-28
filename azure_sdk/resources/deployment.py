@@ -14,7 +14,10 @@
 # limitations under the License.
 
 from azure.mgmt.resource import ResourceManagementClient
-
+from azure.mgmt.resource.resources.v2019_10_01.models import \
+    DeploymentProperties
+from azure.mgmt.resource.resources.v2019_10_01.models import \
+    Deployment as AzDeployment
 from cloudify_azure import (constants, utils)
 from azure_sdk.common import AzureResource
 
@@ -43,13 +46,17 @@ class Deployment(AzureResource):
                          timeout):
         self.logger.info(
             "Create/Updating deployment...{0}".format(deployment_name))
-        resource_verify = bool(self.credentials.get('endpoint_verify', True))
+        resource_verify = bool(self.creds.get('endpoint_verify', True))
         timeout = timeout or 900
+        deployment_properties = DeploymentProperties(
+            mode=properties['mode'],
+            template=properties['template'],
+            parameters=properties['parameters'])
         async_deployment_creation = self.client.deployments.create_or_update(
             resource_group_name=group_name,
             deployment_name=deployment_name,
-            properties=properties,
-            verify=resource_verify,
+            parameters=AzDeployment(properties=deployment_properties),
+            verify=resource_verify
         )
         async_deployment_creation.wait(timeout=timeout)
         deployment = async_deployment_creation.result().as_dict()

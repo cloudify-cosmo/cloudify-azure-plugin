@@ -24,19 +24,19 @@ from cloudify_azure._compat import SafeConfigParser
 class AzureResource(object):
 
     def __init__(self, azure_config):
-        creds = self.handle_credentials(azure_config)
-        if creds.get("china"):
-            creds['cloud_environment'] = AZURE_CHINA_CLOUD
+        self.creds = self.handle_credentials(azure_config)
+        if self.creds.get("china"):
+            self.creds['cloud_environment'] = AZURE_CHINA_CLOUD
         else:
-            creds['cloud_environment'] = AZURE_PUBLIC_CLOUD
+            self.creds['cloud_environment'] = AZURE_PUBLIC_CLOUD
         resource_default = 'https://management.core.windows.net/'
         self.credentials = ServicePrincipalCredentials(
-            client_id=creds.get("client_id"),
-            secret=creds.get("client_secret"),
-            tenant=creds.get("tenant_id"),
-            resource=creds.get("endpoint_resource", resource_default),
-            cloud_environment=creds.get("cloud_environment"),
-            verify=creds.get("endpoint_verify", True),
+            client_id=self.creds.get("client_id"),
+            secret=self.creds.get("client_secret"),
+            tenant=self.creds.get("tenant_id"),
+            resource=self.creds.get("endpoint_resource", resource_default),
+            cloud_environment=self.creds.get("cloud_environment"),
+            verify=self.creds.get("endpoint_verify", True),
         )
         self.subscription_id = azure_config.get("subscription_id")
         self.client = None

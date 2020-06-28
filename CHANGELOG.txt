@@ -1,3 +1,6 @@
+3.0.2:
+  - Update wagon builder to py2py3 wagon and add rhel wagon builder.
+  - Update deployment.py on the sdk to create deployment resource as defined on the azure python sdk.
 3.0.1:
   - Fix Virtual Machine Extension in case of windows machine.
 3.0.0:
