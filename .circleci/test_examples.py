@@ -30,7 +30,13 @@ UT_WAGON = 'https://github.com/cloudify-incubator/cloudify-utilities-plugin/' \
            '-Core-py27.py36-none-linux_x86_64.wgn'.format(v=UT_VERSION)
 UT_PLUGIN = 'https://github.com/cloudify-incubator/cloudify-utilities-' \
             'plugin/releases/download/{v}/plugin.yaml'.format(v=UT_VERSION)
-PLUGINS_TO_UPLOAD = [(UT_WAGON, UT_PLUGIN)]
+AN_VERSION = '2.9.2'
+AN_WAGON = 'https://github.com/cloudify-cosmo/cloudify-ansible-plugin/' \
+           'releases/download/{v}/cloudify_ansible_plugin-{v}-centos-' \
+           'Core-py27.py36-none-linux_x86_64.wgn'.format(v=AN_VERSION)
+AN_PLUGIN = 'https://github.com/cloudify-cosmo/cloudify-ansible-plugin' \
+            '/releases/download/{v}/plugin.yaml'.format(v=AN_VERSION)
+PLUGINS_TO_UPLOAD = [(UT_WAGON, UT_PLUGIN), (AN_WAGON, AN_PLUGIN)]
 SECRETS_TO_CREATE = {
     'azure_subscription_id': False,
     'azure_tenant_id': False,
@@ -42,7 +48,8 @@ SECRETS_TO_CREATE = {
 prepare_test(plugins=PLUGINS_TO_UPLOAD, secrets=SECRETS_TO_CREATE,
              execute_bundle_upload=False)
 
-blueprint_list = ['examples/blueprint-examples/virtual-machine/azure-arm.yaml']
+blueprint_list = ['examples/blueprint-examples/hello-world-example/azure.yaml',
+                  'examples/blueprint-examples/virtual-machine/azure-arm.yaml']
 
 
 @pytest.fixture(scope='function', params=blueprint_list)
