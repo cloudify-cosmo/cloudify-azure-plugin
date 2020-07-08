@@ -20,7 +20,7 @@ from setuptools import find_packages
 
 setup(
     name='cloudify-azure-plugin',
-    version='3.0.3',
+    version='3.0.2',
     license='LICENSE',
     packages=find_packages(exclude=['tests*']),
     description='Cloudify plugin for Microsoft Azure',

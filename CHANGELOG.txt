@@ -1,6 +1,3 @@
-3.0.3:
-  - Use the bundle upload during integration tests.
-  - Update 5.1 integration tests to use the aio docker image.
 3.0.2:
   - Update wagon builder to py2py3 wagon and add rhel wagon builder.
   - Update deployment.py on the sdk to create deployment resource as defined on the azure python sdk.
