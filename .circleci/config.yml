@@ -44,7 +44,7 @@ commands:
           command: pip install --user tox
       - run:
           name: Run Flake8
-          command: /home/circleci/.local/bin/tox -e pep8
+          command: /home/circleci/.local/bin/tox -e flake8
       - run:
          name: Run nosetest
          command: /home/circleci/.local/bin/tox -e nosetest
@@ -55,9 +55,8 @@ commands:
           name: install futurize
           command: pip install future --user
       - run:
-          name: remove python3 incompatible modules
-          command: |
-            rm cloudify_azure/_compat.py
+          name: remove compat
+          command: rm cloudify_azure/_compat.py
       - run:
           name: find python3-incompatible code
           command: |
@@ -115,12 +114,31 @@ commands:
           paths:
             - build/*
 
+
+  build_archive:
+    steps:
+      - attach_workspace:
+          at: workspace
+      - run:
+          name: Create Workspace Build directory.
+          command: mkdir -p workspace/build
+      - run:
+          name: Build Bundle
+          command: |
+              git clone https://github.com/cloudify-incubator/cloudify-ecosystem-test.git
+              pip install -e cloudify-ecosystem-test
+              python -c 'from ecosystem_cicd_tools import packaging; packaging.build_plugins_bundle_with_workspace()'
+      - persist_to_workspace:
+          root: workspace
+          paths:
+            - build/*
+
   run_integration_tests_505:
     steps:
       - run:
           name: "Pull Submodules"
           command: |
-            git submodule update --init --recursive
+            git submodule update --init --recursive --remote
       - attach_workspace:
           at: workspace
       - run:
@@ -128,8 +146,7 @@ commands:
           command: pip install -U pip
       - run:
           name: install cloudify
-          command: |
-            pip install -r test-requirements.txt
+          command: pip install -U cloudify==5.0.0 pytest==4.6.3 pyyaml==3.10
       - run:
           name: download manager docker image
           command: wget http://repository.cloudifysource.org/cloudify/5.0.5/ga-release/cloudify-docker-manager-5.0.5.tar
@@ -184,7 +201,6 @@ commands:
           name: install local project
           command: pip install https://github.com/cloudify-incubator/cloudify-ecosystem-test/archive/latest.zip
       - run: pytest -s .circleci/test_examples.py
-
 
   release_plugin:
     steps:
@@ -250,6 +266,12 @@ jobs:
       - checkout
       - generate_rhel_py27py36_wagon
 
+  build_bundle:
+    executor: wagon_generator
+    steps:
+      - checkout
+      - build_archive
+
   integration_tests_505:
     executor: cloudify-machine
     environment:
@@ -267,7 +289,6 @@ jobs:
     steps:
       - checkout
       - run_integration_tests_510
-
   release:
     executor: py27
     steps:
@@ -277,7 +298,7 @@ jobs:
 workflows:
   version: 2
   tests:
-    jobs: &all_jobs
+    jobs:
       - py3_compat
       - unittests_py27
       - unittests_py36
@@ -289,17 +310,22 @@ workflows:
           filters:
             branches:
               only: /([0-9\.]*\-build|master|dev)/
-      - integration_tests_505:
+      - build_bundle:
+          filters:
+            branches:
+              only: /master/
           requires:
             - wagon
             - rhel_wagon
+      - integration_tests_505:
+          requires:
+            - build_bundle
           filters:
             branches:
               only: /([0-9\.]*\-build|master|dev)/
       - integration_tests_510:
           requires:
-            - wagon
-            - rhel_wagon
+            - build_bundle
           filters:
             branches:
               only: /([0-9\.]*\-build|master|dev)/
@@ -310,8 +336,8 @@ workflows:
           requires:
             - unittests_py27
             - unittests_py36
-            - wagon
             - rhel_wagon
+            - wagon
             - integration_tests_505
             - integration_tests_510
   nightly:
