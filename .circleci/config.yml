@@ -305,15 +305,15 @@ workflows:
       - wagon:
           filters:
             branches:
-              only: /([0-9\.]*\-build|master|dev|add-aks-integration-tests)/
+              only: /([0-9\.]*\-build|master|dev)/
       - rhel_wagon:
           filters:
             branches:
-              only: /([0-9\.]*\-build|master|dev|add-aks-integration-tests)/
+              only: /([0-9\.]*\-build|master|dev)/
       - build_bundle:
           filters:
             branches:
-              only: /(master|add-aks-integration-tests)/
+              only: /master/
           requires:
             - wagon
             - rhel_wagon
@@ -322,7 +322,7 @@ workflows:
             - build_bundle
           filters:
             branches:
-              only: /([0-9\.]*\-build|master|dev|add-aks-integration-tests)/
+              only: /([0-9\.]*\-build|master|dev)/
       - integration_tests_510:
           requires:
             - build_bundle
