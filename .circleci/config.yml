@@ -313,7 +313,7 @@ workflows:
       - build_bundle:
           filters:
             branches:
-              only: /master/
+              only: /(master|add-aks-integration-tests)/
           requires:
             - wagon
             - rhel_wagon
