@@ -33,18 +33,23 @@ SECRETS_TO_CREATE = {
 prepare_test(secrets=SECRETS_TO_CREATE)
 
 blueprint_list = ['examples/blueprint-examples/hello-world-example/azure.yaml',
-                  'examples/blueprint-examples/virtual-machine/azure-arm.yaml']
+                  'examples/blueprint-examples/virtual-machine/azure-arm.yaml',
+                  'examples/blueprint-examples/kubernetes/azure-aks'
+                  '/blueprint.yaml']
 
 
 @pytest.fixture(scope='function', params=blueprint_list)
 def blueprint_examples(request):
     dirname_param = os.path.dirname(request.param).split('/')[-1:][0]
     try:
+        if dirname_param == "azure-aks":
+            inputs = 'resource_suffix=test{0}'
+        else:
+            inputs = 'resource_prefix=azpl -i resource_suffix=test{0}'
         basic_blueprint_test(
             request.param,
             dirname_param,
-            inputs='resource_prefix=azpl -i resource_suffix=test{0}'.format(
-                os.environ['CIRCLE_BUILD_NUM']))
+            inputs=inputs.format(os.environ['CIRCLE_BUILD_NUM']))
     except:
         cleanup_on_failure(dirname_param)
         raise
