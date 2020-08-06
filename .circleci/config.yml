@@ -326,6 +326,7 @@ workflows:
       - integration_tests_510:
           requires:
             - build_bundle
+            - integration_tests_505
           filters:
             branches:
               only: /([0-9\.]*\-build|master|dev)/

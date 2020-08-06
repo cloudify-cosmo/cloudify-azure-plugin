@@ -43,13 +43,14 @@ def blueprint_examples(request):
     dirname_param = os.path.dirname(request.param).split('/')[-1:][0]
     try:
         if dirname_param == "azure-aks":
-            inputs = 'resource_suffix=test{0}'
+            inputs = 'resource_suffix=it'
         else:
-            inputs = 'resource_prefix=azpl -i resource_suffix=test{0}'
+            inputs = 'resource_prefix=azpl -i resource_suffix=test{0}'.format(
+                os.environ['CIRCLE_BUILD_NUM'])
         basic_blueprint_test(
             request.param,
             dirname_param,
-            inputs=inputs.format(os.environ['CIRCLE_BUILD_NUM']))
+            inputs=inputs)
     except:
         cleanup_on_failure(dirname_param)
         raise
