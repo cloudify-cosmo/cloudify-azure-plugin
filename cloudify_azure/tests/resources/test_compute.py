@@ -33,6 +33,7 @@ class AvailabilitySetTest(unittest.TestCase):
         fake_ctx = cfy_mocks.MockCloudifyContext()
         instance = mock.Mock()
         instance.runtime_properties = {}
+        instance.relationships = []
         fake_ctx._instance = instance
         node = mock.Mock()
         fake_ctx._node = node

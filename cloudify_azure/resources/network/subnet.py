@@ -83,7 +83,7 @@ def delete(ctx, **_):
     else:
         ctx.logger.warn("azure_config is deprecated please use client_config, "
                         "in later version it will be removed")
-    resource_group_name = ctx.instance.runtime_properties.get('resource_group')
+    resource_group_name = utils.get_resource_group(ctx)
     vnet_name = ctx.instance.runtime_properties.get('virtual_network')
     name = ctx.instance.runtime_properties.get('name')
     api_version = \
@@ -116,8 +116,7 @@ def attach_network_security_group(ctx, **_):
     else:
         ctx.logger.warn("azure_config is deprecated please use client_config, "
                         "in later version it will be removed")
-    resource_group_name = \
-        ctx.target.instance.runtime_properties.get('resource_group')
+    resource_group_name = utils.get_resource_group(ctx.target)
     vnet_name = ctx.target.instance.runtime_properties.get('virtual_network')
     name = ctx.target.instance.runtime_properties.get('name')
     subnet_params = {
@@ -147,8 +146,7 @@ def detach_network_security_group(ctx, **_):
     else:
         ctx.logger.warn("azure_config is deprecated please use client_config, "
                         "in later version it will be removed")
-    resource_group_name = \
-        ctx.target.instance.runtime_properties.get('resource_group')
+    resource_group_name = utils.get_resource_group(ctx.target)
     vnet_name = ctx.target.instance.runtime_properties.get('virtual_network')
     name = ctx.target.instance.runtime_properties.get('name')
     subnet_params = {
@@ -179,8 +177,7 @@ def attach_route_table(ctx, **_):
     else:
         ctx.logger.warn("azure_config is deprecated please use client_config, "
                         "in later version it will be removed")
-    resource_group_name = \
-        ctx.target.instance.runtime_properties.get('resource_group')
+    resource_group_name = utils.get_resource_group(ctx.target)
     vnet_name = ctx.target.instance.runtime_properties.get('virtual_network')
     name = ctx.target.instance.runtime_properties.get('name')
     subnet_params = {
@@ -212,8 +209,7 @@ def detach_route_table(ctx, **_):
     else:
         ctx.logger.warn("azure_config is deprecated please use client_config, "
                         "in later version it will be removed")
-    resource_group_name = \
-        ctx.target.instance.runtime_properties.get('resource_group')
+    resource_group_name = utils.get_resource_group(ctx.target)
     vnet_name = ctx.target.instance.runtime_properties.get('virtual_network')
     name = ctx.target.instance.runtime_properties.get('name')
     subnet_params = {

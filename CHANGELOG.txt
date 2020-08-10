@@ -1,3 +1,4 @@
+3.0.3: Use find resource group util.
 3.0.2:
   - Update wagon builder to py2py3 wagon and add rhel wagon builder.
   - Update deployment.py on the sdk to create deployment resource as defined on the azure python sdk.
