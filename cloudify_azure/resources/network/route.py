@@ -84,7 +84,7 @@ def delete(ctx, **_):
     else:
         ctx.logger.warn("azure_config is deprecated please use client_config, "
                         "in later version it will be removed")
-    resource_group_name = ctx.instance.runtime_properties.get('resource_group')
+    resource_group_name = utils.get_resource_group(ctx)
     route_table_name = ctx.instance.runtime_properties.get('route_table')
     name = ctx.instance.runtime_properties.get('name')
     api_version = \

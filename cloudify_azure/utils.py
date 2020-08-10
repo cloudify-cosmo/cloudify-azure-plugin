@@ -90,8 +90,8 @@ def get_resource_group(_ctx=ctx):
     :rtype: string
     """
     return _ctx.node.properties.get('resource_group_name') or \
-        get_ancestor_name(
-            _ctx.instance, constants.REL_CONTAINED_IN_RG)
+        _ctx.instance.runtime_properties.get('resource_group') or \
+        get_ancestor_name(_ctx.instance, constants.REL_CONTAINED_IN_RG)
 
 
 def get_virtual_network(_ctx=ctx):

@@ -214,7 +214,7 @@ def delete(ctx, **_):
     else:
         ctx.logger.warn("azure_config is deprecated please use client_config, "
                         "in later version it will be removed")
-    resource_group_name = ctx.instance.runtime_properties.get('resource_group')
+    resource_group_name = utils.get_resource_group(ctx)
     name = ctx.instance.runtime_properties.get('name')
     api_version = \
         ctx.node.properties.get('api_version', constants.API_VER_NETWORK)
@@ -246,8 +246,7 @@ def attach_ip_configuration(ctx, **_):
     else:
         ctx.logger.warn("azure_config is deprecated please use client_config, "
                         "in later version it will be removed")
-    resource_group_name = \
-        ctx.source.instance.runtime_properties.get('resource_group')
+    resource_group_name = utils.get_resource_group(ctx.source)
     nic_name = ctx.source.instance.runtime_properties.get('name')
     network_interface_card = NetworkInterfaceCard(azure_config, ctx.logger)
     ip_configuration_name = ctx.target.node.properties.get('name')
