@@ -14,13 +14,31 @@
 #    * limitations under the License.
 '''Microsoft Azure plugin for Cloudify package config'''
 
+import os
 from setuptools import setup
 from setuptools import find_packages
 
 
+def read(rel_path):
+    here = os.path.abspath(os.path.dirname(__file__))
+    with open(os.path.join(here, rel_path), 'r') as fp:
+        return fp.read()
+
+
+def get_version(rel_file='plugin.yaml'):
+    lines = read(rel_file)
+    for line in lines.splitlines():
+        if 'package_version' in line:
+            split_line = line.split(':')
+            line_no_space = split_line[-1].replace(' ', '')
+            line_no_quotes = line_no_space.replace('\'', '')
+            return line_no_quotes.strip('\n')
+    raise RuntimeError('Unable to find version string.')
+
+
 setup(
     name='cloudify-azure-plugin',
-    version='3.0.3',
+    version=get_version(),
     license='LICENSE',
     packages=find_packages(exclude=['tests*']),
     description='Cloudify plugin for Microsoft Azure',

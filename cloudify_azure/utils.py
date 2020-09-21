@@ -225,13 +225,8 @@ def get_parent(inst, rel_type='cloudify.relationships.contained_in'):
     :rtype: :class:`cloudify.context.RelationshipSubjectContext` or None
     """
     for rel in inst.relationships:
-        if isinstance(rel_type, tuple):
-            if any(x in rel.type_hierarchy for x in rel_type):
-                return rel.target
-        else:
-            if rel_type in rel.type_hierarchy:
-                return rel.target
-    return None
+        if rel_type in rel.type_hierarchy:
+            return rel.target
 
 
 def get_ancestor_name(inst, rel_type):
@@ -248,7 +243,7 @@ def get_ancestor_name(inst, rel_type):
         # Find a parent of any type
         parent = get_parent(inst)
         if not parent:
-            return None
+            return
         # Keep searching
         return get_ancestor_name(parent.instance, rel_type)
     # We found a match
