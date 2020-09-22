@@ -71,7 +71,7 @@ def create(ctx, **_):
             )
 
     ctx.instance.runtime_properties['resource_group'] = resource_group_name
-    ctx.instance.runtime_properties['resouce'] = result
+    ctx.instance.runtime_properties['resource'] = result
     ctx.instance.runtime_properties['resource_id'] = result.get("id", "")
 
 

@@ -125,7 +125,7 @@ def create(ctx, **kwargs):
                                                   cr.message)
             )
 
-    ctx.instance.runtime_properties['resouce'] = result
+    ctx.instance.runtime_properties['resource'] = result
     ctx.instance.runtime_properties['resource_id'] = result.get("id", "")
     ctx.instance.runtime_properties['outputs'] = \
         result.get("properties", {}).get("outputs")

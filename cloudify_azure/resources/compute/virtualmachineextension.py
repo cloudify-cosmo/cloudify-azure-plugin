@@ -73,7 +73,7 @@ def create(ctx, resource_config, **_):
 
     ctx.instance.runtime_properties['resource_group'] = resource_group_name
     ctx.instance.runtime_properties['virtual_machine'] = vm_name
-    ctx.instance.runtime_properties['resouce'] = result
+    ctx.instance.runtime_properties['resource'] = result
     ctx.instance.runtime_properties['resource_id'] = result.get("id", "")
 
 
