@@ -89,6 +89,7 @@ def get_resource_group(_ctx=ctx):
     :returns: Resource Group name
     :rtype: string
     """
+
     return _ctx.node.properties.get('resource_group_name') or \
         _ctx.instance.runtime_properties.get('resource_group') or \
         get_ancestor_name(_ctx.instance, constants.REL_CONTAINED_IN_RG)
@@ -173,6 +174,9 @@ def get_relationship_by_type(rels, rel_type):
     if not isinstance(rels, list):
         return None
     for rel in rels:
+        ctx.logger.debug(
+            'Attempting to find rel of type {rel_type} in {hierarchy}.'.format(
+                rel_type=rel_type, hierarchy=rel.type_hierarchy))
         if isinstance(rel_type, tuple):
             if any(x in rel.type_hierarchy for x in rel_type):
                 return rel
@@ -206,6 +210,9 @@ def get_relationships_by_type(rels, rel_type):
     if not isinstance(rels, list):
         return ret
     for rel in rels:
+        ctx.logger.debug(
+            'Attempting to find rel of type {rel_type} in {hierarchy}.'.format(
+                rel_type=rel_type, hierarchy=rel.type_hierarchy))
         if isinstance(rel_type, tuple):
             if any(x in rel.type_hierarchy for x in rel_type):
                 ret.append(rel)
@@ -224,14 +231,18 @@ def get_parent(inst, rel_type='cloudify.relationships.contained_in'):
     :returns: Parent context
     :rtype: :class:`cloudify.context.RelationshipSubjectContext` or None
     """
+    ctx.logger.debug('Attempting to find parent for : {0}'.format(inst.id))
     for rel in inst.relationships:
+        ctx.logger.debug(
+            'Attempting to find rel of type {rel_type} in {hierarchy}.'.format(
+                rel_type=rel_type, hierarchy=rel.type_hierarchy))
         if isinstance(rel_type, tuple):
-            if any(x in rel.type_hierarchy for x in rel_type):
-                return rel.target
+            for i in rel_type:
+                if i in rel.type_hierarchy:
+                    return rel.target
         else:
             if rel_type in rel.type_hierarchy:
                 return rel.target
-    return None
 
 
 def get_ancestor_name(inst, rel_type):
@@ -242,13 +253,15 @@ def get_ancestor_name(inst, rel_type):
     :param string rel_type: Relationship type
     :returns: Ancestor resource name or None
     """
+
+    ctx.logger.debug('Attempting to find ancestor for : {0}'.format(inst.id))
     # Find a parent of a specific type
     parent = get_parent(inst, rel_type=rel_type)
     if not parent:
         # Find a parent of any type
         parent = get_parent(inst)
         if not parent:
-            return None
+            return
         # Keep searching
         return get_ancestor_name(parent.instance, rel_type)
     # We found a match

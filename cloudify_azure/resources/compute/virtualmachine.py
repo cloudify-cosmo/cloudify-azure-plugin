@@ -358,7 +358,7 @@ def create(ctx, args=None, **_):
             )
 
     ctx.instance.runtime_properties['resource_group'] = resource_group_name
-    ctx.instance.runtime_properties['resouce'] = result
+    ctx.instance.runtime_properties['resource'] = result
     ctx.instance.runtime_properties['resource_id'] = result.get("id", "")
 
 
@@ -402,7 +402,7 @@ def configure(ctx, command_to_execute, file_uris, type_handler_version='1.8',
                 "failed with this error : {1}".format(vm_name,
                                                       cr.message)
                 )
-        ctx.instance.runtime_properties['resouce_extension'] = result
+        ctx.instance.runtime_properties['resource_extension'] = result
         ctx.instance.runtime_properties['resource_extension_id'] = \
             result.get("id", "")
         ctx.instance.runtime_properties['extension_name'] = vm_extension_name

@@ -57,7 +57,7 @@ def create(ctx, **_):
                                                   cr.message)
             )
 
-    ctx.instance.runtime_properties['resouce'] = result
+    ctx.instance.runtime_properties['resource'] = result
     ctx.instance.runtime_properties['resource_id'] = result.get("id", "")
 
 

@@ -195,7 +195,7 @@ def with_azure_resource(resource_class_name):
                     result = resource.get(resource_group_name, name)
                 if ctx.node.properties.get('use_external_resource', False):
                     ctx.logger.info("Using external resource")
-                    ctx.instance.runtime_properties['resouce'] = result
+                    ctx.instance.runtime_properties['resource'] = result
                     ctx.instance.runtime_properties['resource_id'] = \
                         result.get("id", "")
                     return

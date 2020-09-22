@@ -74,6 +74,8 @@ def build_ip_configuration(ipc):
     # Find a referenced Subnet/PublicIPAddress
     rel_sub_type = constants.REL_IPC_CONNECTED_TO_SUBNET
     rel_pip_type = constants.REL_IPC_CONNECTED_TO_PUBIP
+    subnet = None
+    pubip = None
     for rel in ipc.instance.relationships:
         if isinstance(rel_sub_type, tuple):
             if any(x in rel.type_hierarchy for x in rel_sub_type):

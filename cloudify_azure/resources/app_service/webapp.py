@@ -57,7 +57,7 @@ def create(ctx, resource_group, name, app_config, **kwargs):
                     )
 
     ctx.instance.runtime_properties['resource_group'] = resource_group
-    ctx.instance.runtime_properties['resouce'] = result
+    ctx.instance.runtime_properties['resource'] = result
     ctx.instance.runtime_properties['resource_id'] = result.get("id", "")
     ctx.instance.runtime_properties['name'] = name
 

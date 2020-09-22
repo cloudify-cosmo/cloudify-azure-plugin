@@ -1,3 +1,4 @@
+3.0.4: Handle regression error in ipconfiguration.
 3.0.3: Use find resource group util.
 3.0.2:
   - Update wagon builder to py2py3 wagon and add rhel wagon builder.
