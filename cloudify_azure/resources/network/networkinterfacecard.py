@@ -183,10 +183,14 @@ def start(ctx, **_):
             ip_cfg.get('public_ip_address', {}).get('ip_address', None)
         if not public_ip:
             pip = PublicIPAddress(azure_config, ctx.logger)
-            pip_name = \
-                ip_cfg.get('public_ip_address').get('id').rsplit('/', 1)[1]
-            public_ip_data = pip.get(resource_group_name, pip_name)
-            public_ip = public_ip_data.get("ip_address")
+            try:
+                pip_name = ip_cfg.get(
+                    'public_ip_address', {}).get('id').rsplit('/', 1)[1]
+            except AttributeError:
+                public_ip = ctx.instance.runtime_properties['ip']
+            else:
+                public_ip_data = pip.get(resource_group_name, pip_name)
+                public_ip = public_ip_data.get("ip_address")
         # Get the Public IP Address endpoint
         ctx.instance.runtime_properties['public_ip'] = \
             public_ip
