@@ -396,3 +396,29 @@ def handle_resource_config_params(data, resource_config):
             resource_config
         )
     return cleanup_empty_params(data)
+
+
+def get_client_config(properties):
+    client_config = properties.get('client_config', {})
+    if not client_config.get('subscription_id'):
+        ctx.logger.warn("azure_config is deprecated please use client_config, "
+                        "in later version it will be removed")
+        return properties.get('azure_config')
+    return client_config
+
+
+def get_resource_id_from_name(subscription_id,
+                              group,
+                              provider,
+                              resource_type,
+                              resource_name):
+    resource_id = '/subscriptions/{subscription_id}' \
+                  '/resourceGroups/{resource_group}' \
+                  '/providers/{resource_provider}' \
+                  '/{resource_type}' \
+                  '/{resource_name}'.format(subscription_id=subscription_id,
+                                            resource_group=group,
+                                            resource_provider=provider,
+                                            resource_type=resource_type,
+                                            resource_name=resource_name)
+    return resource_id

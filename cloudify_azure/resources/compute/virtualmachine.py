@@ -34,8 +34,11 @@ from azure_sdk.resources.network.public_ip_address import PublicIPAddress
 from azure_sdk.resources.compute.virtual_machine import VirtualMachine
 from azure_sdk.resources.compute.virtual_machine_extension \
     import VirtualMachineExtension
-from azure_sdk.resources.network.network_interface_card \
-    import NetworkInterfaceCard
+from azure_sdk.resources.network.network_interface_card import \
+    NetworkInterfaceCard
+from azure.mgmt.compute.models import (
+    NetworkProfile,
+    NetworkInterfaceReference)
 
 PS_OPEN = '<powershell>'
 PS_CLOSE = '</powershell>'
@@ -121,25 +124,16 @@ def build_network_profile(ctx):
         [net_rel.target.node.id for net_rel in net_rels]))
     for net_rel in net_rels:
         # Get the NIC resource ID
-        network_interface = {
-            'id': net_rel.target.instance.runtime_properties.get("resource_id")
-        }
-        # If more than one NIC is attached, set the Primary property
-        if len(net_rels) > 1:
-            network_interface['primary'] = \
-                net_rel.target.node.properties.get('primary')
-        network_interfaces.append(network_interface)
-    # Check for a primary interface if multiple NICs are used
-    if len(network_interfaces) > 1:
-        if not len([
-                x for x in network_interfaces
-                if x['primary']]):
-            raise cfy_exc.NonRecoverableError(
-                'Exactly one "primary" network interface must be specified '
-                'if multiple NetworkInterfaceCard nodes are used')
-    return {
-        'network_interfaces': network_interfaces
-    }
+        nic_id = net_rel.target.instance.runtime_properties.get("resource_id")
+        primary = net_rel.target.node.properties.get('primary', False)
+        network_interface = NetworkInterfaceReference(
+            id=nic_id,
+            primary=primary)
+        if primary:
+            network_interfaces.insert(0, network_interface)
+        else:
+            network_interfaces.append(network_interface)
+    return NetworkProfile(network_interfaces=network_interfaces)
 
 
 def extract_powershell_content(string_with_powershell):
@@ -239,13 +233,7 @@ def _handle_userdata(ctx, existing_userdata):
 @decorators.with_azure_resource(VirtualMachine)
 def create(ctx, args=None, **_):
     """Uses an existing, or creates a new, Virtual Machine"""
-    # Generate a resource name (if needed)
-    azure_config = ctx.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.node.properties)
     name = utils.get_resource_name(ctx)
     resource_group_name = utils.get_resource_group(ctx)
     api_version = \
@@ -345,7 +333,6 @@ def create(ctx, args=None, **_):
     elif 'custom_data' in resource_create_payload['os_profile']:
         del resource_create_payload['os_profile']['custom_data']
     # Create a resource (if necessary)
-    # ctx.logger.info("create_vm_payload.{0}".format(resource_create_payload))
     try:
         result = \
             virtual_machine.create_or_update(resource_group_name, name,
@@ -366,17 +353,11 @@ def create(ctx, args=None, **_):
 def configure(ctx, command_to_execute, file_uris, type_handler_version='1.8',
               **_):
     """Configures the resource"""
+    azure_config = utils.get_client_config(ctx.node.properties)
+    resource_group_name = utils.get_resource_group(ctx)
+    vm_name = utils.get_resource_name(ctx)
     os_family = ctx.node.properties.get('os_family', '').lower()
     if os_family == 'windows':
-        azure_config = ctx.node.properties.get('azure_config')
-        if not azure_config.get("subscription_id"):
-            azure_config = ctx.node.properties.get('client_config')
-        else:
-            ctx.logger.warn("azure_config is deprecated please use "
-                            "client_config, in later version it will be "
-                            "removed")
-        vm_name = ctx.instance.runtime_properties.get('name')
-        resource_group_name = utils.get_resource_group(ctx)
         vm_extension = VirtualMachineExtension(azure_config, ctx.logger)
         vm_extension_name = "{0}".format(uuid4())
         vm_extension_params = {
@@ -412,59 +393,68 @@ def configure(ctx, command_to_execute, file_uris, type_handler_version='1.8',
     rel_nics = utils.get_relationships_by_type(
         ctx.instance.relationships,
         constants.REL_CONNECTED_TO_NIC)
+    ctx.logger.debug('net_rels: {0}'.format(
+        [net_rel.target.node.id for net_rel in rel_nics]))
 
     # No NIC? Exit and hope the user doesn't plan to install an agent
     if not rel_nics:
         return
 
-    virtual_machine_id = ctx.instance.runtime_properties.get("resource_id")
+    vm_id = ctx.instance.runtime_properties.get("resource_id")
 
     for rel_nic in rel_nics:
         # Get the NIC data from the API directly (because of IPConfiguration)
-        nic_azure_config = rel_nic.target.node.properties.get("azure_config")
-        nic_resource_group = \
-            rel_nic.target.instance.runtime_properties.get("resource_group")
-        nic_name = rel_nic.target.instance.runtime_properties.get("name")
+        nic_azure_config = utils.get_client_config(
+            rel_nic.target.node.properties)
+        nic_resource_group = utils.get_resource_group(rel_nic.target)
+        nic_name = utils.get_resource_name(rel_nic.target)
         nic_iface = NetworkInterfaceCard(nic_azure_config, ctx.logger)
         nic_data = nic_iface.get(nic_resource_group, nic_name)
-        nic_virtual_machine_id = \
-            nic_data.get('virtual_machine', dict()).get('id')
+        nic_vm_id = nic_data.get('virtual_machine', {}).get('id')
 
-        if not nic_virtual_machine_id or \
-                (virtual_machine_id not in nic_virtual_machine_id):
-            nic_data['virtual_machine'] = {
-                'id': virtual_machine_id
-            }
+        if not nic_vm_id:
+            if not vm_id:
+                nic_data['virtual_machine'] = {
+                    'id': utils.get_resource_id_from_name(
+                        azure_config.get('subscription_id'),
+                        resource_group_name,
+                        'Microsoft.Compute',
+                        'virtualMachines',
+                        vm_name
+                    )
+                }
+            elif vm_id not in nic_vm_id:
+                nic_data['virtual_machine'] = {
+                    'id': vm_id
+                }
+            ctx.logger.info('nic_data {nic_data}'.format(nic_data=nic_data))
             nic_data = nic_iface.create_or_update(nic_resource_group, nic_name,
                                                   nic_data)
         # Iterate over each IPConfiguration entry
+        public_ip_addresses = []
         for ip_cfg in nic_data.get('ip_configurations', list()):
 
             # Get the Private IP Address endpoint
-            ctx.instance.runtime_properties['ip'] = \
-                ip_cfg.get('private_ip_address')
-
-            public_ip = \
-                ip_cfg.get('public_ip_address', {}).get('ip_address', None)
+            private_ip = ip_cfg.get('private_ip_address')
+            ctx.instance.runtime_properties['ip'] = private_ip
+            public_ip = ip_cfg.get('public_ip_address', {}).get('ip_address')
             if not public_ip:
-                azure_config = ctx.node.properties.get('azure_config')
+                azure_config = utils.get_client_config(ctx.node.properties)
                 resource_group_name = utils.get_resource_group(ctx)
                 pip = PublicIPAddress(azure_config, ctx.logger)
-                pip_name = \
-                    ip_cfg.get('public_ip_address').get('id').rsplit('/', 1)[1]
-                public_ip_data = pip.get(resource_group_name, pip_name)
-                public_ip = public_ip_data.get("ip_address")
+                pip_cfg = ip_cfg.get('public_ip_address')
+                if pip_cfg:
+                    pip_name = pip_cfg.get('id').rsplit('/', 1)[1]
+                    public_ip_data = pip.get(resource_group_name, pip_name)
+                    public_ip = public_ip_data.get("ip_address")
+            if not public_ip:
+                public_ip = ctx.instance.runtime_properties['ip']
 
-            ctx.instance.runtime_properties['public_ip'] = \
-                public_ip
+            ctx.instance.runtime_properties['public_ip'] = public_ip
             # For consistency with other plugins.
-            ctx.instance.runtime_properties[PUBLIC_IP_PROPERTY] = \
-                public_ip
+            ctx.instance.runtime_properties[PUBLIC_IP_PROPERTY] = public_ip
             # We should also consider that maybe there will be many
             # public ip addresses.
-            public_ip_addresses = \
-                ctx.instance.runtime_properties.get(
-                    PUBLIC_IP_PROPERTY, [])
             if public_ip not in public_ip_addresses:
                 public_ip_addresses.append(public_ip)
             ctx.instance.runtime_properties['public_ip_addresses'] = \
@@ -493,12 +483,7 @@ def delete(ctx, **_):
         return
     api_version = \
         ctx.node.properties.get('api_version', constants.API_VER_COMPUTE)
-    azure_config = ctx.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
     name = ctx.instance.runtime_properties.get('name')
     api_version = \
@@ -523,15 +508,10 @@ def delete(ctx, **_):
 @operation(resumable=True)
 def attach_data_disk(ctx, lun, **_):
     """Attaches a data disk"""
-    azure_config = ctx.source.node.properties.get("azure_config")
+    azure_config = utils.get_client_config(ctx.source.node.properties)
     api_version = \
         ctx.source.node.properties.get('api_version',
                                        constants.API_VER_COMPUTE)
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.source.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
     resource_group_name = utils.get_resource_group(ctx.source)
     name = ctx.source.instance.runtime_properties.get("name")
     vm_iface = VirtualMachine(azure_config, ctx.logger, api_version)
@@ -573,15 +553,10 @@ def attach_data_disk(ctx, lun, **_):
 @operation(resumable=True)
 def detach_data_disk(ctx, **_):
     """Detaches a data disk"""
-    azure_config = ctx.source.node.properties.get("azure_config")
+    azure_config = utils.get_client_config(ctx.source.node.properties)
     api_version = \
         ctx.source.node.properties.get('api_version',
                                        constants.API_VER_COMPUTE)
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.source.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
     resource_group_name = utils.get_resource_group(ctx.source)
     name = ctx.source.instance.runtime_properties.get("name")
     vm_iface = VirtualMachine(azure_config, ctx.logger, api_version)
