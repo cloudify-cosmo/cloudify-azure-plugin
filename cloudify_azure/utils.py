@@ -403,7 +403,7 @@ def get_client_config(properties):
     if not client_config.get('subscription_id'):
         ctx.logger.warn("azure_config is deprecated please use client_config, "
                         "in later version it will be removed")
-        return properties.get('azure_config')
+        return properties.get('azure_config', {})
     return client_config
 
 
