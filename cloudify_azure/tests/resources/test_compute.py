@@ -11,17 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import mock
 import unittest
 import requests
 
-from msrestazure.azure_exceptions import CloudError
-
-from cloudify import mocks as cfy_mocks
 from cloudify import constants
+from cloudify.state import current_ctx
+from cloudify import mocks as cfy_mocks
+from msrestazure.azure_exceptions import CloudError
 
 from cloudify_azure import utils
 from cloudify_azure.resources.compute import (availabilityset, virtualmachine)
+
+
+def return_none(foo):
+    return
 
 
 @mock.patch('azure_sdk.common.ServicePrincipalCredentials')
@@ -159,6 +164,7 @@ class VirtualMachineTest(unittest.TestCase):
         fake_ctx.get_resource = mock.MagicMock(
             return_value=""
         )
+        current_ctx.set(fake_ctx)
         return fake_ctx, node, instance
 
     def setUp(self):
@@ -171,7 +177,9 @@ class VirtualMachineTest(unittest.TestCase):
             'tenant_id': 'dummy'
         }
 
-    def test_create(self, client, credentials):
+    @mock.patch('cloudify_azure.resources.compute.virtualmachine.'
+                'build_network_profile', side_effect=return_none)
+    def test_create(self, _, client, credentials):
         self.node.properties['azure_config'] = self.dummy_azure_credentials
         resource_group = 'sample_resource_group'
         name = 'mockvm'
