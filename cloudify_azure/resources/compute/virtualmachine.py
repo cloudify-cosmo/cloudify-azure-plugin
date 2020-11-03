@@ -402,6 +402,7 @@ def configure(ctx, command_to_execute, file_uris, type_handler_version='1.8',
 
     vm_id = ctx.instance.runtime_properties.get("resource_id")
 
+    public_ip_addresses = []
     for rel_nic in rel_nics:
         # Get the NIC data from the API directly (because of IPConfiguration)
         nic_azure_config = utils.get_client_config(
@@ -431,7 +432,6 @@ def configure(ctx, command_to_execute, file_uris, type_handler_version='1.8',
             nic_data = nic_iface.create_or_update(nic_resource_group, nic_name,
                                                   nic_data)
         # Iterate over each IPConfiguration entry
-        public_ip_addresses = []
         for ip_cfg in nic_data.get('ip_configurations', list()):
 
             # Get the Private IP Address endpoint
@@ -461,19 +461,25 @@ def configure(ctx, command_to_execute, file_uris, type_handler_version='1.8',
             ctx.instance.runtime_properties['public_ip_addresses'] = \
                 public_ip_addresses
 
-        # See if the user wants to use the public IP as primary IP
-        if ctx.node.properties.get('use_public_ip') and \
-                ctx.instance.runtime_properties.get('public_ip'):
-            ctx.instance.runtime_properties['ip'] = \
-                ctx.instance.runtime_properties.get('public_ip')
-        ctx.logger.info('OUTPUT {0}.{1} = "{2}"'.format(
-            ctx.instance.id,
-            'ip',
-            ctx.instance.runtime_properties.get('ip')))
-        ctx.logger.info('OUTPUT {0}.{1} = "{2}"'.format(
-            ctx.instance.id,
-            'public_ip',
-            ctx.instance.runtime_properties.get('public_ip')))
+    # if no public_ip default to private_ip
+    public_ip = ctx.instance.runtime_properties.get('public_ip')
+    if not public_ip:
+        public_ip = ctx.instance.runtime_properties.get('ip')
+        ctx.instance.runtime_properties['public_ip'] = public_ip
+
+    # See if the user wants to use the public IP as primary IP
+    if ctx.node.properties.get('use_public_ip') and \
+            ctx.instance.runtime_properties.get('public_ip'):
+        ctx.instance.runtime_properties['ip'] = \
+            ctx.instance.runtime_properties.get('public_ip')
+    ctx.logger.info('OUTPUT {0}.{1} = "{2}"'.format(
+        ctx.instance.id,
+        'ip',
+        ctx.instance.runtime_properties.get('ip')))
+    ctx.logger.info('OUTPUT {0}.{1} = "{2}"'.format(
+        ctx.instance.id,
+        'public_ip',
+        ctx.instance.runtime_properties.get('public_ip')))
 
 
 @operation(resumable=True)
