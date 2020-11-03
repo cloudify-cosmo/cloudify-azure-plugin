@@ -331,6 +331,9 @@ def cleanup_empty_params(data):
     """
 
     def convert_key_val(key):
+        # handle special case where -IP- inside the key
+        if 'IP' in key:
+            key = key.replace('IP', 'Ip')
         new_key = key[0].lower()
         for character in key[1:]:
             # Append an underscore if the character is uppercase.

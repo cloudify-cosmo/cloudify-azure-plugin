@@ -448,7 +448,8 @@ def configure(ctx, command_to_execute, file_uris, type_handler_version='1.8',
                     public_ip_data = pip.get(resource_group_name, pip_name)
                     public_ip = public_ip_data.get("ip_address")
             if not public_ip:
-                public_ip = ctx.instance.runtime_properties['ip']
+                # skip the public ip from this ip configuration as it is None
+                continue
 
             ctx.instance.runtime_properties['public_ip'] = public_ip
             # For consistency with other plugins.
