@@ -1,3 +1,4 @@
+3.0.8: Add resource group name to deployment and default to deployment name.
 3.0.7: Handle Public IPs.
 3.0.6: Handle regression in network profile.
 3.0.5: Fix Build Error.

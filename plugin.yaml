@@ -6,9 +6,9 @@ plugins:
   
   azure:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/3.0.7.zip
+    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/3.0.8.zip
     package_name: cloudify-azure-plugin
-    package_version: '3.0.7'
+    package_version: '3.0.8'
 
 data_types:
   cloudify.datatypes.azure.Config:
@@ -1887,6 +1887,14 @@ node_types:
       name:
         required: true
         type: string
+      resource_group_name:
+        type: string
+        description: >
+          Name of the Resource Group that the existing resource belongs to
+          (this is only useful when not using a relationship between a resource
+          node and a Resource Group node)
+        default: { get_property: [ SELF, name ] }
+        required: false
       location:
         required: true
         type: string

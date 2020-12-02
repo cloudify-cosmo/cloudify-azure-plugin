@@ -84,7 +84,9 @@ def create(ctx, **kwargs):
     else:
         ctx.logger.warn("azure_config is deprecated please use client_config, "
                         "in later version it will be removed")
-    name = utils.get_resource_name(ctx)
+    deployment_name = utils.get_resource_name(ctx)
+    resource_group_name = ctx.node.properties.get(
+        'resource_group_name', deployment_name)
     resource_group_params = {
         'location': ctx.node.properties.get('location'),
     }
@@ -92,11 +94,12 @@ def create(ctx, **kwargs):
         ctx.node.properties.get('api_version', constants.API_VER_RESOURCES)
     resource_group = ResourceGroup(azure_config, ctx.logger, api_version)
     try:
-        resource_group.create_or_update(name, resource_group_params)
+        resource_group.create_or_update(
+            resource_group_name, resource_group_params)
     except CloudError as cr:
         raise cfy_exc.NonRecoverableError(
             "create deployment resource_group '{0}' "
-            "failed with this error : {1}".format(name,
+            "failed with this error : {1}".format(resource_group_name,
                                                   cr.message)
             )
 
@@ -116,12 +119,15 @@ def create(ctx, **kwargs):
 
     try:
         result = \
-            deployment.create_or_update(name, name, deployment_params,
-                                        properties.get('timeout'))
+            deployment.create_or_update(
+                resource_group_name,
+                deployment_name,
+                deployment_params,
+                properties.get('timeout'))
     except CloudError as cr:
         raise cfy_exc.NonRecoverableError(
             "create deployment '{0}' "
-            "failed with this error : {1}".format(name,
+            "failed with this error : {1}".format(deployment_name,
                                                   cr.message)
             )
 
@@ -132,7 +138,7 @@ def create(ctx, **kwargs):
 
 
 @operation(resumable=True)
-def delete(ctx, **kwargs):
+def delete(ctx, **_):
     if ctx.node.properties.get('use_external_resource', False):
         return
     azure_config = ctx.node.properties.get('azure_config')
