@@ -3,12 +3,11 @@
 ##################################################################################
 
 plugins:
-  
   azure:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/3.0.8.zip
+    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/3.0.9.zip
     package_name: cloudify-azure-plugin
-    package_version: '3.0.8'
+    package_version: '3.0.9'
 
 data_types:
   cloudify.datatypes.azure.Config:
