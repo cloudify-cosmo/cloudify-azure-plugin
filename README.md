@@ -2,7 +2,7 @@
 
 ## Docs
 
-See [Cloudify Azure Plugin docs](https://docs.cloudify.co/5.0.5/working_with/official_plugins/infrastructure/azure/).
+See [Cloudify Azure Plugin docs](https://docs.cloudify.co/latest/working_with/official_plugins/infrastructure/azure/).
 
 ## Changelog
 
