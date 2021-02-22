@@ -27,7 +27,7 @@ executors:
     machine:
       image: ubuntu-1604:201903-01
 
-  cloudify-machine-510:
+  cloudify-machine-py3:
     machine:
       image: ubuntu-1604:201903-01
 
@@ -178,7 +178,6 @@ commands:
           paths:
             - build/*
 
-
   build_archive:
     steps:
       - attach_workspace:
@@ -197,7 +196,7 @@ commands:
           paths:
             - build/*
 
-  run_integration_tests_505:
+  create_manager_container_505:
     steps:
       - run:
           name: "Pull Submodules"
@@ -228,10 +227,9 @@ commands:
           command: docker run --name cfy_manager -d --restart unless-stopped -v /sys/fs/cgroup:/sys/fs/cgroup:ro --tmpfs /run --tmpfs /run/lock --security-opt seccomp:unconfined --cap-add SYS_ADMIN --network host cloudifyplatform/premium-cloudify-manager-aio
       - run:
           name: install local project
-          command: pip install https://github.com/cloudify-incubator/cloudify-ecosystem-test/archive/latest.zip
-      - run: pytest -s .circleci/test_examples.py
+          command: pip install git+https://github.com/cloudify-incubator/cloudify-ecosystem-test.git@migrating-aws-to-new-tool
 
-  run_integration_tests_510:
+  create_manager_container_py3:
     steps:
       - run:
           name: "Pull Submodules"
@@ -266,8 +264,23 @@ commands:
           command: docker exec -it cfy_manager cfy_manager wait-for-starter
       - run:
           name: install local project
-          command: pip install https://github.com/cloudify-incubator/cloudify-ecosystem-test/archive/latest.zip
-      - run: pytest -s .circleci/test_examples.py
+          command: pip install git+https://github.com/cloudify-incubator/cloudify-ecosystem-test.git@migrating-aws-to-new-tool
+
+  prepare_test_manager:
+    steps:
+      - run: ecosystem-test prepare-test-manager -l $TEST_LICENSE -es azure_client_id=$azure_client_id -es azure_client_secret=$azure_client_secret -es azure_location=$azure_location -es azure_subscription_id=$azure_subscription_id -es azure_tenant_id=$azure_tenant_id --bundle-path workspace/build/cloudify-plugins-bundle.tgz --yum-package python-netaddr --yum-package git
+
+  run_hello_world_test:
+    steps:
+      - run: ecosystem-test local-blueprint-test  -b examples/blueprint-examples/hello-world-example/azure.yaml --test-id=hello-world-example -i resource_prefix=azpl -i resource_suffix=test$CIRCLE_BUILD_NUM --on-failure=uninstall-force --timeout=1800
+
+  run_azure_arm_test:
+    steps:
+      - run: ecosystem-test local-blueprint-test  -b examples/blueprint-examples/virtual-machine/azure-arm.yaml --test-id=virtual-machine -i resource_prefix=azpl -i resource_suffix=test$CIRCLE_BUILD_NUM --on-failure=uninstall-force --timeout=1800
+
+  run_aks_test:
+    steps:
+      - run: ecosystem-test local-blueprint-test  -b examples/blueprint-examples/kubernetes/azure-aks/blueprint.yaml --test-id=azure-aks -i resource_suffix=it --on-failure=uninstall-force --timeout=3000
 
   release_plugin:
     steps:
@@ -386,23 +399,65 @@ jobs:
       - checkout
       - build_archive
 
-  integration_tests_505:
+  hw_integration_tests_505:
     executor: cloudify-machine
     environment:
       CLOUDIFY_SSL_TRUST_ALL: true
-      IAAS: azure
     steps:
       - checkout
-      - run_integration_tests_505
+      - create_manager_container_505
+      - prepare_test_manager
+      - run_hello_world_test
 
-  integration_tests_510:
-    executor: cloudify-machine-510
+  azure_arm_integration_tests_505:
+    executor: cloudify-machine
     environment:
       CLOUDIFY_SSL_TRUST_ALL: true
-      IAAS: azure
     steps:
       - checkout
-      - run_integration_tests_510
+      - create_manager_container_505
+      - prepare_test_manager
+      - run_azure_arm_test
+
+  aks_integration_tests_505:
+    executor: cloudify-machine
+    environment:
+      CLOUDIFY_SSL_TRUST_ALL: true
+    steps:
+      - checkout
+      - create_manager_container_505
+      - prepare_test_manager
+      - run_aks_test
+
+  hw_integration_tests_py3:
+    executor: cloudify-machine
+    environment:
+      CLOUDIFY_SSL_TRUST_ALL: true
+    steps:
+      - checkout
+      - create_manager_container_py3
+      - prepare_test_manager
+      - run_hello_world_test
+
+  azure_arm_integration_tests_py3:
+    executor: cloudify-machine
+    environment:
+      CLOUDIFY_SSL_TRUST_ALL: true
+    steps:
+      - checkout
+      - create_manager_container_py3
+      - prepare_test_manager
+      - run_azure_arm_test
+
+  aks_integration_tests_py3:
+    executor: cloudify-machine
+    environment:
+      CLOUDIFY_SSL_TRUST_ALL: true
+    steps:
+      - checkout
+      - create_manager_container_py3
+      - prepare_test_manager
+      - run_aks_test
 
   release:
     executor: py36
@@ -410,13 +465,11 @@ jobs:
       - checkout
       - release_plugin
 
-
   merge_docs:
     executor: py36
     steps:
       - checkout
       - merge_docs
-
 
 workflows:
   version: 2
@@ -430,31 +483,63 @@ workflows:
       - wagon:
           filters:
             branches:
-              only: /([0-9\.]*\-build|master|dev)/
+#              only: /([0-9\.]*\-build|master|dev)/
+              only: /RD-1497-use-ecosystem-test-cli/
       - rhel_wagon:
           filters:
             branches:
-              only: /([0-9\.]*\-build|master|dev)/
+#              only: /([0-9\.]*\-build|master|dev)/
+              only: /RD-1497-use-ecosystem-test-cli/
       - build_bundle:
           filters:
             branches:
-              only: /master/
+#              only: /master/
+              only: /RD-1497-use-ecosystem-test-cli/
           requires:
             - wagon
             - rhel_wagon
-      - integration_tests_505:
+      - hw_integration_tests_505:
           requires:
             - build_bundle
           filters:
             branches:
-              only: /([0-9\.]*\-build|master|dev)/
-      - integration_tests_510:
+#              only: /([0-9\.]*\-build|master|dev)/
+              only: /RD-1497-use-ecosystem-test-cli/
+      - azure_arm_integration_tests_505:
           requires:
             - build_bundle
-            - integration_tests_505
           filters:
             branches:
-              only: /([0-9\.]*\-build|master|dev)/
+#              only: /([0-9\.]*\-build|master|dev)/
+              only: /RD-1497-use-ecosystem-test-cli/
+      - aks_integration_tests_505:
+          requires:
+            - build_bundle
+          filters:
+            branches:
+#              only: /([0-9\.]*\-build|master|dev)/
+              only: /RD-1497-use-ecosystem-test-cli/
+      - hw_integration_tests_py3:
+          requires:
+            - hw_integration_tests_505
+          filters:
+            branches:
+#              only: /([0-9\.]*\-build|master|dev)/
+              only: /RD-1497-use-ecosystem-test-cli/
+      - azure_arm_integration_tests_py3:
+          requires:
+            - azure_arm_integration_tests_505
+          filters:
+            branches:
+#              only: /([0-9\.]*\-build|master|dev)/
+              only: /RD-1497-use-ecosystem-test-cli/
+      - aks_integration_tests_py3:
+          requires:
+            - aks_integration_tests_505
+          filters:
+            branches:
+#              only: /([0-9\.]*\-build|master|dev)/
+              only: /RD-1497-use-ecosystem-test-cli/
       - release:
           filters:
             branches:
@@ -464,8 +549,12 @@ workflows:
             - unittests_py36
             - rhel_wagon
             - wagon
-            - integration_tests_505
-            - integration_tests_510
+            - hw_integration_tests_505
+            - azure_arm_integration_tests_505
+            - aks_integration_tests_505
+            - hw_integration_tests_py3
+            - azure_arm_integration_tests_py3
+            - aks_integration_tests_py3
       - merge_docs:
           filters:
             branches:
@@ -494,18 +583,46 @@ workflows:
           filters:
             branches:
               only: /([0-9\.]*\-build|master|dev)/
-      - integration_tests_505:
+      - build_bundle:
+          filters:
+            branches:
+              only: /master/
           requires:
             - wagon
             - rhel_wagon
+      - hw_integration_tests_505:
+          requires:
+            - build_bundle
           filters:
             branches:
               only: /([0-9\.]*\-build|master|dev)/
-      - integration_tests_510:
+      - azure_arm_integration_tests_505:
           requires:
-            - wagon
-            - rhel_wagon
-            - integration_tests_505
+            - build_bundle
+          filters:
+            branches:
+              only: /([0-9\.]*\-build|master|dev)/
+      - aks_integration_tests_505:
+          requires:
+            - build_bundle
+          filters:
+            branches:
+              only: /([0-9\.]*\-build|master|dev)/
+      - hw_integration_tests_py3:
+          requires:
+            - hw_integration_tests_505
+          filters:
+            branches:
+              only: /([0-9\.]*\-build|master|dev)/
+      - azure_arm_integration_tests_py3:
+          requires:
+            - azure_arm_integration_tests_505
+          filters:
+            branches:
+              only: /([0-9\.]*\-build|master|dev)/
+      - aks_integration_tests_py3:
+          requires:
+            - aks_integration_tests_505
           filters:
             branches:
               only: /([0-9\.]*\-build|master|dev)/
