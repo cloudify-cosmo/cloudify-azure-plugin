@@ -227,7 +227,7 @@ commands:
           command: docker run --name cfy_manager -d --restart unless-stopped -v /sys/fs/cgroup:/sys/fs/cgroup:ro --tmpfs /run --tmpfs /run/lock --security-opt seccomp:unconfined --cap-add SYS_ADMIN --network host cloudifyplatform/premium-cloudify-manager-aio
       - run:
           name: install local project
-          command: pip install git+https://github.com/cloudify-incubator/cloudify-ecosystem-test.git@migrating-aws-to-new-tool
+          command: pip install https://github.com/cloudify-incubator/cloudify-ecosystem-test/archive/latest.zip
 
   create_manager_container_py3:
     steps:
@@ -264,7 +264,7 @@ commands:
           command: docker exec -it cfy_manager cfy_manager wait-for-starter
       - run:
           name: install local project
-          command: pip install git+https://github.com/cloudify-incubator/cloudify-ecosystem-test.git@migrating-aws-to-new-tool
+          command: pip install https://github.com/cloudify-incubator/cloudify-ecosystem-test/archive/latest.zip
 
   prepare_test_manager:
     steps:
@@ -483,18 +483,15 @@ workflows:
       - wagon:
           filters:
             branches:
-#              only: /([0-9\.]*\-build|master|dev)/
-              only: /RD-1497-use-ecosystem-test-cli/
+              only: /([0-9\.]*\-build|master|dev)/
       - rhel_wagon:
           filters:
             branches:
-#              only: /([0-9\.]*\-build|master|dev)/
-              only: /RD-1497-use-ecosystem-test-cli/
+              only: /([0-9\.]*\-build|master|dev)/
       - build_bundle:
           filters:
             branches:
-#              only: /master/
-              only: /RD-1497-use-ecosystem-test-cli/
+              only: /master/
           requires:
             - wagon
             - rhel_wagon
@@ -503,43 +500,37 @@ workflows:
             - build_bundle
           filters:
             branches:
-#              only: /([0-9\.]*\-build|master|dev)/
-              only: /RD-1497-use-ecosystem-test-cli/
+              only: /([0-9\.]*\-build|master|dev)/
       - azure_arm_integration_tests_505:
           requires:
             - build_bundle
           filters:
             branches:
-#              only: /([0-9\.]*\-build|master|dev)/
-              only: /RD-1497-use-ecosystem-test-cli/
+              only: /([0-9\.]*\-build|master|dev)/
       - aks_integration_tests_505:
           requires:
             - build_bundle
           filters:
             branches:
-#              only: /([0-9\.]*\-build|master|dev)/
-              only: /RD-1497-use-ecosystem-test-cli/
+              only: /([0-9\.]*\-build|master|dev)/
       - hw_integration_tests_py3:
           requires:
             - hw_integration_tests_505
           filters:
             branches:
-#              only: /([0-9\.]*\-build|master|dev)/
-              only: /RD-1497-use-ecosystem-test-cli/
+              only: /([0-9\.]*\-build|master|dev)/
       - azure_arm_integration_tests_py3:
           requires:
             - azure_arm_integration_tests_505
           filters:
             branches:
-#              only: /([0-9\.]*\-build|master|dev)/
-              only: /RD-1497-use-ecosystem-test-cli/
+              only: /([0-9\.]*\-build|master|dev)/
       - aks_integration_tests_py3:
           requires:
             - aks_integration_tests_505
           filters:
             branches:
-#              only: /([0-9\.]*\-build|master|dev)/
-              only: /RD-1497-use-ecosystem-test-cli/
+              only: /([0-9\.]*\-build|master|dev)/
       - release:
           filters:
             branches:
