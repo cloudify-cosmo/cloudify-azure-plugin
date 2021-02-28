@@ -129,7 +129,7 @@ def with_generate_name(resource_class_name):
                             name=name,
                             rtbl_name=rtbl_name)
                     # network_security_rule
-                    elif isinstance(resource, Route):
+                    elif isinstance(resource, NetworkSecurityRule):
                         nsg_name = utils.get_network_security_group(ctx)
                         name = get_unique_name(
                             resource=resource,
@@ -188,7 +188,7 @@ def with_azure_resource(resource_class_name):
                     rtbl_name = utils.get_route_table(ctx)
                     result = resource.get(resource_group_name, rtbl_name, name)
                 # network_security_rule
-                elif isinstance(resource, Route):
+                elif isinstance(resource, NetworkSecurityRule):
                     nsg_name = utils.get_network_security_group(ctx)
                     result = resource.get(resource_group_name, nsg_name, name)
                 else:
