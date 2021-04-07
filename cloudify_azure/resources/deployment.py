@@ -93,6 +93,7 @@ def create(ctx, **kwargs):
     api_version = \
         ctx.node.properties.get('api_version', constants.API_VER_RESOURCES)
     resource_group = ResourceGroup(azure_config, ctx.logger, api_version)
+    ctx.logger.info('Point 1')
     try:
         resource_group.create_or_update(
             resource_group_name, resource_group_params)
@@ -102,6 +103,7 @@ def create(ctx, **kwargs):
             "failed with this error : {1}".format(resource_group_name,
                                                   cr.message)
             )
+    ctx.logger.info('Point 2')
 
     # load template
     properties = {}
@@ -116,6 +118,7 @@ def create(ctx, **kwargs):
         'template': template,
         'parameters': format_params(properties.get('params', {}))
     }
+    ctx.logger.info('Point 3')
 
     try:
         result = \
@@ -130,6 +133,7 @@ def create(ctx, **kwargs):
             "failed with this error : {1}".format(deployment_name,
                                                   cr.message)
             )
+    ctx.logger.info('Point 4')
 
     ctx.instance.runtime_properties['resource'] = result
     ctx.instance.runtime_properties['resource_id'] = result.get("id", "")
