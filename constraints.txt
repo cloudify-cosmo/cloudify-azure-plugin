@@ -1,5 +1,5 @@
 pyyaml>=4.2b4
 cloudify-common>=5.1.0
 rsa==4.5
-cryptography==3.2.1
+cryptography==3.3.2
 decorator==4.4.2
