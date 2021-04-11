@@ -1,3 +1,4 @@
+3.0.11: Support Deployment with the same name as its Resource Group.
 3.0.10: Fix some bugs related to create managed_cluster/network_security_rule/storage_account
 3.0.9: Upgrade PyYAML.
 3.0.8: Add resource group name to deployment and default to deployment name.

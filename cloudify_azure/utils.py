@@ -25,6 +25,8 @@ from cloudify import ctx
 
 from cloudify_azure import constants
 
+from msrestazure.azure_exceptions import CloudError
+
 
 def dict_update(orig, updates):
     """Recursively merges two objects"""
@@ -233,6 +235,8 @@ def get_parent(inst, rel_type='cloudify.relationships.contained_in'):
     :rtype: :class:`cloudify.context.RelationshipSubjectContext` or None
     """
     ctx.logger.debug('Attempting to find parent for : {0}'.format(inst.id))
+    if not isinstance(inst.relationships, list):
+        return
     for rel in inst.relationships:
         ctx.logger.debug(
             'Attempting to find rel of type {rel_type} in {hierarchy}.'.format(
@@ -419,3 +423,12 @@ def get_resource_id_from_name(subscription_id,
                                             resource_type=resource_type,
                                             resource_name=resource_name)
     return resource_id
+
+
+def check_if_resource_exists(resource, resource_group_name, name=None):
+    try:
+        if name:
+            return resource.get(resource_group_name, name)
+        return resource.get(resource_group_name)
+    except CloudError:
+        return
