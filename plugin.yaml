@@ -108,6 +108,48 @@ data_types:
         required: false
         default: ""
 
+  cloudify.datatypes.azure.Common:
+    description: >
+      The properties, which are common to all types.
+    properties: &common_properties
+      name:
+        type: string
+        description: >
+          Name for the resource. Storage account name must be between
+          3 and 24 characters in length and use numbers and lower-case
+          letters only.
+        required: false
+      azure_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
+      client_config:
+        description: >
+          A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
+
+  cloudify.datatypes.azure.ExistingResources:
+    properties: &existing_resources
+      use_external_resource:
+        description: >
+          Indicate whether the resource exists or if Cloudify should create the resource
+        type: boolean
+        default: false
+        required: true
+      create_if_missing:
+        description: >
+          If use_external_resource is true and the resource does not exist, create it.
+        type: boolean
+        required: true
+        default: false
+      use_if_exists:
+        description: If use_external_resource is false, but the resource does exist, use it.
+        type: boolean
+        required: true
+        default: false
+
   cloudify.datatypes.azure.storage.StorageAccountConfig:
     description: >
       See https://msdn.microsoft.com/en-us/library/mt163564.aspx
@@ -495,19 +537,13 @@ node_types:
   cloudify.azure.nodes.ResourceGroup:
     derived_from: cloudify.nodes.Root
     properties:
+      <<: *common_properties
+      <<: *existing_resources
       api_version:
         type: string
         description: >
           Resources API Version
         default: "2017-05-10"
-      name:
-        type: string
-        description: >
-          Name for the resource. Resource group name must be no longer than
-          80 characters long. It can contain only alphanumeric characters,
-          dash, underscore, opening parenthesis, closing parenthesis,
-          and period. The name cannot end with a period.
-        required: false
       location:
         type: string
         description: >
@@ -517,28 +553,12 @@ node_types:
         description: >
           Specifies a dictionary of one or more name and value pairs that describe a tag
         required: false
-      use_external_resource:
-        description: >
-          Indicate whether the resource exists or if Cloudify should create the resource
-        type: boolean
-        default: false
-        required: true
       retry_after:
         description: >
           Overrides the Azure-specified "retry_after" response. This property
           will set the number of seconds for each task retry interval (in the
           case of iteratively checking the status of an asynchronous operation)
         type: integer
-        required: false
-      azure_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
-      client_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -548,18 +568,13 @@ node_types:
   cloudify.azure.nodes.storage.StorageAccount:
     derived_from: cloudify.nodes.Root
     properties:
+      <<: *common_properties
+      <<: *existing_resources
       api_version:
         type: string
         description: >
           Storage API Version
         default: "2015-06-15"
-      name:
-        type: string
-        description: >
-          Name for the resource. Storage account name must be between
-          3 and 24 characters in length and use numbers and lower-case
-          letters only.
-        required: false
       resource_group_name:
         type: string
         description: >
@@ -585,28 +600,12 @@ node_types:
           A dictionary of values to pass as properties when creating the resource
         type: cloudify.datatypes.azure.storage.StorageAccountConfig
         required: true
-      use_external_resource:
-        description: >
-          Indicate whether the resource exists or if Cloudify should create the resource
-        type: boolean
-        default: false
-        required: true
       retry_after:
         description: >
           Overrides the Azure-specified "retry_after" response. This property
           will set the number of seconds for each task retry interval (in the
           case of iteratively checking the status of an asynchronous operation)
         type: integer
-        required: false
-      azure_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
-      client_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -616,26 +615,13 @@ node_types:
   cloudify.azure.nodes.storage.DataDisk:
     derived_from: cloudify.nodes.Root
     properties:
-      name:
-        type: string
-        description: >
-          Name for the resource (include any extension, such as .vhd).
-          Can be up to 80 characters in length and
-          contain lowercase letters, numbers, ".", and "_". Must start
-          with a number or lowercase letter and cannot end with
-          either "_" or "."
-        required: false
+      <<: *common_properties
+      <<: *existing_resources
       location:
         type: string
         description: >
           Specifies the supported Azure location for the resource
         required: false
-      use_external_resource:
-        description: >
-          Indicate whether the resource exists or if Cloudify should create the resource
-        type: boolean
-        default: false
-        required: true
       retry_after:
         description: >
           Overrides the Azure-specified "retry_after" response. This property
@@ -648,16 +634,6 @@ node_types:
           A dictionary of values to pass as properties when creating the resource
         type: cloudify.datatypes.azure.storage.DataDiskConfig
         required: false
-      azure_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
-      client_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
     interfaces:
       cloudify.interfaces.lifecycle:
         create: azure.cloudify_azure.resources.storage.disk.create_data_disk
@@ -666,25 +642,13 @@ node_types:
   cloudify.azure.nodes.storage.FileShare:
     derived_from: cloudify.nodes.Root
     properties:
-      name:
-        type: string
-        description: >
-          Name for the resource. Can be up to 63 characters in length and
-          contain lowercase letters, numbers, and dashes. Must start
-          with a number or lowercase letter and cannot contain
-          two consecutive dashes.
-        required: false
+      <<: *common_properties
+      <<: *existing_resources
       location:
         type: string
         description: >
           Specifies the supported Azure location for the resource
         required: false
-      use_external_resource:
-        description: >
-          Indicate whether the resource exists or if Cloudify should create the resource
-        type: boolean
-        default: false
-        required: true
       retry_after:
         description: >
           Overrides the Azure-specified "retry_after" response. This property
@@ -697,16 +661,6 @@ node_types:
           A dictionary of values to pass as properties when creating the resource
         type: cloudify.datatypes.azure.storage.FileShareConfig
         required: false
-      azure_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
-      client_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
     interfaces:
       cloudify.interfaces.lifecycle:
         create: azure.cloudify_azure.resources.storage.file.create_file_share
@@ -714,16 +668,13 @@ node_types:
   cloudify.azure.nodes.network.VirtualNetwork:
     derived_from: cloudify.nodes.Root
     properties:
+      <<: *common_properties
+      <<: *existing_resources
       api_version:
         type: string
         description: >
           Network API Version
         default: "2016-09-01"
-      name:
-        type: string
-        description: >
-          Name for the resource.
-        required: false
       resource_group_name:
         type: string
         description: >
@@ -745,28 +696,12 @@ node_types:
           A dictionary of values to pass as properties when creating the resource
         type: cloudify.datatypes.azure.network.VirtualNetworkConfig
         required: false
-      use_external_resource:
-        description: >
-          Indicate whether the resource exists or if Cloudify should create the resource
-        type: boolean
-        default: false
-        required: true
       retry_after:
         description: >
           Overrides the Azure-specified "retry_after" response. This property
           will set the number of seconds for each task retry interval (in the
           case of iteratively checking the status of an asynchronous operation)
         type: integer
-        required: false
-      azure_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
-      client_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -776,16 +711,13 @@ node_types:
   cloudify.azure.nodes.network.NetworkSecurityGroup:
     derived_from: cloudify.nodes.Root
     properties:
+      <<: *common_properties
+      <<: *existing_resources
       api_version:
         type: string
         description: >
           Network API Version
         default: "2016-09-01"
-      name:
-        type: string
-        description: >
-          Name for the resource.
-        required: false
       resource_group_name:
         type: string
         description: >
@@ -807,28 +739,12 @@ node_types:
           A dictionary of values to pass as properties when creating the resource
         type: cloudify.datatypes.azure.network.NetworkSecurityGroupConfig
         required: false
-      use_external_resource:
-        description: >
-          Indicate whether the resource exists or if Cloudify should create the resource
-        type: boolean
-        default: false
-        required: true
       retry_after:
         description: >
           Overrides the Azure-specified "retry_after" response. This property
           will set the number of seconds for each task retry interval (in the
           case of iteratively checking the status of an asynchronous operation)
         type: integer
-        required: false
-      azure_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
-      client_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -838,16 +754,13 @@ node_types:
   cloudify.azure.nodes.network.NetworkSecurityRule:
     derived_from: cloudify.nodes.Root
     properties:
+      <<: *common_properties
+      <<: *existing_resources
       api_version:
         type: string
         description: >
           Network API Version
         default: "2016-09-01"
-      name:
-        type: string
-        description: >
-          Name for the resource.
-        required: false
       resource_group_name:
         type: string
         description: >
@@ -876,28 +789,12 @@ node_types:
           A dictionary of values to pass as properties when creating the resource
         type: cloudify.datatypes.azure.network.NetworkSecurityRuleConfig
         required: false
-      use_external_resource:
-        description: >
-          Indicate whether the resource exists or if Cloudify should create the resource
-        type: boolean
-        default: false
-        required: true
       retry_after:
         description: >
           Overrides the Azure-specified "retry_after" response. This property
           will set the number of seconds for each task retry interval (in the
           case of iteratively checking the status of an asynchronous operation)
         type: integer
-        required: false
-      azure_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
-      client_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -907,16 +804,13 @@ node_types:
   cloudify.azure.nodes.network.Subnet:
     derived_from: cloudify.nodes.Root
     properties:
+      <<: *common_properties
+      <<: *existing_resources
       api_version:
         type: string
         description: >
           Network API Version
         default: "2016-09-01"
-      name:
-        type: string
-        description: >
-          Name for the resource.
-        required: false
       resource_group_name:
         type: string
         description: >
@@ -945,28 +839,12 @@ node_types:
           A dictionary of values to pass as properties when creating the resource
         type: cloudify.datatypes.azure.network.SubnetConfig
         required: false
-      use_external_resource:
-        description: >
-          Indicate whether the resource exists or if Cloudify should create the resource
-        type: boolean
-        default: false
-        required: true
       retry_after:
         description: >
           Overrides the Azure-specified "retry_after" response. This property
           will set the number of seconds for each task retry interval (in the
           case of iteratively checking the status of an asynchronous operation)
         type: integer
-        required: false
-      azure_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
-      client_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -976,16 +854,13 @@ node_types:
   cloudify.azure.nodes.network.RouteTable:
     derived_from: cloudify.nodes.Root
     properties:
+      <<: *common_properties
+      <<: *existing_resources
       api_version:
         type: string
         description: >
           Network API Version
         default: "2016-09-01"
-      name:
-        type: string
-        description: >
-          Name for the resource.
-        required: false
       resource_group_name:
         type: string
         description: >
@@ -1007,28 +882,12 @@ node_types:
           A dictionary of values to pass as properties when creating the resource
         type: cloudify.datatypes.azure.network.RouteTableConfig
         required: false
-      use_external_resource:
-        description: >
-          Indicate whether the resource exists or if Cloudify should create the resource
-        type: boolean
-        default: false
-        required: true
       retry_after:
         description: >
           Overrides the Azure-specified "retry_after" response. This property
           will set the number of seconds for each task retry interval (in the
           case of iteratively checking the status of an asynchronous operation)
         type: integer
-        required: false
-      azure_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
-      client_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -1038,16 +897,13 @@ node_types:
   cloudify.azure.nodes.network.Route:
     derived_from: cloudify.nodes.Root
     properties:
+      <<: *common_properties
+      <<: *existing_resources
       api_version:
         type: string
         description: >
           Network API Version
         default: "2016-09-01"
-      name:
-        type: string
-        description: >
-          Name for the resource.
-        required: false
       resource_group_name:
         type: string
         description: >
@@ -1076,28 +932,12 @@ node_types:
           A dictionary of values to pass as properties when creating the resource
         type: cloudify.datatypes.azure.network.RouteConfig
         required: false
-      use_external_resource:
-        description: >
-          Indicate whether the resource exists or if Cloudify should create the resource
-        type: boolean
-        default: false
-        required: true
       retry_after:
         description: >
           Overrides the Azure-specified "retry_after" response. This property
           will set the number of seconds for each task retry interval (in the
           case of iteratively checking the status of an asynchronous operation)
         type: integer
-        required: false
-      azure_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
-      client_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -1107,16 +947,13 @@ node_types:
   cloudify.azure.nodes.network.NetworkInterfaceCard:
     derived_from: cloudify.nodes.Root
     properties:
+      <<: *common_properties
+      <<: *existing_resources
       api_version:
         type: string
         description: >
           Network API Version
         default: "2016-09-01"
-      name:
-        type: string
-        description: >
-          Name for the resource.
-        required: false
       resource_group_name:
         type: string
         description: >
@@ -1143,28 +980,12 @@ node_types:
           A dictionary of values to pass as properties when creating the resource
         type: cloudify.datatypes.azure.network.NetworkInterfaceCardConfig
         required: false
-      use_external_resource:
-        description: >
-          Indicate whether the resource exists or if Cloudify should create the resource
-        type: boolean
-        default: false
-        required: true
       retry_after:
         description: >
           Overrides the Azure-specified "retry_after" response. This property
           will set the number of seconds for each task retry interval (in the
           case of iteratively checking the status of an asynchronous operation)
         type: integer
-        required: false
-      azure_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
-      client_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -1176,16 +997,13 @@ node_types:
   cloudify.azure.nodes.network.IPConfiguration:
     derived_from: cloudify.nodes.Root
     properties:
+      <<: *common_properties
+      <<: *existing_resources
       api_version:
         type: string
         description: >
           Network API Version
         default: "2016-09-01"
-      name:
-        type: string
-        description: >
-          Name for the resource.
-        required: false
       resource_group_name:
         type: string
         description: >
@@ -1207,12 +1025,6 @@ node_types:
           A dictionary of values to pass as properties when creating the resource
         type: cloudify.datatypes.azure.network.IPConfigurationConfig
         required: true
-      use_external_resource:
-        description: >
-          Indicate whether the resource exists or if Cloudify should create the resource
-        type: boolean
-        default: false
-        required: true
       retry_after:
         description: >
           Overrides the Azure-specified "retry_after" response. This property
@@ -1220,30 +1032,17 @@ node_types:
           case of iteratively checking the status of an asynchronous operation)
         type: integer
         required: false
-      azure_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
-      client_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
 
   cloudify.azure.nodes.network.PublicIPAddress:
     derived_from: cloudify.nodes.Root
     properties:
+      <<: *common_properties
+      <<: *existing_resources
       api_version:
         type: string
         description: >
           Network API Version
         default: "2016-09-01"
-      name:
-        type: string
-        description: >
-          Name for the resource.
-        required: false
       resource_group_name:
         type: string
         description: >
@@ -1265,28 +1064,12 @@ node_types:
           A dictionary of values to pass as properties when creating the resource
         type: cloudify.datatypes.azure.network.PublicIPAddressConfig
         required: false
-      use_external_resource:
-        description: >
-          Indicate whether the resource exists or if Cloudify should create the resource
-        type: boolean
-        default: false
-        required: true
       retry_after:
         description: >
           Overrides the Azure-specified "retry_after" response. This property
           will set the number of seconds for each task retry interval (in the
           case of iteratively checking the status of an asynchronous operation)
         type: integer
-        required: false
-      azure_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
-      client_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -1297,16 +1080,13 @@ node_types:
   cloudify.azure.nodes.compute.AvailabilitySet:
     derived_from: cloudify.nodes.Root
     properties:
+      <<: *common_properties
+      <<: *existing_resources
       api_version:
         type: string
         description: >
           Compute API Version
         default: "2016-03-30"
-      name:
-        type: string
-        description: >
-          Name for the resource.
-        required: false
       resource_group_name:
         type: string
         description: >
@@ -1328,28 +1108,12 @@ node_types:
           A dictionary of values to pass as properties when creating the resource
         type: cloudify.datatypes.azure.compute.AvailabilitySetConfig
         required: true
-      use_external_resource:
-        description: >
-          Indicate whether the resource exists or if Cloudify should create the resource
-        type: boolean
-        default: false
-        required: true
       retry_after:
         description: >
           Overrides the Azure-specified "retry_after" response. This property
           will set the number of seconds for each task retry interval (in the
           case of iteratively checking the status of an asynchronous operation)
         type: integer
-        required: false
-      azure_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
-      client_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -1359,16 +1123,13 @@ node_types:
   cloudify.azure.nodes.compute.VirtualMachine:
     derived_from: cloudify.nodes.Compute
     properties:
+      <<: *common_properties
+      <<: *existing_resources
       api_version:
         type: string
         description: >
           Compute API Version
         default: "2016-03-30"
-      name:
-        type: string
-        description: >
-          Name for the resource.
-        required: false
       resource_group_name:
         type: string
         description: >
@@ -1401,28 +1162,12 @@ node_types:
           A dictionary of values to pass as properties when creating the resource
         type: cloudify.datatypes.azure.compute.VirtualMachineConfig
         required: true
-      use_external_resource:
-        description: >
-          Indicate whether the resource exists or if Cloudify should create the resource
-        type: boolean
-        default: false
-        required: true
       retry_after:
         description: >
           Overrides the Azure-specified "retry_after" response. This property
           will set the number of seconds for each task retry interval (in the
           case of iteratively checking the status of an asynchronous operation)
         type: integer
-        required: false
-      azure_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
-      client_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
         required: false
       ip:
         description: |
@@ -1483,16 +1228,13 @@ node_types:
   cloudify.azure.nodes.compute.VirtualMachineExtension:
     derived_from: cloudify.nodes.Root
     properties:
+      <<: *common_properties
+      <<: *existing_resources
       api_version:
         type: string
         description: >
           Compute API Version
         default: "2016-03-30"
-      name:
-        type: string
-        description: >
-          Name for the resource.
-        required: false
       resource_group_name:
         type: string
         description: >
@@ -1516,28 +1258,12 @@ node_types:
         description: >
           Specifies a dictionary of one or more name and value pairs that describe a tag
         required: false
-      use_external_resource:
-        description: >
-          Indicate whether the resource exists or if Cloudify should create the resource
-        type: boolean
-        default: false
-        required: true
       retry_after:
         description: >
           Overrides the Azure-specified "retry_after" response. This property
           will set the number of seconds for each task retry interval (in the
           case of iteratively checking the status of an asynchronous operation)
         type: integer
-        required: false
-      azure_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
-      client_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -1565,16 +1291,13 @@ node_types:
   cloudify.azure.nodes.network.LoadBalancer:
     derived_from: cloudify.nodes.Root
     properties:
+      <<: *common_properties
+      <<: *existing_resources
       api_version:
         type: string
         description: >
           Network API Version
         default: "2016-09-01"
-      name:
-        type: string
-        description: >
-          Name for the resource.
-        required: false
       resource_group_name:
         type: string
         description: >
@@ -1596,28 +1319,12 @@ node_types:
           A dictionary of values to pass as properties when creating the resource
         type: cloudify.datatypes.azure.network.LoadBalancerConfig
         required: false
-      use_external_resource:
-        description: >
-          Indicate whether the resource exists or if Cloudify should create the resource
-        type: boolean
-        default: false
-        required: true
       retry_after:
         description: >
           Overrides the Azure-specified "retry_after" response. This property
           will set the number of seconds for each task retry interval (in the
           case of iteratively checking the status of an asynchronous operation)
         type: integer
-        required: false
-      azure_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
-      client_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -1628,16 +1335,13 @@ node_types:
   cloudify.azure.nodes.network.LoadBalancer.BackendAddressPool:
     derived_from: cloudify.nodes.Root
     properties:
+      <<: *common_properties
+      <<: *existing_resources
       api_version:
         type: string
         description: >
           Network API Version
         default: "2016-09-01"
-      name:
-        type: string
-        description: >
-          Name for the resource.
-        required: false
       resource_group_name:
         type: string
         description: >
@@ -1657,28 +1361,12 @@ node_types:
         description: >
           Specifies a dictionary of one or more name and value pairs that describe a tag
         required: false
-      use_external_resource:
-        description: >
-          Indicate whether the resource exists or if Cloudify should create the resource
-        type: boolean
-        default: false
-        required: true
       retry_after:
         description: >
           Overrides the Azure-specified "retry_after" response. This property
           will set the number of seconds for each task retry interval (in the
           case of iteratively checking the status of an asynchronous operation)
         type: integer
-        required: false
-      azure_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
-      client_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -1688,16 +1376,13 @@ node_types:
   cloudify.azure.nodes.network.LoadBalancer.Probe:
     derived_from: cloudify.nodes.Root
     properties:
+      <<: *common_properties
+      <<: *existing_resources
       api_version:
         type: string
         description: >
           Network API Version
         default: "2016-09-01"
-      name:
-        type: string
-        description: >
-          Name for the resource.
-        required: false
       resource_group_name:
         type: string
         description: >
@@ -1722,28 +1407,12 @@ node_types:
           A dictionary of values to pass as properties when creating the resource
         type: cloudify.datatypes.azure.network.LoadBalancerProbeConfig
         required: false
-      use_external_resource:
-        description: >
-          Indicate whether the resource exists or if Cloudify should create the resource
-        type: boolean
-        default: false
-        required: true
       retry_after:
         description: >
           Overrides the Azure-specified "retry_after" response. This property
           will set the number of seconds for each task retry interval (in the
           case of iteratively checking the status of an asynchronous operation)
         type: integer
-        required: false
-      azure_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
-      client_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -1753,16 +1422,13 @@ node_types:
   cloudify.azure.nodes.network.LoadBalancer.IncomingNATRule:
     derived_from: cloudify.nodes.Root
     properties:
+      <<: *common_properties
+      <<: *existing_resources
       api_version:
         type: string
         description: >
           Network API Version
         default: "2016-09-01"
-      name:
-        type: string
-        description: >
-          Name for the resource.
-        required: false
       resource_group_name:
         type: string
         description: >
@@ -1787,28 +1453,12 @@ node_types:
           A dictionary of values to pass as properties when creating the resource
         type: cloudify.datatypes.azure.network.LoadBalancerIncomingNATRuleConfig
         required: false
-      use_external_resource:
-        description: >
-          Indicate whether the resource exists or if Cloudify should create the resource
-        type: boolean
-        default: false
-        required: true
       retry_after:
         description: >
           Overrides the Azure-specified "retry_after" response. This property
           will set the number of seconds for each task retry interval (in the
           case of iteratively checking the status of an asynchronous operation)
         type: integer
-        required: false
-      azure_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
-      client_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -1818,15 +1468,13 @@ node_types:
   cloudify.azure.nodes.network.LoadBalancer.Rule:
     derived_from: cloudify.nodes.Root
     properties:
+      <<: *common_properties
+      <<: *existing_resources
       api_version:
         type: string
         description: >
           Network API Version
         default: "2016-09-01"
-      name:
-        type: string
-        description: >
-          Name for the resource.
         required: false
       resource_group_name:
         type: string
@@ -1852,28 +1500,12 @@ node_types:
           A dictionary of values to pass as properties when creating the resource
         type: cloudify.datatypes.azure.network.LoadBalancerRuleConfig
         required: false
-      use_external_resource:
-        description: >
-          Indicate whether the resource exists or if Cloudify should create the resource
-        type: boolean
-        default: false
-        required: true
       retry_after:
         description: >
           Overrides the Azure-specified "retry_after" response. This property
           will set the number of seconds for each task retry interval (in the
           case of iteratively checking the status of an asynchronous operation)
         type: integer
-        required: false
-      azure_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
-      client_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -1883,9 +1515,8 @@ node_types:
   cloudify.azure.Deployment:
     derived_from: cloudify.nodes.Root
     properties:
-      name:
-        required: true
-        type: string
+      <<: *common_properties
+      <<: *existing_resources
       resource_group_name:
         type: string
         description: >
@@ -1912,22 +1543,6 @@ node_types:
           Deployment params
         required: false
         default: {}
-      azure_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
-      client_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
-      use_external_resource:
-        description: >
-          Indicate whether the resource exists or if Cloudify should create the resource
-        type: boolean
-        default: false
-        required: true
     interfaces:
       cloudify.interfaces.lifecycle:
         create: azure.cloudify_azure.resources.deployment.create
@@ -1936,9 +1551,7 @@ node_types:
   cloudify.azure.nodes.compute.ContainerService:
     derived_from: cloudify.nodes.Root
     properties:
-      name:
-        required: true
-        type: string
+      <<: *common_properties
       resource_group:
         required: true
         type: string
@@ -1947,16 +1560,6 @@ node_types:
         required: false
         description: >
           Container service config details
-      azure_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
-      client_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
@@ -1978,9 +1581,8 @@ node_types:
   cloudify.azure.nodes.Plan:
     derived_from: cloudify.nodes.Root
     properties:
-      name:
-        required: true
-        type: string
+      <<: *common_properties
+      <<: *existing_resources
       resource_group:
         required: true
         type: string
@@ -1989,22 +1591,6 @@ node_types:
         required: false
         description: >
           SKU details, including location, name, capacity and tier
-      azure_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
-      client_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
-      use_external_resource:
-        description: >
-          Indicate whether the resource exists or if Cloudify should create the resource
-        type: boolean
-        default: false
-        required: true
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
@@ -2026,9 +1612,7 @@ node_types:
   cloudify.azure.nodes.WebApp:
     derived_from: cloudify.nodes.Root
     properties:
-      name:
-        required: true
-        type: string
+      <<: *common_properties
       resource_group:
         required: true
         type: string
@@ -2037,16 +1621,6 @@ node_types:
         required: false
         description: >
           App config details, including location and plan
-      azure_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
-      client_config:
-        description: >
-          A dictionary of values to pass to authenticate with the Azure API
-        type: cloudify.datatypes.azure.Config
-        required: false
     interfaces:
       cloudify.interfaces.lifecycle:
         create:

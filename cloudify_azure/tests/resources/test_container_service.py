@@ -29,7 +29,8 @@ from cloudify_azure.utils import handle_resource_config_params
 class ContainerServiceTest(unittest.TestCase):
 
     def _get_mock_context_for_run(self):
-        fake_ctx = cfy_mocks.MockCloudifyContext()
+        operation = {'name': 'cloudify.interfaces.lifecycle.mock'}
+        fake_ctx = cfy_mocks.MockCloudifyContext(operation=operation)
         instance = mock.Mock()
         instance.runtime_properties = {}
         fake_ctx._instance = instance
@@ -37,6 +38,7 @@ class ContainerServiceTest(unittest.TestCase):
         fake_ctx._node = node
         node.properties = {}
         node.runtime_properties = {}
+        node.type_hierarchy = ['ctx.nodes.Root']
         fake_ctx.get_resource = mock.MagicMock(
             return_value=""
         )
