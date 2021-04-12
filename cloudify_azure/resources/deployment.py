@@ -93,16 +93,15 @@ def create(ctx, **kwargs):
     api_version = \
         ctx.node.properties.get('api_version', constants.API_VER_RESOURCES)
     resource_group = ResourceGroup(azure_config, ctx.logger, api_version)
-    if not utils.check_if_resource_exists(resource_group, resource_group_name):
-        try:
-            resource_group.create_or_update(
-                resource_group_name, resource_group_params)
-        except CloudError as cr:
-            raise cfy_exc.NonRecoverableError(
-                "create deployment resource_group '{0}' "
-                "failed with this error : {1}".format(resource_group_name,
-                                                      cr.message)
-                )
+    try:
+        resource_group.create_or_update(
+            resource_group_name, resource_group_params)
+    except CloudError as cr:
+        raise cfy_exc.NonRecoverableError(
+            "create deployment resource_group '{0}' "
+            "failed with this error : {1}".format(resource_group_name,
+                                                  cr.message)
+            )
 
     # load template
     properties = {}

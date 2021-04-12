@@ -35,15 +35,21 @@ def return_none(foo):
 class AvailabilitySetTest(unittest.TestCase):
 
     def _get_mock_context_for_run(self):
-        fake_ctx = cfy_mocks.MockCloudifyContext()
+        operation = {'name': 'cloudify.interfaces.lifecycle.mock'}
+        fake_ctx = cfy_mocks.MockCloudifyContext(operation=operation)
         instance = mock.Mock()
         instance.runtime_properties = {}
         instance.relationships = []
         fake_ctx._instance = instance
         node = mock.Mock()
         fake_ctx._node = node
-        node.properties = {}
+        node.properties = {
+            'use_external_resource': False,
+            'create_if_missing': False,
+            'use_if_exists': False,
+        }
         node.runtime_properties = {}
+        node.type_hierarchy = ['ctx.nodes.Root']
         fake_ctx.get_resource = mock.MagicMock(
             return_value=""
         )
@@ -97,6 +103,7 @@ class AvailabilitySetTest(unittest.TestCase):
         self.node.properties['azure_config'] = self.dummy_azure_credentials
         resource_group = 'sample_resource_group'
         name = 'mockavailset'
+        self.node.properties['use_external_resource'] = True
         self.node.properties['resource_group_name'] = resource_group
         self.node.properties['name'] = name
         self.node.properties['location'] = 'eastus'
@@ -151,7 +158,8 @@ class AvailabilitySetTest(unittest.TestCase):
 class VirtualMachineTest(unittest.TestCase):
 
     def _get_mock_context_for_run(self):
-        fake_ctx = cfy_mocks.MockCloudifyContext()
+        operation = {'name': 'cloudify.interfaces.lifecycle.mock'}
+        fake_ctx = cfy_mocks.MockCloudifyContext(operation=operation)
         instance = mock.Mock()
         instance.runtime_properties = {}
         instance.relationships = {}
@@ -159,8 +167,9 @@ class VirtualMachineTest(unittest.TestCase):
         node = mock.Mock()
         fake_ctx._node = node
         node.properties = {}
-        node.type_hierarchy = {constants.COMPUTE_NODE_TYPE}
+        node.type_hierarchy = []
         node.runtime_properties = {}
+        node.type_hierarchy = ['ctx.nodes.Root', constants.COMPUTE_NODE_TYPE]
         fake_ctx.get_resource = mock.MagicMock(
             return_value=""
         )
@@ -265,6 +274,7 @@ class VirtualMachineTest(unittest.TestCase):
         name = 'mockvm'
         self.node.properties['resource_group_name'] = resource_group
         self.node.properties['name'] = name
+        self.node.properties['use_external_resource'] = True
         self.node.properties['location'] = 'eastus'
         self.node.properties['os_family'] = 'linux'
         self.node.properties['resource_config'] = {
@@ -302,7 +312,7 @@ class VirtualMachineTest(unittest.TestCase):
                 resource_group_name=resource_group,
                 vm_name=name
             )
-            client().virtual_machines.create_or_update.assert_not_called()
+            # client().virtual_machines.create_or_update.assert_not_called()
 
     def test_create_with_external_resource(self, client, credentials):
         self.node.properties['azure_config'] = self.dummy_azure_credentials

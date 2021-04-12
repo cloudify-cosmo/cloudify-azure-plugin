@@ -36,7 +36,8 @@ from cloudify_azure.resources import deployment
 class DeploymentTest(unittest.TestCase):
 
     def _get_mock_context_for_run(self):
-        fake_ctx = cfy_mocks.MockCloudifyContext()
+        operation = {'name': 'cloudify.interfaces.lifecycle.create'}
+        fake_ctx = cfy_mocks.MockCloudifyContext(operation=operation)
         instance = mock.Mock()
         instance.runtime_properties = {}
         fake_ctx._instance = instance
@@ -44,6 +45,7 @@ class DeploymentTest(unittest.TestCase):
         fake_ctx._node = node
         node.properties = {}
         node.runtime_properties = {}
+        node.type_hierarchy = ['ctx.nodes.Root', 'cloudify.azure.Deployment']
         fake_ctx.get_resource = mock.MagicMock(
             return_value=""
         )
@@ -129,8 +131,35 @@ class DeploymentTest(unittest.TestCase):
         self.node.properties['azure_config'] = self.dummy_azure_credentials
         resource_group = 'sample_deployment'
         self.node.properties['name'] = resource_group
+        self.node.properties['use_external_resource'] = True
+
         self.node.properties['resource_group_name'] = resource_group
+        self.node.properties['template'] = {
+            "$schema": "http://schema.management.azure.com/Template.json",
+            "contentVersion": "1.0.0.0",
+            "parameters": {
+                "storageEndpoint": {
+                  "type": "string",
+                  "defaultValue": "core.windows.net",
+                  "metadata": {
+                    "description": "Storage Endpoint."
+                  }
+                },
+            }
+        }
         self.node.properties['location'] = 'westus'
+        properties = self.node.properties
+        template = deployment.get_template(self.fake_ctx, properties)
+        deployment_params = {
+            'mode': DeploymentMode.incremental,
+            'template': template,
+            'parameters': deployment.format_params(properties.get(
+                'params', {}))
+        }
+        deployment_properties = DeploymentProperties(
+            mode=deployment_params['mode'],
+            template=deployment_params['template'],
+            parameters=deployment_params['parameters'])
         rg_client().resource_groups.get.return_value = mock.Mock()
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
@@ -139,9 +168,13 @@ class DeploymentTest(unittest.TestCase):
                 resource_group_name=resource_group,
                 deployment_name=resource_group
             )
-            rg_client().resource_groups.create_or_update.assert_not_called()
             deployment_client()\
-                .deployments.create_or_update.assert_not_called()
+                .deployments.create_or_update.assert_called_with(
+                resource_group_name=resource_group,
+                deployment_name=resource_group,
+                parameters=AzDeployment(properties=deployment_properties),
+                verify=True
+            )
 
     def test_create_with_external_resource(self, rg_client, deployment_client,
                                            credentials):
@@ -154,8 +187,6 @@ class DeploymentTest(unittest.TestCase):
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
             deployment.create(ctx=self.fake_ctx, template="{}")
-            deployment_client()\
-                .deployments.create_or_update.assert_not_called()
 
     def test_create_without_template(self, rg_client, deployment_client,
                                      credentials):

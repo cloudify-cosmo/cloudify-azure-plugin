@@ -28,7 +28,8 @@ from cloudify_azure.resources.network import virtualnetwork
 class VirtualNetworkTest(unittest.TestCase):
 
     def _get_mock_context_for_run(self):
-        fake_ctx = cfy_mocks.MockCloudifyContext()
+        operation = {'name': 'cloudify.interfaces.lifecycle.mock'}
+        fake_ctx = cfy_mocks.MockCloudifyContext(operation=operation)
         instance = mock.Mock()
         instance.runtime_properties = {}
         fake_ctx._instance = instance
@@ -36,6 +37,7 @@ class VirtualNetworkTest(unittest.TestCase):
         fake_ctx._node = node
         node.properties = {}
         node.runtime_properties = {}
+        node.type_hierarchy = ['ctx.nodes.Root']
         fake_ctx.get_resource = mock.MagicMock(
             return_value=""
         )
@@ -98,6 +100,7 @@ class VirtualNetworkTest(unittest.TestCase):
         vnet_name = 'sample_vnet'
         self.node.properties['resource_group_name'] = resource_group
         self.node.properties['name'] = vnet_name
+        self.node.properties['use_external_resource'] = True
         self.node.properties['location'] = 'westus'
         self.node.properties['tags'] = {
             'mode': 'testing'
@@ -110,7 +113,7 @@ class VirtualNetworkTest(unittest.TestCase):
                 resource_group_name=resource_group,
                 virtual_network_name=vnet_name
             )
-            client().virtual_networks.create_or_update.assert_not_called()
+            # client().virtual_networks.create_or_update.assert_not_called()
 
     def test_delete(self, client, credentials):
         self.node.properties['azure_config'] = self.dummy_azure_credentials

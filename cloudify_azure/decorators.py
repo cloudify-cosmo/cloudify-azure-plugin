@@ -179,43 +179,67 @@ def with_azure_resource(resource_class_name):
                 # handle speical cases
                 # resource_group
                 if isinstance(resource, ResourceGroup):
-                    result = resource.get(name)
+                    exists = resource.get(name)
                 elif isinstance(resource, Deployment):
-                    result = resource.get(resource_group_name, name)
+                    exists = resource.get(resource_group_name, name)
                 # virtual_machine_extension
                 elif isinstance(resource, VirtualMachineExtension):
                     vm_name = \
                         ctx.node.properties.get('virtual_machine_name')
-                    result = resource.get(resource_group_name, vm_name, name)
+                    exists = resource.get(resource_group_name, vm_name, name)
                 # subnet
                 elif isinstance(resource, Subnet):
                     vnet_name = utils.get_virtual_network(ctx)
-                    result = resource.get(resource_group_name, vnet_name, name)
+                    exists = resource.get(resource_group_name, vnet_name, name)
                 # route
                 elif isinstance(resource, Route):
                     rtbl_name = utils.get_route_table(ctx)
-                    result = resource.get(resource_group_name, rtbl_name, name)
+                    exists = resource.get(resource_group_name, rtbl_name, name)
                 # network_security_rule
                 elif isinstance(resource, NetworkSecurityRule):
                     nsg_name = utils.get_network_security_group(ctx)
-                    result = resource.get(resource_group_name, nsg_name, name)
+                    exists = resource.get(resource_group_name, nsg_name, name)
                 else:
-                    result = resource.get(resource_group_name, name)
-                if ctx.node.properties.get('use_external_resource', False):
-                    ctx.logger.info("Using external resource")
-                    ctx.instance.runtime_properties['resource'] = result
-                    ctx.instance.runtime_properties['resource_id'] = \
-                        result.get("id", "")
-                    return
-                else:
-                    ctx.logger.info("Resource with name {0} exists".format(
-                        name))
-                    return
+                    exists = resource.get(resource_group_name, name)
             except CloudError:
-                if ctx.node.properties.get('use_external_resource', False):
-                    raise cfy_exc.NonRecoverableError(
-                        "Can't use non-existing {0} '{1}'.".format(
-                            resource_class_name, name))
+                exists = None
+
+            # There is now a good idea whether the desired resource exists.
+            # Now find out if it is expected and if it does or doesn't.
+            expected = ctx.node.properties.get(
+                'use_external_resource', False)
+            create_anyway = ctx.node.properties.get('create_if_missing', False)
+            use_anyway = ctx.node.properties.get('use_if_exists', False)
+            # We should use and existing resource.
+            use_existing = (exists and expected) or \
+                           (exists and not expected and use_anyway)
+            # We should create a new resource.
+            create = (not exists and not expected) or \
+                     (not exists and expected and create_anyway)
+            # ARM deployments are idempotent. This logic should be expanded
+            # to other idempotent deployments.
+            arm_deployment = 'cloudify.azure.Deployment' in \
+                             ctx.node.type_hierarchy
+            create_op = 'create' in ctx.operation.name.split('.')[-1]
+
+            if use_existing and not (create_op and arm_deployment):
+                ctx.logger.info("Using external resource")
+                ctx.instance.runtime_properties['resource'] = exists
+                ctx.instance.runtime_properties['resource_id'] = exists.get(
+                    "id", "")
+                return
+            elif not create and not (create_op and arm_deployment):
+                raise cfy_exc.NonRecoverableError(
+                    "Can't use non-existing {0} '{1}'.".format(
+                        resource_class_name, name))
+            elif create and exists and ctx.workflow_id not in \
+                    ['update', 'execute_operation']:
+                ctx.logger.warn("Resource with name {0} exists".format(name))
+                if not arm_deployment:
+                    ctx.logger.warn('Not updating new resource.')
+                    return
+            ctx.logger.info('Creating or updating resource: {name}'.format(
+                name=name))
             return func(*args, **kwargs)
         return wrapper_inner
     return wrapper_outer
