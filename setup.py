@@ -57,6 +57,6 @@ setup(
         'azure-mgmt-resource==9.0.0',
         'azure-common==1.1.25',
         'msrestazure==0.6.3',
-        'cryptography==3.3.1'
+        'cryptography==3.2.1'
     ]
 )
