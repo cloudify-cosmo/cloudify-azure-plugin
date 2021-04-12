@@ -63,6 +63,7 @@ class DeploymentTest(unittest.TestCase):
         self.node.properties['azure_config'] = self.dummy_azure_credentials
         resource_group = 'sample_deployment'
         self.node.properties['name'] = resource_group
+        self.node.properties['resource_group_name'] = resource_group
         self.node.properties['template'] = {
             "$schema": "http://schema.management.azure.com/Template.json",
             "contentVersion": "1.0.0.0",
@@ -103,8 +104,9 @@ class DeploymentTest(unittest.TestCase):
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
             deployment.create(ctx=self.fake_ctx)
-            rg_client().resource_groups.get.assert_called_with(
-                resource_group_name=resource_group
+            deployment_client().deployments.get.assert_called_with(
+                resource_group_name=resource_group,
+                deployment_name=resource_group
             )
             rg_client().resource_groups.create_or_update.assert_called_with(
                 resource_group_name=resource_group,
@@ -127,16 +129,17 @@ class DeploymentTest(unittest.TestCase):
         self.node.properties['azure_config'] = self.dummy_azure_credentials
         resource_group = 'sample_deployment'
         self.node.properties['name'] = resource_group
+        self.node.properties['resource_group_name'] = resource_group
         self.node.properties['location'] = 'westus'
         rg_client().resource_groups.get.return_value = mock.Mock()
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
             deployment.create(ctx=self.fake_ctx)
-            rg_client().resource_groups.get.assert_called_with(
-                resource_group_name=resource_group
+            deployment_client().deployments.get.assert_called_with(
+                resource_group_name=resource_group,
+                deployment_name=resource_group
             )
             rg_client().resource_groups.create_or_update.assert_not_called()
-            deployment_client().deployments.get.assert_not_called()
             deployment_client()\
                 .deployments.create_or_update.assert_not_called()
 
@@ -145,6 +148,7 @@ class DeploymentTest(unittest.TestCase):
         self.node.properties['azure_config'] = self.dummy_azure_credentials
         resource_group = 'sample_deployment'
         self.node.properties['name'] = resource_group
+        self.node.properties['resource_group_name'] = resource_group
         self.node.properties['location'] = 'westus'
         self.node.properties['use_external_resource'] = True
         with mock.patch('cloudify_azure.utils.secure_logging_content',
@@ -158,6 +162,7 @@ class DeploymentTest(unittest.TestCase):
         self.node.properties['azure_config'] = self.dummy_azure_credentials
         resource_group = 'sample_deployment'
         self.node.properties['name'] = resource_group
+        self.node.properties['resource_group_name'] = resource_group
         response = requests.Response()
         response.status_code = 404
         message = 'resource not found'
@@ -178,6 +183,7 @@ class DeploymentTest(unittest.TestCase):
         self.node.properties['azure_config'] = self.dummy_azure_credentials
         resource_group = 'sample_deployment'
         self.node.properties['name'] = resource_group
+        self.node.properties['resource_group_name'] = resource_group
         response = requests.Response()
         response.status_code = 404
         message = 'resource not found'
@@ -220,6 +226,7 @@ class DeploymentTest(unittest.TestCase):
         self.node.properties['azure_config'] = self.dummy_azure_credentials
         resource_group = 'sample_deployment'
         self.node.properties['name'] = resource_group
+        self.node.properties['resource_group_name'] = resource_group
 
         self.node.properties['template'] = None
         self.node.properties['template_file'] = fock.name

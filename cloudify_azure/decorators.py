@@ -25,6 +25,7 @@ from cloudify import exceptions as cfy_exc
 from cloudify_azure import utils
 from azure_sdk.resources.network.route import Route
 from azure_sdk.resources.network.subnet import Subnet
+from azure_sdk.resources.deployment import Deployment
 from azure_sdk.resources.resource_group import ResourceGroup
 from azure_sdk.resources.storage.storage_account import StorageAccount
 from azure_sdk.resources.network.network_security_rule \
@@ -136,6 +137,11 @@ def with_generate_name(resource_class_name):
                             resource_group_name=resource_group_name,
                             name=name,
                             nsg_name=nsg_name)
+                    elif isinstance(resource, Deployment):
+                        name = get_unique_name(
+                            resource=resource,
+                            resource_group_name=resource_group_name,
+                            name=name)
                     else:
                         name = get_unique_name(
                             resource=resource,
@@ -156,6 +162,7 @@ def with_azure_resource(resource_class_name):
         @wraps(func)
         def wrapper_inner(*args, **kwargs):
             ctx = kwargs['ctx']
+            name = utils.get_resource_name(ctx)
             try:
                 # check if azure_config is given and if the resource
                 # is external or not
@@ -167,13 +174,14 @@ def with_azure_resource(resource_class_name):
                                     "please use client_config, "
                                     "in later version it will be removed")
                 resource = resource_class_name(azure_config, ctx.logger)
-                name = utils.get_resource_name(ctx)
                 if not isinstance(resource, ResourceGroup):
                     resource_group_name = utils.get_resource_group(ctx)
                 # handle speical cases
                 # resource_group
                 if isinstance(resource, ResourceGroup):
                     result = resource.get(name)
+                elif isinstance(resource, Deployment):
+                    result = resource.get(resource_group_name, name)
                 # virtual_machine_extension
                 elif isinstance(resource, VirtualMachineExtension):
                     vm_name = \
