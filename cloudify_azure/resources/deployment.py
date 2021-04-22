@@ -116,7 +116,6 @@ def create(ctx, **kwargs):
         'template': template,
         'parameters': format_params(properties.get('params', {}))
     }
-
     try:
         result = \
             deployment.create_or_update(
@@ -130,7 +129,8 @@ def create(ctx, **kwargs):
             "failed with this error : {1}".format(deployment_name,
                                                   cr.message)
             )
-
+    ctx.instance.runtime_properties['template'] = template
+    ctx.instance.runtime_properties['resource_group_name'] = resource_group_name
     ctx.instance.runtime_properties['resource'] = result
     ctx.instance.runtime_properties['resource_id'] = result.get("id", "")
     ctx.instance.runtime_properties['outputs'] = \
@@ -163,3 +163,32 @@ def delete(ctx, **_):
             "failed with this error : {1}".format(name,
                                                   cr.message)
             )
+
+@operation(resumable=True)
+def pull(ctx, **kwargs):
+    # Think about how to handle use existing resource...
+    azure_config = utils.get_client_config(ctx.node.properties)
+    # Need to get the resource group first in order to see if exists..
+    # if not exists  so drifts are empty, is_drifted is true and state is empty dict of list(need to decide)
+    deployment_name = utils.get_resource_name(ctx)
+    resource_group_name = ctx.instance.runtime_properties['resource_group_name']
+
+    deployment = Deployment(azure_config, ctx.logger)
+    deployment.get(resource_group_name, deployment_name)
+
+    # # load template
+    properties = {}
+    properties.update(ctx.node.properties)
+    properties.update(kwargs)
+    # template = get_template(ctx, properties)
+    # ctx.logger.debug("Parsed template: %s", json.dumps(template, indent=4))
+    template = ctx.instance.runtime_properties['template']
+    params = format_params(properties.get('params', {}))
+    ctx.logger.info("params:{}".format(params))
+    what_if_properties = {
+        'mode': DeploymentMode.incremental,
+        'template': template,
+        'parameters': params
+    }
+    res = deployment.what_if(resource_group_name, deployment_name, what_if_properties)
+    ctx.logger.info(res)

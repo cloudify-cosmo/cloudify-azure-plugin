@@ -1547,6 +1547,7 @@ node_types:
       cloudify.interfaces.lifecycle:
         create: azure.cloudify_azure.resources.deployment.create
         delete: azure.cloudify_azure.resources.deployment.delete
+        pull: azure.cloudify_azure.resources.deployment.pull
 
   cloudify.azure.nodes.compute.ContainerService:
     derived_from: cloudify.nodes.Root
