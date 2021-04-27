@@ -1546,6 +1546,7 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         create: azure.cloudify_azure.resources.deployment.create
+        start: azure.cloudify_azure.resources.deployment.pull
         delete: azure.cloudify_azure.resources.deployment.delete
         pull: azure.cloudify_azure.resources.deployment.pull
 

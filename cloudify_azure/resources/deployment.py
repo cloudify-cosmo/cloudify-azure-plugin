@@ -139,9 +139,9 @@ def create(ctx, **kwargs):
             )
     ctx.instance.runtime_properties['template'] = template
     ctx.instance.runtime_properties['resource'] = result
-    ctx.instance.runtime_properties['resource_id'] = result.get("id", "")
+    ctx.instance.runtime_properties['resource_id'] = result.get('id', "")
     ctx.instance.runtime_properties['outputs'] = \
-        result.get("properties", {}).get("outputs")
+        result.get('properties', {}).get('outputs')
 
 
 @operation(resumable=True)
@@ -262,8 +262,8 @@ def check_if_resource_alive_in_what_if_result(resource_id,what_if_result):
             "is {status}.".format(resource_id=resource_id, status=status))
 
     for change in what_if_result.get('changes', []):
-        if resource_id == change.get("resource_id") and change.get(
-                "change_type") != "Create":
+        if resource_id == change.get('resource_id') and change.get(
+                'change_type') != 'Create':
             # Resource is alive.
             return True
 
