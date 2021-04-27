@@ -28,6 +28,7 @@ from azure_sdk.resources.resource_group import ResourceGroup
 STATE = 'state'
 IS_DRIFTED = 'is_drifted'
 
+
 def is_url(string):
     parse_info = urlparse('{0}'.format(string))
     return parse_info.scheme and (parse_info.netloc or parse_info.path)
@@ -75,17 +76,28 @@ def get_template(ctx, properties):
     return template
 
 
+def get_properties_and_formated_params(ctx,**kwargs):
+    properties = {}
+    properties.update(ctx.node.properties)
+    properties.update(kwargs)
+    params = format_params(properties.get('params', {}))
+    return properties, params
+
+
+def get_resource_group_name_deployment_name_and_api_version(ctx):
+    deployment_name = utils.get_resource_name(ctx)
+    resource_group_name = ctx.node.properties.get(
+        'resource_group_name', deployment_name)
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_RESOURCES)
+    return deployment_name, resource_group_name, api_version
+
+
 @operation(resumable=True)
 @decorators.with_generate_name(Deployment)
 @decorators.with_azure_resource(Deployment)
 def create(ctx, **kwargs):
-
-    azure_config = ctx.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.node.properties)
     deployment_name = utils.get_resource_name(ctx)
     resource_group_name = ctx.node.properties.get(
         'resource_group_name', deployment_name)
@@ -141,12 +153,7 @@ def create(ctx, **kwargs):
 def delete(ctx, **_):
     if ctx.node.properties.get('use_external_resource', False):
         return
-    azure_config = ctx.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.node.properties)
     name = utils.get_resource_name(ctx)
     resource_group = ResourceGroup(azure_config, ctx.logger)
     try:
@@ -192,62 +199,93 @@ def delete(ctx, **_):
 #     res = deployment.what_if(resource_group_name, deployment_name, what_if_properties)
 #     ctx.logger.info(res)
 
+
 @operation(resumable=True)
 def pull(ctx, **kwargs):
     azure_config = utils.get_client_config(ctx.node.properties)
-    api_version = \
-        ctx.node.properties.get('api_version', constants.API_VER_RESOURCES)
-    deployment_name = utils.get_resource_name(ctx)
-    resource_group_name = ctx.node.properties.get(
-        'resource_group_name', deployment_name)
-    resource_group = ResourceGroup(azure_config, ctx.logger, "2019-10-01")
+    resource_group_name, deployment_name, api_version = \
+        get_resource_group_name_deployment_name_and_api_version(ctx)
+
+    resource_group = ResourceGroup(azure_config, ctx.logger, api_version)
     try:
         resource_group.get(resource_group_name)
     except CloudError:
-        ctx.logger.info("resource group {rg_name} does not exist. State will"
-                        " be empty.".format(rg_name=resource_group_name))
+        ctx.logger.info("resource group {rg_name} does not exist. State will "
+                        "be empty.".format(rg_name=resource_group_name))
         ctx.instance.runtime_properties[STATE] = []
         ctx.instance.runtime_properties[IS_DRIFTED] = True
         return
 
     ctx.instance.runtime_properties[IS_DRIFTED] = False
-    # For every pull the initial state is the resources list that crated in the
-    # template run.
+    # get the resources list that crated in the template run.
     initial_resources = ctx.instance.runtime_properties.get(
         'resource', {}).get('properties', {}).get('output_resources', [])
-    initial_resources = ctx.instance.runtime_properties["resource"]["properties"]["output_resources"]
-    ctx.logger.info("initial_resources: {}".format(initial_resources))
+    ctx.logger.debug("initial_resources: {}".format(initial_resources))
     actual_resources = resource_group.list_resources(resource_group_name)
-    calculate_state(ctx, initial_resources, actual_resources)
-    # deployment = Deployment(azure_config, ctx.logger)
-    # dep=deployment.get(resource_group_name, deployment_name)
-    # # load template
-    # properties = {}
-    # properties.update(ctx.node.properties)
-    # properties.update(kwargs)
-    # # If no template so try to export template from azure!
-    # template = ctx.instance.runtime_properties['template']
-    # params = format_params(properties.get('params', {}))
-    # ctx.logger.info("params:{}".format(params))
-    # what_if_properties = {
-    #     'mode': DeploymentMode.incremental,
-    #     'template': template,
-    #     'parameters': params
-    # }
-    # res = deployment.what_if(resource_group_name, deployment_name, what_if_properties)
-    # ctx.logger.info(res)
+
+    deployment = Deployment(azure_config, ctx.logger)
+    properties, params = get_properties_and_formated_params(ctx, **kwargs)
+    # If no template so try to export template from azure?
+    template = ctx.instance.runtime_properties['template']
+    what_if_properties = {
+        'mode': DeploymentMode.incremental,
+        'template': template,
+        'parameters': params
+    }
+    # There are resources that are nested like subenets so they not appear in
+    # the actual_resource. We will search them using what-if result.
+    what_if_res = deployment.what_if(resource_group_name,
+                                     deployment_name,
+                                     what_if_properties)
+
+    calculate_state(ctx, initial_resources, actual_resources, what_if_res)
 
 
-def calculate_state(ctx, initial_resources, actual_resources):
+
+# def calculate_state_a(ctx, resources_client, initial_resources):
+#     state = []
+#     initial_ids = [resource['id'] for resource in initial_resources]
+#     for resource_id in initial_ids:
+#         try:
+#             resource = resources_client.get_by_id(resource_id)
+#         except CloudError:
+#             ctx.logger.info("Resource {resource} not exists, deployment is "
+#                              "drifted.".format(resource=resource_id))
+#             ctx.instance.runtime_properties[IS_DRIFTED] = True
+#             continue
+#         state.append(resource_id)
+#     ctx.instance.runtime_properties[STATE] = state
+
+# def calculate_state(ctx, initial_resources, actual_resources):
+#     """
+#     Create list of resources of the deployment that exist.
+#     Save this list in the state runtime property.
+#     """
+#     state = []
+#     initial_ids = [resource['id'] for resource in initial_resources]
+#     actual_ids = [resource['id'] for resource in actual_resources]
+#     for resource_id in initial_ids:
+#         if resource_id not in actual_ids:
+#             ctx.logger.debug("Resource {resource} not exists, deployment is "
+#                              "drifted.".format(resource=resource_id))
+#             ctx.instance.runtime_properties[IS_DRIFTED] = True
+#             continue
+#         state.append(resource_id)
+#
+#     ctx.instance.runtime_properties[STATE] = state
+
+def calculate_state(ctx, initial_resources, actual_resources, what_if_res):
     """
     Create list of resources of the deployment that exist.
     Save this list in the state runtime property.
     """
     state = []
-    initial_ids= [resource['id'] for resource in initial_resources]
+    initial_ids = [resource['id'] for resource in initial_resources]
     actual_ids = [resource['id'] for resource in actual_resources]
     for resource_id in initial_ids:
-        if resource_id not in actual_ids:
+        if resource_id not in actual_ids and not\
+                check_if_resource_alive_in_what_if_result(resource_id,
+                                                          what_if_res):
             ctx.logger.debug("Resource {resource} not exists, deployment is "
                              "drifted.".format(resource=resource_id))
             ctx.instance.runtime_properties[IS_DRIFTED] = True
@@ -255,3 +293,29 @@ def calculate_state(ctx, initial_resources, actual_resources):
         state.append(resource_id)
 
     ctx.instance.runtime_properties[STATE] = state
+
+
+def check_if_resource_alive_in_what_if_result(resource_id,what_if_result):
+    """
+    Given resource id and what if operation result,
+    check if the resourece is alive using the what if operation result.
+    The change types of the what-if operation described here:
+
+    https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/
+    template-deploy-what-if?tabs=azure-powershell#change-types
+
+    """
+    status = what_if_result.get('status')
+    if status != 'Succeeded':
+        raise cfy_exc.NonRecoverableError(
+            "Can't detect resource {resource_id} status from what_if "
+            "operation result because the status of what if operation result "
+            "is {status}.".format(resource_id=resource_id, status=status))
+
+    for change in what_if_result.get('changes', []):
+        if resource_id == change.get("resource_id") and change.get(
+                "change_type") != "Create":
+            # Resource is alive.
+            return True
+
+    return False

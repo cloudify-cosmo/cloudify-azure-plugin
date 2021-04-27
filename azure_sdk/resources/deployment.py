@@ -92,7 +92,7 @@ class Deployment(AzureResource):
             properties=what_if_properties)
         async_what_if_operation.wait(timeout=timeout)
         what_if_result = async_what_if_operation.result().as_dict()
-        # self.logger.info(
-        #     'What if result: {0}'.format(
-        #         utils.secure_logging_content(what_if_result)))
+        self.logger.info(
+            'What if result: {0}'.format(
+                utils.secure_logging_content(what_if_result)))
         return what_if_result
