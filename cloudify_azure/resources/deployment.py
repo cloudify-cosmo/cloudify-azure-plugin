@@ -25,6 +25,8 @@ from cloudify_azure._compat import (urlopen, urlparse, text_type)
 from azure_sdk.resources.deployment import Deployment
 from azure_sdk.resources.resource_group import ResourceGroup
 
+STATE = 'state'
+IS_DRIFTED = 'is_drifted'
 
 def is_url(string):
     parse_info = urlparse('{0}'.format(string))
@@ -109,7 +111,6 @@ def create(ctx, **kwargs):
     properties.update(kwargs)
     template = get_template(ctx, properties)
     ctx.logger.debug("Parsed template: %s", json.dumps(template, indent=4))
-
     deployment = Deployment(azure_config, ctx.logger, api_version)
     deployment_params = {
         'mode': DeploymentMode.incremental,
@@ -130,7 +131,6 @@ def create(ctx, **kwargs):
                                                   cr.message)
             )
     ctx.instance.runtime_properties['template'] = template
-    ctx.instance.runtime_properties['resource_group_name'] = resource_group_name
     ctx.instance.runtime_properties['resource'] = result
     ctx.instance.runtime_properties['resource_id'] = result.get("id", "")
     ctx.instance.runtime_properties['outputs'] = \
@@ -164,31 +164,94 @@ def delete(ctx, **_):
                                                   cr.message)
             )
 
+# @operation(resumable=True)
+# def pull(ctx, **kwargs):
+#     # Think about how to handle use existing resource...
+#     azure_config = utils.get_client_config(ctx.node.properties)
+#     # Need to get the resource group first in order to see if exists..
+#     # if not exists  so drifts are empty, is_drifted is true and state is empty dict of list(need to decide)
+#     deployment_name = utils.get_resource_name(ctx)
+#     resource_group_name = ctx.instance.runtime_properties['resource_group_name']
+#
+#     deployment = Deployment(azure_config, ctx.logger)
+#     deployment.get(resource_group_name, deployment_name)
+#
+#     # load template
+#     properties = {}
+#     properties.update(ctx.node.properties)
+#     properties.update(kwargs)
+#     # If no template so try to export template from azure!
+#     template = ctx.instance.runtime_properties['template']
+#     params = format_params(properties.get('params', {}))
+#     ctx.logger.info("params:{}".format(params))
+#     what_if_properties = {
+#         'mode': DeploymentMode.incremental,
+#         'template': template,
+#         'parameters': params
+#     }
+#     res = deployment.what_if(resource_group_name, deployment_name, what_if_properties)
+#     ctx.logger.info(res)
+
 @operation(resumable=True)
 def pull(ctx, **kwargs):
-    # Think about how to handle use existing resource...
     azure_config = utils.get_client_config(ctx.node.properties)
-    # Need to get the resource group first in order to see if exists..
-    # if not exists  so drifts are empty, is_drifted is true and state is empty dict of list(need to decide)
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_RESOURCES)
     deployment_name = utils.get_resource_name(ctx)
-    resource_group_name = ctx.instance.runtime_properties['resource_group_name']
+    resource_group_name = ctx.node.properties.get(
+        'resource_group_name', deployment_name)
+    resource_group = ResourceGroup(azure_config, ctx.logger, "2019-10-01")
+    try:
+        resource_group.get(resource_group_name)
+    except CloudError:
+        ctx.logger.info("resource group {rg_name} does not exist. State will"
+                        " be empty.".format(rg_name=resource_group_name))
+        ctx.instance.runtime_properties[STATE] = []
+        ctx.instance.runtime_properties[IS_DRIFTED] = True
+        return
 
-    deployment = Deployment(azure_config, ctx.logger)
-    deployment.get(resource_group_name, deployment_name)
-
+    ctx.instance.runtime_properties[IS_DRIFTED] = False
+    # For every pull the initial state is the resources list that crated in the
+    # template run.
+    initial_resources = ctx.instance.runtime_properties.get(
+        'resource', {}).get('properties', {}).get('output_resources', [])
+    initial_resources = ctx.instance.runtime_properties["resource"]["properties"]["output_resources"]
+    ctx.logger.info("initial_resources: {}".format(initial_resources))
+    actual_resources = resource_group.list_resources(resource_group_name)
+    calculate_state(ctx, initial_resources, actual_resources)
+    # deployment = Deployment(azure_config, ctx.logger)
+    # dep=deployment.get(resource_group_name, deployment_name)
     # # load template
-    properties = {}
-    properties.update(ctx.node.properties)
-    properties.update(kwargs)
-    # template = get_template(ctx, properties)
-    # ctx.logger.debug("Parsed template: %s", json.dumps(template, indent=4))
-    template = ctx.instance.runtime_properties['template']
-    params = format_params(properties.get('params', {}))
-    ctx.logger.info("params:{}".format(params))
-    what_if_properties = {
-        'mode': DeploymentMode.incremental,
-        'template': template,
-        'parameters': params
-    }
-    res = deployment.what_if(resource_group_name, deployment_name, what_if_properties)
-    ctx.logger.info(res)
+    # properties = {}
+    # properties.update(ctx.node.properties)
+    # properties.update(kwargs)
+    # # If no template so try to export template from azure!
+    # template = ctx.instance.runtime_properties['template']
+    # params = format_params(properties.get('params', {}))
+    # ctx.logger.info("params:{}".format(params))
+    # what_if_properties = {
+    #     'mode': DeploymentMode.incremental,
+    #     'template': template,
+    #     'parameters': params
+    # }
+    # res = deployment.what_if(resource_group_name, deployment_name, what_if_properties)
+    # ctx.logger.info(res)
+
+
+def calculate_state(ctx, initial_resources, actual_resources):
+    """
+    Create list of resources of the deployment that exist.
+    Save this list in the state runtime property.
+    """
+    state = []
+    initial_ids= [resource['id'] for resource in initial_resources]
+    actual_ids = [resource['id'] for resource in actual_resources]
+    for resource_id in initial_ids:
+        if resource_id not in actual_ids:
+            ctx.logger.debug("Resource {resource} not exists, deployment is "
+                             "drifted.".format(resource=resource_id))
+            ctx.instance.runtime_properties[IS_DRIFTED] = True
+            continue
+        state.append(resource_id)
+
+    ctx.instance.runtime_properties[STATE] = state
