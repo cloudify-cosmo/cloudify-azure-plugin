@@ -18,7 +18,8 @@ from azure.mgmt.resource.resources.v2019_10_01.models import \
     DeploymentProperties
 from azure.mgmt.resource.resources.v2019_10_01.models import \
     Deployment as AzDeployment
-from azure.mgmt.resource.resources.v2019_10_01.models import DeploymentWhatIfProperties
+from azure.mgmt.resource.resources.v2019_10_01.models import \
+    DeploymentWhatIfProperties
 from cloudify_azure import (constants, utils)
 from azure_sdk.common import AzureResource
 

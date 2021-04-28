@@ -76,23 +76,6 @@ def get_template(ctx, properties):
     return template
 
 
-def get_properties_and_formated_params(ctx,**kwargs):
-    properties = {}
-    properties.update(ctx.node.properties)
-    properties.update(kwargs)
-    params = format_params(properties.get('params', {}))
-    return properties, params
-
-
-def get_resource_group_name_deployment_name_and_api_version(ctx):
-    deployment_name = utils.get_resource_name(ctx)
-    resource_group_name = ctx.node.properties.get(
-        'resource_group_name', deployment_name)
-    api_version = \
-        ctx.node.properties.get('api_version', constants.API_VER_RESOURCES)
-    return deployment_name, resource_group_name, api_version
-
-
 @operation(resumable=True)
 @decorators.with_generate_name(Deployment)
 @decorators.with_azure_resource(Deployment)
@@ -166,6 +149,7 @@ def delete(ctx, **_):
                                                   cr.message)
             )
 
+
 @operation(resumable=True)
 def pull(ctx, **kwargs):
     azure_config = utils.get_client_config(ctx.node.properties)
@@ -200,6 +184,23 @@ def pull(ctx, **kwargs):
                                   template,
                                   params)
     calculate_state(ctx, initial_resources, actual_resources, what_if_res)
+
+
+def get_properties_and_formated_params(ctx, **kwargs):
+    properties = {}
+    properties.update(ctx.node.properties)
+    properties.update(kwargs)
+    params = format_params(properties.get('params', {}))
+    return properties, params
+
+
+def get_resource_group_name_deployment_name_and_api_version(ctx):
+    deployment_name = utils.get_resource_name(ctx)
+    resource_group_name = ctx.node.properties.get(
+        'resource_group_name', deployment_name)
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_RESOURCES)
+    return deployment_name, resource_group_name, api_version
 
 
 def execute_what_if(deployment,
@@ -244,7 +245,7 @@ def calculate_state(ctx, initial_resources, actual_resources, what_if_res):
         False if state == initial_ids else True
 
 
-def check_if_resource_alive_in_what_if_result(resource_id,what_if_result):
+def check_if_resource_alive_in_what_if_result(resource_id, what_if_result):
     """
     Given resource id and what if operation result,
     check if the resourece is alive using the what if operation result.
