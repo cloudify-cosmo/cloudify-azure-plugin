@@ -174,10 +174,11 @@ def pull(ctx, **kwargs):
 
     deployment = Deployment(azure_config, ctx.logger)
     properties, params = get_properties_and_formated_params(ctx, **kwargs)
-    # If no template so try to export template from azure!
-    template = ctx.instance.runtime_properties['template']
+    template = ctx.instance.runtime_properties.get('template') or get_template(
+        ctx, properties)
     # There are resources that are nested like subenets so they not appear in
     # actual_resources. We will search them using what-if result.
+
     what_if_res = execute_what_if(deployment,
                                   resource_group_name,
                                   deployment_name,

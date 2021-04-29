@@ -20,14 +20,51 @@ import unittest
 from msrestazure.azure_exceptions import CloudError
 from azure.mgmt.resource.resources.models import DeploymentMode
 from azure.mgmt.resource.resources.v2019_10_01.models import \
-    DeploymentProperties
+    DeploymentProperties, DeploymentWhatIfProperties
+
 from azure.mgmt.resource.resources.v2019_10_01.models import \
     Deployment as AzDeployment
 
 from cloudify import mocks as cfy_mocks
 from cloudify import exceptions as cfy_exc
+from cloudify.state import current_ctx
+
 
 from cloudify_azure.resources import deployment
+from cloudify_azure.resources.deployment import STATE, IS_DRIFTED
+
+TEST_TEMPLATE = {
+            '$schema': 'http://schema.management.azure.com/Template.json',
+            'contentVersion': '1.0.0.0',
+            'parameters': {
+                'storageEndpoint': {
+                  'type': 'string',
+                  'defaultValue': 'core.windows.net',
+                  'metadata': {
+                    'description': 'Storage Endpoint.'
+                  }
+                },
+            }
+        }
+
+RESOURCES_LIST = [
+                    {
+                        "id": "/fake/resource/id/1"
+                    },
+                    {
+                        "id": "/fake/resource/id/2"
+                    },
+                ]
+RUNTIME_PROPERTIES_AFTER_CREATE = {
+    'resource': {
+        'properties':
+            {
+                "output_resources": RESOURCES_LIST
+            }
+    },
+    'template': TEST_TEMPLATE}
+
+TEST_RESOURCE_GROUP_NAME = 'sample_deployment'
 
 
 @mock.patch('azure_sdk.common.ServicePrincipalCredentials')
@@ -54,6 +91,8 @@ class DeploymentTest(unittest.TestCase):
     def setUp(self):
         self.fake_ctx, self.node, self.instance = \
             self._get_mock_context_for_run()
+        current_ctx.set(self.fake_ctx)
+
         self.dummy_azure_credentials = {
             'client_id': 'dummy',
             'client_secret': 'dummy',
@@ -61,24 +100,18 @@ class DeploymentTest(unittest.TestCase):
             'tenant_id': 'dummy'
         }
 
+    def _not_found_cloud_error(self):
+        response = requests.Response()
+        response.status_code = 404
+        message = 'resource not found'
+        return CloudError(response, message)
+
     def test_create(self, rg_client, deployment_client, credentials):
         self.node.properties['azure_config'] = self.dummy_azure_credentials
         resource_group = 'sample_deployment'
         self.node.properties['name'] = resource_group
         self.node.properties['resource_group_name'] = resource_group
-        self.node.properties['template'] = {
-            "$schema": "http://schema.management.azure.com/Template.json",
-            "contentVersion": "1.0.0.0",
-            "parameters": {
-                "storageEndpoint": {
-                  "type": "string",
-                  "defaultValue": "core.windows.net",
-                  "metadata": {
-                    "description": "Storage Endpoint."
-                  }
-                },
-            }
-        }
+        self.node.properties['template'] = TEST_TEMPLATE
         self.node.properties['location'] = 'westus'
         resource_group_params = {
             'location': self.node.properties.get('location'),
@@ -134,19 +167,7 @@ class DeploymentTest(unittest.TestCase):
         self.node.properties['use_external_resource'] = True
 
         self.node.properties['resource_group_name'] = resource_group
-        self.node.properties['template'] = {
-            "$schema": "http://schema.management.azure.com/Template.json",
-            "contentVersion": "1.0.0.0",
-            "parameters": {
-                "storageEndpoint": {
-                  "type": "string",
-                  "defaultValue": "core.windows.net",
-                  "metadata": {
-                    "description": "Storage Endpoint."
-                  }
-                },
-            }
-        }
+        self.node.properties['template'] = TEST_TEMPLATE
         self.node.properties['location'] = 'westus'
         properties = self.node.properties
         template = deployment.get_template(self.fake_ctx, properties)
@@ -212,7 +233,7 @@ class DeploymentTest(unittest.TestCase):
     def test_create_with_template_string(self, rg_client, deployment_client,
                                          credentials):
         self.node.properties['azure_config'] = self.dummy_azure_credentials
-        resource_group = 'sample_deployment'
+        resource_group = TEST_RESOURCE_GROUP_NAME
         self.node.properties['name'] = resource_group
         self.node.properties['resource_group_name'] = resource_group
         response = requests.Response()
@@ -255,7 +276,7 @@ class DeploymentTest(unittest.TestCase):
         fock.close()
 
         self.node.properties['azure_config'] = self.dummy_azure_credentials
-        resource_group = 'sample_deployment'
+        resource_group = TEST_RESOURCE_GROUP_NAME
         self.node.properties['name'] = resource_group
         self.node.properties['resource_group_name'] = resource_group
 
@@ -299,7 +320,7 @@ class DeploymentTest(unittest.TestCase):
 
     def test_delete(self, rg_client, deployment_client, credentials):
         self.node.properties['azure_config'] = self.dummy_azure_credentials
-        resource_group = 'sample_deployment'
+        resource_group = TEST_RESOURCE_GROUP_NAME
         self.instance.runtime_properties['name'] = resource_group
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
@@ -311,7 +332,7 @@ class DeploymentTest(unittest.TestCase):
     def test_delete_do_not_exist(self, rg_client, deployment_client,
                                  credentials):
         self.node.properties['azure_config'] = self.dummy_azure_credentials
-        resource_group = 'sample_deployment'
+        resource_group = TEST_RESOURCE_GROUP_NAME
         self.instance.runtime_properties['name'] = resource_group
         response = requests.Response()
         response.status_code = 404
@@ -330,10 +351,149 @@ class DeploymentTest(unittest.TestCase):
     def test_delete_with_external_resource(self, rg_client, deployment_client,
                                            credentials):
         self.node.properties['azure_config'] = self.dummy_azure_credentials
-        resource_group = 'sample_deployment'
+        resource_group = TEST_RESOURCE_GROUP_NAME
         self.instance.runtime_properties['name'] = resource_group
         self.node.properties['use_external_resource'] = True
         deployment.delete(ctx=self.fake_ctx)
         rg_client().resource_groups.delete.assert_not_called()
         deployment_client().deployments.get.assert_not_called()
         deployment_client().deployments.delete.assert_not_called()
+
+    def test_pull_no_resource_group(self, rg_client, deployment_client,
+                                    credentials):
+        """
+        Test pull when resource group deleted, it means the state should
+        be empty and is_drifted should be true.
+        """
+        self.node.properties['client_config'] = self.dummy_azure_credentials
+        self.instance.runtime_properties['name'] = TEST_RESOURCE_GROUP_NAME
+        rg_client().resource_groups.get.side_effect = \
+            self._not_found_cloud_error()
+        deployment.pull(ctx=self.fake_ctx)
+        self.assertEquals(self.fake_ctx.instance.runtime_properties[STATE], [])
+        self.assertEquals(
+            self.fake_ctx.instance.runtime_properties[IS_DRIFTED], True)
+
+    @mock.patch('cloudify_azure.resources.deployment.calculate_state')
+    @mock.patch(
+        'azure_sdk.resources.resource_group.ResourceGroup.list_resources')
+    def test_pull(self,
+                  list_resources_mock,
+                  calculate_state_mock,
+                  rg_client,
+                  deployment_client,
+                  credentials,
+                  ):
+        self._test_pull_op(list_resources_mock,
+                           calculate_state_mock,
+                           rg_client,
+                           deployment_client,
+                           True)
+
+    @mock.patch('cloudify_azure.resources.deployment.calculate_state')
+    @mock.patch(
+        'azure_sdk.resources.resource_group.ResourceGroup.list_resources')
+    def test_pull_template_from_properties(self,
+                                           list_resources_mock,
+                                           calculate_state_mock,
+                                           rg_client,
+                                           deployment_client,
+                                           credentials):
+        self._test_pull_op(list_resources_mock,
+                           calculate_state_mock,
+                           rg_client,
+                           deployment_client,
+                           False)
+
+    def _test_pull_op(self,
+                      list_resources_mock,
+                      calculate_state_mock,
+                      rg_client,
+                      deployment_client,
+                      template_in_runtime_props):
+        self.node.properties['client_config'] = self.dummy_azure_credentials
+        self.instance.runtime_properties['name'] = TEST_RESOURCE_GROUP_NAME
+
+        if template_in_runtime_props:
+            self.instance.runtime_properties.update(
+                RUNTIME_PROPERTIES_AFTER_CREATE)
+        else:
+            self.node.properties['template'] = TEST_TEMPLATE
+
+        rg_client().resource_groups.get.return_value = mock.Mock()
+        deployment_client().deployments.what_if.return_value = mock.Mock()
+        what_if_properties = DeploymentWhatIfProperties(
+            mode=DeploymentMode.incremental,
+            template=TEST_TEMPLATE,
+            parameters={})
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            deployment.pull(ctx=self.fake_ctx)
+            rg_client().resource_groups.get.assert_called_with(
+                resource_group_name=TEST_RESOURCE_GROUP_NAME)
+            list_resources_mock.assert_called_with(TEST_RESOURCE_GROUP_NAME)
+            deployment_client().deployments.what_if.assert_called_with(
+                resource_group_name=TEST_RESOURCE_GROUP_NAME,
+                deployment_name=TEST_RESOURCE_GROUP_NAME,
+                properties=what_if_properties)
+            calculate_state_mock.assert_called_once()
+
+    def test_calculate_state_no_drifts(self, *_):
+        deployment.calculate_state(ctx=self.fake_ctx,
+                                   initial_resources=RESOURCES_LIST,
+                                   actual_resources=RESOURCES_LIST,
+                                   what_if_res={'status': 'Succeeded',
+                                                'changes': []})
+        self.assertEquals(self.fake_ctx.instance.runtime_properties[STATE],
+                          ['/fake/resource/id/1', '/fake/resource/id/2'])
+        self.assertEquals(
+            self.fake_ctx.instance.runtime_properties[IS_DRIFTED], False)
+
+    def test_calculate_state_no_drifts_with_what_if_result_check(self, *_):
+        deployment.calculate_state(
+            ctx=self.fake_ctx,
+            initial_resources=RESOURCES_LIST,
+            actual_resources=[],
+            what_if_res={'status': 'Succeeded',
+                         'changes': [
+                             {
+                                 'resource_id': '/fake/resource/id/1',
+                                 'change_type': "NoChange"
+                             },
+                             {
+                                 'resource_id': '/fake/resource/id/2',
+                                 'change_type': "Modify"
+                             }
+                         ]
+                         })
+        self.assertEquals(self.fake_ctx.instance.runtime_properties[STATE],
+                          ['/fake/resource/id/1', '/fake/resource/id/2'])
+        self.assertEquals(
+            self.fake_ctx.instance.runtime_properties[IS_DRIFTED], False)
+
+    def test_calculate_state_with_drifts(self, *_):
+        deployment.calculate_state(ctx=self.fake_ctx,
+                                   initial_resources=RESOURCES_LIST,
+                                   actual_resources=[],
+                                   what_if_res={'status': 'Succeeded',
+                                                'changes': []})
+        self.assertEquals(self.fake_ctx.instance.runtime_properties[STATE],
+                          [])
+        self.assertEquals(
+            self.fake_ctx.instance.runtime_properties[IS_DRIFTED], True)
+
+    def test_calculate_state_with_drifts_from_what_if_res(self, *_):
+        resource = {'id': '/fake/resource/id/1'}
+        deployment.calculate_state(
+            ctx=self.fake_ctx,
+            initial_resources=RESOURCES_LIST,
+            actual_resources=[resource],
+            what_if_res={'status': 'Succeeded',
+                         'changes': [{
+                             'resource_id': '/fake/resource/id/2',
+                             'change_type': 'Create'
+                         }]})
+        self.assertEquals(self.fake_ctx.instance.runtime_properties[STATE],
+                          [resource['id']])
+        self.assertEquals(
+            self.fake_ctx.instance.runtime_properties[IS_DRIFTED], True)
