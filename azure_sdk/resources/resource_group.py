@@ -58,3 +58,21 @@ class ResourceGroup(AzureResource):
         delete_async_operation.wait()
         self.logger.debug(
             'Deleted resource_group {0}'.format(group_name))
+
+    def list_resources(self, group_name):
+        """
+        List resources of resource group by id.
+        """
+        self.logger.info(
+            'List resources of resource_group...{0}'.format(group_name))
+        resources_list_iter = self.client.resources.list_by_resource_group(
+            resource_group_name=group_name,
+            expand='createdTime,changedTime,ProvisioningState')
+        resources_list = [{'id': resource.id,
+                           'created_time': resource.created_time,
+                           'changed_time': resource.changed_time,
+                           'provisioning_state': resource.provisioning_state}
+                          for resource in resources_list_iter]
+        self.logger.info('List resources of resource group {0}'
+                         ' result: {1}'.format(group_name, resources_list))
+        return resources_list

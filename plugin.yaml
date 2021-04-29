@@ -5,9 +5,9 @@
 plugins:
   azure:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/3.1.0.zip
+    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/3.2.0.zip
     package_name: cloudify-azure-plugin
-    package_version: '3.1.0'
+    package_version: '3.2.0'
 
 data_types:
   cloudify.datatypes.azure.Config:
@@ -1546,7 +1546,9 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         create: azure.cloudify_azure.resources.deployment.create
+        start: azure.cloudify_azure.resources.deployment.pull
         delete: azure.cloudify_azure.resources.deployment.delete
+        pull: azure.cloudify_azure.resources.deployment.pull
 
   cloudify.azure.nodes.compute.ContainerService:
     derived_from: cloudify.nodes.Root
