@@ -122,7 +122,7 @@ def create(ctx, **kwargs):
             )
     ctx.instance.runtime_properties['template'] = template
     ctx.instance.runtime_properties['resource'] = result
-    ctx.instance.runtime_properties['resource_id'] = result.get('id', "")
+    ctx.instance.runtime_properties['resource_id'] = result.get('id', '')
     ctx.instance.runtime_properties['outputs'] = \
         result.get('properties', {}).get('outputs')
 
