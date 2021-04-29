@@ -226,8 +226,13 @@ def execute_what_if(deployment,
 
 def calculate_state(ctx, initial_resources, actual_resources, what_if_res):
     """
-    Create list of resources of the deployment that exist.
+    Create a list of live resources of the deployment.
     Save this list in the state runtime property.
+    :param initial_resources: list of resources id`s created by the deployment.
+    :param actual_resources: list of resources id`s that exists in resource
+    group.
+    :param: result of what-if operation in order to indicate resources that
+    not appear in actual_resources.
     """
     state = []
     initial_ids = [resource['id'] for resource in initial_resources]
