@@ -129,13 +129,9 @@ class DeploymentTest(unittest.TestCase):
             template=deployment_params['template'],
             parameters=deployment_params['parameters'])
 
-        response = requests.Response()
-        response.status_code = 404
-        message = 'resource not found'
-        rg_client().resource_groups.get.side_effect = \
-            CloudError(response, message)
-        deployment_client().deployments.get.side_effect = \
-            CloudError(response, message)
+        err = self._not_found_cloud_error()
+        rg_client().resource_groups.get.side_effect = err
+        deployment_client().deployments.get.side_effect = err
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
             deployment.create(ctx=self.fake_ctx)
@@ -215,13 +211,9 @@ class DeploymentTest(unittest.TestCase):
         resource_group = 'sample_deployment'
         self.node.properties['name'] = resource_group
         self.node.properties['resource_group_name'] = resource_group
-        response = requests.Response()
-        response.status_code = 404
-        message = 'resource not found'
-        rg_client().resource_groups.get.side_effect = \
-            CloudError(response, message)
-        deployment_client().deployments.get.side_effect = \
-            CloudError(response, message)
+        err = self._not_found_cloud_error()
+        rg_client().resource_groups.get.side_effect = err
+        deployment_client().deployments.get.side_effect = err
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
             with self.assertRaises(cfy_exc.NonRecoverableError) as ex:
@@ -236,13 +228,9 @@ class DeploymentTest(unittest.TestCase):
         resource_group = TEST_RESOURCE_GROUP_NAME
         self.node.properties['name'] = resource_group
         self.node.properties['resource_group_name'] = resource_group
-        response = requests.Response()
-        response.status_code = 404
-        message = 'resource not found'
-        rg_client().resource_groups.get.side_effect = \
-            CloudError(response, message)
-        deployment_client().deployments.get.side_effect = \
-            CloudError(response, message)
+        err = self._not_found_cloud_error()
+        rg_client().resource_groups.get.side_effect = err
+        deployment_client().deployments.get.side_effect = err
         deployment_properties = DeploymentProperties(
             mode=DeploymentMode.incremental,
             template={},
@@ -284,13 +272,9 @@ class DeploymentTest(unittest.TestCase):
         self.node.properties['template_file'] = fock.name
         self.fake_ctx.get_resource.return_value = open(fock.name).read()
 
-        response = requests.Response()
-        response.status_code = 404
-        message = 'resource not found'
-        rg_client().resource_groups.get.side_effect = \
-            CloudError(response, message)
-        deployment_client().deployments.get.side_effect = \
-            CloudError(response, message)
+        err = self._not_found_cloud_error()
+        rg_client().resource_groups.get.side_effect = err
+        deployment_client().deployments.get.side_effect = err
         deployment_properties = DeploymentProperties(
             mode=DeploymentMode.incremental,
             template={'a': 'b'},

@@ -166,7 +166,7 @@ def pull(ctx, **kwargs):
         ctx.instance.runtime_properties[IS_DRIFTED] = True
         return
 
-    # get the resources list that crated in the template run.
+    # Get the resources list that crated during the template run.
     initial_resources = ctx.instance.runtime_properties.get(
         'resource', {}).get('properties', {}).get('output_resources', [])
     ctx.logger.debug("initial_resources: {}".format(initial_resources))
@@ -176,8 +176,8 @@ def pull(ctx, **kwargs):
     properties, params = get_properties_and_formated_params(ctx, **kwargs)
     template = ctx.instance.runtime_properties.get('template') or get_template(
         ctx, properties)
-    # There are resources that are nested like subenets so they not appear in
-    # actual_resources. We will search them using what-if result.
+    # some resources are nested like subnets so they do not appear in
+    # actual_resources. We will search them using the what-if result.
 
     what_if_res = execute_what_if(deployment,
                                   resource_group_name,
