@@ -253,8 +253,8 @@ def calculate_state(ctx, initial_resources, actual_resources, what_if_res):
 
 def check_if_resource_alive_in_what_if_result(resource_id, what_if_result):
     """
-    Given resource id and what if operation result,
-    check if the resourece is alive using the what if operation result.
+    Given resource id and what-if operation result,
+    check if the resource is alive using the what-if operation result.
     The change types of the what-if operation described here:
 
     https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/
