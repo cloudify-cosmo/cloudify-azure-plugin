@@ -222,8 +222,23 @@ def with_azure_resource(resource_class_name):
                              ctx.node.type_hierarchy
             create_op = 'create' in ctx.operation.name.split('.')[-1]
 
-            # if use_existing and not (create_op and arm_deployment):
-            if use_existing:
+            if (create_op and arm_deployment):
+                if use_existing or create:
+                    pass
+                elif (create and exists and ctx.workflow_id not in \
+                        ['update', 'execute_operation']):
+                    ctx.logger.warn(
+                        "Resource with name {0} exists".format(name))
+                elif not create:
+                    raise cfy_exc.NonRecoverableError(
+                        "Can't use non-existing {0} '{1}'.".format(
+                            resource_class_name, name))
+                ctx.logger.info(
+                    'Creating or updating resource: {name}'.format(
+                        name=name))
+                return func(*args, **kwargs)
+
+            if use_existing and not (create_op and arm_deployment):
                 ctx.logger.info("Using external resource")
                 ctx.instance.runtime_properties['resource'] = exists
                 ctx.instance.runtime_properties['resource_id'] = exists.get(
