@@ -229,8 +229,7 @@ def with_azure_resource(resource_class_name):
                 ctx.instance.runtime_properties['resource_id'] = exists.get(
                     "id", "")
                 return
-            # elif not create and not (create_op and arm_deployment):
-            elif not create:
+            elif not create and not (create_op and arm_deployment):
                 raise cfy_exc.NonRecoverableError(
                     "Can't use non-existing {0} '{1}'.".format(
                         resource_class_name, name))
