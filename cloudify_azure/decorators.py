@@ -222,13 +222,15 @@ def with_azure_resource(resource_class_name):
                              ctx.node.type_hierarchy
             create_op = 'create' in ctx.operation.name.split('.')[-1]
 
+            # if use_existing and not (create_op and arm_deployment):
             if use_existing:
                 ctx.logger.info("Using external resource")
                 ctx.instance.runtime_properties['resource'] = exists
                 ctx.instance.runtime_properties['resource_id'] = exists.get(
                     "id", "")
                 return
-            elif not create and not (create_op and arm_deployment):
+            # elif not create and not (create_op and arm_deployment):
+            elif not create:
                 raise cfy_exc.NonRecoverableError(
                     "Can't use non-existing {0} '{1}'.".format(
                         resource_class_name, name))
