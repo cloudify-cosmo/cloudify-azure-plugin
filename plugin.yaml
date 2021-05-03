@@ -5,9 +5,9 @@
 plugins:
   azure:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/3.2.0.zip
+    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/3.2.1.zip
     package_name: cloudify-azure-plugin
-    package_version: '3.2.0'
+    package_version: '3.2.1'
 
 data_types:
   cloudify.datatypes.azure.Config:
@@ -132,7 +132,7 @@ data_types:
 
   cloudify.datatypes.azure.ExistingResources:
     properties: &existing_resources
-      use_external_resource:
+      use_external_resource: &use_external_resource
         description: >
           Indicate whether the resource exists or if Cloudify should create the resource
         type: boolean
@@ -1516,7 +1516,18 @@ node_types:
     derived_from: cloudify.nodes.Root
     properties:
       <<: *common_properties
-      <<: *existing_resources
+      use_external_resource: *use_external_resource
+      create_if_missing:
+        description: >
+          If use_external_resource is true and the resource does not exist, create it.
+        type: boolean
+        required: true
+        default: true
+      use_if_exists:
+        description: If use_external_resource is false, but the resource does exist, use it.
+        type: boolean
+        required: true
+        default: true
       resource_group_name:
         type: string
         description: >
