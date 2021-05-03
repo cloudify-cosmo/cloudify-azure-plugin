@@ -222,23 +222,6 @@ def with_azure_resource(resource_class_name):
                              ctx.node.type_hierarchy
             create_op = 'create' in ctx.operation.name.split('.')[-1]
 
-            # if (create_op and arm_deployment):
-            #     if use_existing or create:
-            #         pass
-            #     elif not create:
-            #         raise cfy_exc.NonRecoverableError(
-            #             "Can't use non-existing {0} '{1}'.".format(
-            #                 resource_class_name, name))
-            #
-            #     elif (create and exists and ctx.workflow_id not in \
-            #             ['update', 'execute_operation']):
-            #         ctx.logger.warn(
-            #             "Resource with name {0} exists".format(name))
-            #     ctx.logger.info(
-            #         '1. Creating or updating resource: {name}'.format(
-            #             name=name))
-            #     return func(*args, **kwargs)
-
             if not exists and expected and not create_anyway:
                 raise cfy_exc.NonRecoverableError(
                     "Can't use non-existing {0} '{1}'.".format(
@@ -259,7 +242,7 @@ def with_azure_resource(resource_class_name):
                 if not arm_deployment:
                     ctx.logger.warn('Not updating new resource.')
                     return
-            ctx.logger.info('2. Creating or updating resource: {name}'.format(
+            ctx.logger.info('Creating or updating resource: {name}'.format(
                 name=name))
             return func(*args, **kwargs)
         return wrapper_inner
