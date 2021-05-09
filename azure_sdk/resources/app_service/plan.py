@@ -57,10 +57,9 @@ class ServicePlan(AzureResource):
 
     def delete(self, group_name, plan_name):
         self.logger.info("Deleting plan...{0}".format(plan_name))
-        delete_async_operation = self.client.app_service_plans.delete(
+        self.client.app_service_plans.delete(
             resource_group_name=group_name,
             name=plan_name
         )
-        delete_async_operation.wait()
         self.logger.debug(
             'Deleted plan {0}'.format(plan_name))
