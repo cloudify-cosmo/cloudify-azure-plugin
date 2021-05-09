@@ -5,8 +5,8 @@ description: >
   on an existing host.
 
 imports:
-  - http://www.getcloudify.org/spec/cloudify/3.4/types.yaml
-  - ../../plugin.yaml
+  - https://cloudify.co/spec/cloudify/5.1.0/types.yaml
+  - plugin:cloudify-azure-plugin
 
 inputs:
   resource_prefix:
@@ -35,10 +35,7 @@ inputs:
   location:
     type: string
     required: true
-    default: eastus
-
-  password:
-    type: string
+    default: eastus2
 
   plan_name:
     type: string
@@ -50,14 +47,14 @@ inputs:
 
   web_app_name:
     type: string
-    default: test-app
+    default: cloudify-test-app
 
 dsl_definitions:
   azure_config: &azure_config
-    subscription_id: { get_input: subscription_id }
-    tenant_id: { get_input: tenant_id }
-    client_id: { get_input: client_id }
-    client_secret: { get_input: client_secret }
+    subscription_id: { get_secret: subscription_id }
+    tenant_id: { get_secret: tenant_id }
+    client_id: { get_secret: client_id }
+    client_secret: { get_secret: client_secret }
 
   plan_info: &plan_info
     location: { get_input: location }
@@ -68,14 +65,14 @@ dsl_definitions:
 
   app_config: &app_config
     location: { get_input: location }
-    server_farm_id: sample-plan
+    server_farm_id: { get_attribute:[plan, resource_id] }
     site_config:
       scm_type: LocalGit
       python_version: 3.6
 
   user: &user
     name: sample-user
-    user_name: sample-user
+    publishing_user_name: sample-user
     publishing_password: STR0NG-test-Pa$$&
     location: { get_input: location }
 
@@ -89,6 +86,8 @@ node_templates:
   resource_group:
     type: cloudify.azure.nodes.ResourceGroup
     properties:
+      use_external_resource: true
+      create_if_missing: true
       name: { get_input: resource_group_name }
       location: { get_input: location }
       azure_config: *azure_config
@@ -96,9 +95,11 @@ node_templates:
   plan:
     type: cloudify.azure.nodes.Plan
     properties:
+      use_external_resource: true
+      create_if_missing: true
       name: { get_input: plan_name }
       resource_group: { get_input: resource_group_name }
-      sku: *plan_info
+      plan_details: *plan_info
       azure_config: *azure_config
     relationships:
       - type: cloudify.relationships.depends_on
@@ -107,6 +108,8 @@ node_templates:
   webapp:
     type: cloudify.azure.nodes.WebApp
     properties:
+      use_external_resource: true
+      create_if_missing: true
       name: { get_input: web_app_name }
       resource_group: { get_input: resource_group_name }
       app_config: *app_config

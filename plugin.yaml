@@ -1599,11 +1599,11 @@ node_types:
       resource_group:
         required: true
         type: string
-      sku:
-        type: string
+      plan_details:
         required: false
         description: >
-          SKU details, including location, name, capacity and tier
+          Plan details, including location, SKU, kind etc.
+          https://docs.microsoft.com/en-us/python/api/azure-mgmt-web/azure.mgmt.web.v2019_08_01.models.appserviceplan?view=azure-python
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
@@ -1613,8 +1613,8 @@ node_types:
               default: { get_property: [SELF, name]}
             resource_group:
               default: { get_property: [SELF, resource_group]}
-            sku:
-              default: { get_property: [SELF, sku]}
+            plan_details:
+              default: { get_property: [SELF, plan_details]}
             azure_config:
               default: { get_property: [SELF, azure_config]}
             client_config:
@@ -1626,6 +1626,7 @@ node_types:
     derived_from: cloudify.nodes.Root
     properties:
       <<: *common_properties
+      <<: *existing_resources
       resource_group:
         required: true
         type: string

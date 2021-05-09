@@ -94,6 +94,7 @@ def get_resource_group(_ctx=ctx):
     """
 
     return _ctx.node.properties.get('resource_group_name') or \
+        _ctx.node.properties.get('resource_group') or \
         _ctx.instance.runtime_properties.get('resource_group') or \
         get_ancestor_name(_ctx.instance, constants.REL_CONTAINED_IN_RG)
 

@@ -20,17 +20,13 @@ from cloudify.decorators import operation
 
 from cloudify_azure import constants
 
+from cloudify_azure import utils
 from azure_sdk.resources.app_service.publishing_user import PublishingUser
 
 
 @operation(resumable=True)
 def set_user(ctx, user_details, **kwargs):
-    azure_config = ctx.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.node.properties)
     api_version = \
         ctx.node.properties.get('api_version', constants.API_VER_APP_SERVICE)
     publishing_user = PublishingUser(azure_config, ctx.logger, api_version)

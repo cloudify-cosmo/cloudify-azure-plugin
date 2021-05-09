@@ -32,11 +32,12 @@ class WebApp(AzureResource):
         self.logger.info("Get web_app...{0}".format(web_app_name))
         web_app = self.client.web_apps.get(
             resource_group_name=group_name,
-            name=web_app_name
-        ).as_dict()
-        self.logger.info(
-            'Get web_app result: {0}'.format(
-                utils.secure_logging_content(web_app)))
+            name=web_app_name)
+        if web_app:
+            web_app = web_app.as_dict()
+            self.logger.info(
+                'Get web_app result: {0}'.format(
+                    utils.secure_logging_content(web_app)))
         return web_app
 
     def create_or_update(self, group_name, web_app_name, params):
@@ -55,10 +56,9 @@ class WebApp(AzureResource):
 
     def delete(self, group_name, web_app_name):
         self.logger.info("Deleting web_app...{0}".format(web_app_name))
-        delete_async_operation = self.client.web_apps.delete(
+        self.client.web_apps.delete(
             resource_group_name=group_name,
             name=web_app_name
         )
-        delete_async_operation.wait()
         self.logger.debug(
             'Deleted web_app {0}'.format(web_app_name))
