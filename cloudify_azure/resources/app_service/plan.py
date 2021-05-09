@@ -39,10 +39,9 @@ def create(ctx, resource_group, name, plan_details, **kwargs):
             "failed with this error : {1}".format(name,
                                                   cr.message)
                     )
-    ctx.instance.runtime_properties['resource_group'] = resource_group
-    ctx.instance.runtime_properties['resource'] = result
-    ctx.instance.runtime_properties['resource_id'] = result.get("id", "")
-    ctx.instance.runtime_properties['name'] = name
+    utils.save_common_info_in_runtime_properties(resource_group,
+                                                 name,
+                                                 result)
 
 
 @operation(resumable=True)

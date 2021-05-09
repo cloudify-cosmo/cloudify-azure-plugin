@@ -433,3 +433,13 @@ def check_if_resource_exists(resource, resource_group_name, name=None):
         return resource.get(resource_group_name)
     except CloudError:
         return
+
+
+def save_common_info_in_runtime_properties(resource_group_name,
+                                           resource_name,
+                                           resource_get_create_result):
+    ctx.instance.runtime_properties['resource_group'] = resource_group_name
+    ctx.instance.runtime_properties['resource'] = resource_get_create_result
+    ctx.instance.runtime_properties['resource_id'] = \
+        resource_get_create_result.get("id", "")
+    ctx.instance.runtime_properties['name'] = resource_name
