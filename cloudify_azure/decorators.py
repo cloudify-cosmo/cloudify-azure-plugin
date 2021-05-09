@@ -27,7 +27,6 @@ from azure_sdk.resources.network.route import Route
 from azure_sdk.resources.network.subnet import Subnet
 from azure_sdk.resources.deployment import Deployment
 from azure_sdk.resources.resource_group import ResourceGroup
-from azure_sdk.resources.app_service.plan import ServicePlan
 from azure_sdk.resources.storage.storage_account import StorageAccount
 from azure_sdk.resources.network.network_security_rule \
     import NetworkSecurityRule
@@ -187,8 +186,6 @@ def with_azure_resource(resource_class_name):
                              ctx.node.type_hierarchy
             create_op = 'create' in ctx.operation.name.split('.')[-1]
 
-            ctx.logger.info("use_existing:{}".format(use_existing))
-            ctx.logger.info("arm_deployment:{}".format(arm_deployment))
             if not exists and expected and not create_anyway:
                 raise cfy_exc.NonRecoverableError(
                     "Can't use non-existing {0} '{1}'.".format(

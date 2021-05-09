@@ -77,6 +77,7 @@ dsl_definitions:
     location: { get_input: location }
 
 node_templates:
+  
   user:
     type: cloudify.azure.nodes.PublishingUser
     properties:
@@ -86,8 +87,6 @@ node_templates:
   resource_group:
     type: cloudify.azure.nodes.ResourceGroup
     properties:
-      use_external_resource: true
-      create_if_missing: true
       name: { get_input: resource_group_name }
       location: { get_input: location }
       azure_config: *azure_config
@@ -95,8 +94,6 @@ node_templates:
   plan:
     type: cloudify.azure.nodes.Plan
     properties:
-      use_external_resource: true
-      create_if_missing: true
       name: { get_input: plan_name }
       resource_group: { get_input: resource_group_name }
       plan_details: *plan_info
@@ -108,8 +105,6 @@ node_templates:
   webapp:
     type: cloudify.azure.nodes.WebApp
     properties:
-      use_external_resource: true
-      create_if_missing: true
       name: { get_input: web_app_name }
       resource_group: { get_input: resource_group_name }
       app_config: *app_config
