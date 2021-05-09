@@ -192,9 +192,10 @@ def with_azure_resource(resource_class_name):
                         resource_class_name, name))
             elif use_existing and not (create_op and arm_deployment):
                 ctx.logger.info("Using external resource")
-                ctx.instance.runtime_properties['resource'] = exists
-                ctx.instance.runtime_properties['resource_id'] = exists.get(
-                    "id", "")
+                utils.save_common_info_in_runtime_properties(
+                    resource_group_name=resource_factory.resource_group_name,
+                    resource_name=name,
+                    resource_get_create_result=exists)
                 return
             elif not create and not (create_op and arm_deployment):
                 raise cfy_exc.NonRecoverableError(
@@ -219,16 +220,19 @@ class ResourceGetter(object):
         self.azure_config = azure_config
         self.ctx = ctx
         self.name = resource_name
+        self.resource_group_name=None
 
     def get_resource(self, resource_class_name):
         try:
             resource = resource_class_name(self.azure_config, self.ctx.logger)
             if not isinstance(resource, ResourceGroup):
                 resource_group_name = utils.get_resource_group(self.ctx)
+                self.resource_group_name = resource_group_name
                 # handle speical cases
                 # resource_group
             if isinstance(resource, ResourceGroup):
                 exists = resource.get(self.name)
+                self.resource_group_name = self.name
             elif isinstance(resource, Deployment):
                 exists = resource.get(resource_group_name, self.name)
                 # virtual_machine_extension
@@ -254,5 +258,4 @@ class ResourceGetter(object):
                 exists = resource.get(resource_group_name, self.name)
         except CloudError:
             exists = None
-
         return exists
