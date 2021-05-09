@@ -220,7 +220,7 @@ class ResourceGetter(object):
         self.azure_config = azure_config
         self.ctx = ctx
         self.name = resource_name
-        self.resource_group_name=None
+        self.resource_group_name = None
 
     def get_resource(self, resource_class_name):
         try:

@@ -12,3 +12,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import requests
+from msrestazure.azure_exceptions import CloudError
+
+
+def compose_not_found_cloud_error():
+    response = requests.Response()
+    response.status_code = 404
+    message = 'resource not found'
+    return CloudError(response, message)

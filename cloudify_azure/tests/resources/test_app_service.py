@@ -17,11 +17,13 @@ import requests
 
 from msrestazure.azure_exceptions import CloudError
 
+from cloudify.state import current_ctx
 from cloudify import mocks as cfy_mocks
 from cloudify import exceptions as cfy_exc
 
 from cloudify_azure.resources.app_service import plan, webapp, publishing_user
 
+from . import compose_not_found_cloud_error
 
 @mock.patch('azure_sdk.common.ServicePrincipalCredentials')
 @mock.patch('azure_sdk.resources.app_service.'
@@ -47,6 +49,7 @@ class PlanTest(unittest.TestCase):
     def setUp(self):
         self.fake_ctx, self.node, self.instance = \
             self._get_mock_context_for_run()
+        current_ctx.set(self.fake_ctx)
         self.dummy_azure_credentials = {
             'client_id': 'dummy',
             'client_secret': 'dummy',
@@ -54,21 +57,28 @@ class PlanTest(unittest.TestCase):
             'tenant_id': 'dummy'
         }
 
-    def test_create(self, client, credentials):
+    def _set_azure_config_rg_and_plan_name(self,resource_group,name):
         self.node.properties['azure_config'] = self.dummy_azure_credentials
+        self.node.properties['resource_group'] = resource_group
+        self.node.properties['name'] = name
+
+
+    def test_create(self, client, credentials):
         resource_group = 'sample_resource_group'
         name = 'plan_name'
         plan_details = {
             'key': 'value'
         }
-        response = requests.Response()
-        response.status_code = 404
-        message = 'resource not found'
-        client().app_service_plans.get.side_effect = \
-            CloudError(response, message)
+        self._set_azure_config_rg_and_plan_name(resource_group=resource_group,
+                                                name=name)
+        err = compose_not_found_cloud_error()
+        client().app_service_plans.get.side_effect = err
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            plan.create(self.fake_ctx, resource_group, name, plan_details)
+            plan.create(ctx=self.fake_ctx,
+                        resource_group=resource_group,
+                        name=name,
+                        plan_details=plan_details)
             client().app_service_plans.get.assert_called_with(
                 resource_group_name=resource_group,
                 name=name
@@ -79,22 +89,55 @@ class PlanTest(unittest.TestCase):
                 app_service_plan=plan_details
             )
 
-    def test_create_already_exists(self, client, credentials):
-        self.node.properties['azure_config'] = self.dummy_azure_credentials
+    def test_create_use_external_resource(self, client, credentials):
         resource_group = 'sample_resource_group'
         name = 'plan_name'
         plan_details = {
             'key': 'value'
         }
+        self._set_azure_config_rg_and_plan_name(resource_group=resource_group,
+                                                name=name)
+        self.node.properties['use_external_resource'] = True
         client().app_service_plans.get.return_value = mock.Mock()
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            plan.create(self.fake_ctx, resource_group, name, plan_details)
+            plan.create(ctx=self.fake_ctx,
+                        resource_group=resource_group,
+                        name=name,
+                        plan_details=plan_details)
             client().app_service_plans.get.assert_called_with(
                 resource_group_name=resource_group,
                 name=name
             )
             client().app_service_plans.create_or_update.assert_not_called()
+
+    def test_create_use_external_resource_create_if_missing(self, client, credentials):
+        resource_group = 'sample_resource_group'
+        name = 'plan_name'
+        plan_details = {
+            'key': 'value'
+        }
+        self._set_azure_config_rg_and_plan_name(resource_group=resource_group,
+                                                name=name)
+        self.node.properties['use_external_resource'] = True
+        self.node.properties['create_if_missing'] = True
+        err = compose_not_found_cloud_error()
+        client().app_service_plans.get.side_effect = err
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            plan.create(ctx=self.fake_ctx,
+                        resource_group=resource_group,
+                        name=name,
+                        plan_details=plan_details)
+            client().app_service_plans.get.assert_called_with(
+                resource_group_name=resource_group,
+                name=name
+            )
+            client().app_service_plans.create_or_update.assert_called_with(
+                resource_group_name=resource_group,
+                name=name,
+                app_service_plan=plan_details
+            )
 
     def test_delete(self, client, credentials):
         self.node.properties['azure_config'] = self.dummy_azure_credentials
