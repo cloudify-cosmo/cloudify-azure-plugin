@@ -13,11 +13,9 @@
 # limitations under the License.
 import json
 import mock
-import requests
 import tempfile
 import unittest
 
-from msrestazure.azure_exceptions import CloudError
 from azure.mgmt.resource.resources.models import DeploymentMode
 from azure.mgmt.resource.resources.v2019_10_01.models import \
     DeploymentProperties, DeploymentWhatIfProperties
@@ -100,7 +98,6 @@ class DeploymentTest(unittest.TestCase):
             'subscription_id': 'dummy',
             'tenant_id': 'dummy'
         }
-
 
     def test_create(self, rg_client, deployment_client, credentials):
         self.node.properties['azure_config'] = self.dummy_azure_credentials
