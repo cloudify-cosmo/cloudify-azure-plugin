@@ -68,3 +68,17 @@ class LoadBalancer(AzureResource):
         delete_async_operation.wait()
         self.logger.debug(
             'Deleted load_balancer {0}'.format(load_balancer_name))
+
+
+class LoadBalancerBackendAddressPool(AzureResource):
+
+    def __init__(self, azure_config, logger,
+                 api_version=constants.API_VER_NETWORK):
+        super(LoadBalancer, self).__init__(azure_config)
+        self.logger = logger
+        self.client = \
+            NetworkManagementClient(self.credentials, self.subscription_id,
+                                    api_version=api_version)
+
+    def get(self, group_name, load_balancer_name, backend_address_pool_name):
+        pass

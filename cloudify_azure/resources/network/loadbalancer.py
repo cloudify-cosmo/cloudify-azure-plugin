@@ -83,12 +83,7 @@ def configure(ctx, **_):
             if ip_cfg.get('subnet'):
                 del ip_cfg['subnet']
     # Create a resource (if necessary)
-    azure_config = ctx.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.node.properties)
     name = ctx.instance.runtime_properties.get('name')
     resource_group_name = utils.get_resource_group(ctx)
     api_version = \
@@ -122,10 +117,9 @@ def configure(ctx, **_):
                                                   cr.message)
             )
 
-    ctx.instance.runtime_properties['resource_group'] = resource_group_name
-    ctx.instance.runtime_properties['resource'] = result
-    ctx.instance.runtime_properties['resource_id'] = result.get("id", "")
-    ctx.instance.runtime_properties['name'] = name
+    utils.save_common_info_in_runtime_properties(resource_group_name,
+                                                 name,
+                                                 result)
 
     for fe_ipc_data in result.get('frontend_ip_configurations', list()):
         ctx.instance.runtime_properties['ip'] = \
@@ -145,12 +139,7 @@ def configure(ctx, **_):
 def delete(ctx, **_):
     """Deletes a Load Balancer"""
     # Delete the resource
-    azure_config = ctx.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
     name = ctx.instance.runtime_properties.get('name')
     api_version = \
@@ -176,12 +165,7 @@ def delete(ctx, **_):
 def attach_ip_configuration(ctx, **_):
     """Generates a usable UUID for the NIC's IP Configuration"""
     # Generate the IPConfiguration's name
-    azure_config = ctx.source.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.source.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = \
         ctx.source.instance.runtime_properties.get('resource_group')
     load_balancer_name = ctx.source.instance.runtime_properties.get('name')
@@ -204,12 +188,7 @@ def create_backend_pool(ctx, **_):
         raise cfy_exc.NonRecoverableError(
             '"use_external_resource" specified without a resource "name"')
     # Generate a name if it doesn't exist
-    azure_config = ctx.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
     load_balancer_name = ctx.node.properties.get('load_balancer_name') or \
         utils.get_resource_name_ref(constants.REL_CONTAINED_IN_LB,
@@ -262,12 +241,7 @@ def delete_backend_pool(ctx, **_):
     if ctx.node.properties.get('use_external_resource', False):
         return
     # Get an interface to the Load Balancer
-    azure_config = ctx.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
     lb_rel = utils.get_relationship_by_type(
         ctx.instance.relationships,
@@ -304,12 +278,7 @@ def create_probe(ctx, **_):
         raise cfy_exc.NonRecoverableError(
             '"use_external_resource" specified without a resource "name"')
     # Generate a name if it doesn't exist
-    azure_config = ctx.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
     load_balancer_name = ctx.node.properties.get('load_balancer_name') or \
         utils.get_resource_name_ref(constants.REL_CONTAINED_IN_LB,
@@ -364,12 +333,7 @@ def delete_probe(ctx, **_):
     if ctx.node.properties.get('use_external_resource', False):
         return
     # Get an interface to the Load Balancer
-    azure_config = ctx.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
     lb_rel = utils.get_relationship_by_type(
         ctx.instance.relationships,
@@ -406,12 +370,7 @@ def create_incoming_nat_rule(ctx, **_):
         raise cfy_exc.NonRecoverableError(
             '"use_external_resource" specified without a resource "name"')
     # Generate a name if it doesn't exist
-    azure_config = ctx.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
     load_balancer_name = ctx.node.properties.get('load_balancer_name') or \
         utils.get_resource_name_ref(constants.REL_CONTAINED_IN_LB,
@@ -482,12 +441,7 @@ def delete_incoming_nat_rule(ctx, **_):
     if ctx.node.properties.get('use_external_resource', False):
         return
     # Get an interface to the Load Balancer
-    azure_config = ctx.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
     lb_rel = utils.get_relationship_by_type(
         ctx.instance.relationships,
@@ -524,12 +478,7 @@ def create_rule(ctx, **_):
         raise cfy_exc.NonRecoverableError(
             '"use_external_resource" specified without a resource "name"')
     # Generate a name if it doesn't exist
-    azure_config = ctx.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
     load_balancer_name = ctx.node.properties.get('load_balancer_name') or \
         utils.get_resource_name_ref(constants.REL_CONTAINED_IN_LB,
@@ -620,12 +569,7 @@ def delete_rule(ctx, **_):
     if ctx.node.properties.get('use_external_resource', False):
         return
     # Get an interface to the Load Balancer
-    azure_config = ctx.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
     lb_rel = utils.get_relationship_by_type(
         ctx.instance.relationships,
@@ -662,12 +606,7 @@ def attach_nic_to_backend_pool(ctx, **_):
     # Get the ID of the Backend Pool
     be_pool_id = {'id': ctx.target.instance.runtime_properties['resource_id']}
     # Get an interface to the Network Interface Card
-    azure_config = ctx.source.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.source.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx.source)
     name = ctx.source.instance.runtime_properties['name']
     network_interface_card = NetworkInterfaceCard(azure_config, ctx.logger)
@@ -703,12 +642,7 @@ def detach_nic_from_backend_pool(ctx, **_):
     # Get the ID of the Backend Pool
     be_pool_id = {'id': ctx.target.instance.runtime_properties['resource_id']}
     # Get an interface to the Network Interface Card
-    azure_config = ctx.source.node.properties['azure_config']
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.source.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = ctx.source.node.properties['resource_group_name']
     name = ctx.source.instance.runtime_properties['name']
     network_interface_card = NetworkInterfaceCard(azure_config, ctx.logger)
