@@ -81,4 +81,14 @@ class LoadBalancerBackendAddressPool(AzureResource):
                                     api_version=api_version)
 
     def get(self, group_name, load_balancer_name, backend_address_pool_name):
-        pass
+        self.logger.info("Get load balancer backend address pool...{0}".format(
+            backend_address_pool_name))
+        backend_pool = self.client.load_balancer_backend_address_pools.get(
+            resource_group_name=group_name,
+            load_balancer_name=load_balancer_name,
+            backend_address_pool_name=backend_address_pool_name)
+        self.logger.info(
+            "Get load balancer backend address pool: {0}".format(
+                utils.secure_logging_content(backend_pool))
+            )
+        return backend_pool
