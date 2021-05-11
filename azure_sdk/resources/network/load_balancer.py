@@ -73,7 +73,7 @@ class LoadBalancer(AzureResource):
 class LoadBalancerBackendAddressPool(AzureResource):
 
     def __init__(self, azure_config, logger,
-                 api_version=constants.API_VER_NETWORK_LB_BACKEND):
+                 api_version=constants.API_VER_NETWORK_LB_BACKEND_PROBES):
         super(LoadBalancerBackendAddressPool, self).__init__(azure_config)
         self.logger = logger
         self.client = \
@@ -92,3 +92,27 @@ class LoadBalancerBackendAddressPool(AzureResource):
                 utils.secure_logging_content(backend_pool))
             )
         return backend_pool
+
+
+class LoadBalancerProbes(AzureResource):
+
+    def __init__(self, azure_config, logger,
+                 api_version=constants.API_VER_NETWORK_LB_BACKEND_PROBES):
+        super(LoadBalancerProbes, self).__init__(azure_config)
+        self.logger = logger
+        self.client = \
+            NetworkManagementClient(self.credentials, self.subscription_id,
+                                    api_version=api_version)
+
+    def get(self, group_name, load_balancer_name, probe_name):
+        self.logger.info("Get load balancer probe...{0}".format(
+            probe_name))
+        probe = self.client.load_balancer_probes.get(
+            resource_group_name=group_name,
+            load_balancer_name=load_balancer_name,
+            probe_name=probe_name).as_dict()
+        self.logger.info(
+            "Get load balancer probe result: {0}".format(
+                utils.secure_logging_content(probe))
+            )
+        return probe
