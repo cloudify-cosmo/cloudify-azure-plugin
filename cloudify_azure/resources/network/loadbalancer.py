@@ -26,11 +26,14 @@ from cloudify.decorators import operation
 from cloudify_azure import (constants, decorators, utils)
 from cloudify_azure.resources.network.ipconfiguration \
     import get_ip_configurations
-from azure_sdk.resources.network.load_balancer import LoadBalancer
 from azure_sdk.resources.network.network_interface_card \
     import NetworkInterfaceCard
 from azure_sdk.resources.network.public_ip_address \
     import PublicIPAddress
+from azure_sdk.resources.network.load_balancer import\
+    (LoadBalancer,
+    LoadBalancerBackendAddressPool)
+
 
 LB_ADDRPOOLS_KEY = 'load_balancer_backend_address_pools'
 
@@ -165,12 +168,12 @@ def delete(ctx, **_):
 def attach_ip_configuration(ctx, **_):
     """Generates a usable UUID for the NIC's IP Configuration"""
     # Generate the IPConfiguration's name
-    azure_config = utils.get_client_config(ctx.node.properties)
+    azure_config = utils.get_client_config(ctx.source.node.properties)
     resource_group_name = \
         ctx.source.instance.runtime_properties.get('resource_group')
     load_balancer_name = ctx.source.instance.runtime_properties.get('name')
     load_balancer = LoadBalancer(azure_config, ctx.logger)
-    ip_configuration_name = ctx.target.node.properties['name']
+    ip_configuration_name = ctx.target.node.properties.get('name')
     ip_configuration_name = \
         get_unique_lb_prop_name(load_balancer, resource_group_name,
                                 load_balancer_name,
@@ -180,6 +183,8 @@ def attach_ip_configuration(ctx, **_):
 
 
 @operation(resumable=True)
+@decorators.with_generate_name(LoadBalancerBackendAddressPool)
+@decorators.with_azure_resource(LoadBalancerBackendAddressPool)
 def create_backend_pool(ctx, **_):
     """Uses an existing, or creates a new, Load Balancer Backend Pool"""
     # Check if invalid external resource
@@ -190,18 +195,11 @@ def create_backend_pool(ctx, **_):
     # Generate a name if it doesn't exist
     azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
-    load_balancer_name = ctx.node.properties.get('load_balancer_name') or \
-        utils.get_resource_name_ref(constants.REL_CONTAINED_IN_LB,
-                                    'load_balancer_name',
-                                    _ctx=ctx)
+    load_balancer_name = utils.get_load_balancer(ctx,
+                                                 constants.REL_CONTAINED_IN_LB)
     load_balancer = LoadBalancer(azure_config, ctx.logger)
-    backend_pool_name = ctx.node.properties.get('name')
-    backend_pool_name = \
-        get_unique_lb_prop_name(load_balancer, resource_group_name,
-                                load_balancer_name,
-                                "backend_address_pools",
-                                backend_pool_name)
-    ctx.instance.runtime_properties['name'] = backend_pool_name
+    backend_pool_name = utils.get_resource_name(ctx)
+
     # Get an interface to the Load Balancer
     lb_rel = utils.get_relationship_by_type(
         ctx.instance.relationships,
@@ -214,7 +212,8 @@ def create_backend_pool(ctx, **_):
         'name': backend_pool_name,
     })
     load_balancer_params = {
-        'backend_address_pools': lb_pools
+        'backend_address_pools': lb_pools,
+        'location': lb_rel.target.node.properties.get('location')
     }
     # clean empty values from params
     load_balancer_params = \
@@ -223,16 +222,17 @@ def create_backend_pool(ctx, **_):
         result = load_balancer.create_or_update(resource_group_name,
                                                 load_balancer_name,
                                                 load_balancer_params)
-        for item in result.get("backend_address_pools"):
-            if item.get("name") == backend_pool_name:
-                ctx.instance.runtime_properties['resource_id'] = item.get("id")
-                ctx.instance.runtime_properties['resource'] = item
     except CloudError as cr:
         raise cfy_exc.NonRecoverableError(
             "create backend_pool '{0}' "
             "failed with this error : {1}".format(backend_pool_name,
                                                   cr.message)
             )
+    for item in result.get("backend_address_pools"):
+        if item.get("name") == backend_pool_name:
+            ctx.instance.runtime_properties['resource_id'] = item.get("id")
+            ctx.instance.runtime_properties['resource'] = item
+    ctx.instance.runtime_properties["resource_group"] = resource_group_name
 
 
 @operation(resumable=True)
@@ -257,7 +257,8 @@ def delete_backend_pool(ctx, **_):
             del lb_pools[idx]
     # Update the Load Balancer with the new pool list
     lb_params = {
-        'backend_address_pools': lb_pools
+        'backend_address_pools': lb_pools,
+        'location': lb_rel.target.node.properties.get('location')
     }
     try:
         load_balancer.create_or_update(resource_group_name, lb_name, lb_params)
@@ -606,7 +607,7 @@ def attach_nic_to_backend_pool(ctx, **_):
     # Get the ID of the Backend Pool
     be_pool_id = {'id': ctx.target.instance.runtime_properties['resource_id']}
     # Get an interface to the Network Interface Card
-    azure_config = utils.get_client_config(ctx.node.properties)
+    azure_config = utils.get_client_config(ctx.source.node.properties)
     resource_group_name = utils.get_resource_group(ctx.source)
     name = ctx.source.instance.runtime_properties['name']
     network_interface_card = NetworkInterfaceCard(azure_config, ctx.logger)
@@ -620,7 +621,8 @@ def attach_nic_to_backend_pool(ctx, **_):
         nic_ip_cfgs[ip_idx][LB_ADDRPOOLS_KEY] = nic_pools
     # Update the NIC IPConfigurations
     nic_params = {
-        'ip_configurations': nic_ip_cfgs
+        'ip_configurations': nic_ip_cfgs,
+        'location': ctx.source.node.properties.get('location')
     }
     try:
         network_interface_card.create_or_update(resource_group_name, name,
@@ -642,8 +644,8 @@ def detach_nic_from_backend_pool(ctx, **_):
     # Get the ID of the Backend Pool
     be_pool_id = {'id': ctx.target.instance.runtime_properties['resource_id']}
     # Get an interface to the Network Interface Card
-    azure_config = utils.get_client_config(ctx.node.properties)
-    resource_group_name = ctx.source.node.properties['resource_group_name']
+    azure_config = utils.get_client_config(ctx.source.node.properties)
+    resource_group_name = utils.get_resource_group(ctx.source)
     name = ctx.source.instance.runtime_properties['name']
     network_interface_card = NetworkInterfaceCard(azure_config, ctx.logger)
     # Get the existing NIC IPConfigurations
@@ -659,7 +661,8 @@ def detach_nic_from_backend_pool(ctx, **_):
             nic_ip_cfgs[ip_idx][LB_ADDRPOOLS_KEY] = nic_pools
     # Update the NIC IPConfigurations
     nic_params = {
-        'ip_configurations': nic_ip_cfgs
+        'ip_configurations': nic_ip_cfgs,
+        'location': ctx.source.node.properties.get('location')
     }
     try:
         network_interface_card.create_or_update(resource_group_name, name,

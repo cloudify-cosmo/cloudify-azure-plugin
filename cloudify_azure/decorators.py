@@ -32,7 +32,8 @@ from azure_sdk.resources.network.network_security_rule \
     import NetworkSecurityRule
 from azure_sdk.resources.compute.virtual_machine_extension \
     import VirtualMachineExtension
-
+from azure_sdk.resources.network.load_balancer import \
+    LoadBalancerBackendAddressPool
 
 def sa_name_generator():
     """Generates a unique SA resource name"""
@@ -69,6 +70,9 @@ def get_unique_name(resource, resource_group_name, name, **kwargs):
                 elif isinstance(resource, NetworkSecurityRule):
                     nsg_name = kwargs['nsg_name']
                     result = resource.get(resource_group_name, nsg_name, name)
+                elif isinstance(resource, LoadBalancerBackendAddressPool):
+                    lb_name = kwargs['lb_name']
+                    result = resource.get(resource_group_name, lb_name, name)
                 else:
                     result = resource.get(resource_group_name, name)
                 if result:  # found a resource with same name
@@ -142,6 +146,13 @@ def with_generate_name(resource_class_name):
                             resource=resource,
                             resource_group_name=resource_group_name,
                             name=name)
+                    elif isinstance(resource, LoadBalancerBackendAddressPool):
+                        lb_name = utils.get_load_balancer(ctx)
+                        name = get_unique_name(
+                            resource=resource,
+                            resource_group_name=resource_group_name,
+                            name=name,
+                            lb_name=lb_name)
                     else:
                         name = get_unique_name(
                             resource=resource,
@@ -254,6 +265,12 @@ class ResourceGetter(object):
             elif isinstance(resource, NetworkSecurityRule):
                 nsg_name = utils.get_network_security_group(self.ctx)
                 exists = resource.get(resource_group_name, nsg_name, self.name)
+                # load_balancer_backend_address_pool
+            elif isinstance(resource, LoadBalancerBackendAddressPool):
+                lb_name = utils.get_load_balancer(self.ctx)
+                exists = resource.get(resource_group_name,
+                                      lb_name,
+                                      self.name)
             else:
                 exists = resource.get(resource_group_name, self.name)
         except CloudError:

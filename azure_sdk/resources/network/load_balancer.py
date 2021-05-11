@@ -73,8 +73,8 @@ class LoadBalancer(AzureResource):
 class LoadBalancerBackendAddressPool(AzureResource):
 
     def __init__(self, azure_config, logger,
-                 api_version=constants.API_VER_NETWORK):
-        super(LoadBalancer, self).__init__(azure_config)
+                 api_version=constants.API_VER_NETWORK_LB_BACKEND):
+        super(LoadBalancerBackendAddressPool, self).__init__(azure_config)
         self.logger = logger
         self.client = \
             NetworkManagementClient(self.credentials, self.subscription_id,
@@ -86,7 +86,7 @@ class LoadBalancerBackendAddressPool(AzureResource):
         backend_pool = self.client.load_balancer_backend_address_pools.get(
             resource_group_name=group_name,
             load_balancer_name=load_balancer_name,
-            backend_address_pool_name=backend_address_pool_name)
+            backend_address_pool_name=backend_address_pool_name).as_dict()
         self.logger.info(
             "Get load balancer backend address pool: {0}".format(
                 utils.secure_logging_content(backend_pool))

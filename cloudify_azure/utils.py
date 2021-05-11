@@ -138,8 +138,13 @@ def get_network_security_group(_ctx=ctx,
     :rtype: string
     """
     return _ctx.node.properties.get('network_security_group_name') or \
-        get_ancestor_name(
-            _ctx.instance, rel_type)
+        get_ancestor_name(_ctx.instance, rel_type)
+
+
+def get_load_balancer(_ctx=ctx,
+                      rel_type=constants.REL_CONTAINED_IN_LB):
+    return ctx.node.properties.get('load_balancer_name') or \
+        get_ancestor_name(_ctx.instance, rel_type)
 
 
 def get_retry_after(_ctx=ctx):
