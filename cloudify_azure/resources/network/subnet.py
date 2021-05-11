@@ -180,7 +180,7 @@ def attach_route_table(ctx, **_):
     resource_group_name = utils.get_resource_group(ctx.target)
     vnet_name = ctx.target.instance.runtime_properties.get('virtual_network')
     name = ctx.target.instance.runtime_properties.get('name')
-    subnet_params= {}
+    subnet_params = {}
     subnet_params = \
         utils.handle_resource_config_params(subnet_params,
                                             ctx.target.node.properties.get(

@@ -35,6 +35,7 @@ from azure_sdk.resources.compute.virtual_machine_extension \
 from azure_sdk.resources.network.load_balancer import \
     LoadBalancerBackendAddressPool
 
+
 def sa_name_generator():
     """Generates a unique SA resource name"""
     return ''.join(random.choice(

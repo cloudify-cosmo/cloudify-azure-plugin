@@ -32,7 +32,7 @@ from azure_sdk.resources.network.public_ip_address \
     import PublicIPAddress
 from azure_sdk.resources.network.load_balancer import\
     (LoadBalancer,
-    LoadBalancerBackendAddressPool)
+     LoadBalancerBackendAddressPool)
 
 
 LB_ADDRPOOLS_KEY = 'load_balancer_backend_address_pools'
