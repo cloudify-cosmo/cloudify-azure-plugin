@@ -15,23 +15,6 @@ inputs:
   resource_suffix:
     default: 10
 
-  # Azure account information
-  subscription_id:
-    type: string
-    required: false
-
-  tenant_id:
-    type: string
-    required: false
-
-  client_id:
-    type: string
-    required: false
-
-  client_secret:
-    type: string
-    required: false
-
   location:
     type: string
     required: true
