@@ -532,15 +532,20 @@ def create_rule(ctx, **_):
                     rel.target.instance.runtime_properties.get('resource_id')
     # Get the existing Load Balancer Rules
     lb_rules = lb_data.get('load_balancing_rules', list())
-    lb_rules.append({
-        'name': lb_rule_name,
-        'frontend_ip_configuration': {'id': lb_fe_ipc_id},
-        'backend_address_pool': {'id': lb_be_pool_id},
-        'probe': {'id': lb_probe_id}
-    })
+    lb_rule = \
+        utils.handle_resource_config_params({
+            'name': lb_rule_name,
+            'frontend_ip_configuration': {'id': lb_fe_ipc_id},
+            'backend_address_pool': {'id': lb_be_pool_id},
+            'probe': {'id': lb_probe_id}
+        },
+            ctx.node.properties.get(
+                'resource_config', {}))
+    lb_rules.append(lb_rule)
     # Update the Load Balancer with the new rule
     lb_params = {
-        'load_balancing_rules': lb_rules
+        'load_balancing_rules': lb_rules,
+        'location': lb_rel.target.node.properties.get('location')
     }
     # clean empty values from params
     lb_params = \
@@ -548,16 +553,18 @@ def create_rule(ctx, **_):
     try:
         result = load_balancer.create_or_update(resource_group_name, lb_name,
                                                 lb_params)
-        for item in result.get("load_balancing_rules"):
-            if item.get("name") == lb_rule_name:
-                ctx.instance.runtime_properties['resource_id'] = item.get("id")
-                ctx.instance.runtime_properties['resource'] = item
+
     except CloudError as cr:
         raise cfy_exc.NonRecoverableError(
             "create load_balancing_rules '{0}' "
             "failed with this error : {1}".format(lb_rule_name,
                                                   cr.message)
             )
+    for item in result.get("load_balancing_rules"):
+        if item.get("name") == lb_rule_name:
+            ctx.instance.runtime_properties['resource_id'] = item.get("id")
+            ctx.instance.runtime_properties['resource'] = item
+    ctx.instance.runtime_properties["resource_group"] = resource_group_name
 
 
 @operation(resumable=True)
