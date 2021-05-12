@@ -286,10 +286,6 @@ def create_probe(ctx, **_):
     resource_group_name = utils.get_resource_group(ctx)
     load_balancer = LoadBalancer(azure_config, ctx.logger)
     probe_name = utils.get_resource_name(ctx)
-    # probe_name = ctx.node.properties.get('name')
-    # probe_name = \
-    #     get_unique_lb_prop_name(load_balancer, resource_group_name,
-    #                             load_balancer_name, "probes", probe_name)
     ctx.instance.runtime_properties['name'] = probe_name
     # Get an interface to the Load Balancer
     lb_rel = utils.get_relationship_by_type(
