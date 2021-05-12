@@ -32,6 +32,7 @@ from azure_sdk.resources.network.public_ip_address \
     import PublicIPAddress
 from azure_sdk.resources.network.load_balancer import\
     (LoadBalancer,
+     LoadBalancerProbe,
      LoadBalancerBackendAddressPool)
 
 
@@ -271,6 +272,8 @@ def delete_backend_pool(ctx, **_):
 
 
 @operation(resumable=True)
+@decorators.with_generate_name(LoadBalancerProbe)
+@decorators.with_azure_resource(LoadBalancerProbe)
 def create_probe(ctx, **_):
     """Uses an existing, or creates a new, Load Balancer Probe"""
     # Check if invalid external resource
@@ -281,15 +284,12 @@ def create_probe(ctx, **_):
     # Generate a name if it doesn't exist
     azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
-    load_balancer_name = ctx.node.properties.get('load_balancer_name') or \
-        utils.get_resource_name_ref(constants.REL_CONTAINED_IN_LB,
-                                    'load_balancer_name',
-                                    _ctx=ctx)
     load_balancer = LoadBalancer(azure_config, ctx.logger)
-    probe_name = ctx.node.properties.get('name')
-    probe_name = \
-        get_unique_lb_prop_name(load_balancer, resource_group_name,
-                                load_balancer_name, "probes", probe_name)
+    probe_name = utils.get_resource_name(ctx)
+    # probe_name = ctx.node.properties.get('name')
+    # probe_name = \
+    #     get_unique_lb_prop_name(load_balancer, resource_group_name,
+    #                             load_balancer_name, "probes", probe_name)
     ctx.instance.runtime_properties['name'] = probe_name
     # Get an interface to the Load Balancer
     lb_rel = utils.get_relationship_by_type(
@@ -299,16 +299,17 @@ def create_probe(ctx, **_):
     # Get the existing probes
     lb_data = load_balancer.get(resource_group_name, lb_name)
     lb_probes = lb_data.get('probes', list())
-    lb_probes.append({
-        'name': probe_name,
-    })
-    lb_probes = \
-        utils.handle_resource_config_params(lb_probes,
-                                            ctx.node.properties.get(
-                                                'resource_config', {}))
+    lb_probe = \
+        utils.handle_resource_config_params({
+            'name': probe_name,
+        },
+            ctx.node.properties.get(
+                'resource_config', {}))
+    lb_probes.append(lb_probe)
     # Update the Load Balancer with the new probe
     lb_params = {
-        'probes': lb_probes
+        'probes': lb_probes,
+        'location': lb_rel.target.node.properties.get('location')
     }
     # clean empty values from params
     lb_params = \
@@ -316,16 +317,17 @@ def create_probe(ctx, **_):
     try:
         result = load_balancer.create_or_update(resource_group_name, lb_name,
                                                 lb_params)
-        for item in result.get("probes"):
-            if item.get("name") == probe_name:
-                ctx.instance.runtime_properties['resource_id'] = item.get("id")
-                ctx.instance.runtime_properties['resource'] = item
     except CloudError as cr:
         raise cfy_exc.NonRecoverableError(
             "create probe '{0}' "
             "failed with this error : {1}".format(probe_name,
                                                   cr.message)
             )
+    for item in result.get("probes"):
+        if item.get("name") == probe_name:
+            ctx.instance.runtime_properties['resource_id'] = item.get("id")
+            ctx.instance.runtime_properties['resource'] = item
+    ctx.instance.runtime_properties["resource_group"] = resource_group_name
 
 
 @operation(resumable=True)
@@ -350,7 +352,8 @@ def delete_probe(ctx, **_):
             del lb_probes[idx]
     # Update the Load Balancer with the new probes list
     lb_params = {
-        'probes': lb_probes
+        'probes': lb_probes,
+        'location': lb_rel.target.node.properties.get('location')
     }
     try:
         load_balancer.create_or_update(resource_group_name, lb_name, lb_params)

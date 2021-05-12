@@ -94,11 +94,11 @@ class LoadBalancerBackendAddressPool(AzureResource):
         return backend_pool
 
 
-class LoadBalancerProbes(AzureResource):
+class LoadBalancerProbe(AzureResource):
 
     def __init__(self, azure_config, logger,
                  api_version=constants.API_VER_NETWORK_LB_BACKEND_PROBES):
-        super(LoadBalancerProbes, self).__init__(azure_config)
+        super(LoadBalancerProbe, self).__init__(azure_config)
         self.logger = logger
         self.client = \
             NetworkManagementClient(self.credentials, self.subscription_id,
