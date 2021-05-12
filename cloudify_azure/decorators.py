@@ -34,6 +34,7 @@ from azure_sdk.resources.compute.virtual_machine_extension \
     import VirtualMachineExtension
 from azure_sdk.resources.network.load_balancer import \
     (LoadBalancerProbe,
+     LoadBalancerInboundNatRule,
      LoadBalancerLoadBalancingRule,
      LoadBalancerBackendAddressPool
      )
@@ -76,6 +77,7 @@ def get_unique_name(resource, resource_group_name, name, **kwargs):
                     result = resource.get(resource_group_name, nsg_name, name)
                 elif isinstance(resource, (LoadBalancerBackendAddressPool,
                                            LoadBalancerLoadBalancingRule,
+                                           LoadBalancerInboundNatRule,
                                            LoadBalancerProbe)):
                     lb_name = kwargs['lb_name']
                     result = resource.get(resource_group_name, lb_name, name)
@@ -154,6 +156,7 @@ def with_generate_name(resource_class_name):
                             name=name)
                     elif isinstance(resource, (LoadBalancerBackendAddressPool,
                                                LoadBalancerLoadBalancingRule,
+                                               LoadBalancerInboundNatRule,
                                                LoadBalancerProbe)):
                         lb_name = utils.get_load_balancer(ctx)
                         name = get_unique_name(
@@ -276,6 +279,7 @@ class ResourceGetter(object):
                 # load_balancer_backend_address_pool
             elif isinstance(resource, (LoadBalancerBackendAddressPool,
                                        LoadBalancerLoadBalancingRule,
+                                       LoadBalancerInboundNatRule,
                                        LoadBalancerProbe)):
                 lb_name = utils.get_load_balancer(self.ctx)
                 exists = resource.get(resource_group_name,

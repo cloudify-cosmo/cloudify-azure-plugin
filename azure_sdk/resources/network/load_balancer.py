@@ -140,3 +140,27 @@ class LoadBalancerLoadBalancingRule(AzureResource):
                 utils.secure_logging_content(rule))
             )
         return rule
+
+
+class LoadBalancerInboundNatRule(AzureResource):
+
+    def __init__(self, azure_config, logger,
+                 api_version=constants.API_VER_NETWORK_LB_BACKEND_PROBES):
+        super(LoadBalancerInboundNatRule, self).__init__(azure_config)
+        self.logger = logger
+        self.client = \
+            NetworkManagementClient(self.credentials, self.subscription_id,
+                                    api_version=api_version)
+
+    def get(self, group_name, load_balancer_name, inbound_nat_rule_name):
+        self.logger.info("Get load balancer inbound nat rule...{0}".format(
+            inbound_nat_rule_name))
+        rule = self.client.inbound_nat_rules.get(
+            resource_group_name=group_name,
+            load_balancer_name=load_balancer_name,
+            inbound_nat_rule_name=inbound_nat_rule_name).as_dict()
+        self.logger.info(
+            "Get load balancer inbound nat rule result: {0}".format(
+                utils.secure_logging_content(rule))
+            )
+        return rule

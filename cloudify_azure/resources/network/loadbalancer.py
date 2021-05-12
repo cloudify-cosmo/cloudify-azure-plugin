@@ -33,6 +33,7 @@ from azure_sdk.resources.network.public_ip_address \
 from azure_sdk.resources.network.load_balancer import\
     (LoadBalancer,
      LoadBalancerProbe,
+     LoadBalancerInboundNatRule,
      LoadBalancerLoadBalancingRule,
      LoadBalancerBackendAddressPool)
 
@@ -363,6 +364,8 @@ def delete_probe(ctx, **_):
 
 
 @operation(resumable=True)
+@decorators.with_generate_name(LoadBalancerInboundNatRule)
+@decorators.with_azure_resource(LoadBalancerInboundNatRule)
 def create_incoming_nat_rule(ctx, **_):
     """Uses an existing, or creates a new, Load Balancer Incoming NAT Rule"""
     # Check if invalid external resource
@@ -378,11 +381,7 @@ def create_incoming_nat_rule(ctx, **_):
                                     'load_balancer_name',
                                     _ctx=ctx)
     load_balancer = LoadBalancer(azure_config, ctx.logger)
-    incoming_nat_rule_name = ctx.node.properties.get('name')
-    incoming_nat_rule_name = \
-        get_unique_lb_prop_name(load_balancer, resource_group_name,
-                                load_balancer_name, "inbound_nat_rules",
-                                incoming_nat_rule_name)
+    incoming_nat_rule_name = utils.get_resource_name(ctx)
     ctx.instance.runtime_properties['name'] = incoming_nat_rule_name
     # Get an interface to the Load Balancer
     lb_rel = utils.get_relationship_by_type(
@@ -404,19 +403,19 @@ def create_incoming_nat_rule(ctx, **_):
             if constants.REL_CONNECTED_TO_IPC in rel.type_hierarchy:
                 lb_fe_ipc_id = \
                     rel.target.instance.runtime_properties.get('resource_id')
-    lb_rules.append({
+    lb_rule = utils.handle_resource_config_params({
         'name': incoming_nat_rule_name,
         'frontend_ip_configuration': {
             'id': lb_fe_ipc_id
         }
-    })
-    lb_rules = \
-        utils.handle_resource_config_params(lb_rules,
-                                            ctx.node.properties.get(
-                                                'resource_config', {}))
+    },
+        ctx.node.properties.get(
+            'resource_config', {}))
+    lb_rules.append(lb_rule)
     # Update the Load Balancer with the new NAT rule
     lb_params = {
-        'inbound_nat_rules': lb_rules
+        'inbound_nat_rules': lb_rules,
+        'location': lb_rel.target.node.properties.get('location')
     }
     # clean empty values from params
     lb_params = \
