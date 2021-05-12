@@ -33,6 +33,7 @@ from azure_sdk.resources.network.public_ip_address \
 from azure_sdk.resources.network.load_balancer import\
     (LoadBalancer,
      LoadBalancerProbe,
+     LoadBalancerLoadBalancingRule,
      LoadBalancerBackendAddressPool)
 
 
@@ -470,6 +471,8 @@ def delete_incoming_nat_rule(ctx, **_):
 
 
 @operation(resumable=True)
+@decorators.with_generate_name(LoadBalancerLoadBalancingRule)
+@decorators.with_azure_resource(LoadBalancerLoadBalancingRule)
 def create_rule(ctx, **_):
     """Uses an existing, or creates a new, Load Balancer Rule"""
     # Check if invalid external resource
@@ -480,16 +483,7 @@ def create_rule(ctx, **_):
     # Generate a name if it doesn't exist
     azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
-    load_balancer_name = ctx.node.properties.get('load_balancer_name') or \
-        utils.get_resource_name_ref(constants.REL_CONTAINED_IN_LB,
-                                    'load_balancer_name',
-                                    _ctx=ctx)
-    load_balancer = LoadBalancer(azure_config, ctx.logger)
-    lb_rule_name = ctx.node.properties.get('name')
-    lb_rule_name = \
-        get_unique_lb_prop_name(load_balancer, resource_group_name,
-                                load_balancer_name, "load_balancing_rules",
-                                lb_rule_name)
+    lb_rule_name = utils.get_resource_name(ctx)
     ctx.instance.runtime_properties['name'] = lb_rule_name
     # Get an interface to the Load Balancer
     lb_rel = utils.get_relationship_by_type(

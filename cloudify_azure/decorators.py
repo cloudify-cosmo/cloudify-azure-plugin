@@ -33,8 +33,10 @@ from azure_sdk.resources.network.network_security_rule \
 from azure_sdk.resources.compute.virtual_machine_extension \
     import VirtualMachineExtension
 from azure_sdk.resources.network.load_balancer import \
-    (LoadBalancerBackendAddressPool,
-     LoadBalancerProbe)
+    (LoadBalancerProbe,
+     LoadBalancerLoadBalancingRule,
+     LoadBalancerBackendAddressPool
+     )
 
 
 def sa_name_generator():
@@ -73,6 +75,7 @@ def get_unique_name(resource, resource_group_name, name, **kwargs):
                     nsg_name = kwargs['nsg_name']
                     result = resource.get(resource_group_name, nsg_name, name)
                 elif isinstance(resource, (LoadBalancerBackendAddressPool,
+                                           LoadBalancerLoadBalancingRule,
                                            LoadBalancerProbe)):
                     lb_name = kwargs['lb_name']
                     result = resource.get(resource_group_name, lb_name, name)
@@ -150,6 +153,7 @@ def with_generate_name(resource_class_name):
                             resource_group_name=resource_group_name,
                             name=name)
                     elif isinstance(resource, (LoadBalancerBackendAddressPool,
+                                               LoadBalancerLoadBalancingRule,
                                                LoadBalancerProbe)):
                         lb_name = utils.get_load_balancer(ctx)
                         name = get_unique_name(
@@ -271,6 +275,7 @@ class ResourceGetter(object):
                 exists = resource.get(resource_group_name, nsg_name, self.name)
                 # load_balancer_backend_address_pool
             elif isinstance(resource, (LoadBalancerBackendAddressPool,
+                                       LoadBalancerLoadBalancingRule,
                                        LoadBalancerProbe)):
                 lb_name = utils.get_load_balancer(self.ctx)
                 exists = resource.get(resource_group_name,

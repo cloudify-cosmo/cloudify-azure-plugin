@@ -116,3 +116,27 @@ class LoadBalancerProbe(AzureResource):
                 utils.secure_logging_content(probe))
             )
         return probe
+
+
+class LoadBalancerLoadBalancingRule(AzureResource):
+
+    def __init__(self, azure_config, logger,
+                 api_version=constants.API_VER_NETWORK_LB_BACKEND_PROBES):
+        super(LoadBalancerLoadBalancingRule, self).__init__(azure_config)
+        self.logger = logger
+        self.client = \
+            NetworkManagementClient(self.credentials, self.subscription_id,
+                                    api_version=api_version)
+
+    def get(self, group_name, load_balancer_name, load_balancing_rule_name):
+        self.logger.info("Get load balancer rule...{0}".format(
+            load_balancing_rule_name))
+        rule = self.client.load_balancer_load_balancing_rules.get(
+            resource_group_name=group_name,
+            load_balancer_name=load_balancer_name,
+            load_balancing_rule_name=load_balancing_rule_name).as_dict()
+        self.logger.info(
+            "Get load balancer rule result: {0}".format(
+                utils.secure_logging_content(rule))
+            )
+        return rule
