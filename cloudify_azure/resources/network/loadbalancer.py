@@ -376,10 +376,6 @@ def create_incoming_nat_rule(ctx, **_):
     # Generate a name if it doesn't exist
     azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
-    load_balancer_name = ctx.node.properties.get('load_balancer_name') or \
-        utils.get_resource_name_ref(constants.REL_CONTAINED_IN_LB,
-                                    'load_balancer_name',
-                                    _ctx=ctx)
     load_balancer = LoadBalancer(azure_config, ctx.logger)
     incoming_nat_rule_name = utils.get_resource_name(ctx)
     ctx.instance.runtime_properties['name'] = incoming_nat_rule_name
