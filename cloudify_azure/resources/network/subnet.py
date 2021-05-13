@@ -105,9 +105,13 @@ def attach_network_security_group(ctx, **_):
     resource_group_name = utils.get_resource_group(ctx.target)
     vnet_name = ctx.target.instance.runtime_properties.get('virtual_network')
     name = ctx.target.instance.runtime_properties.get('name')
-    subnet_params = {
+    subnet_params = \
+        utils.handle_resource_config_params({},
+                                            ctx.target.node.properties.get(
+                                                'resource_config', {}))
+    subnet_params.update({
         'network_security_group': {'id': nsg_id}
-    }
+    })
     subnet = Subnet(azure_config, ctx.logger)
     try:
         subnet.create_or_update(resource_group_name,
@@ -130,9 +134,13 @@ def detach_network_security_group(ctx, **_):
     resource_group_name = utils.get_resource_group(ctx.target)
     vnet_name = ctx.target.instance.runtime_properties.get('virtual_network')
     name = ctx.target.instance.runtime_properties.get('name')
-    subnet_params = {
+    subnet_params = \
+        utils.handle_resource_config_params({},
+                                            ctx.target.node.properties.get(
+                                                'resource_config', {}))
+    subnet_params.update({
         'network_security_group': None
-    }
+    })
     subnet = Subnet(azure_config, ctx.logger)
     try:
         subnet.create_or_update(resource_group_name,
@@ -156,9 +164,8 @@ def attach_route_table(ctx, **_):
     resource_group_name = utils.get_resource_group(ctx.target)
     vnet_name = ctx.target.instance.runtime_properties.get('virtual_network')
     name = ctx.target.instance.runtime_properties.get('name')
-    subnet_params = {}
     subnet_params = \
-        utils.handle_resource_config_params(subnet_params,
+        utils.handle_resource_config_params({},
                                             ctx.target.node.properties.get(
                                                 'resource_config', {}))
     subnet_params.update({
@@ -188,9 +195,13 @@ def detach_route_table(ctx, **_):
     resource_group_name = utils.get_resource_group(ctx.target)
     vnet_name = ctx.target.instance.runtime_properties.get('virtual_network')
     name = ctx.target.instance.runtime_properties.get('name')
-    subnet_params = {
+    subnet_params = \
+        utils.handle_resource_config_params({},
+                                            ctx.target.node.properties.get(
+                                                'resource_config', {}))
+    subnet_params.update({
         'route_table': None
-    }
+    })
     subnet = Subnet(azure_config, ctx.logger)
     try:
         subnet.create_or_update(resource_group_name,
