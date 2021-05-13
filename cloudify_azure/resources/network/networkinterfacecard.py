@@ -97,12 +97,7 @@ def configure(ctx, **_):
         operation creates the object
     """
     # Create a resource (if necessary)
-    azure_config = ctx.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.node.properties)
     name = ctx.instance.runtime_properties.get('name')
     resource_group_name = utils.get_resource_group(ctx)
     api_version = \
@@ -147,10 +142,10 @@ def configure(ctx, **_):
                                                   cr.message)
             )
 
-    ctx.instance.runtime_properties['resource_group'] = resource_group_name
-    ctx.instance.runtime_properties['resource'] = result
-    ctx.instance.runtime_properties['resource_id'] = result.get("id", "")
-    ctx.instance.runtime_properties['name'] = name
+    utils.save_common_info_in_runtime_properties(
+        resource_group_name=resource_group_name,
+        resource_name=name,
+        resource_get_create_result=result)
 
 
 @operation(resumable=True)
@@ -159,12 +154,7 @@ def start(ctx, **_):
         Stores NIC IPs in runtime properties.
     """
 
-    azure_config = ctx.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.node.properties)
     name = ctx.instance.runtime_properties.get('name')
     resource_group_name = utils.get_resource_group(ctx)
     api_version = \
@@ -212,12 +202,7 @@ def start(ctx, **_):
 def delete(ctx, **_):
     """Deletes a Network Interface Card"""
     # Delete the resource
-    azure_config = ctx.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
     name = ctx.instance.runtime_properties.get('name')
     api_version = \
@@ -244,12 +229,7 @@ def delete(ctx, **_):
 def attach_ip_configuration(ctx, **_):
     """Generates a usable UUID for the NIC's IP Configuration"""
     # Generate the IPConfiguration's name
-    azure_config = ctx.source.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.source.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.source.node.properties)
     resource_group_name = utils.get_resource_group(ctx.source)
     nic_name = ctx.source.instance.runtime_properties.get('name')
     network_interface_card = NetworkInterfaceCard(azure_config, ctx.logger)
