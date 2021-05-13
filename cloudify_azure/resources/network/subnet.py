@@ -32,12 +32,7 @@ from azure_sdk.resources.network.subnet import Subnet
 def create(ctx, **_):
     """Uses an existing, or creates a new, Subnet"""
     # Create a resource (if necessary)
-    azure_config = ctx.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.node.properties)
     name = utils.get_resource_name(ctx)
     resource_group_name = utils.get_resource_group(ctx)
     vnet_name = utils.get_virtual_network(ctx)
@@ -65,10 +60,11 @@ def create(ctx, **_):
                                                   cr.message)
             )
 
-    ctx.instance.runtime_properties['resource_group'] = resource_group_name
     ctx.instance.runtime_properties['virtual_network'] = vnet_name
-    ctx.instance.runtime_properties['resource'] = result
-    ctx.instance.runtime_properties['resource_id'] = result.get("id", "")
+    utils.save_common_info_in_runtime_properties(
+        resource_group_name=resource_group_name,
+        resource_name=name,
+        resource_get_create_result=result)
 
 
 @operation(resumable=True)
@@ -77,12 +73,7 @@ def delete(ctx, **_):
     # Delete the resource
     if ctx.node.properties.get('use_external_resource', False):
         return
-    azure_config = ctx.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
     vnet_name = ctx.instance.runtime_properties.get('virtual_network')
     name = ctx.instance.runtime_properties.get('name')
@@ -110,18 +101,17 @@ def attach_network_security_group(ctx, **_):
     """Attaches a Network Security Group (source) to the Subnet (target)"""
     nsg_id = ctx.source.instance.runtime_properties.get("resource_id", "")
     # Attach
-    azure_config = ctx.target.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.target.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.target.node.properties)
     resource_group_name = utils.get_resource_group(ctx.target)
     vnet_name = ctx.target.instance.runtime_properties.get('virtual_network')
     name = ctx.target.instance.runtime_properties.get('name')
-    subnet_params = {
+    subnet_params = \
+        utils.handle_resource_config_params({},
+                                            ctx.target.node.properties.get(
+                                                'resource_config', {}))
+    subnet_params.update({
         'network_security_group': {'id': nsg_id}
-    }
+    })
     subnet = Subnet(azure_config, ctx.logger)
     try:
         subnet.create_or_update(resource_group_name,
@@ -140,18 +130,17 @@ def attach_network_security_group(ctx, **_):
 def detach_network_security_group(ctx, **_):
     """Detaches a Network Security Group to the Subnet"""
     # Detach
-    azure_config = ctx.target.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.target.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.target.node.properties)
     resource_group_name = utils.get_resource_group(ctx.target)
     vnet_name = ctx.target.instance.runtime_properties.get('virtual_network')
     name = ctx.target.instance.runtime_properties.get('name')
-    subnet_params = {
+    subnet_params = \
+        utils.handle_resource_config_params({},
+                                            ctx.target.node.properties.get(
+                                                'resource_config', {}))
+    subnet_params.update({
         'network_security_group': None
-    }
+    })
     subnet = Subnet(azure_config, ctx.logger)
     try:
         subnet.create_or_update(resource_group_name,
@@ -171,18 +160,12 @@ def attach_route_table(ctx, **_):
     """Attaches a Route Table (source) to the Subnet (target)"""
     rtbl_id = ctx.source.instance.runtime_properties.get("resource_id", "")
     # Attach
-    azure_config = ctx.target.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.target.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.target.node.properties)
     resource_group_name = utils.get_resource_group(ctx.target)
     vnet_name = ctx.target.instance.runtime_properties.get('virtual_network')
     name = ctx.target.instance.runtime_properties.get('name')
-    subnet_params = {}
     subnet_params = \
-        utils.handle_resource_config_params(subnet_params,
+        utils.handle_resource_config_params({},
                                             ctx.target.node.properties.get(
                                                 'resource_config', {}))
     subnet_params.update({
@@ -208,18 +191,17 @@ def attach_route_table(ctx, **_):
 def detach_route_table(ctx, **_):
     """Detaches a Route Table to the Subnet"""
     # Detach
-    azure_config = ctx.target.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.target.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.target.node.properties)
     resource_group_name = utils.get_resource_group(ctx.target)
     vnet_name = ctx.target.instance.runtime_properties.get('virtual_network')
     name = ctx.target.instance.runtime_properties.get('name')
-    subnet_params = {
+    subnet_params = \
+        utils.handle_resource_config_params({},
+                                            ctx.target.node.properties.get(
+                                                'resource_config', {}))
+    subnet_params.update({
         'route_table': None
-    }
+    })
     subnet = Subnet(azure_config, ctx.logger)
     try:
         subnet.create_or_update(resource_group_name,

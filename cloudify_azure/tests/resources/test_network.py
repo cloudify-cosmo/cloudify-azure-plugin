@@ -13,12 +13,11 @@
 # limitations under the License.
 import mock
 import unittest
-import requests
 
-from msrestazure.azure_exceptions import CloudError
-
+from cloudify.state import current_ctx
 from cloudify import mocks as cfy_mocks
 
+from . import compose_not_found_cloud_error
 from cloudify_azure.resources.network import virtualnetwork
 
 
@@ -52,6 +51,7 @@ class VirtualNetworkTest(unittest.TestCase):
             'subscription_id': 'dummy',
             'tenant_id': 'dummy'
         }
+        current_ctx.set(self.fake_ctx)
 
     def test_create(self, client, credentials):
         self.node.properties['azure_config'] = self.dummy_azure_credentials
@@ -67,11 +67,8 @@ class VirtualNetworkTest(unittest.TestCase):
             'location': self.node.properties.get('location'),
             'tags': self.node.properties.get('tags')
         }
-        response = requests.Response()
-        response.status_code = 404
-        message = 'resource not found'
-        client().virtual_networks.get.side_effect = \
-            CloudError(response, message)
+        err = compose_not_found_cloud_error()
+        client().virtual_networks.get.side_effect = err
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
             virtualnetwork.create(ctx=self.fake_ctx)
@@ -135,11 +132,8 @@ class VirtualNetworkTest(unittest.TestCase):
         vnet_name = 'sample_vnet'
         self.instance.runtime_properties['resource_group'] = resource_group
         self.instance.runtime_properties['name'] = vnet_name
-        response = requests.Response()
-        response.status_code = 404
-        message = 'resource not found'
-        client().virtual_networks.get.side_effect = \
-            CloudError(response, message)
+        err = compose_not_found_cloud_error()
+        client().virtual_networks.get.side_effect = err
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
             virtualnetwork.delete(ctx=self.fake_ctx)
