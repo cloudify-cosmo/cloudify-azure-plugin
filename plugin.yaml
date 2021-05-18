@@ -198,12 +198,12 @@ data_types:
         description: >
           Quote, in GiB, for the maximum size of the file share
         required: false
-      fail_on_exist:
-        description: >
-          If true, causes the operation to raise a NonRecoverableError if
-          the file share already exists. If false, issues a warning and
-          continues execution.
-        default: false
+#      fail_on_exist:
+#        description: >
+#          If true, causes the operation to raise a NonRecoverableError if
+#          the file share already exists. If false, issues a warning and
+#          continues execution.
+#        default: false
 
   cloudify.datatypes.azure.network.VirtualNetworkConfig:
     description: >
@@ -649,6 +649,12 @@ node_types:
         description: >
           Specifies the supported Azure location for the resource
         required: false
+      storage_account_name:
+        type: string
+        description: >
+          Name of the storage account that the existing resource belongs to
+          (this is only useful when not using a relationship between a resource
+          node and a storage account node)
       retry_after:
         description: >
           Overrides the Azure-specified "retry_after" response. This property

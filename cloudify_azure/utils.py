@@ -147,6 +147,11 @@ def get_load_balancer(_ctx=ctx,
         get_ancestor_name(_ctx.instance, rel_type)
 
 
+def get_storage_account(_ctx=ctx, rel_type=constants.REL_CONTAINED_IN_SA):
+    return ctx.node.properties.get('storage_account_name') or \
+           get_ancestor_name(_ctx.instance, rel_type)
+
+
 def get_retry_after(_ctx=ctx):
     """
         Returns a retry_after override
