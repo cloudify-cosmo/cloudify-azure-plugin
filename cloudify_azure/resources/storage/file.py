@@ -20,14 +20,15 @@
 import random
 import string
 
+from msrestazure.azure_exceptions import CloudError
 from azure.storage.common.cloudstorageaccount import CloudStorageAccount
 
 from cloudify.decorators import operation
 from cloudify.exceptions import (RecoverableError, NonRecoverableError)
 
-from cloudify_azure import (constants, utils)
+from cloudify_azure import (constants, utils,decorators)
+from azure_sdk.resources.storage.file_share import FileShare
 from azure_sdk.resources.storage.storage_account import StorageAccount
-
 
 def file_share_name_generator():
     """Generates a unique File Share resource name"""
@@ -77,12 +78,7 @@ def create_file_share(ctx, **_):
     )
     resource_group_name = utils.get_resource_group(ctx)
     storage_account_name = utils.get_resource_name(_ctx=storage_account)
-    azure_config = ctx.node.properties.get("azure_config")
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.node.properties)
     # Get the storage account keys
     keys = StorageAccount(azure_config, ctx.logger).list_keys(
         resource_group_name, storage_account_name)
@@ -148,3 +144,61 @@ def create_file_share(ctx, **_):
     ctx.instance.runtime_properties['uri'] = '{0}.file.{1}/{2}'.format(
         storage_account_name, constants.CONN_STORAGE_FILE_ENDPOINT, share_name
     )
+
+
+@operation(resumable=True)
+@decorators.with_generate_name(FileShare)
+@decorators.with_azure_resource(FileShare)
+def create(ctx, **_):
+    """Creates an Azure File Share"""
+    share_name = utils.get_resource_name(ctx)
+    res_cfg = ctx.node.properties.get("resource_config", {})
+    metadata = res_cfg.get('metadata')
+    share_quota = res_cfg.get('quota')
+    if ctx.node.properties.get('use_external_resource', False) and \
+            not share_name:
+        raise NonRecoverableError(
+            '"use_external_resource" specified without a resource "name"')
+    storage_account = utils.get_storage_account(ctx)
+    resource_group_name = utils.get_resource_group(ctx)
+    azure_config = utils.get_client_config(ctx.node.properties)
+
+    keys = StorageAccount(azure_config, ctx.logger).list_keys(
+        resource_group_name, storage_account)
+    if not keys or not keys.get("key1"):
+        raise RecoverableError(
+            'StorageAccount reported no usable authentication keys')
+    # Get an interface to the Storage Account
+    storage_account_key = keys.get("key1")
+    # Get an interface to the File Share
+
+    api_version = \
+        ctx.node.properties.get('api_version',
+                                constants.API_VER_STORAGE_FILE_SHARE)
+
+    file_share = FileShare(azure_config, ctx.logger, api_version)
+    try:
+        result = \
+            file_share.create(resource_group_name,
+                              storage_account,
+                              share_name,
+                              metadata,
+                              share_quota)
+    except CloudError as cr:
+        raise NonRecoverableError(
+            "create file share '{0}' "
+            "failed with this error : {1}".format(share_name,
+                                                  cr.message)
+        )
+    ctx.instance.runtime_properties['quota'] = share_quota
+    ctx.instance.runtime_properties['metadata'] = metadata
+    ctx.instance.runtime_properties['username'] = storage_account
+    ctx.instance.runtime_properties['password'] = storage_account_key
+    ctx.instance.runtime_properties['uri'] = '{0}.file.{1}/{2}'.format(
+        storage_account, constants.CONN_STORAGE_FILE_ENDPOINT, share_name
+    )
+    # Need to check if id returned
+    utils.save_common_info_in_runtime_properties(
+        resource_group_name=resource_group_name,
+        resource_name=share_name,
+        resource_get_create_result=result)
