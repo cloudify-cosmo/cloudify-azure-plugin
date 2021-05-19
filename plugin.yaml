@@ -655,6 +655,7 @@ node_types:
           Name of the storage account that the existing resource belongs to
           (this is only useful when not using a relationship between a resource
           node and a storage account node)
+        required: false
       retry_after:
         description: >
           Overrides the Azure-specified "retry_after" response. This property
@@ -670,6 +671,7 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         create: azure.cloudify_azure.resources.storage.file.create
+        delete: azure.cloudify_azure.resources.storage.file.delete
 
   cloudify.azure.nodes.network.VirtualNetwork:
     derived_from: cloudify.nodes.Root

@@ -29,7 +29,6 @@ from azure_sdk.resources.deployment import Deployment
 from azure_sdk.resources.resource_group import ResourceGroup
 from azure_sdk.resources.storage.file_share import FileShare
 from azure_sdk.resources.storage.storage_account import StorageAccount
-from cloudify_azure.resources.storage.file import file_share_name_generator
 from azure_sdk.resources.network.network_security_rule \
     import NetworkSecurityRule
 from azure_sdk.resources.compute.virtual_machine_extension \
@@ -46,6 +45,12 @@ def sa_name_generator():
     """Generates a unique SA resource name"""
     return ''.join(random.choice(
         string.ascii_lowercase + string.digits) for i in range(3, 24))
+
+
+def file_share_name_generator():
+    """Generates a unique File Share resource name"""
+    return ''.join(random.choice(string.ascii_lowercase + string.digits)
+                   for i in range(random.randint(24, 63)))
 
 
 def get_unique_name(resource, resource_group_name, name, **kwargs):
