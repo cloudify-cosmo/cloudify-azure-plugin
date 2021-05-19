@@ -27,6 +27,7 @@ from azure_sdk.resources.network.route import Route
 from azure_sdk.resources.network.subnet import Subnet
 from azure_sdk.resources.deployment import Deployment
 from azure_sdk.resources.resource_group import ResourceGroup
+from azure_sdk.resources.storage.file_share import FileShare
 from azure_sdk.resources.storage.storage_account import StorageAccount
 from azure_sdk.resources.network.network_security_rule \
     import NetworkSecurityRule
@@ -46,12 +47,20 @@ def sa_name_generator():
         string.ascii_lowercase + string.digits) for i in range(3, 24))
 
 
+def file_share_name_generator():
+    """Generates a unique File Share resource name"""
+    return ''.join(random.choice(string.ascii_lowercase + string.digits)
+                   for i in range(random.randint(24, 63)))
+
+
 def get_unique_name(resource, resource_group_name, name, **kwargs):
     if not name:
         for _ in range(0, 15):
             # special naming handling
             if isinstance(resource, StorageAccount):
                 name = sa_name_generator()
+            elif isinstance(resource, FileShare):
+                name = file_share_name_generator()
             else:
                 name = "{0}".format(uuid4())
             try:
@@ -81,6 +90,9 @@ def get_unique_name(resource, resource_group_name, name, **kwargs):
                                            LoadBalancerProbe)):
                     lb_name = kwargs['lb_name']
                     result = resource.get(resource_group_name, lb_name, name)
+                elif isinstance(resource, FileShare):
+                    sa_name = kwargs['sa_name']
+                    result = resource.get(resource_group_name, sa_name, name)
                 else:
                     result = resource.get(resource_group_name, name)
                 if result:  # found a resource with same name
@@ -164,6 +176,13 @@ def with_generate_name(resource_class_name):
                             resource_group_name=resource_group_name,
                             name=name,
                             lb_name=lb_name)
+                    elif isinstance(resource, FileShare):
+                        sa_name = utils.get_storage_account(ctx)
+                        name = get_unique_name(
+                            resource=resource,
+                            resource_group_name=resource_group_name,
+                            name=name,
+                            sa_name=sa_name)
                     else:
                         name = get_unique_name(
                             resource=resource,
@@ -221,7 +240,9 @@ def with_azure_resource(resource_class_name):
                 return
             elif not create and not (create_op and arm_deployment):
                 raise cfy_exc.NonRecoverableError(
-                    "Can't use non-existing {0} '{1}'.".format(
+                    "Can't use non-existing,"
+                    " or resource alredy exist but configartion is not to use "
+                    "it:  {0} '{1}'.".format(
                         resource_class_name, name))
             elif create and exists and ctx.workflow_id not in \
                     ['update', 'execute_operation']:
@@ -285,6 +306,10 @@ class ResourceGetter(object):
                 exists = resource.get(resource_group_name,
                                       lb_name,
                                       self.name)
+            # file share
+            elif isinstance(resource, FileShare):
+                sa_name = utils.get_storage_account(self.ctx)
+                exists = resource.get(resource_group_name, sa_name, self.name)
             else:
                 exists = resource.get(resource_group_name, self.name)
         except CloudError:
