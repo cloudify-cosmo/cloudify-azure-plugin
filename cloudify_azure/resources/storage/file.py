@@ -74,6 +74,7 @@ def create(ctx, **_):
         )
     ctx.instance.runtime_properties['quota'] = share_quota
     ctx.instance.runtime_properties['metadata'] = metadata
+    ctx.instance.runtime_properties['storage_account'] = storage_account
     ctx.instance.runtime_properties['username'] = storage_account
     ctx.instance.runtime_properties['password'] = storage_account_key
     ctx.instance.runtime_properties['uri'] = '{0}.file.{1}/{2}'.format(
@@ -94,7 +95,8 @@ def delete(ctx, **_):
     azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
     share_name = utils.get_resource_name(ctx)
-    storage_account = utils.get_storage_account(ctx)
+    storage_account = ctx.instance.runtime_properties.get(
+        'storage_account') or utils.get_storage_account(ctx)
     api_version = \
         ctx.node.properties.get('api_version',
                                 constants.API_VER_STORAGE_FILE_SHARE)
