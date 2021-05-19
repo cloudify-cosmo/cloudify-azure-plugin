@@ -669,7 +669,7 @@ node_types:
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: azure.cloudify_azure.resources.storage.file.create_file_share
+        create: azure.cloudify_azure.resources.storage.file.create
 
   cloudify.azure.nodes.network.VirtualNetwork:
     derived_from: cloudify.nodes.Root
