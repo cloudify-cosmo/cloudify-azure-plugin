@@ -1737,6 +1737,8 @@ node_types:
               default: { get_property: [SELF, azure_config]}
             client_config:
               default: { get_property: [SELF, client_config]}
+        configure:
+          implementation: azure.cloudify_azure.resources.compute.managed_cluster.store_kubeconf_if_needed
         delete:
           implementation: azure.cloudify_azure.resources.compute.managed_cluster.delete
 
