@@ -77,7 +77,7 @@ from azure_sdk.resources.compute.managed_cluster import ManagedCluster
 
 @operation(resumable=True)
 @decorators.with_azure_resource(ManagedCluster)
-def create(ctx, resource_group, cluster_name, resource_config, **kwargs):
+def create(ctx, resource_group, cluster_name, resource_config, **_):
     managed_cluster = get_manged_cluster_interface(ctx)
     resource_config_payload = {}
     resource_config_payload = \
@@ -98,7 +98,7 @@ def create(ctx, resource_group, cluster_name, resource_config, **kwargs):
     utils.save_common_info_in_runtime_properties(resource_group,
                                                  cluster_name,
                                                  result)
-    store_kubeconf_if_needed(ctx, resource_group, cluster_name)
+    # store_kubeconf_if_needed(ctx, resource_group, cluster_name)
 
 
 def get_manged_cluster_interface(ctx):
@@ -109,7 +109,10 @@ def get_manged_cluster_interface(ctx):
     return ManagedCluster(azure_config, ctx.logger, api_version)
 
 
-def store_kubeconf_if_needed(ctx, resource_group, name):
+@operation(resumable=True)
+def store_kubeconf_if_needed(ctx):
+    resource_group = utils.get_resource_group(ctx)
+    name = utils.get_resource_name(ctx)
     managed_cluster = get_manged_cluster_interface(ctx)
     store_kube_config_in_runtime = \
         ctx.node.properties.get('store_kube_config_in_runtime')
@@ -121,7 +124,7 @@ def store_kubeconf_if_needed(ctx, resource_group, name):
 
 
 @operation(resumable=True)
-def delete(ctx, **kwargs):
+def delete(ctx, **_):
     if ctx.node.properties.get('use_external_resource', False):
         return
     resource_group = ctx.instance.runtime_properties.get('resource_group')
