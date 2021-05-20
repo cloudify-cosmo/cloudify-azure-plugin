@@ -25,6 +25,14 @@ from cloudify_azure import (constants, utils, decorators)
 from azure_sdk.resources.compute.managed_cluster import ManagedCluster
 
 
+def get_manged_cluster_interface(ctx):
+    azure_config = utils.get_client_config(ctx.node.properties)
+    api_version = \
+        ctx.node.properties.get('api_version',
+                                constants.API_VER_MANAGED_CLUSTER)
+    return ManagedCluster(azure_config, ctx.logger, api_version)
+
+
 @operation(resumable=True)
 @decorators.with_azure_resource(ManagedCluster)
 def create(ctx, resource_group, cluster_name, resource_config, **_):
@@ -48,15 +56,6 @@ def create(ctx, resource_group, cluster_name, resource_config, **_):
     utils.save_common_info_in_runtime_properties(resource_group,
                                                  cluster_name,
                                                  result)
-    # store_kubeconf_if_needed(ctx, resource_group, cluster_name)
-
-
-def get_manged_cluster_interface(ctx):
-    azure_config = utils.get_client_config(ctx.node.properties)
-    api_version = \
-        ctx.node.properties.get('api_version',
-                                constants.API_VER_MANAGED_CLUSTER)
-    return ManagedCluster(azure_config, ctx.logger, api_version)
 
 
 @operation(resumable=True)
