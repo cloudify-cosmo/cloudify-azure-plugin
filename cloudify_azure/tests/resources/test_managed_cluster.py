@@ -13,12 +13,12 @@
 # limitations under the License.
 import mock
 import unittest
-import requests
 
-from msrestazure.azure_exceptions import CloudError
-
+from cloudify.state import current_ctx
 from cloudify import mocks as cfy_mocks
+from cloudify.exceptions import NonRecoverableError
 
+from . import compose_not_found_cloud_error
 from cloudify_azure.resources.compute import managed_cluster
 from cloudify_azure.utils import handle_resource_config_params
 
@@ -53,11 +53,14 @@ class ManagedClusterTest(unittest.TestCase):
             'subscription_id': 'dummy',
             'tenant_id': 'dummy'
         }
+        current_ctx.set(self.fake_ctx)
 
     def test_create(self, client, credentials):
         self.node.properties['azure_config'] = self.dummy_azure_credentials
         resource_group = 'sample_resource_group'
         cluster_name = 'mc_name'
+        self.node.properties['name'] = cluster_name
+        self.node.properties['resource_group'] = resource_group
         self.node.properties['store_kube_config_in_runtime'] = False
         managed_cluster_config = {
             'network_profile': None,
@@ -76,15 +79,14 @@ class ManagedClusterTest(unittest.TestCase):
         cluster_payload = \
             handle_resource_config_params(cluster_payload,
                                           managed_cluster_config)
-        response = requests.Response()
-        response.status_code = 404
-        message = 'resource not found'
-        client().managed_clusters.get.side_effect = \
-            CloudError(response, message)
+        err = compose_not_found_cloud_error()
+        client().managed_clusters.get.side_effect = err
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            managed_cluster.create(self.fake_ctx, resource_group,
-                                   cluster_name, managed_cluster_config)
+            managed_cluster.create(ctx=self.fake_ctx,
+                                   resource_group=resource_group,
+                                   cluster_name=cluster_name,
+                                   resource_config=managed_cluster_config)
             client().managed_clusters.get.assert_called_with(
                 resource_group_name=resource_group,
                 resource_name=cluster_name,
@@ -104,10 +106,68 @@ class ManagedClusterTest(unittest.TestCase):
                 resource_group
             )
 
-    def test_create_already_exists(self, client, credentials):
+    def test_create_if_missing(self, client, credentials):
         self.node.properties['azure_config'] = self.dummy_azure_credentials
         resource_group = 'sample_resource_group'
         cluster_name = 'mc_name'
+        self.node.properties['name'] = cluster_name
+        self.node.properties['resource_group'] = resource_group
+        self.node.properties['store_kube_config_in_runtime'] = False
+        self.node.properties['use_external_resource'] = True
+        self.node.properties['create_if_missing'] = True
+        managed_cluster_config = {
+            'network_profile': None,
+            'addon_profiles': None,
+            'windows_profile': None,
+            'dns_prefix': 'dummy-dns',
+            'linux_profile': None,
+            'agent_pool_profiles': None,
+            'service_principal_profile': None,
+            'location': 'westus',
+            'enable_rbac': True,
+            'kubernetes_version': None,
+            'tags': None
+        }
+        cluster_payload = {}
+        cluster_payload = \
+            handle_resource_config_params(cluster_payload,
+                                          managed_cluster_config)
+        err = compose_not_found_cloud_error()
+        client().managed_clusters.get.side_effect = err
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            managed_cluster.create(ctx=self.fake_ctx,
+                                   resource_group=resource_group,
+                                   cluster_name=cluster_name,
+                                   resource_config=managed_cluster_config)
+            client().managed_clusters.get.assert_called_with(
+                resource_group_name=resource_group,
+                resource_name=cluster_name,
+            )
+            client().managed_clusters.create_or_update.assert_called_with(
+                resource_group_name=resource_group,
+                resource_name=cluster_name,
+                parameters=cluster_payload
+            )
+            self.assertEquals(
+                self.fake_ctx.instance.runtime_properties.get("name"),
+                cluster_name
+            )
+            self.assertEquals(
+                self.fake_ctx.instance.runtime_properties.get(
+                    "resource_group"),
+                resource_group
+            )
+
+    def test_create_already_exists_but_not_using_external_resource(
+            self,
+            client,
+            credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_resource_group'
+        cluster_name = 'mc_name'
+        self.node.properties['name'] = cluster_name
+        self.node.properties['resource_group'] = resource_group
         self.node.properties['store_kube_config_in_runtime'] = False
         managed_cluster_config = {
             'network_profile': None,
@@ -125,8 +185,50 @@ class ManagedClusterTest(unittest.TestCase):
         client().managed_clusters.get.return_value = mock.Mock()
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            managed_cluster.create(self.fake_ctx, resource_group,
-                                   cluster_name, managed_cluster_config)
+            with self.assertRaisesRegexp(
+                    NonRecoverableError,
+                    'resource already exist but configuration is '
+                    'not to use it'):
+                managed_cluster.create(ctx=self.fake_ctx,
+                                       resource_group=resource_group,
+                                       cluster_name=cluster_name,
+                                       resource_config=managed_cluster_config)
+                client().managed_clusters.get.assert_called_with(
+                    resource_group_name=resource_group,
+                    resource_name=cluster_name,
+                )
+                client().managed_clusters.create_or_update.assert_not_called()
+
+    def test_create_already_exists_and_use_external_resource(self,
+                                                             client,
+                                                             credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_resource_group'
+        cluster_name = 'mc_name'
+        self.node.properties['name'] = cluster_name
+        self.node.properties['resource_group'] = resource_group
+        self.node.properties['use_external_resource'] = True
+        self.node.properties['store_kube_config_in_runtime'] = False
+        managed_cluster_config = {
+            'network_profile': None,
+            'addon_profiles': None,
+            'windows_profile': None,
+            'dns_prefix': 'dummy-dns',
+            'linux_profile': None,
+            'agent_pool_profiles': None,
+            'service_principal_profile': None,
+            'location': 'westus',
+            'enable_rbac': True,
+            'kubernetes_version': None,
+            'tags': None
+        }
+        client().managed_clusters.get.return_value = mock.Mock()
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            managed_cluster.create(ctx=self.fake_ctx,
+                                   resource_group=resource_group,
+                                   cluster_name=cluster_name,
+                                   resource_config=managed_cluster_config)
             client().managed_clusters.get.assert_called_with(
                 resource_group_name=resource_group,
                 resource_name=cluster_name,
@@ -153,11 +255,8 @@ class ManagedClusterTest(unittest.TestCase):
         cluster_name = 'mc_name'
         self.instance.runtime_properties['resource_group'] = resource_group
         self.instance.runtime_properties['name'] = cluster_name
-        response = requests.Response()
-        response.status_code = 404
-        message = 'resource not found'
-        client().managed_clusters.get.side_effect = \
-            CloudError(response, message)
+        err = compose_not_found_cloud_error()
+        client().managed_clusters.get.side_effect = err
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
             managed_cluster.delete(self.fake_ctx)

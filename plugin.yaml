@@ -1693,10 +1693,11 @@ node_types:
   cloudify.azure.nodes.compute.ManagedCluster:
     derived_from: cloudify.nodes.Root
     properties:
+      <<: *existing_resources
       resource_group:
         required: true
         type: string
-      cluster_name:
+      name:
         required: true
         type: string
       resource_config:
@@ -1729,7 +1730,7 @@ node_types:
             resource_group:
               default: { get_property: [SELF, resource_group]}
             cluster_name:
-              default: { get_property: [SELF, cluster_name]}
+              default: { get_property: [SELF, name]}
             resource_config:
               default: { get_property: [SELF, resource_config]}
             azure_config:

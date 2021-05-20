@@ -241,9 +241,8 @@ def with_azure_resource(resource_class_name):
             elif not create and not (create_op and arm_deployment):
                 raise cfy_exc.NonRecoverableError(
                     "Can't use non-existing,"
-                    " or resource alredy exist but configartion is not to use "
-                    "it:  {0} '{1}'.".format(
-                        resource_class_name, name))
+                    " or resource already exist but configuration is not to"
+                    " use it:  {0} '{1}'.".format(resource_class_name, name))
             elif create and exists and ctx.workflow_id not in \
                     ['update', 'execute_operation']:
                 ctx.logger.warn("Resource with name {0} exists".format(name))
