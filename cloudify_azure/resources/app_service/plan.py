@@ -18,59 +18,37 @@ from cloudify.decorators import operation
 from msrestazure.azure_exceptions import CloudError
 
 from cloudify_azure import (constants, utils)
+from cloudify_azure.decorators import with_azure_resource
 from azure_sdk.resources.app_service.plan import ServicePlan
 
 
 @operation(resumable=True)
+@with_azure_resource(ServicePlan)
 def create(ctx, resource_group, name, plan_details, **kwargs):
-    azure_config = ctx.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.node.properties)
     api_version = \
         ctx.node.properties.get('api_version', constants.API_VER_APP_SERVICE)
     plan = ServicePlan(azure_config, ctx.logger, api_version)
 
     try:
-        result = plan.get(resource_group, name)
-        if ctx.node.properties.get('use_external_resource', False):
-            ctx.logger.info("Using external resource")
-        else:
-            ctx.logger.info("Resource with name {0} exists".format(name))
-            return
-    except CloudError:   # Customized error message will be avialable on PY3
-        if ctx.node.properties.get('use_external_resource', False):
-            raise cfy_exc.NonRecoverableError(
-                "Can't use non-existing plan '{0}'.".format(name))
-        else:
-            try:
-                result = \
-                    plan.create_or_update(resource_group, name, plan_details)
-            except CloudError as cr:
-                raise cfy_exc.NonRecoverableError(
-                    "create plan '{0}' "
-                    "failed with this error : {1}".format(name,
-                                                          cr.message)
+        result = \
+            plan.create_or_update(resource_group, name, plan_details)
+    except CloudError as cr:
+        raise cfy_exc.NonRecoverableError(
+            "create plan '{0}' "
+            "failed with this error : {1}".format(name,
+                                                  cr.message)
                     )
-
-    ctx.instance.runtime_properties['resource_group'] = resource_group
-    ctx.instance.runtime_properties['resource'] = result
-    ctx.instance.runtime_properties['resource_id'] = result.get("id", "")
-    ctx.instance.runtime_properties['name'] = name
+    utils.save_common_info_in_runtime_properties(resource_group,
+                                                 name,
+                                                 result)
 
 
 @operation(resumable=True)
 def delete(ctx, **kwargs):
     if ctx.node.properties.get('use_external_resource', False):
         return
-    azure_config = ctx.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.node.properties)
     resource_group = ctx.instance.runtime_properties.get('resource_group')
     name = ctx.instance.runtime_properties.get('name')
     api_version = \

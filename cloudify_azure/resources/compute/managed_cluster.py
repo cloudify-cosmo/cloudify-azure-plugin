@@ -21,81 +21,64 @@ from msrestazure.azure_exceptions import CloudError
 from cloudify.decorators import operation
 from cloudify import exceptions as cfy_exc
 
-from cloudify_azure import (constants, utils)
+from cloudify_azure import (constants, utils, decorators)
 from azure_sdk.resources.compute.managed_cluster import ManagedCluster
 
 
-@operation(resumable=True)
-def create(ctx, resource_group, cluster_name, resource_config, **kwargs):
-    azure_config = ctx.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
-    store_kube_config_in_runtime = \
-        ctx.node.properties.get('store_kube_config_in_runtime')
+def get_manged_cluster_interface(ctx):
+    azure_config = utils.get_client_config(ctx.node.properties)
     api_version = \
         ctx.node.properties.get('api_version',
                                 constants.API_VER_MANAGED_CLUSTER)
-    managed_cluster = ManagedCluster(azure_config, ctx.logger, api_version)
+    return ManagedCluster(azure_config, ctx.logger, api_version)
+
+
+@operation(resumable=True)
+@decorators.with_azure_resource(ManagedCluster)
+def create(ctx, resource_group, cluster_name, resource_config, **_):
+    managed_cluster = get_manged_cluster_interface(ctx)
     resource_config_payload = {}
     resource_config_payload = \
         utils.handle_resource_config_params(resource_config_payload,
                                             resource_config)
     try:
-        result = managed_cluster.get(resource_group, cluster_name)
-        if ctx.node.properties.get('use_external_resource', False):
-            ctx.logger.info("Using external resource")
-        else:
-            ctx.logger.info("Resource with name {0} exists".format(
-                cluster_name))
-            return
-    except CloudError:
-        if ctx.node.properties.get('use_external_resource', False):
-            raise cfy_exc.NonRecoverableError(
-                "Can't use non-existing managed_cluster '{0}'.".format(
-                    cluster_name))
-        else:
-            try:
-                result = \
-                    managed_cluster.create_or_update(resource_group,
-                                                     cluster_name,
-                                                     resource_config_payload)
-            except CloudError as cr:
-                raise cfy_exc.NonRecoverableError(
-                    "create managed_cluster '{0}' "
-                    "failed with this error : {1}".format(cluster_name,
-                                                          cr.message)
-                    )
+        result = \
+            managed_cluster.create_or_update(resource_group,
+                                             cluster_name,
+                                             resource_config_payload)
+    except CloudError as cr:
+        raise cfy_exc.NonRecoverableError(
+            "create managed_cluster '{0}' "
+            "failed with this error : {1}".format(cluster_name,
+                                                  cr.message)
+            )
 
-    ctx.instance.runtime_properties['resource_group'] = resource_group
-    ctx.instance.runtime_properties['resource'] = result
-    ctx.instance.runtime_properties['resource_id'] = result.get("id", "")
-    ctx.instance.runtime_properties['name'] = cluster_name
+    utils.save_common_info_in_runtime_properties(resource_group,
+                                                 cluster_name,
+                                                 result)
+
+
+@operation(resumable=True)
+def store_kubeconf_if_needed(ctx):
+    resource_group = utils.get_resource_group(ctx)
+    name = utils.get_resource_name(ctx)
+    managed_cluster = get_manged_cluster_interface(ctx)
+    store_kube_config_in_runtime = \
+        ctx.node.properties.get('store_kube_config_in_runtime')
 
     if store_kube_config_in_runtime:
         ctx.instance.runtime_properties['kubeconf'] = \
             yaml.load(base64.b64decode(managed_cluster.get_admin_kubeconf(
-                resource_group, cluster_name)))
+                resource_group, name)))
 
 
 @operation(resumable=True)
-def delete(ctx, **kwargs):
+def delete(ctx, **_):
     if ctx.node.properties.get('use_external_resource', False):
         return
-    azure_config = ctx.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
     resource_group = ctx.instance.runtime_properties.get('resource_group')
     name = ctx.instance.runtime_properties.get('name')
-    api_version = \
-        ctx.node.properties.get('api_version',
-                                constants.API_VER_MANAGED_CLUSTER)
-    managed_cluster = ManagedCluster(azure_config, ctx.logger, api_version)
+    managed_cluster = get_manged_cluster_interface(ctx)
     try:
         managed_cluster.get(resource_group, name)
     except CloudError:

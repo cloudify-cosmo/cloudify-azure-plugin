@@ -19,59 +19,36 @@ from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
 
 from cloudify_azure import (constants, utils)
+from cloudify_azure.decorators import with_azure_resource
 from azure_sdk.resources.app_service.web_app import WebApp
 
 
 @operation(resumable=True)
+@with_azure_resource(WebApp)
 def create(ctx, resource_group, name, app_config, **kwargs):
-    azure_config = ctx.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.node.properties)
     api_version = \
         ctx.node.properties.get('api_version', constants.API_VER_APP_SERVICE)
     web_app = WebApp(azure_config, ctx.logger, api_version)
 
     try:
-        result = web_app.get(resource_group, name)
-        if ctx.node.properties.get('use_external_resource', False):
-            ctx.logger.info("Using external resource")
-        else:
-            ctx.logger.info("Resource with name {0} exists".format(name))
-            return
-    except CloudError:
-        if ctx.node.properties.get('use_external_resource', False):
-            raise cfy_exc.NonRecoverableError(
-                "Can't use non-existing web_app '{0}'.".format(name))
-        else:
-            try:
-                result = \
-                    web_app.create_or_update(resource_group, name, app_config)
-            except CloudError as cr:
-                raise cfy_exc.NonRecoverableError(
-                    "create web_app '{0}' "
-                    "failed with this error : {1}".format(name,
-                                                          cr.message)
-                    )
-
-    ctx.instance.runtime_properties['resource_group'] = resource_group
-    ctx.instance.runtime_properties['resource'] = result
-    ctx.instance.runtime_properties['resource_id'] = result.get("id", "")
-    ctx.instance.runtime_properties['name'] = name
+        result = \
+             web_app.create_or_update(resource_group, name, app_config)
+    except CloudError as cr:
+        raise cfy_exc.NonRecoverableError(
+            "create web_app '{0} failed with this error : "
+            "{1}".format(name, cr.message)
+            )
+    utils.save_common_info_in_runtime_properties(resource_group,
+                                                 name,
+                                                 result)
 
 
 @operation(resumable=True)
 def delete(ctx, **kwargs):
     if ctx.node.properties.get('use_external_resource', False):
         return
-    azure_config = ctx.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.node.properties)
     resource_group = ctx.instance.runtime_properties.get('resource_group')
     name = ctx.instance.runtime_properties.get('name')
     api_version = \

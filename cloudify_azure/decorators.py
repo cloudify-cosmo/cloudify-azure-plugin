@@ -27,11 +27,18 @@ from azure_sdk.resources.network.route import Route
 from azure_sdk.resources.network.subnet import Subnet
 from azure_sdk.resources.deployment import Deployment
 from azure_sdk.resources.resource_group import ResourceGroup
+from azure_sdk.resources.storage.file_share import FileShare
 from azure_sdk.resources.storage.storage_account import StorageAccount
 from azure_sdk.resources.network.network_security_rule \
     import NetworkSecurityRule
 from azure_sdk.resources.compute.virtual_machine_extension \
     import VirtualMachineExtension
+from azure_sdk.resources.network.load_balancer import \
+    (LoadBalancerProbe,
+     LoadBalancerInboundNatRule,
+     LoadBalancerLoadBalancingRule,
+     LoadBalancerBackendAddressPool
+     )
 
 
 def sa_name_generator():
@@ -40,12 +47,20 @@ def sa_name_generator():
         string.ascii_lowercase + string.digits) for i in range(3, 24))
 
 
+def file_share_name_generator():
+    """Generates a unique File Share resource name"""
+    return ''.join(random.choice(string.ascii_lowercase + string.digits)
+                   for i in range(random.randint(24, 63)))
+
+
 def get_unique_name(resource, resource_group_name, name, **kwargs):
     if not name:
         for _ in range(0, 15):
             # special naming handling
             if isinstance(resource, StorageAccount):
                 name = sa_name_generator()
+            elif isinstance(resource, FileShare):
+                name = file_share_name_generator()
             else:
                 name = "{0}".format(uuid4())
             try:
@@ -69,6 +84,15 @@ def get_unique_name(resource, resource_group_name, name, **kwargs):
                 elif isinstance(resource, NetworkSecurityRule):
                     nsg_name = kwargs['nsg_name']
                     result = resource.get(resource_group_name, nsg_name, name)
+                elif isinstance(resource, (LoadBalancerBackendAddressPool,
+                                           LoadBalancerLoadBalancingRule,
+                                           LoadBalancerInboundNatRule,
+                                           LoadBalancerProbe)):
+                    lb_name = kwargs['lb_name']
+                    result = resource.get(resource_group_name, lb_name, name)
+                elif isinstance(resource, FileShare):
+                    sa_name = kwargs['sa_name']
+                    result = resource.get(resource_group_name, sa_name, name)
                 else:
                     result = resource.get(resource_group_name, name)
                 if result:  # found a resource with same name
@@ -142,6 +166,23 @@ def with_generate_name(resource_class_name):
                             resource=resource,
                             resource_group_name=resource_group_name,
                             name=name)
+                    elif isinstance(resource, (LoadBalancerBackendAddressPool,
+                                               LoadBalancerLoadBalancingRule,
+                                               LoadBalancerInboundNatRule,
+                                               LoadBalancerProbe)):
+                        lb_name = utils.get_load_balancer(ctx)
+                        name = get_unique_name(
+                            resource=resource,
+                            resource_group_name=resource_group_name,
+                            name=name,
+                            lb_name=lb_name)
+                    elif isinstance(resource, FileShare):
+                        sa_name = utils.get_storage_account(ctx)
+                        name = get_unique_name(
+                            resource=resource,
+                            resource_group_name=resource_group_name,
+                            name=name,
+                            sa_name=sa_name)
                     else:
                         name = get_unique_name(
                             resource=resource,
@@ -163,47 +204,11 @@ def with_azure_resource(resource_class_name):
         def wrapper_inner(*args, **kwargs):
             ctx = kwargs['ctx']
             name = utils.get_resource_name(ctx)
-            try:
-                # check if azure_config is given and if the resource
-                # is external or not
-                azure_config = ctx.node.properties.get('azure_config')
-                if not azure_config.get("subscription_id"):
-                    azure_config = ctx.node.properties.get('client_config')
-                else:
-                    ctx.logger.warn("azure_config is deprecated "
-                                    "please use client_config, "
-                                    "in later version it will be removed")
-                resource = resource_class_name(azure_config, ctx.logger)
-                if not isinstance(resource, ResourceGroup):
-                    resource_group_name = utils.get_resource_group(ctx)
-                # handle speical cases
-                # resource_group
-                if isinstance(resource, ResourceGroup):
-                    exists = resource.get(name)
-                elif isinstance(resource, Deployment):
-                    exists = resource.get(resource_group_name, name)
-                # virtual_machine_extension
-                elif isinstance(resource, VirtualMachineExtension):
-                    vm_name = \
-                        ctx.node.properties.get('virtual_machine_name')
-                    exists = resource.get(resource_group_name, vm_name, name)
-                # subnet
-                elif isinstance(resource, Subnet):
-                    vnet_name = utils.get_virtual_network(ctx)
-                    exists = resource.get(resource_group_name, vnet_name, name)
-                # route
-                elif isinstance(resource, Route):
-                    rtbl_name = utils.get_route_table(ctx)
-                    exists = resource.get(resource_group_name, rtbl_name, name)
-                # network_security_rule
-                elif isinstance(resource, NetworkSecurityRule):
-                    nsg_name = utils.get_network_security_group(ctx)
-                    exists = resource.get(resource_group_name, nsg_name, name)
-                else:
-                    exists = resource.get(resource_group_name, name)
-            except CloudError:
-                exists = None
-
+            # check if azure_config is given and if the resource
+            # is external or not
+            azure_config = utils.get_client_config(ctx.node.properties)
+            resource_factory = ResourceGetter(ctx, azure_config, name)
+            exists = resource_factory.get_resource(resource_class_name)
             # There is now a good idea whether the desired resource exists.
             # Now find out if it is expected and if it does or doesn't.
             expected = ctx.node.properties.get(
@@ -228,14 +233,16 @@ def with_azure_resource(resource_class_name):
                         resource_class_name, name))
             elif use_existing and not (create_op and arm_deployment):
                 ctx.logger.info("Using external resource")
-                ctx.instance.runtime_properties['resource'] = exists
-                ctx.instance.runtime_properties['resource_id'] = exists.get(
-                    "id", "")
+                utils.save_common_info_in_runtime_properties(
+                    resource_group_name=resource_factory.resource_group_name,
+                    resource_name=name,
+                    resource_get_create_result=exists)
                 return
             elif not create and not (create_op and arm_deployment):
                 raise cfy_exc.NonRecoverableError(
-                    "Can't use non-existing {0} '{1}'.".format(
-                        resource_class_name, name))
+                    "Can't use non-existing,"
+                    " or resource already exist but configuration is not to"
+                    " use it:  {0} '{1}'.".format(resource_class_name, name))
             elif create and exists and ctx.workflow_id not in \
                     ['update', 'execute_operation']:
                 ctx.logger.warn("Resource with name {0} exists".format(name))
@@ -247,3 +254,63 @@ def with_azure_resource(resource_class_name):
             return func(*args, **kwargs)
         return wrapper_inner
     return wrapper_outer
+
+
+class ResourceGetter(object):
+
+    def __init__(self, ctx, azure_config, resource_name):
+        self.azure_config = azure_config
+        self.ctx = ctx
+        self.name = resource_name
+        self.resource_group_name = None
+
+    def get_resource(self, resource_class_name):
+        try:
+            resource = resource_class_name(self.azure_config, self.ctx.logger)
+            if not isinstance(resource, ResourceGroup):
+                resource_group_name = utils.get_resource_group(self.ctx)
+                self.resource_group_name = resource_group_name
+                # handle speical cases
+                # resource_group
+            if isinstance(resource, ResourceGroup):
+                exists = resource.get(self.name)
+                self.resource_group_name = self.name
+            elif isinstance(resource, Deployment):
+                exists = resource.get(resource_group_name, self.name)
+                # virtual_machine_extension
+            elif isinstance(resource, VirtualMachineExtension):
+                vm_name = \
+                    self.ctx.node.properties.get('virtual_machine_name')
+                exists = resource.get(resource_group_name, vm_name, self.name)
+                # subnet
+            elif isinstance(resource, Subnet):
+                vnet_name = utils.get_virtual_network(self.ctx)
+                exists = resource.get(resource_group_name, vnet_name,
+                                      self.name)
+                # route
+            elif isinstance(resource, Route):
+                rtbl_name = utils.get_route_table(self.ctx)
+                exists = resource.get(resource_group_name, rtbl_name,
+                                      self.name)
+                # network_security_rule
+            elif isinstance(resource, NetworkSecurityRule):
+                nsg_name = utils.get_network_security_group(self.ctx)
+                exists = resource.get(resource_group_name, nsg_name, self.name)
+                # load_balancer_backend_address_pool
+            elif isinstance(resource, (LoadBalancerBackendAddressPool,
+                                       LoadBalancerLoadBalancingRule,
+                                       LoadBalancerInboundNatRule,
+                                       LoadBalancerProbe)):
+                lb_name = utils.get_load_balancer(self.ctx)
+                exists = resource.get(resource_group_name,
+                                      lb_name,
+                                      self.name)
+            # file share
+            elif isinstance(resource, FileShare):
+                sa_name = utils.get_storage_account(self.ctx)
+                exists = resource.get(resource_group_name, sa_name, self.name)
+            else:
+                exists = resource.get(resource_group_name, self.name)
+        except CloudError:
+            exists = None
+        return exists

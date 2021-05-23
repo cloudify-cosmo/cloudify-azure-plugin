@@ -94,6 +94,7 @@ def get_resource_group(_ctx=ctx):
     """
 
     return _ctx.node.properties.get('resource_group_name') or \
+        _ctx.node.properties.get('resource_group') or \
         _ctx.instance.runtime_properties.get('resource_group') or \
         get_ancestor_name(_ctx.instance, constants.REL_CONTAINED_IN_RG)
 
@@ -137,8 +138,18 @@ def get_network_security_group(_ctx=ctx,
     :rtype: string
     """
     return _ctx.node.properties.get('network_security_group_name') or \
-        get_ancestor_name(
-            _ctx.instance, rel_type)
+        get_ancestor_name(_ctx.instance, rel_type)
+
+
+def get_load_balancer(_ctx=ctx,
+                      rel_type=constants.REL_CONTAINED_IN_LB):
+    return ctx.node.properties.get('load_balancer_name') or \
+        get_ancestor_name(_ctx.instance, rel_type)
+
+
+def get_storage_account(_ctx=ctx, rel_type=constants.REL_CONTAINED_IN_SA):
+    return ctx.node.properties.get('storage_account_name') or \
+           get_ancestor_name(_ctx.instance, rel_type)
 
 
 def get_retry_after(_ctx=ctx):
@@ -432,3 +443,13 @@ def check_if_resource_exists(resource, resource_group_name, name=None):
         return resource.get(resource_group_name)
     except CloudError:
         return
+
+
+def save_common_info_in_runtime_properties(resource_group_name,
+                                           resource_name,
+                                           resource_get_create_result):
+    ctx.instance.runtime_properties['resource_group'] = resource_group_name
+    ctx.instance.runtime_properties['resource'] = resource_get_create_result
+    ctx.instance.runtime_properties['resource_id'] = \
+        resource_get_create_result.get("id", "")
+    ctx.instance.runtime_properties['name'] = resource_name

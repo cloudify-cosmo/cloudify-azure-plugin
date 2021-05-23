@@ -5,9 +5,9 @@
 plugins:
   azure:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/3.2.1.zip
+    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/3.3.0.zip
     package_name: cloudify-azure-plugin
-    package_version: '3.2.1'
+    package_version: '3.3.0'
 
 data_types:
   cloudify.datatypes.azure.Config:
@@ -198,12 +198,12 @@ data_types:
         description: >
           Quote, in GiB, for the maximum size of the file share
         required: false
-      fail_on_exist:
-        description: >
-          If true, causes the operation to raise a NonRecoverableError if
-          the file share already exists. If false, issues a warning and
-          continues execution.
-        default: false
+#      fail_on_exist:
+#        description: >
+#          If true, causes the operation to raise a NonRecoverableError if
+#          the file share already exists. If false, issues a warning and
+#          continues execution.
+#        default: false
 
   cloudify.datatypes.azure.network.VirtualNetworkConfig:
     description: >
@@ -649,6 +649,13 @@ node_types:
         description: >
           Specifies the supported Azure location for the resource
         required: false
+      storage_account_name:
+        type: string
+        description: >
+          Name of the storage account that the existing resource belongs to
+          (this is only useful when not using a relationship between a resource
+          node and a storage account node)
+        required: false
       retry_after:
         description: >
           Overrides the Azure-specified "retry_after" response. This property
@@ -663,7 +670,8 @@ node_types:
         required: false
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: azure.cloudify_azure.resources.storage.file.create_file_share
+        create: azure.cloudify_azure.resources.storage.file.create
+        delete: azure.cloudify_azure.resources.storage.file.delete
 
   cloudify.azure.nodes.network.VirtualNetwork:
     derived_from: cloudify.nodes.Root
@@ -1599,11 +1607,11 @@ node_types:
       resource_group:
         required: true
         type: string
-      sku:
-        type: string
+      plan_details:
         required: false
         description: >
-          SKU details, including location, name, capacity and tier
+          Plan details, including location, SKU, kind etc.
+          https://docs.microsoft.com/en-us/python/api/azure-mgmt-web/azure.mgmt.web.v2019_08_01.models.appserviceplan?view=azure-python
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
@@ -1613,8 +1621,8 @@ node_types:
               default: { get_property: [SELF, name]}
             resource_group:
               default: { get_property: [SELF, resource_group]}
-            sku:
-              default: { get_property: [SELF, sku]}
+            plan_details:
+              default: { get_property: [SELF, plan_details]}
             azure_config:
               default: { get_property: [SELF, azure_config]}
             client_config:
@@ -1626,6 +1634,7 @@ node_types:
     derived_from: cloudify.nodes.Root
     properties:
       <<: *common_properties
+      <<: *existing_resources
       resource_group:
         required: true
         type: string
@@ -1684,10 +1693,11 @@ node_types:
   cloudify.azure.nodes.compute.ManagedCluster:
     derived_from: cloudify.nodes.Root
     properties:
+      <<: *existing_resources
       resource_group:
         required: true
         type: string
-      cluster_name:
+      name:
         required: true
         type: string
       resource_config:
@@ -1720,13 +1730,15 @@ node_types:
             resource_group:
               default: { get_property: [SELF, resource_group]}
             cluster_name:
-              default: { get_property: [SELF, cluster_name]}
+              default: { get_property: [SELF, name]}
             resource_config:
               default: { get_property: [SELF, resource_config]}
             azure_config:
               default: { get_property: [SELF, azure_config]}
             client_config:
               default: { get_property: [SELF, client_config]}
+        configure:
+          implementation: azure.cloudify_azure.resources.compute.managed_cluster.store_kubeconf_if_needed
         delete:
           implementation: azure.cloudify_azure.resources.compute.managed_cluster.delete
 

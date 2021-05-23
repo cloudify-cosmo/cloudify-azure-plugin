@@ -32,11 +32,12 @@ class ServicePlan(AzureResource):
         self.logger.info("Get plan...{0}".format(plan_name))
         plan = self.client.app_service_plans.get(
             resource_group_name=group_name,
-            name=plan_name
-        ).as_dict()
-        self.logger.info(
-            'Get plan result: {0}'.format(
-                utils.secure_logging_content(plan)))
+            name=plan_name)
+        if plan:
+            plan = plan.as_dict()
+            self.logger.info(
+                'Get plan result: {0}'.format(
+                    utils.secure_logging_content(plan)))
         return plan
 
     def create_or_update(self, group_name, plan_name, params):
@@ -56,10 +57,9 @@ class ServicePlan(AzureResource):
 
     def delete(self, group_name, plan_name):
         self.logger.info("Deleting plan...{0}".format(plan_name))
-        delete_async_operation = self.client.app_service_plans.delete(
+        self.client.app_service_plans.delete(
             resource_group_name=group_name,
             name=plan_name
         )
-        delete_async_operation.wait()
         self.logger.debug(
             'Deleted plan {0}'.format(plan_name))
