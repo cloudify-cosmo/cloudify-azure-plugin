@@ -5,9 +5,9 @@
 plugins:
   azure:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/3.2.1.zip
+    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/3.3.0.zip
     package_name: cloudify-azure-plugin
-    package_version: '3.2.1'
+    package_version: '3.3.0'
 
 data_types:
   cloudify.datatypes.azure.Config:
@@ -1693,10 +1693,11 @@ node_types:
   cloudify.azure.nodes.compute.ManagedCluster:
     derived_from: cloudify.nodes.Root
     properties:
+      <<: *existing_resources
       resource_group:
         required: true
         type: string
-      cluster_name:
+      name:
         required: true
         type: string
       resource_config:
@@ -1729,13 +1730,15 @@ node_types:
             resource_group:
               default: { get_property: [SELF, resource_group]}
             cluster_name:
-              default: { get_property: [SELF, cluster_name]}
+              default: { get_property: [SELF, name]}
             resource_config:
               default: { get_property: [SELF, resource_config]}
             azure_config:
               default: { get_property: [SELF, azure_config]}
             client_config:
               default: { get_property: [SELF, client_config]}
+        configure:
+          implementation: azure.cloudify_azure.resources.compute.managed_cluster.store_kubeconf_if_needed
         delete:
           implementation: azure.cloudify_azure.resources.compute.managed_cluster.delete
 
