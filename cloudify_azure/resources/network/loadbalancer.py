@@ -144,6 +144,8 @@ def configure(ctx, **_):
 @operation(resumable=True)
 def delete(ctx, **_):
     """Deletes a Load Balancer"""
+    if ctx.node.properties.get('use_external_resource', False):
+        return
     # Delete the resource
     azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)

@@ -1200,8 +1200,9 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         create: azure.cloudify_azure.resources.compute.virtualmachine.create
-        configure:
-          implementation: azure.cloudify_azure.resources.compute.virtualmachine.configure
+        configure: azure.cloudify_azure.resources.compute.virtualmachine.configure
+        start:
+          implementation: azure.cloudify_azure.resources.compute.virtualmachine.start
           inputs:
             command_to_execute:
               description: >

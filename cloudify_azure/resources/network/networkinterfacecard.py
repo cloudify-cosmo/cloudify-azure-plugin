@@ -202,6 +202,8 @@ def start(ctx, **_):
 def delete(ctx, **_):
     """Deletes a Network Interface Card"""
     # Delete the resource
+    if ctx.node.properties.get('use_external_resource', False):
+        return
     azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
     name = ctx.instance.runtime_properties.get('name')

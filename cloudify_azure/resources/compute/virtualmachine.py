@@ -233,6 +233,19 @@ def _handle_userdata(ctx, existing_userdata):
 @decorators.with_azure_resource(VirtualMachine)
 def create(ctx, args=None, **_):
     """Uses an existing, or creates a new, Virtual Machine"""
+    _create_or_update(ctx, args)
+    ctx.instance.runtime_properties['created'] = True
+
+
+@operation(resumable=True)
+def configure(ctx, args=None, **_):
+    # If  create function didn't created the instance we want to update it.
+    if not ctx.instance.runtime_properties.get('created', False):
+        _create_or_update(ctx, args)
+
+
+def _create_or_update(ctx, args=None):
+    """Uses an existing, or creates a new, Virtual Machine"""
     azure_config = utils.get_client_config(ctx.node.properties)
     name = utils.get_resource_name(ctx)
     resource_group_name = utils.get_resource_group(ctx)
@@ -342,15 +355,14 @@ def create(ctx, args=None, **_):
             "create virtual_machine '{0}' "
             "failed with this error : {1}".format(name,
                                                   cr.message)
-            )
+        )
 
     ctx.instance.runtime_properties['resource_group'] = resource_group_name
     ctx.instance.runtime_properties['resource'] = result
     ctx.instance.runtime_properties['resource_id'] = result.get("id", "")
 
-
 @operation(resumable=True)
-def configure(ctx, command_to_execute, file_uris, type_handler_version='1.8',
+def start(ctx, command_to_execute, file_uris, type_handler_version='1.8',
               **_):
     """Configures the resource"""
     azure_config = utils.get_client_config(ctx.node.properties)
