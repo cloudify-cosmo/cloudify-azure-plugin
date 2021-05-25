@@ -29,6 +29,7 @@ from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
 
 from cloudify_azure import (constants, decorators, utils)
+from virtualmachine.virtualmachine_utils import check_if_configuration_changed
 from cloudify_azure.resources.network.publicipaddress import PUBLIC_IP_PROPERTY
 from azure_sdk.resources.network.public_ip_address import PublicIPAddress
 from azure_sdk.resources.compute.virtual_machine import VirtualMachine
@@ -234,14 +235,7 @@ def _handle_userdata(ctx, existing_userdata):
 def create(ctx, args=None, **_):
     """Uses an existing, or creates a new, Virtual Machine"""
     _create_or_update(ctx, args)
-    ctx.instance.runtime_properties['created'] = True
 
-
-@operation(resumable=True)
-def configure(ctx, args=None, **_):
-    # If  create function didn't created the instance we want to update it.
-    if not ctx.instance.runtime_properties.get('created', False):
-        _create_or_update(ctx, args)
 
 
 def _create_or_update(ctx, args=None):
@@ -349,6 +343,125 @@ def _create_or_update(ctx, args=None):
     try:
         result = \
             virtual_machine.create_or_update(resource_group_name, name,
+                                             resource_create_payload)
+    except CloudError as cr:
+        raise cfy_exc.NonRecoverableError(
+            "create virtual_machine '{0}' "
+            "failed with this error : {1}".format(name,
+                                                  cr.message)
+        )
+
+    ctx.instance.runtime_properties['resource_group'] = resource_group_name
+    ctx.instance.runtime_properties['resource'] = result
+    ctx.instance.runtime_properties['resource_id'] = result.get("id", "")
+
+
+def get_vm_create_or_update_payload(ctx, args, name):
+    res_cfg = ctx.node.properties.get("resource_config", {})
+    spot_instance = res_cfg.pop("spot_instance", None)
+    # Build storage profile
+    osdisk = build_osdisk_profile(ctx, res_cfg.get(
+        'storageProfile', dict()).get('osDisk', dict()))
+    datadisks = build_datadisks_profile(ctx, res_cfg.get(
+        'storageProfile', dict()).get('dataDisks', list()))
+    storage_profile = {
+        'os_disk': osdisk,
+        'data_disks': datadisks
+    }
+    # Build the network profile
+    network_profile = build_network_profile(ctx)
+    # Build the OS profile
+    os_family = ctx.node.properties.get('os_family', '').lower()
+    os_profile = dict()
+    # Set defaults for Windows installs to enable WinRM listener
+    if os_family == 'windows' and \
+            not res_cfg.get('osProfile', dict()).get('windowsConfiguration'):
+        os_profile = {
+            'windows_configuration': {
+                # This is required for extension scripts to work
+                'provision_vm_agent': True,
+                'win_rm': {
+                    'listeners': [{
+                        'protocol': 'Http',
+                        'certificate_url': None
+                    }]
+                }
+            },
+            'linux_configuration': None
+        }
+    elif not res_cfg.get('osProfile', dict()).get('linuxConfiguration'):
+        os_profile = {
+            'linux_configuration': {
+                'disable_password_authentication': False
+            },
+            'windows_configuration': None
+        }
+    # Set the computerName if it's not set already
+    os_profile['computer_name'] = \
+        res_cfg.get(
+            'osProfile', dict()
+        ).get('computerName', name)
+
+    availability_set = None
+    rel_type = constants.REL_CONNECTED_TO_AS
+    for rel in ctx.instance.relationships:
+        if isinstance(rel_type, tuple):
+            if any(x in rel.type_hierarchy for x in rel_type):
+                availability_set = {
+                    'id': rel.target.instance.runtime_properties.get(
+                        "resource_id")
+                }
+        else:
+            if rel_type in rel.type_hierarchy:
+                availability_set = {
+                    'id': rel.target.instance.runtime_properties.get(
+                        "resource_id")
+                }
+    resource_create_payload = {
+        'location': ctx.node.properties.get('location'),
+        'tags': ctx.node.properties.get('tags'),
+        'plan': ctx.node.properties.get('plan'),
+        'availabilitySet': availability_set,
+        'networkProfile': network_profile,
+        'storageProfile': storage_profile,
+        'osProfile': os_profile
+    }
+    # check if spot_instance
+    if spot_instance and spot_instance.get("is_spot_instance"):
+        # this is just an indacator not part of the api
+        spot_instance.pop("is_spot_instance")
+        #  handle the params
+        resource_create_payload = \
+            utils.dict_update(resource_create_payload, spot_instance)
+    resource_create_payload = \
+        utils.handle_resource_config_params(resource_create_payload,
+                                            utils.get_resource_config(
+                                                _ctx=ctx,
+                                                args=args))
+    # support userdata from args.
+    os_profile = resource_create_payload['os_profile']
+    userdata = _handle_userdata(ctx, os_profile.get('custom_data'))
+    if userdata:
+        ctx.logger.warn(
+            'Azure customData implementation is dependent on '
+            'Virtual Machine image support.')
+        resource_create_payload['os_profile']['custom_data'] = \
+            base64.b64encode(userdata.encode('utf-8')).decode('utf-8')
+    # Remove custom_data from os_profile if empty to avoid Errors.
+    elif 'custom_data' in resource_create_payload['os_profile']:
+        del resource_create_payload['os_profile']['custom_data']
+
+    return resource_create_payload
+
+
+def create_update_resource(ctx,
+                           resource_group_name,
+                           name,
+                           vm_iface,
+                           resource_create_payload):
+    try:
+        result = \
+            vm_iface.create_or_update(resource_group_name, name,
                                              resource_create_payload)
     except CloudError as cr:
         raise cfy_exc.NonRecoverableError(
@@ -601,3 +714,25 @@ def detach_data_disk(ctx, **_):
             "failed with this error : {1}".format(name,
                                                   cr.message)
             )
+
+
+@operation(resumable=True)
+def configure(ctx, args=None, **_):
+    # If  create function didn't created the instance we want to update it.
+    azure_config = utils.get_client_config(ctx.node.properties)
+    name = utils.get_resource_name(ctx)
+    resource_group_name = utils.get_resource_group(ctx)
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_COMPUTE)
+    virtual_machine = VirtualMachine(azure_config, ctx.logger, api_version)
+    payload = get_vm_create_or_update_payload(ctx, args, name)
+    ctx.logger.info("create_payload:  \n {}".format(payload))
+    current_vm = ctx.instance.runtime_properties["resource"]
+    if check_if_configuration_changed(ctx, payload, current_vm):
+        create_update_resource(ctx,
+                               resource_group_name,
+                               name,
+                               virtual_machine,
+                               payload)
+
+
