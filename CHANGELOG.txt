@@ -1,3 +1,4 @@
+3.3.1: RD-2472 - cluster_name property maintained for forward compatibility.
 3.3.0: Add create_if_missing for all azure resources.
 3.2.1: Fix bug, fail if trying to use external resource that doesn't exist.
 3.2.0: Add pull operation for Azure ARM deployment.

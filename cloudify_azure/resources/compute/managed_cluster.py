@@ -37,6 +37,11 @@ def get_manged_cluster_interface(ctx):
 @decorators.with_azure_resource(ManagedCluster)
 def create(ctx, resource_group, cluster_name, resource_config, **_):
     managed_cluster = get_manged_cluster_interface(ctx)
+    if ctx.node.properties.get('cluster_name'):
+        ctx.logger.warn(
+            'The cluster_name is deprecated, but was provided. '
+            'Update your blueprint to use the "name" property, '
+            'which replaces "cluster_name".')
     resource_config_payload = {}
     resource_config_payload = \
         utils.handle_resource_config_params(resource_config_payload,
