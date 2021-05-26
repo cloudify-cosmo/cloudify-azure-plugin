@@ -13,12 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
+from cloudify import ctx
+
+
 def check_if_configuration_changed(ctx, update_payload, current_vm):
     for prop in ['location', 'tags', 'plan', 'availability_set',
                  'eviction_policy', 'billing_profile', 'priority',
                  'hardware_profile']:
         update_property_value = update_payload.get(prop)
-        current_vm_property_value = current_vm.get('prop')
+        current_vm_property_value = current_vm.get(prop)
         if update_property_value and ordered(
                 update_property_value) != ordered(current_vm_property_value):
             ctx.logger.info("{prop} changed.".format(prop=prop))
@@ -34,7 +38,7 @@ def check_if_configuration_changed(ctx, update_payload, current_vm):
         else:
             update_property_value = update_payload.get(prop, {})
 
-        current_vm_property_value = current_vm.get('prop', {})
+        current_vm_property_value = current_vm.get(prop, {})
         if diff_dictionaries(update_property_value, current_vm_property_value):
             ctx.logger.info("{prop} changed.".format(prop=prop))
             ctx.logger.info("update payload: {content}.".format(
@@ -101,9 +105,18 @@ def diff_dictionaries(update_dict, current_conf_dict):
     Returns True if update_dict has changes in a key that doesn't appear in
     current_conf_dict.
     """
-    for key, val in update_dict.items():
-        if ordered(update_dict.get(key)) != ordered(
+    for key in update_dict:
+        if isinstance(update_dict.get(key), dict):
+            res = diff_dictionaries(update_dict.get(key), current_conf_dict.get(key,{}))
+            if res:
+                return True
+        elif ordered(update_dict.get(key)) != ordered(
                 current_conf_dict.get(key)):
+            ctx.logger.info('changes found in diff dict: key={}\n'.format(key))
+            ctx.logger.info('update_dict: {}'.format(ordered(update_dict.get(key))))
+            ctx.logger.info(
+                'current_conf_dict: {}'.format(ordered(
+                current_conf_dict.get(key))))
             return True
 
 
@@ -112,5 +125,9 @@ def ordered(obj):
         return sorted((k, ordered(v)) for k, v in obj.items())
     if isinstance(obj, list):
         return sorted(ordered(x) for x in obj)
+    if isinstance(obj, str):
+        return obj.lower()
+    if isinstance(obj, (int, float)):
+        return str(obj)
     else:
         return obj
