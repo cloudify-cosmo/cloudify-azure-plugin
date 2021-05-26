@@ -47,56 +47,6 @@ def check_if_configuration_changed(ctx, update_payload, current_vm):
                 content=current_vm_property_value))
             return True
 
-    # if update_payload.get('tags') and ordered(update_payload.get('tags',
-    # {})) != ordered(current_vm.get('tags', {})):
-    #     ctx.logger.info("Tags changed.")
-    #     return True
-    # if update_payload.get('plan') and ordered(update_payload.get('plan',
-    # {})) != ordered(current_vm.get('plan', {})):
-    #     ctx.logger.info("Plan changed.")
-    #     return True
-    # if update_payload.get('availability_set') and  ordered(
-    # update_payload.get('availability_set', {})) != ordered(current_vm.get(
-    # 'availability_set', {})):
-    #     ctx.logger.info("availability_set changed.")
-    #     return True
-    # # spot configuration
-    # if update_payload.get('eviction_policy') and update_payload.get(
-    # 'eviction_policy') != current_vm.get('eviction_policy'):
-    #     ctx.logger.info("eviction_policy changed.")
-    #     return True
-    # if update_payload.get('billing_profile') and ordered(
-    # update_payload.get('billing_profile')) != ordered(current_vm.get(
-    # 'billing_profile')):
-    #     ctx.logger.info("billing_profile changed.")
-    #     return True
-    # if update_payload.get('priority') and update_payload.get('priority')
-    # != current_vm.get('priority'):
-    #     ctx.logger.info("priority changed.")
-    #     return True
-    #
-    # if update_payload.get('hardware_profile') and ordered(
-    # update_payload.get('hardware_profile')) != ordered(current_vm.get(
-    # 'hardware_profile')):
-    #     ctx.logger.info("hardware_profile changed.")
-    #     return True
-
-    # if diff_dictionaries(update_payload.get('os_profile',{}),
-    # current_vm.get('os_profile',{})):
-    #     ctx.logger.info("os_profile changed.")
-    #     return True
-    #
-    # if diff_dictionaries(update_payload.get('storage_profile',{}),
-    # current_vm.get('storage_profile',{})):
-    #     ctx.logger.info("storage_profile changed.")
-    #     return True
-
-    # update_network_profile = update_payload.get('network_profile').as_dict()
-    # if diff_dictionaries(update_network_profile,
-    #                      current_vm.get('network_profile', {})):
-    #     ctx.logger.info("network_profile changed.")
-    #     return True
-
     return False
 
 
@@ -107,16 +57,18 @@ def diff_dictionaries(update_dict, current_conf_dict):
     """
     for key in update_dict:
         if isinstance(update_dict.get(key), dict):
-            res = diff_dictionaries(update_dict.get(key), current_conf_dict.get(key,{}))
+            res = diff_dictionaries(update_dict.get(key),
+                                    current_conf_dict.get(key, {}))
             if res:
                 return True
         elif ordered(update_dict.get(key)) != ordered(
                 current_conf_dict.get(key)):
             ctx.logger.info('changes found in diff dict: key={}\n'.format(key))
-            ctx.logger.info('update_dict: {}'.format(ordered(update_dict.get(key))))
+            ctx.logger.info(
+                'update_dict: {}'.format(ordered(update_dict.get(key))))
             ctx.logger.info(
                 'current_conf_dict: {}'.format(ordered(
-                current_conf_dict.get(key))))
+                    current_conf_dict.get(key))))
             return True
 
 
