@@ -380,7 +380,7 @@ def configure(ctx, args=None, **_):
         ctx.node.properties.get('api_version', constants.API_VER_COMPUTE)
     virtual_machine = VirtualMachine(azure_config, ctx.logger, api_version)
     payload = _get_vm_create_or_update_payload(ctx, args, name)
-    ctx.logger.info("create_payload:  \n {}".format(payload))
+    ctx.logger.debug("create_payload: \n {payload}".format(payload=payload))
     current_vm = ctx.instance.runtime_properties["resource"]
     if check_if_configuration_changed(ctx, payload, current_vm):
         ctx.logger.info("configuration changed!!")
