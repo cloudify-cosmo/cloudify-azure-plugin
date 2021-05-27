@@ -29,8 +29,8 @@ from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
 
 from cloudify_azure import (constants, decorators, utils)
-from cloudify_azure.resources.compute.virtualmachine.virtualmachine_utils import \
-    check_if_configuration_changed
+from cloudify_azure.resources.compute.virtualmachine.virtualmachine_utils \
+    import check_if_configuration_changed
 from cloudify_azure.resources.network.publicipaddress import PUBLIC_IP_PROPERTY
 from azure_sdk.resources.network.public_ip_address import PublicIPAddress
 from azure_sdk.resources.compute.virtual_machine import VirtualMachine
@@ -230,14 +230,6 @@ def _handle_userdata(ctx, existing_userdata):
     return final_userdata
 
 
-@operation(resumable=True)
-@decorators.with_generate_name(VirtualMachine)
-@decorators.with_azure_resource(VirtualMachine)
-def create(ctx, args=None, **_):
-    """Uses an existing, or creates a new, Virtual Machine"""
-    _create_or_update(ctx, args)
-
-
 def _create_or_update(ctx, args=None):
     """Uses an existing, or creates a new, Virtual Machine"""
     azure_config = utils.get_client_config(ctx.node.properties)
@@ -246,15 +238,14 @@ def _create_or_update(ctx, args=None):
     api_version = \
         ctx.node.properties.get('api_version', constants.API_VER_COMPUTE)
     virtual_machine = VirtualMachine(azure_config, ctx.logger, api_version)
-    resource_create_payload = get_vm_create_or_update_payload(ctx,args,name)
-    create_update_resource(ctx,
-                           resource_group_name,
-                           name,
-                           virtual_machine,
-                           resource_create_payload)
+    resource_create_payload = _get_vm_create_or_update_payload(ctx, args, name)
+    _create_update_resource(resource_group_name,
+                            name,
+                            virtual_machine,
+                            resource_create_payload)
 
 
-def get_vm_create_or_update_payload(ctx, args, name):
+def _get_vm_create_or_update_payload(ctx, args, name):
     res_cfg = ctx.node.properties.get("resource_config", {})
     spot_instance = res_cfg.pop("spot_instance", None)
     # Build storage profile
@@ -352,15 +343,14 @@ def get_vm_create_or_update_payload(ctx, args, name):
     return resource_create_payload
 
 
-def create_update_resource(ctx,
-                           resource_group_name,
-                           name,
-                           vm_iface,
-                           resource_create_payload):
+def _create_update_resource(resource_group_name,
+                            name,
+                            vm_iface,
+                            resource_create_payload):
     try:
         result = \
             vm_iface.create_or_update(resource_group_name, name,
-                                             resource_create_payload)
+                                      resource_create_payload)
     except CloudError as cr:
         raise cfy_exc.NonRecoverableError(
             "create virtual_machine '{0}' "
@@ -368,9 +358,36 @@ def create_update_resource(ctx,
                                                   cr.message)
         )
 
-    ctx.instance.runtime_properties['resource_group'] = resource_group_name
-    ctx.instance.runtime_properties['resource'] = result
-    ctx.instance.runtime_properties['resource_id'] = result.get("id", "")
+    utils.save_common_info_in_runtime_properties(resource_group_name,
+                                                 name,
+                                                 result)
+
+
+@operation(resumable=True)
+@decorators.with_generate_name(VirtualMachine)
+@decorators.with_azure_resource(VirtualMachine)
+def create(ctx, args=None, **_):
+    """Uses an existing, or creates a new, Virtual Machine"""
+    _create_or_update(ctx, args)
+
+
+@operation(resumable=True)
+def configure(ctx, args=None, **_):
+    azure_config = utils.get_client_config(ctx.node.properties)
+    name = utils.get_resource_name(ctx)
+    resource_group_name = utils.get_resource_group(ctx)
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_COMPUTE)
+    virtual_machine = VirtualMachine(azure_config, ctx.logger, api_version)
+    payload = _get_vm_create_or_update_payload(ctx, args, name)
+    ctx.logger.info("create_payload:  \n {}".format(payload))
+    current_vm = ctx.instance.runtime_properties["resource"]
+    if check_if_configuration_changed(ctx, payload, current_vm):
+        ctx.logger.info("configuration changed!!")
+        _create_update_resource(resource_group_name,
+                                name,
+                                virtual_machine,
+                                payload)
 
 
 @operation(resumable=True)
@@ -612,26 +629,3 @@ def detach_data_disk(ctx, **_):
             "failed with this error : {1}".format(name,
                                                   cr.message)
             )
-
-
-@operation(resumable=True)
-def configure(ctx, args=None, **_):
-    # If  create function didn't created the instance we want to update it.
-    azure_config = utils.get_client_config(ctx.node.properties)
-    name = utils.get_resource_name(ctx)
-    resource_group_name = utils.get_resource_group(ctx)
-    api_version = \
-        ctx.node.properties.get('api_version', constants.API_VER_COMPUTE)
-    virtual_machine = VirtualMachine(azure_config, ctx.logger, api_version)
-    payload = get_vm_create_or_update_payload(ctx, args, name)
-    ctx.logger.info("create_payload:  \n {}".format(payload))
-    current_vm = ctx.instance.runtime_properties["resource"]
-    if check_if_configuration_changed(ctx, payload, current_vm):
-        ctx.logger.info("configuration changed!!")
-        # create_update_resource(ctx,
-        #                        resource_group_name,
-        #                        name,
-        #                        virtual_machine,
-        #                        payload)
-
-
