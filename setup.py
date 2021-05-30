@@ -49,6 +49,10 @@ setup(
         'pyyaml>=4.2b1',
         # stating from azure v5.0.0 we need to add azure modules like this
         'azure-mgmt-web==0.46.0',
+        # When upgrading compute package version, update cloudify_
+        # azure/resources/compute/virtualmachine/virtualmachine_utils.py
+        # ::check_if_configuration_changed props list, a
+        # according to available api versions.
         'azure-mgmt-compute==12.0.0',
         'azure-mgmt-containerservice==9.0.1',
         'azure-mgmt-network==10.1.0',

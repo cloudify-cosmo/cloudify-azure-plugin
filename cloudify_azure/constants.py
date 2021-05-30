@@ -43,6 +43,10 @@ API_VER_STORAGE = '2015-06-15'
 API_VER_STORAGE_FILE_SHARE = '2019-06-01'
 API_VER_NETWORK = '2016-09-01'
 API_VER_NETWORK_LB_BACKEND_PROBES = '2020-03-01'
+# When upgrading Api version to greater than 2019_12_01 version, update
+# cloudify_azure/resources/compute/virtualmachine/virtualmachine_utils.py
+# ::check_if_configuration_changed props list,
+# according to api version.
 API_VER_COMPUTE = '2016-03-30'
 API_VER_STORAGE_BLOB = '2015-12-11'
 API_VER_CONTAINER = '2017-07-01'

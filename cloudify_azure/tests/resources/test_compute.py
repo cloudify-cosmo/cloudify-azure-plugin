@@ -22,7 +22,8 @@ from cloudify import mocks as cfy_mocks
 from msrestazure.azure_exceptions import CloudError
 
 from cloudify_azure import utils
-from cloudify_azure.resources.compute import (availabilityset, virtualmachine)
+from cloudify_azure.resources.compute import (availabilityset)
+from cloudify_azure.resources.compute.virtualmachine import virtualmachine
 
 
 def return_none(foo):
@@ -187,7 +188,8 @@ class VirtualMachineTest(unittest.TestCase):
         }
 
     @mock.patch('cloudify_azure.resources.compute.virtualmachine.'
-                'build_network_profile', side_effect=return_none)
+                'virtualmachine.build_network_profile',
+                side_effect=return_none)
     def test_create(self, _, client, credentials):
         self.node.properties['azure_config'] = self.dummy_azure_credentials
         resource_group = 'sample_resource_group'

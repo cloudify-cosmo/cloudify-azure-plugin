@@ -5,9 +5,9 @@
 plugins:
   azure:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/3.3.1.zip
+    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/3.4.0.zip
     package_name: cloudify-azure-plugin
-    package_version: '3.3.1'
+    package_version: '3.4.0'
 
 data_types:
   cloudify.datatypes.azure.Config:
@@ -1199,9 +1199,10 @@ node_types:
         default: core.windows.net
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: azure.cloudify_azure.resources.compute.virtualmachine.create
-        configure:
-          implementation: azure.cloudify_azure.resources.compute.virtualmachine.configure
+        create: azure.cloudify_azure.resources.compute.virtualmachine.virtualmachine.create
+        configure: azure.cloudify_azure.resources.compute.virtualmachine.virtualmachine.configure
+        start:
+          implementation: azure.cloudify_azure.resources.compute.virtualmachine.virtualmachine.start
           inputs:
             command_to_execute:
               description: >
@@ -1211,7 +1212,7 @@ node_types:
               default: ''
             file_uris:
               default: []
-        delete: azure.cloudify_azure.resources.compute.virtualmachine.delete
+        delete: azure.cloudify_azure.resources.compute.virtualmachine.virtualmachine.delete
 
   cloudify.azure.nodes.compute.WindowsVirtualMachine:
     derived_from: cloudify.azure.nodes.compute.VirtualMachine
@@ -1225,7 +1226,7 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         configure:
-          implementation: azure.cloudify_azure.resources.compute.virtualmachine.configure
+          implementation: azure.cloudify_azure.resources.compute.virtualmachine.virtualmachine.configure
           inputs:
             command_to_execute:
               default: powershell -ExecutionPolicy Unrestricted -file ps_enable_winrm_http.ps1
@@ -1700,10 +1701,6 @@ node_types:
       name:
         required: true
         type: string
-        default: { get_property: [ SELF, cluster_name ] }
-      cluster_name:
-        required: false
-        type: string
       resource_config:
         type: cloudify.datatypes.azure.compute.ManagedClusterConfig
         required: true
@@ -1931,8 +1928,8 @@ relationships:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
-        establish: azure.cloudify_azure.resources.compute.virtualmachine.attach_disk
-        unlink: azure.cloudify_azure.resources.compute.virtualmachine.detach_disk
+        establish: azure.cloudify_azure.resources.compute.virtualmachine.virtualmachine.attach_disk
+        unlink: azure.cloudify_azure.resources.compute.virtualmachine.virtualmachine.detach_disk
 
   cloudify.relationships.azure.connected_to_data_disk:
     derived_from: cloudify.azure.relationships.connected_to_data_disk
@@ -1988,14 +1985,14 @@ relationships:
     source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
         establish:
-          implementation: azure.cloudify_azure.resources.compute.virtualmachine.attach_data_disk
+          implementation: azure.cloudify_azure.resources.compute.virtualmachine.virtualmachine.attach_data_disk
           inputs:
             lun:
               description: >
                 Specifies the logical unit number of the data disk in the VM
               default: 0
               required: true
-        unlink: azure.cloudify_azure.resources.compute.virtualmachine.detach_data_disk
+        unlink: azure.cloudify_azure.resources.compute.virtualmachine.virtualmachine.detach_data_disk
 
   cloudify.relationships.azure.vm_connected_to_datadisk:
     derived_from: cloudify.azure.relationships.vm_connected_to_datadisk
