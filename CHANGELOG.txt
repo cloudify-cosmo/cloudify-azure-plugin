@@ -1,3 +1,4 @@
+3.4.1: RD-2472 - add cluster_name property since it was removed by previous commit by mistake.
 3.4.0: Update vm when using external resource.
 3.3.1: RD-2472 - cluster_name property maintained for forward compatibility.
 3.3.0: Add create_if_missing for all azure resources.
