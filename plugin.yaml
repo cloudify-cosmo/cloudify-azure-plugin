@@ -5,9 +5,9 @@
 plugins:
   azure:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/3.4.1.zip
+    source: https://github.com/cloudify-cosmo/cloudify-azure-plugin/archive/3.5.0.zip
     package_name: cloudify-azure-plugin
-    package_version: '3.4.1'
+    package_version: '3.5.0'
 
 data_types:
   cloudify.datatypes.azure.Config:
@@ -1742,7 +1742,7 @@ node_types:
               default: { get_property: [SELF, azure_config]}
             client_config:
               default: { get_property: [SELF, client_config]}
-        configure:
+        poststart:
           implementation: azure.cloudify_azure.resources.compute.managed_cluster.store_kubeconf_if_needed
         delete:
           implementation: azure.cloudify_azure.resources.compute.managed_cluster.delete
@@ -2000,3 +2000,10 @@ relationships:
 
   cloudify.relationships.azure.vm_connected_to_datadisk:
     derived_from: cloudify.azure.relationships.vm_connected_to_datadisk
+
+  cloudify.relationships.azure.aks.connected_to_aks_cluster:
+    derived_from: cloudify.relationships.connected_to
+    target_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        establish: { implementation: azure.cloudify_azure.resources.compute.managed_cluster.refresh_kubeconfig}
+        unlink: { implementation: azure.cloudify_azure.resources.compute.managed_cluster.refresh_kubeconfig }

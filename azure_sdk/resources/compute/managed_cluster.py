@@ -39,6 +39,15 @@ class ManagedCluster(AzureResource):
                 utils.secure_logging_content(managed_cluster)))
         return managed_cluster
 
+    def list(self):
+        self.logger.info("Listing managed_clusters...")
+        managed_clusters = self.client.managed_clusters.list().as_dict()
+        self.logger.info(
+            'Listing managed_clusters result: {0}'.format(
+                utils.secure_logging_content(managed_clusters)))
+        return managed_clusters
+
+
     def create_or_update(self, group_name, resource_name, params):
         self.logger.info(
             "Create/Updating managed_cluster...{0}".format(resource_name))
