@@ -17,9 +17,11 @@ from cloudify.decorators import workflow
 from cloudify.workflows import ctx as wtx
 from cloudify.exceptions import NonRecoverableError
 
-from .resources import get_resources
-from ..common.utils import (
-    get_locations,
+from .resources import (
+    get_resources,
+    get_locations
+)
+from cloudify_common_sdk.utils import (
     create_deployments,
     install_deployments
 )
@@ -29,7 +31,7 @@ AZURE_TYPE = 'cloudify.azure.nodes.resources.Azure'
 
 def discover_resources(node_id=None,
                        resource_types=None,
-                       regions=None,
+                       locations=None,
                        ctx=None,
                        **_):
 
@@ -40,7 +42,7 @@ def discover_resources(node_id=None,
     for node_instance in node.instances:
         if not isinstance(regions, list) and not regions:
             locations = get_locations(node, ctx.deployment.id)
-        resources = get_resources(node, isinstance, resource_types, ctx.logger)
+        resources = get_resources(node, locations, resource_types, ctx.logger)
         discovered_resources.update(resources)
         node_instance._node_instance.runtime_properties['resources'] = \
             resources

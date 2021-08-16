@@ -2,13 +2,13 @@ from cloudify import ctx as _ctx
 from cloudify.decorators import operation
 from cloudify.exceptions import NonRecoverableError
 
-from ..common import utils
-from ..azure_sdk.resources import compute
-from ..common.connection import Boto3Connection
+from .. import utils
+from .. import constants
+from azure_sdk.resources.compute.managed_cluster import ManagedCluster
 
 TYPES_MATRIX = {
     'Microsoft.ContainerService/ManagedClusters': (
-        compute.managed_cluster.ManagedCluster, 'aks', 'id'
+        ManagedCluster, 'aks', 'id'
     )
 }
 
@@ -16,11 +16,11 @@ TYPES_MATRIX = {
 @operation
 def initialize(resource_config=None, locations=None, ctx=None, **_):
     """ Initialize an cloudify.nodes.resources.AmazonWebServices node.
-    This checks for resource_types in resource config and regions in regions.
+    This checks for resource_types in resource config and locations in locations.
 
     :param resource_config: A dict with key resource_types,
       a list of AWS types like AWS::EKS::CLUSTER.
-    :param regions: A list of regions, like [us-east-1, us-east-2].
+    :param locations: A list of locations, like [us-east-1, us-east-2].
     :param ctx: Cloudify CTX
     :param _:
     :return:
@@ -34,7 +34,7 @@ def initialize(resource_config=None, locations=None, ctx=None, **_):
         t=resource_types))
 
     ctx.instance.runtime_properties['resources'] = get_resources(
-        ctx.node, regions, resource_types, ctx.logger)
+        ctx.node, locations, resource_types, ctx.logger)
 
 
 @operation
@@ -61,11 +61,9 @@ def get_resources(node, locations, resource_types, logger):
         }
     """
 
-    logger.info('Checking for these locations: {r}.'.format(r=locations))
     logger.info('Checking for these resource types: {t}.'.format(
         t=resource_types))
     resources = {}
-    locations = locations or get_locations(node)
     # The structure goes resources.location.resource_type.resource, so we start
     # with location.
     # then resource type.
@@ -82,29 +80,22 @@ def get_resources(node, locations, resource_types, logger):
             # It means that we don't support whatever they provided.
             raise NonRecoverableError(
                 'Unsupported resource type: {t}.'.format(t=resource_type))
-        iface = get_resource_interface(ctx, class_decl)
+        iface = get_resource_interface(_ctx, class_decl)
         # Get the resource response from the API.
         # Clean it up for context serialization.
         result = iface.list()
         # Add this stuff to the resources dict.
         for resource in result:
-            resource_id = resource[resource_key]
-            resource_entry = {resource_id: resource}
-            location = resource['location']
-            if location not in resources:
-                resources[location] = {resource_type: resource_entry}
-            elif resource_type not in resources[location]:
-                resources[location][resource_type] = resource_entry
+            _ctx.logger.info('Result: {}'.format(resource.as_dict()))
+            resource_id = getattr(resource, resource_key)
+            resource_entry = {resource_id: resource.as_dict()}
+            if resource.location not in resources:
+                resources[resource.location] = {resource_type: resource_entry}
+            elif resource_type not in resources[resource.location]:
+                resources[resource.location][resource_type] = resource_entry
             else:
-                resources[location][resource_type][resource_id] = resource
+                resources[resource.location][resource_type][resource_id] = resource.as_dict()
     return resources
-
-
-def get_locations(node):
-    connection = Boto3Connection(node)
-    client = connection.client('ec2')
-    response = client.describe_regions()
-    return [r['RegionName'] for r in response['Regions']]
 
 
 def get_resource_interface(ctx, class_decl):
@@ -112,3 +103,44 @@ def get_resource_interface(ctx, class_decl):
     api_version = ctx.node.properties.get(
         'api_version', constants.API_VER_MANAGED_CLUSTER)
     return class_decl(azure_config, ctx.logger, api_version)
+
+
+def get_locations(*_, **__):
+    return [
+        'centralus',
+        'eastasia',
+        'southeastasia',
+        'eastus',
+        'eastus2',
+        'westus',
+        'westus2',
+        'northcentralus',
+        'southcentralus',
+        'westcentralus',
+        'northeurope',
+        'westeurope',
+        'japaneast',
+        'japanwest',
+        'brazilsouth',
+        'australiasoutheast',
+        'australiaeast',
+        'westindia',
+        'southindia',
+        'centralindia',
+        'canadacentral',
+        'canadaeast',
+        'uksouth',
+        'ukwest',
+        'koreacentral',
+        'koreasouth',
+        'francecentral',
+        'southafricanorth',
+        'uaenorth',
+        'australiacentral',
+        'switzerlandnorth',
+        'germanywestcentral',
+        'norwayeast',
+        'jioindiawest',
+        'westus3',
+        'australiacentral2'
+    ]

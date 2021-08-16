@@ -1845,7 +1845,7 @@ node_types:
             - Microsoft.ContainerService/ManagedClusters
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: &operation_inputs
+        create:
           implementation: azure.cloudify_azure.workflows.resources.initialize
           inputs:
             resource_config:
@@ -1854,7 +1854,11 @@ node_types:
               default: { get_property: [ SELF, locations ] }
         delete:
           implementation: azure.cloudify_azure.workflows.resources.deinitialize
-          inputs: *operation_inputs
+          inputs:
+            resource_config:
+              default: { get_property: [ SELF, resource_config ] }
+            locations:
+              default: { get_property: [ SELF, locations ] }
 
 relationships:
 

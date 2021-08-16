@@ -42,11 +42,9 @@ class ManagedCluster(AzureResource):
     def list(self):
         self.logger.info("Listing managed_clusters...")
         managed_clusters = [
-            utils.secure_logging_content(cluster) for cluster in
+            cluster for cluster in
             self.client.managed_clusters.list()
         ]
-        self.logger.info('Listing managed_clusters result: {0}'.format(
-            managed_clusters))
         return managed_clusters
 
 
