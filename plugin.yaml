@@ -1828,6 +1828,34 @@ node_types:
   cloudify.nodes.azure.compute.ManagedCluster:
     derived_from: cloudify.azure.nodes.compute.ManagedCluster
 
+  cloudify.azure.nodes.resources.Azure:
+    derived_from: cloudify.nodes.Root
+    properties:
+      client_config:
+        description: A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
+      locations:
+        type: list
+        default: []
+      resource_config:
+        type: dict
+        default:
+          resource_types:
+            - Microsoft.ContainerService/ManagedClusters
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: azure.cloudify_azure.workflows.resources.initialize
+          inputs:
+            resource_config:
+              default: { get_property: [ SELF, resource_config ] }
+            regions:
+              default: { get_property: [ SELF, regions ] }
+        delete:
+          implementation: azure.cloudify_azure.workflows.resources.deinitialize
+          inputs: *operation_inputs
+
 relationships:
 
   cloudify.azure.relationships.contained_in_resource_group:
@@ -2007,3 +2035,30 @@ relationships:
       cloudify.interfaces.relationship_lifecycle:
         establish: { implementation: azure.cloudify_azure.resources.compute.managed_cluster.refresh_kubeconfig}
         unlink: { implementation: azure.cloudify_azure.resources.compute.managed_cluster.refresh_kubeconfig }
+
+workflows:
+
+  discover_and_deploy:
+#    description: >
+#      Using provided credentials, list all discoverable resources of specified resource type.
+#      (Default is cloudify.azure.nodes.compute.ManagedCluster).
+#      This is restricted to provided credentials and region.
+#      Install new deployments for them.
+    mapping: azure.cloudify_azure.workflows.discover.discover_and_deploy
+    parameters:
+      node_id:
+        type: string
+        description: >
+          The node_id. Not required.
+        default: ''
+      resource_types:
+        description: >
+            The name of the resource to discover.
+            Default is [Microsoft.ContainerService/ManagedClusters], as that is the only currently supported resource.
+        type: list
+        default:
+          - Microsoft.ContainerService/ManagedClusters
+      blueprint_id:
+        description: The ID of the blueprint that should be used to deploy the new resources. Default is current blueprint.
+        type: string
+        default: 'existing-aks-cluster'

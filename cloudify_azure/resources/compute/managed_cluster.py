@@ -74,15 +74,15 @@ def refresh_kubeconfig(ctx):
 
 
 def _store_kubeconf_if_needed(_ctx):
-    resource_group = utils.get_resource_group(_ctx.target)
-    name = utils.get_resource_name(_ctx.target)
-    managed_cluster = get_manged_cluster_interface(_ctx.target)
+    resource_group = utils.get_resource_group(_ctx)
+    name = utils.get_resource_name(_ctx)
+    managed_cluster = get_manged_cluster_interface(_ctx)
     managed_cluster.list()
     store_kube_config_in_runtime = \
-        _ctx.target.node.properties.get('store_kube_config_in_runtime')
+        _ctx.node.properties.get('store_kube_config_in_runtime')
 
     if store_kube_config_in_runtime:
-        _ctx.target.instance.runtime_properties['kubeconf'] = \
+        _ctx.instance.runtime_properties['kubeconf'] = \
             yaml.load(base64.b64decode(managed_cluster.get_admin_kubeconf(
                 resource_group, name)))
 
