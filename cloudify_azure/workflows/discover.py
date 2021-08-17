@@ -40,7 +40,7 @@ def discover_resources(node_id=None,
     node_id = node_id or get_azure_account_node_id(ctx.nodes)
     node = ctx.get_node(node_id)
     for node_instance in node.instances:
-        if not isinstance(regions, list) and not regions:
+        if not isinstance(locations, list) and not locations:
             locations = get_locations(node, ctx.deployment.id)
         resources = get_resources(node, locations, resource_types, ctx.logger)
         discovered_resources.update(resources)
@@ -109,21 +109,22 @@ def discover_and_deploy(node_id=None,
                                    ctx=ctx)
     # Loop over the resources to create new deployments from them.
     resource_type = None
-    for region_name, resource_types in resources.items():
+    for _, resource_types in resources.items():
         deployment_ids_list = []
         inputs_list = []
         for resource_type, resources in resource_types.items():
-            for resource_name, resource in resources.items():
+            for resource_id, _ in resources.items():
                 # We are now at the resource level.
                 # Create the inputs and deployment ID for the new deployment.
+                resource_name = resource_id.split('/')
                 inputs_list.append(
                     {
-                        'resource_name': resource_name,
-                        'aws_region_name': region_name
+                        'resource_group_name': resource_name[-5],
+                        'managed_cluster_name': resource_name[-1]
                     }
                 )
                 deployment_ids_list.append(
-                    generate_deployment_ids(ctx.deployment.id, resource_name)
+                    generate_deployment_ids(ctx.deployment.id, resource_name[-1])
                 )
 
             if deployment_ids_list:

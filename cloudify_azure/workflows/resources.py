@@ -1,6 +1,7 @@
 from cloudify import ctx as _ctx
 from cloudify.decorators import operation
 from cloudify.exceptions import NonRecoverableError
+from cloudify_common_sdk.utils import desecretize_client_config
 
 from .. import utils
 from .. import constants
@@ -80,13 +81,12 @@ def get_resources(node, locations, resource_types, logger):
             # It means that we don't support whatever they provided.
             raise NonRecoverableError(
                 'Unsupported resource type: {t}.'.format(t=resource_type))
-        iface = get_resource_interface(_ctx, class_decl)
+        iface = get_resource_interface(node, class_decl, logger)
         # Get the resource response from the API.
         # Clean it up for context serialization.
         result = iface.list()
         # Add this stuff to the resources dict.
         for resource in result:
-            _ctx.logger.info('Result: {}'.format(resource.as_dict()))
             resource_id = getattr(resource, resource_key)
             resource_entry = {resource_id: resource.as_dict()}
             if resource.location not in resources:
@@ -98,11 +98,11 @@ def get_resources(node, locations, resource_types, logger):
     return resources
 
 
-def get_resource_interface(ctx, class_decl):
-    azure_config = utils.get_client_config(ctx.node.properties)
-    api_version = ctx.node.properties.get(
+def get_resource_interface(node, class_decl, logger):
+    azure_config = desecretize_client_config(utils.get_client_config(node.properties))
+    api_version = node.properties.get(
         'api_version', constants.API_VER_MANAGED_CLUSTER)
-    return class_decl(azure_config, ctx.logger, api_version)
+    return class_decl(azure_config, logger, api_version)
 
 
 def get_locations(*_, **__):
