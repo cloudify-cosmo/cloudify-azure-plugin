@@ -124,7 +124,8 @@ def discover_and_deploy(node_id=None,
                     }
                 )
                 deployment_ids_list.append(
-                    generate_deployment_ids(ctx.deployment.id, resource_name[-1])
+                    generate_deployment_ids(
+                        ctx.deployment.id, resource_name[-1])
                 )
 
             if deployment_ids_list:
@@ -151,7 +152,7 @@ def get_azure_account_node_id(nodes):
         if AZURE_TYPE in node.type_hierarchy:
             return node.id
     raise NonRecoverableError(
-        'The deployment has no nodes of type {t}.'.format(t=AWS_TYPE))
+        'The deployment has no nodes of type {t}.'.format(t=AZURE_TYPE))
 
 
 def generate_deployment_ids(deployment_id, resource_name):

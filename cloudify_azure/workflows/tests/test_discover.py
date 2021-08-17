@@ -9,7 +9,7 @@ class AWSWorkflowTests(TestCase):
 
     def get_mock_rest_client(self):
         mock_node = MagicMock(node_id='foo',
-                              type_hierarchy=discover.AWS_TYPE)
+                              type_hierarchy=discover.AZURE_TYPE)
         mock_node.id = mock_node.node_id
         mock_node.properties = {
             'client_config': {},
@@ -38,7 +38,7 @@ class AWSWorkflowTests(TestCase):
         mock_rest_client.deployment_groups = mock_deployment_groups_client
         return mock_rest_client
 
-    @patch('cloudify_aws.workflows.discover.get_resources')
+    @patch('cloudify_azure.workflows.discover.get_resources')
     def test_discover_resources(self, mock_get_resources):
         mock_ctx = MagicMock()
         node = MagicMock()
@@ -53,12 +53,12 @@ class AWSWorkflowTests(TestCase):
         params = {
             'node_id': 'foo',
             'resource_types': ['bar', 'baz'],
-            'regions': ['taco'],
+            'locations': ['taco'],
             'ctx': mock_ctx
         }
         self.assertEqual(discover.discover_resources(**params), result)
 
-    @patch('cloudify_aws.common.utils.get_rest_client')
+    @patch('cloudify_common_sdk.utils.get_rest_client')
     def test_deploy_resources(self, get_rest_client):
         mock_rest_client = self.get_mock_rest_client()
         get_rest_client.return_value = mock_rest_client
@@ -77,9 +77,9 @@ class AWSWorkflowTests(TestCase):
         self.assertTrue(
             mock_rest_client.deployment_groups.add_deployments.called)
 
-    @patch('cloudify_aws.common.utils.get_rest_client')
-    @patch('cloudify_aws.workflows.discover.deploy_resources')
-    @patch('cloudify_aws.workflows.discover.discover_resources')
+    @patch('cloudify_common_sdk.utils.get_rest_client')
+    @patch('cloudify_azure.workflows.discover.deploy_resources')
+    @patch('cloudify_azure.workflows.discover.discover_resources')
     def test_discover_and_deploy(self, mock_discover, mock_deploy, *_):
         mock_ctx = MagicMock()
         mock_ctx.deployment = MagicMock(id='foo')
@@ -87,7 +87,7 @@ class AWSWorkflowTests(TestCase):
         params = {
             'node_id': 'foo',
             'resource_types': ['bar', 'baz'],
-            'regions': ['taco'],
+            'locations': ['taco'],
             'blueprint_id': 'foo',
             'ctx': mock_ctx
         }
@@ -151,7 +151,7 @@ class AWSWorkflowTests(TestCase):
         self.assertEqual(resources.class_declaration_attributes(**params),
                          attributes)
 
-    @patch('cloudify_aws.common.connection.boto3')
+    @patch('azure_sdk.resources.compute.managed_cluster')
     def test_get_resources(self, *_):
         mock_ctx = MagicMock()
         node = MagicMock()
@@ -172,7 +172,7 @@ class AWSWorkflowTests(TestCase):
                     'region2': {'AWS::EKS::CLUSTER': {}}}
         self.assertEqual(resources.get_resources(**params), expected)
 
-    @patch('cloudify_aws.common.connection.boto3')
+    @patch('azure_sdk.resources.compute.managed_cluster')
     def test_initialize(self, *_):
         mock_ctx = MagicMock()
         mock_ctx.instance = MagicMock(runtime_properties={'resources': {}})

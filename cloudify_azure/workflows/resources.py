@@ -16,12 +16,12 @@ TYPES_MATRIX = {
 
 @operation
 def initialize(resource_config=None, locations=None, ctx=None, **_):
-    """ Initialize an cloudify.nodes.resources.AmazonWebServices node.
-    This checks for resource_types in resource config and locations in locations.
-
+    """ Initialize an cloudify.azure.nodes.resources.Azure node.
+    This checks for resource_types in resource config and
+        locations in locations.
     :param resource_config: A dict with key resource_types,
-      a list of AWS types like AWS::EKS::CLUSTER.
-    :param locations: A list of locations, like [us-east-1, us-east-2].
+      a list of Azure types like Microsoft.ContainerService/ManagedClusters.
+    :param locations: A list of locations, like [eastus1, centralus].
     :param ctx: Cloudify CTX
     :param _:
     :return:
@@ -50,7 +50,8 @@ def get_resources(node, locations, resource_types, logger):
 
     :param node: ctx.node
     :param regions: list of Azure locations, i.e. eastus1
-    :param resource_types: List of resource types, i.e. Microsoft.ContainerService/ManagedClusters.
+    :param resource_types: List of resource types,
+        i.e. Microsoft.ContainerService/ManagedClusters.
     :param logger: ctx logger
     :return: a dictionary of resources in the structure:
         {
@@ -94,12 +95,14 @@ def get_resources(node, locations, resource_types, logger):
             elif resource_type not in resources[resource.location]:
                 resources[resource.location][resource_type] = resource_entry
             else:
-                resources[resource.location][resource_type][resource_id] = resource.as_dict()
+                resources[resource.location][resource_type][resource_id] = \
+                    resource.as_dict()
     return resources
 
 
 def get_resource_interface(node, class_decl, logger):
-    azure_config = desecretize_client_config(utils.get_client_config(node.properties))
+    azure_config = desecretize_client_config(
+        utils.get_client_config(node.properties))
     api_version = node.properties.get(
         'api_version', constants.API_VER_MANAGED_CLUSTER)
     return class_decl(azure_config, logger, api_version)
