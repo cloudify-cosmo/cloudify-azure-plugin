@@ -77,7 +77,6 @@ def _store_kubeconf_if_needed(_ctx):
     resource_group = utils.get_resource_group(_ctx)
     name = utils.get_resource_name(_ctx)
     managed_cluster = get_manged_cluster_interface(_ctx)
-    managed_cluster.list()
     store_kube_config_in_runtime = \
         _ctx.node.properties.get('store_kube_config_in_runtime')
 

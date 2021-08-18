@@ -5,7 +5,7 @@ from .. import resources, discover
 from ...common._compat import PY2
 
 
-class AWSWorkflowTests(TestCase):
+class AzureWorkflowTests(TestCase):
 
     def get_mock_rest_client(self):
         mock_node = MagicMock(node_id='foo',
@@ -14,7 +14,7 @@ class AWSWorkflowTests(TestCase):
         mock_node.properties = {
             'client_config': {},
             'resource_config': {},
-            'regions': []
+            'locations': []
         }
         nodes_list = [mock_node]
         mock_nodes_client = MagicMock()
@@ -112,20 +112,20 @@ class AWSWorkflowTests(TestCase):
         expected_calls = [
             call('foo', 'foo', ['foo-resource1', 'foo-resource2'],
                  [{'resource_name': 'resource1',
-                   'aws_region_name': 'region1'},
+                   'location': 'region1'},
                   {'resource_name': 'resource2',
-                   'aws_region_name': 'region1'}],
+                   'location': 'region1'}],
                  [{'csys-env-type': 'environment'},
                   {'csys-obj-parent': 'foo'}],
                  mock_ctx),
             call('foo', 'foo', ['foo-resource3'], [
-                {'resource_name': 'resource3', 'aws_region_name': 'region1'}],
+                {'resource_name': 'resource3', 'location': 'region1'}],
                  [{'csys-env-type': 'environment'},
                   {'csys-obj-parent': 'foo'}],
                  mock_ctx),
             call('foo', 'foo', ['foo-resource4'],
                  [{'resource_name': 'resource4',
-                   'aws_region_name': 'region2'}],
+                   'location': 'region2'}],
                  [{'csys-env-type': 'environment'},
                   {'csys-obj-parent': 'foo'}],
                  mock_ctx)]
@@ -164,12 +164,15 @@ class AWSWorkflowTests(TestCase):
         mock_ctx.logger = MagicMock()
         params = {
             'node': node,
-            'regions': ['region1', 'region2'],
-            'resource_types': ['AWS::EKS::CLUSTER'],
+            'locations': ['region1', 'region2'],
+            'resource_types': ['Microsoft.ContainerService/'
+                               'ManagedClusters'],
             'logger': mock_ctx.logger
         }
-        expected = {'region1': {'AWS::EKS::CLUSTER': {}},
-                    'region2': {'AWS::EKS::CLUSTER': {}}}
+        expected = {'region1': {'Microsoft.ContainerService/'
+                                'ManagedClusters': {}},
+                    'region2': {'Microsoft.ContainerService/'
+                                'ManagedClusters': {}}}
         self.assertEqual(resources.get_resources(**params), expected)
 
     @patch('azure_sdk.resources.compute.managed_cluster')
@@ -177,8 +180,9 @@ class AWSWorkflowTests(TestCase):
         mock_ctx = MagicMock()
         mock_ctx.instance = MagicMock(runtime_properties={'resources': {}})
         params = {
-            'resource_config': {'resource_types': ['AWS::EKS::CLUSTER']},
-            'regions': ['region1', 'region2'],
+            'resource_config': {'resource_types': [
+                'Microsoft.ContainerService/ManagedClusters']},
+            'locations': ['region1', 'region2'],
             'ctx': mock_ctx,
             'logger': mock_ctx.logger
         }
