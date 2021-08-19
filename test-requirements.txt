@@ -7,7 +7,4 @@ testtools>=2.3.0
 requests_mock
 coverage
 testfixtures
-networkx==1.9.1
-
-# For integration tests
 pytest==4.6.3
