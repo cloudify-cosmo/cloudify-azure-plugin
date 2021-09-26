@@ -84,17 +84,5 @@ def delete(ctx, **_):
         ctx.node.properties.get('api_version', constants.API_VER_NETWORK)
     network_security_rule = NetworkSecurityRule(azure_config, ctx.logger,
                                                 api_version)
-    try:
-        network_security_rule.get(resource_group_name, nsg_name, name)
-    except CloudError:
-        ctx.logger.info("Resource with name {0} doesn't exist".format(name))
-        return
-    try:
-        network_security_rule.delete(resource_group_name, nsg_name, name)
-        utils.runtime_properties_cleanup(ctx)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "delete network_security_rule '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
+    utils.handle_delete(
+        ctx, network_security_rule, resource_group_name, name, nsg_name)

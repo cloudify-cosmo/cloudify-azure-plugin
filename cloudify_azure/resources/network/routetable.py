@@ -78,17 +78,4 @@ def delete(ctx, **_):
     api_version = \
         ctx.node.properties.get('api_version', constants.API_VER_NETWORK)
     route_table = RouteTable(azure_config, ctx.logger, api_version)
-    try:
-        route_table.get(resource_group_name, name)
-    except CloudError:
-        ctx.logger.info("Resource with name {0} doesn't exist".format(name))
-        return
-    try:
-        route_table.delete(resource_group_name, name)
-        utils.runtime_properties_cleanup(ctx)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "delete route_table '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
+    utils.handle_delete(ctx, route_table, resource_group_name, name)

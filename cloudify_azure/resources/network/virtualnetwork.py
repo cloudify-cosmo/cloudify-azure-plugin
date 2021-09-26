@@ -77,17 +77,4 @@ def delete(ctx, **_):
     api_version = \
         ctx.node.properties.get('api_version', constants.API_VER_NETWORK)
     virtual_network = VirtualNetwork(azure_config, ctx.logger, api_version)
-    try:
-        virtual_network.get(resource_group_name, name)
-    except CloudError:
-        ctx.logger.info("Resource with name {0} doesn't exist".format(name))
-        return
-    try:
-        virtual_network.delete(resource_group_name, name)
-        utils.runtime_properties_cleanup(ctx)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "delete virtual_network '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
+    utils.handle_delete(ctx, virtual_network, resource_group_name, name)

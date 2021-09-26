@@ -76,17 +76,4 @@ def delete(ctx, **_):
     api_version = \
         ctx.node.properties.get('api_version', constants.API_VER_COMPUTE)
     availability_set = AvailabilitySet(azure_config, ctx.logger, api_version)
-    try:
-        availability_set.get(resource_group_name, name)
-    except CloudError:
-        ctx.logger.info("Resource with name {0} doesn't exist".format(name))
-        return
-    try:
-        availability_set.delete(resource_group_name, name)
-        utils.runtime_properties_cleanup(ctx)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "delete availability_set '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
+    utils.handle_delete(ctx, availability_set, resource_group_name, name)

@@ -93,17 +93,4 @@ def delete(ctx, **_):
     resource_group = ctx.instance.runtime_properties.get('resource_group')
     name = ctx.instance.runtime_properties.get('name')
     managed_cluster = get_manged_cluster_interface(ctx)
-    try:
-        managed_cluster.get(resource_group, name)
-    except CloudError:
-        ctx.logger.info("Resource with name {0} doesn't exist".format(name))
-        return
-    try:
-        managed_cluster.delete(resource_group, name)
-        utils.runtime_properties_cleanup(ctx)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "delete managed_cluster '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
+    utils.handle_delete(ctx, managed_cluster, resource_group, name)

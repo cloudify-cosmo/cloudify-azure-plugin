@@ -80,20 +80,7 @@ def delete(ctx, **_):
     api_version = \
         ctx.node.properties.get('api_version', constants.API_VER_NETWORK)
     subnet = Subnet(azure_config, ctx.logger, api_version)
-    try:
-        subnet.get(resource_group_name, vnet_name, name)
-    except CloudError:
-        ctx.logger.info("Resource with name {0} doesn't exist".format(name))
-        return
-    try:
-        subnet.delete(resource_group_name, vnet_name, name)
-        utils.runtime_properties_cleanup(ctx)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "delete subnet '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
+    utils.handle_delete(ctx, subnet, resource_group_name, name, vnet_name)
 
 
 @operation(resumable=True)

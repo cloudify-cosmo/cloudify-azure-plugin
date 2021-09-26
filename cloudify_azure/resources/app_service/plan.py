@@ -54,17 +54,4 @@ def delete(ctx, **kwargs):
     api_version = \
         ctx.node.properties.get('api_version', constants.API_VER_APP_SERVICE)
     plan = ServicePlan(azure_config, ctx.logger, api_version)
-    try:
-        plan.get(resource_group, name)
-    except CloudError:
-        ctx.logger.info("Resource with name {0} doesn't exist".format(name))
-        return
-    try:
-        plan.delete(resource_group, name)
-        utils.runtime_properties_cleanup(ctx)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "delete plan '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
+    utils.handle_delete(ctx, plan, resource_group, name)

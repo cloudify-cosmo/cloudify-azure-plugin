@@ -54,17 +54,4 @@ def delete(ctx, **kwargs):
     api_version = \
         ctx.node.properties.get('api_version', constants.API_VER_APP_SERVICE)
     web_app = WebApp(azure_config, ctx.logger, api_version)
-    try:
-        web_app.get(resource_group, name)
-    except CloudError:
-        ctx.logger.info("Resource with name {0} doesn't exist".format(name))
-        return
-    try:
-        web_app.delete(resource_group, name)
-        utils.runtime_properties_cleanup(ctx)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "delete web_app '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
+    utils.handle_delete(ctx, web_app, resource_group, name)

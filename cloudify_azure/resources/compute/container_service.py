@@ -85,17 +85,4 @@ def delete(ctx, **kwargs):
     api_version = \
         ctx.node.properties.get('api_version', constants.API_VER_CONTAINER)
     container_service = ContainerService(azure_config, ctx.logger, api_version)
-    try:
-        container_service.get(resource_group, name)
-    except CloudError:
-        ctx.logger.info("Resource with name {0} doesn't exist".format(name))
-        return
-    try:
-        container_service.delete(resource_group, name)
-        utils.runtime_properties_cleanup(ctx)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "delete container_service '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
+    utils.handle_delete(ctx, container_service, resource_group, name)
