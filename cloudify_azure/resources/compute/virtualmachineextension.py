@@ -17,9 +17,7 @@
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Microsoft Azure Virtual Machine Extension interface
 """
-from msrestazure.azure_exceptions import CloudError
 
-from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
 
 from cloudify_azure import (constants, decorators, utils)
@@ -60,17 +58,12 @@ def create(ctx, resource_config, **_):
     # clean empty values from params
     vm_extension_params = \
         utils.cleanup_empty_params(vm_extension_params)
-    try:
-        result = \
-            vm_extension.create_or_update(resource_group_name, vm_name,
-                                          name, vm_extension_params)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "create vm_extension '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
-
+    result = utils.handle_create(
+        vm_extension,
+        resource_group_name,
+        name,
+        vm_name,
+        vm_extension_params)
     ctx.instance.runtime_properties['resource_group'] = resource_group_name
     ctx.instance.runtime_properties['virtual_machine'] = vm_name
     ctx.instance.runtime_properties['resource'] = result

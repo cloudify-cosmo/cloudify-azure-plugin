@@ -17,9 +17,6 @@
     ~~~~~~~~~~~~~~~~~~~~~~~
     Microsoft Azure Resource Group interface
 """
-from msrestazure.azure_exceptions import CloudError
-
-from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
 
 from cloudify_azure import (constants, decorators, utils)
@@ -45,18 +42,8 @@ def create(ctx, **_):
     api_version = \
         ctx.node.properties.get('api_version', constants.API_VER_RESOURCES)
     resource_group = ResourceGroup(azure_config, ctx.logger, api_version)
-    try:
-        result = \
-            resource_group.create_or_update(
-                name,
-                resource_group_params)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "create resource_group '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
-
+    result = utils.handle_create(
+        resource_group, name, additional_params=resource_group_params)
     ctx.instance.runtime_properties['resource'] = result
     ctx.instance.runtime_properties['resource_id'] = result.get("id", "")
 
@@ -76,17 +63,4 @@ def delete(ctx, **_):
     api_version = \
         ctx.node.properties.get('api_version', constants.API_VER_RESOURCES)
     resource_group = ResourceGroup(azure_config, ctx.logger, api_version)
-    try:
-        resource_group.get(name)
-    except CloudError:
-        ctx.logger.info("Resource with name {0} doesn't exist".format(name))
-        return
-    try:
-        resource_group.delete(name)
-        utils.runtime_properties_cleanup(ctx)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "delete resource_group '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
+    utils.handle_delete(ctx, resource_group, name)

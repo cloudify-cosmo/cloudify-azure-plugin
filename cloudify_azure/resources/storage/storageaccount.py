@@ -17,9 +17,7 @@
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Microsoft Azure Storage Account interface
 """
-from msrestazure.azure_exceptions import CloudError
 
-from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
 
 from cloudify_azure import (constants, decorators, utils)
@@ -61,19 +59,11 @@ def create(ctx, **_):
     # clean empty values from params
     sa_params = \
         utils.cleanup_empty_params(sa_params)
-    try:
-        result = \
-            storage_account.create(
-                resource_group_name,
-                name,
-                sa_params)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "create storage_account '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
-
+    result = utils.handle_create(
+        storage_account,
+        resource_group_name,
+        name,
+        additional_params=sa_params)
     utils.save_common_info_in_runtime_properties(
         resource_group_name=resource_group_name,
         resource_name=name,

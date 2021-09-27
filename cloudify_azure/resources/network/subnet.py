@@ -47,19 +47,8 @@ def create(ctx, **_):
     # clean empty values from params
     subnet_params = \
         utils.cleanup_empty_params(subnet_params)
-    try:
-        result = \
-            subnet.create_or_update(resource_group_name,
-                                    vnet_name,
-                                    name,
-                                    subnet_params)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "create subnet '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
-
+    result = utils.handle_create(
+        subnet, resource_group_name, name, vnet_name, subnet_params)
     ctx.instance.runtime_properties['virtual_network'] = vnet_name
     utils.save_common_info_in_runtime_properties(
         resource_group_name=resource_group_name,
@@ -100,17 +89,8 @@ def attach_network_security_group(ctx, **_):
         'network_security_group': {'id': nsg_id}
     })
     subnet = Subnet(azure_config, ctx.logger)
-    try:
-        subnet.create_or_update(resource_group_name,
-                                vnet_name,
-                                name,
-                                subnet_params)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "attach_network_security_group to subnet '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
+    utils.handle_create(
+        subnet, resource_group_name, name, vnet_name, subnet_params)
 
 
 @operation(resumable=True)

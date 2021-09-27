@@ -347,17 +347,11 @@ def _create_update_resource(resource_group_name,
                             name,
                             vm_iface,
                             resource_create_payload):
-    try:
-        result = \
-            vm_iface.create_or_update(resource_group_name, name,
-                                      resource_create_payload)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "create virtual_machine '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-        )
-
+    result = utils.handle_create(
+        vm_iface,
+        resource_group_name,
+        name,
+        additional_params=resource_create_payload)
     utils.save_common_info_in_runtime_properties(resource_group_name,
                                                  name,
                                                  result)
@@ -536,20 +530,8 @@ def delete(ctx, **_):
     api_version = \
         ctx.node.properties.get('api_version', constants.API_VER_COMPUTE)
     virtual_machine = VirtualMachine(azure_config, ctx.logger, api_version)
-    try:
-        virtual_machine.get(resource_group_name, name)
-    except CloudError:
-        ctx.logger.info("Resource with name {0} doesn't exist".format(name))
-        return
-    try:
-        virtual_machine.delete(resource_group_name, name)
-        utils.runtime_properties_cleanup(ctx)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "delete virtual_machine '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
+    utils.handle_delete(
+        ctx, virtual_machine, resource_group_name, name)
 
 
 @operation(resumable=True)
