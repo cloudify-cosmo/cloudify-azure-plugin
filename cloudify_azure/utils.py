@@ -22,6 +22,7 @@ import re
 from collections import Mapping
 
 from cloudify import ctx
+from cloudify import exceptions as cfy_exc
 
 from cloudify_azure import constants
 
@@ -453,3 +454,56 @@ def save_common_info_in_runtime_properties(resource_group_name,
     ctx.instance.runtime_properties['resource_id'] = \
         resource_get_create_result.get("id", "")
     ctx.instance.runtime_properties['name'] = resource_name
+
+
+def handle_delete(_ctx,
+                  resource,
+                  resource_group_name,
+                  name=None,
+                  parent_name=None):
+    try:
+        if not name:
+            resource.get(resource_group_name)
+        elif parent_name:
+            resource.get(resource_group_name, parent_name, name)
+        else:
+            resource.get(resource_group_name, name)
+    except CloudError:
+        ctx.logger.info("Resource with name {0} doesn't exist".format(name))
+        return
+    try:
+        if not name:
+            resource.delete(resource_group_name)
+        elif parent_name:
+            resource.delete(resource_group_name, parent_name, name)
+        else:
+            resource.delete(resource_group_name, name)
+        runtime_properties_cleanup(_ctx)
+    except CloudError as cr:
+        if 'AnotherOperationInProgress' in cr.message:
+            raise cfy_exc.OperationRetry(cr.message)
+        raise cfy_exc.NonRecoverableError(
+            "delete resource '{0}' failed with this error : {1}".format(
+                name, cr.message))
+
+
+def handle_create(resource,
+                  resource_group_name,
+                  name=None,
+                  parent_name=None,
+                  additional_params=None):
+    try:
+        if not name:
+            return resource.create_or_update(
+                resource_group_name, additional_params)
+        if parent_name:
+            return resource.create_or_update(
+                resource_group_name, parent_name, name, additional_params)
+        return resource.create_or_update(
+            resource_group_name, name, additional_params)
+    except CloudError as cr:
+        if 'Another operation on this or dependent resource' in cr.message:
+            raise cfy_exc.OperationRetry(cr.message)
+        raise cfy_exc.NonRecoverableError(
+            "create {0} '{1}' failed with this error : {2}".format(
+                type(resource), name, cr.message))

@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
-from msrestazure.azure_exceptions import CloudError
 
 from cloudify_azure import (constants, utils)
 from cloudify_azure.decorators import with_azure_resource
@@ -29,16 +27,11 @@ def create(ctx, resource_group, name, plan_details, **kwargs):
     api_version = \
         ctx.node.properties.get('api_version', constants.API_VER_APP_SERVICE)
     plan = ServicePlan(azure_config, ctx.logger, api_version)
-
-    try:
-        result = \
-            plan.create_or_update(resource_group, name, plan_details)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "create plan '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-                    )
+    result = utils.handle_create(
+        plan,
+        resource_group,
+        name,
+        additional_params=plan_details)
     utils.save_common_info_in_runtime_properties(resource_group,
                                                  name,
                                                  result)
@@ -54,17 +47,4 @@ def delete(ctx, **kwargs):
     api_version = \
         ctx.node.properties.get('api_version', constants.API_VER_APP_SERVICE)
     plan = ServicePlan(azure_config, ctx.logger, api_version)
-    try:
-        plan.get(resource_group, name)
-    except CloudError:
-        ctx.logger.info("Resource with name {0} doesn't exist".format(name))
-        return
-    try:
-        plan.delete(resource_group, name)
-        utils.runtime_properties_cleanup(ctx)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "delete plan '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
+    utils.handle_delete(ctx, plan, resource_group, name)

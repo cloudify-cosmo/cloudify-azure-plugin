@@ -211,20 +211,8 @@ def delete(ctx, **_):
         ctx.node.properties.get('api_version', constants.API_VER_NETWORK)
     network_interface_card = NetworkInterfaceCard(azure_config, ctx.logger,
                                                   api_version)
-    try:
-        network_interface_card.get(resource_group_name, name)
-    except CloudError:
-        ctx.logger.info("Resource with name {0} doesn't exist".format(name))
-        return
-    try:
-        network_interface_card.delete(resource_group_name, name)
-        utils.runtime_properties_cleanup(ctx)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "delete nic '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
+    utils.handle_delete(
+        ctx, network_interface_card, resource_group_name, name)
 
 
 @operation(resumable=True)
