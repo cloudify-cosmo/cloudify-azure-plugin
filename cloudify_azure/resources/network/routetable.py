@@ -17,9 +17,7 @@
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Microsoft Azure Route Table interface
 """
-from msrestazure.azure_exceptions import CloudError
 
-from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
 
 from cloudify_azure import (constants, decorators, utils)
@@ -49,17 +47,8 @@ def create(ctx, **_):
     # clean empty values from params
     rtbl_params = \
         utils.cleanup_empty_params(rtbl_params)
-    try:
-        result = \
-            route_table.create_or_update(resource_group_name, name,
-                                         rtbl_params)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "create route_table '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
-
+    result = utils.handle_create(
+        route_table, resource_group_name, name, additional_params=rtbl_params)
     utils.save_common_info_in_runtime_properties(
         resource_group_name=resource_group_name,
         resource_name=name,

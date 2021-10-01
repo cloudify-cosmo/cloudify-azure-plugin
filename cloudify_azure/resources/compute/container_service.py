@@ -50,20 +50,11 @@ def create(ctx, resource_group, name, container_service_config, **kwargs):
             raise cfy_exc.NonRecoverableError(
                 "Can't use non-existing container_service '{0}'.".format(name))
         else:
-            try:
-                result = \
-                    container_service.create_or_update(
-                        resource_group,
-                        name,
-                        container_service_payload
-                    )
-            except CloudError as cr:
-                raise cfy_exc.NonRecoverableError(
-                    "create container_service '{0}' "
-                    "failed with this error : {1}".format(name,
-                                                          cr.message)
-                    )
-
+            result = utils.handle_create(
+                container_service,
+                resource_group,
+                name,
+                additional_params=container_service_payload)
     ctx.instance.runtime_properties['resource_group'] = resource_group
     ctx.instance.runtime_properties['resource'] = result
     ctx.instance.runtime_properties['resource_id'] = result.get("id", "")

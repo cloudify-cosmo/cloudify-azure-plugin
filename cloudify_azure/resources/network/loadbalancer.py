@@ -111,18 +111,11 @@ def configure(ctx, **_):
     # clean empty values from params
     lb_params = \
         utils.cleanup_empty_params(lb_params)
-    try:
-        result = \
-            load_balancer.create_or_update(resource_group_name,
-                                           name,
-                                           lb_params)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "create load_balancer '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
-
+    result = utils.handle_create(
+        load_balancer,
+        resource_group_name,
+        name,
+        additional_params=lb_params)
     utils.save_common_info_in_runtime_properties(resource_group_name,
                                                  name,
                                                  result)

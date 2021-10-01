@@ -17,9 +17,7 @@
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Microsoft Azure Network Security Group interface
 """
-from msrestazure.azure_exceptions import CloudError
 
-from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
 
 from cloudify_azure import (constants, decorators, utils)
@@ -51,19 +49,11 @@ def create(ctx, **_):
     # clean empty values from params
     nsg_params = \
         utils.cleanup_empty_params(nsg_params)
-
-    try:
-        result = \
-            network_security_group.create_or_update(
-                resource_group_name,
-                name,
-                nsg_params)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "create network_security_group '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
+    result = utils.handle_create(
+        network_security_group,
+        resource_group_name,
+        name,
+        additional_params=nsg_params)
     utils.save_common_info_in_runtime_properties(
         resource_group_name=resource_group_name,
         resource_name=name,

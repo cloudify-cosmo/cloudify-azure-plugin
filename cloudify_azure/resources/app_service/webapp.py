@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from msrestazure.azure_exceptions import CloudError
 
-from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
 
 from cloudify_azure import (constants, utils)
@@ -30,15 +28,11 @@ def create(ctx, resource_group, name, app_config, **kwargs):
     api_version = \
         ctx.node.properties.get('api_version', constants.API_VER_APP_SERVICE)
     web_app = WebApp(azure_config, ctx.logger, api_version)
-
-    try:
-        result = \
-             web_app.create_or_update(resource_group, name, app_config)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "create web_app '{0} failed with this error : "
-            "{1}".format(name, cr.message)
-            )
+    result = utils.handle_create(
+        web_app,
+        resource_group,
+        name,
+        additional_params=app_config)
     utils.save_common_info_in_runtime_properties(resource_group,
                                                  name,
                                                  result)
