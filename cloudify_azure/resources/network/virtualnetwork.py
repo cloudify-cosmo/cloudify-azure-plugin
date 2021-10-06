@@ -17,9 +17,7 @@
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Microsoft Azure Virtual Network interface
 """
-from msrestazure.azure_exceptions import CloudError
 
-from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
 
 from cloudify_azure import (constants, decorators, utils)
@@ -49,17 +47,11 @@ def create(ctx, **_):
     # clean empty values from params
     vnet_params = \
         utils.cleanup_empty_params(vnet_params)
-    try:
-        result = \
-            virtual_network.create_or_update(resource_group_name, name,
-                                             vnet_params)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "create virtual_network '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
-
+    result = utils.handle_create(
+        virtual_network,
+        resource_group_name,
+        name,
+        additional_params=vnet_params)
     utils.save_common_info_in_runtime_properties(
         resource_group_name=resource_group_name,
         resource_name=name,
@@ -77,17 +69,4 @@ def delete(ctx, **_):
     api_version = \
         ctx.node.properties.get('api_version', constants.API_VER_NETWORK)
     virtual_network = VirtualNetwork(azure_config, ctx.logger, api_version)
-    try:
-        virtual_network.get(resource_group_name, name)
-    except CloudError:
-        ctx.logger.info("Resource with name {0} doesn't exist".format(name))
-        return
-    try:
-        virtual_network.delete(resource_group_name, name)
-        utils.runtime_properties_cleanup(ctx)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "delete virtual_network '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
+    utils.handle_delete(ctx, virtual_network, resource_group_name, name)

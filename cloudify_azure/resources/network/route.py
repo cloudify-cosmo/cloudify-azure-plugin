@@ -17,9 +17,7 @@
     ~~~~~~~~~~~~~~~~~~~~~~~
     Microsoft Azure Route interface
 """
-from msrestazure.azure_exceptions import CloudError
 
-from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
 
 from cloudify_azure import (constants, decorators, utils)
@@ -47,19 +45,8 @@ def create(ctx, **_):
     # clean empty values from params
     route_params = \
         utils.cleanup_empty_params(route_params)
-    try:
-        result = \
-            route.create_or_update(
-                resource_group_name,
-                route_table_name,
-                name,
-                route_params)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "create route '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
+    result = utils.handle_create(
+        route, resource_group_name, name, route_table_name, route_params)
 
     ctx.instance.runtime_properties['route_table'] = route_table_name
     utils.save_common_info_in_runtime_properties(
@@ -81,17 +68,5 @@ def delete(ctx, **_):
     api_version = \
         ctx.node.properties.get('api_version', constants.API_VER_NETWORK)
     route = Route(azure_config, ctx.logger, api_version)
-    try:
-        route.get(resource_group_name, route_table_name, name)
-    except CloudError:
-        ctx.logger.info("Resource with name {0} doesn't exist".format(name))
-        return
-    try:
-        route.delete(resource_group_name, route_table_name, name)
-        utils.runtime_properties_cleanup(ctx)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "delete route '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
+    utils.handle_delete(
+        ctx, route, resource_group_name, name, route_table_name)

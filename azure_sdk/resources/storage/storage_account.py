@@ -55,6 +55,9 @@ class StorageAccount(AzureResource):
                 utils.secure_logging_content(storage_account)))
         return storage_account
 
+    def create_or_update(self, *args, **kwargs):
+        return self.create(*args, **kwargs)
+
     def delete(self, group_name, account_name):
         self.logger.info("Deleting Storage Account...{0}".format(account_name))
         self.client.storage_accounts.delete(
