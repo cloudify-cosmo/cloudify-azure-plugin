@@ -1,3 +1,5 @@
+3.5.2:
+  - Fix azure type name.
 3.5.1:
   - RD-3071: Handle Another Operation In Progress Error
   - Refactor Delete Operation Handling.
