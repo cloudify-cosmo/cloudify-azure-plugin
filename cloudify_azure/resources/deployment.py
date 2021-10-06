@@ -134,20 +134,7 @@ def delete(ctx, **_):
     azure_config = utils.get_client_config(ctx.node.properties)
     name = utils.get_resource_name(ctx)
     resource_group = ResourceGroup(azure_config, ctx.logger)
-    try:
-        resource_group.get(name)
-    except CloudError:
-        ctx.logger.info("Resource with name {0} doesn't exist".format(name))
-        return
-    try:
-        resource_group.delete(name)
-        utils.runtime_properties_cleanup(ctx)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "delete deployment resource_group '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
+    utils.handle_delete(ctx, resource_group, name)
 
 
 @operation(resumable=True)

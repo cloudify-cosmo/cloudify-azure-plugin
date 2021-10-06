@@ -111,18 +111,11 @@ def configure(ctx, **_):
     # clean empty values from params
     lb_params = \
         utils.cleanup_empty_params(lb_params)
-    try:
-        result = \
-            load_balancer.create_or_update(resource_group_name,
-                                           name,
-                                           lb_params)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "create load_balancer '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
-
+    result = utils.handle_create(
+        load_balancer,
+        resource_group_name,
+        name,
+        additional_params=lb_params)
     utils.save_common_info_in_runtime_properties(resource_group_name,
                                                  name,
                                                  result)
@@ -153,20 +146,7 @@ def delete(ctx, **_):
     api_version = \
         ctx.node.properties.get('api_version', constants.API_VER_NETWORK)
     load_balancer = LoadBalancer(azure_config, ctx.logger, api_version)
-    try:
-        load_balancer.get(resource_group_name, name)
-    except CloudError:
-        ctx.logger.info("Resource with name {0} doesn't exist".format(name))
-        return
-    try:
-        load_balancer.delete(resource_group_name, name)
-        utils.runtime_properties_cleanup(ctx)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "delete load_balancer '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
+    utils.handle_delete(ctx, load_balancer, resource_group_name, name)
 
 
 @operation(resumable=True)
