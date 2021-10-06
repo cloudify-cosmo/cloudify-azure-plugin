@@ -257,6 +257,7 @@ commands:
           name: install local project
           command: pip install https://github.com/cloudify-incubator/cloudify-ecosystem-test/archive/latest.zip
 
+
   prepare_test_manager:
     steps:
       - run: ecosystem-test prepare-test-manager -l $TEST_LICENSE -es azure_client_id=$azure_client_id -es azure_client_secret=$azure_client_secret -es azure_location=$azure_location -es azure_subscription_id=$azure_subscription_id -es azure_tenant_id=$azure_tenant_id --bundle-path workspace/build/cloudify-plugins-bundle.tgz --yum-package python-netaddr --yum-package git
