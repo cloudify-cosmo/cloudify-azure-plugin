@@ -1,3 +1,4 @@
+3.5.3: Rerelease for aarch64.
 3.5.2:
   - Fix azure type name.
 3.5.1:
