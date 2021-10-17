@@ -8,3 +8,4 @@ requests_mock
 coverage
 testfixtures
 pytest==4.6.3
+https://github.com/cloudify-incubator/cloudify-utilities-plugins-sdk/archive/refs/heads/RD-1504-existance-remediation.zip

@@ -4,3 +4,4 @@ rsa==4.5
 # cryptography==3.2.1
 decorator==4.4.2
 # cffi==1.14.5
+https://github.com/cloudify-incubator/cloudify-utilities-plugins-sdk/archive/refs/heads/RD-1504-existance-remediation.zip

@@ -21,7 +21,7 @@ from functools import wraps
 from msrestazure.azure_exceptions import CloudError
 
 from cloudify import exceptions as cfy_exc
-
+from cloudify_common_sdk.utils import skip_creative_or_destructive
 from cloudify_azure import utils
 from azure_sdk.resources.network.route import Route
 from azure_sdk.resources.network.subnet import Subnet
@@ -209,49 +209,15 @@ def with_azure_resource(resource_class_name):
             azure_config = utils.get_client_config(ctx.node.properties)
             resource_factory = ResourceGetter(ctx, azure_config, name)
             exists = resource_factory.get_resource(resource_class_name)
+            create_op = 'create' in ctx.operation.name.split('.')[-1]
             # There is now a good idea whether the desired resource exists.
             # Now find out if it is expected and if it does or doesn't.
-            expected = ctx.node.properties.get(
-                'use_external_resource', False)
-            create_anyway = ctx.node.properties.get('create_if_missing', False)
-            use_anyway = ctx.node.properties.get('use_if_exists', False)
-            # We should use and existing resource.
-            use_existing = (exists and expected) or \
-                           (exists and not expected and use_anyway)
-            # We should create a new resource.
-            create = (not exists and not expected) or \
-                     (not exists and expected and create_anyway)
-            # ARM deployments are idempotent. This logic should be expanded
-            # to other idempotent deployments.
-            arm_deployment = 'cloudify.azure.Deployment' in \
-                             ctx.node.type_hierarchy
-            create_op = 'create' in ctx.operation.name.split('.')[-1]
-
-            if not exists and expected and not create_anyway:
-                raise cfy_exc.NonRecoverableError(
-                    "Can't use non-existing {0} '{1}'.".format(
-                        resource_class_name, name))
-            elif use_existing and not (create_op and arm_deployment):
-                ctx.logger.info("Using external resource")
-                utils.save_common_info_in_runtime_properties(
-                    resource_group_name=resource_factory.resource_group_name,
-                    resource_name=name,
-                    resource_get_create_result=exists)
-                return
-            elif not create and not (create_op and arm_deployment):
-                raise cfy_exc.NonRecoverableError(
-                    "Can't use non-existing,"
-                    " or resource already exist but configuration is not to"
-                    " use it:  {0} '{1}'.".format(resource_class_name, name))
-            elif create and exists and ctx.workflow_id not in \
-                    ['update', 'execute_operation']:
-                ctx.logger.warn("Resource with name {0} exists".format(name))
-                if not arm_deployment:
-                    ctx.logger.warn('Not updating new resource.')
-                    return
-            ctx.logger.info('Creating or updating resource: {name}'.format(
-                name=name))
-            return func(*args, **kwargs)
+            if not skip_creative_or_destructive(
+                    resource_class_name,
+                    name,
+                    exists=exists,
+                    create_operation=create_op):
+                return func(*args, **kwargs)
         return wrapper_inner
     return wrapper_outer
 

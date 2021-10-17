@@ -28,13 +28,24 @@ class ResourceGroupTest(unittest.TestCase):
 
     def _get_mock_context_for_run(self):
         operation = {'name': 'cloudify.interfaces.lifecycle.mock'}
-        fake_ctx = cfy_mocks.MockCloudifyContext(operation=operation)
+        node_props = {
+            'resource_id': '',
+            'use_external_resource': False,
+            'create_if_missing': False,
+            'use_if_exists': False,
+            'modify_external_resource': False,
+        }
+        fake_ctx = cfy_mocks.MockCloudifyContext(
+            properties=node_props,
+            operation=operation,
+        )
         instance = mock.Mock()
         instance.runtime_properties = {}
         fake_ctx._instance = instance
-        node = mock.Mock()
+        node = mock.Mock(properties=node_props)
+        node.properties = node_props
         fake_ctx._node = node
-        node.properties = {}
+        fake_ctx.node = node
         node.runtime_properties = {}
         node.type_hierarchy = ['ctx.nodes.Root',
                                'cloudify.azure.nodes.ResourceGroup']
