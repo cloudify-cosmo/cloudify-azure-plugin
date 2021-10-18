@@ -12,12 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from os import path, environ
 
-from msrestazure.azure_cloud import AZURE_CHINA_CLOUD, AZURE_PUBLIC_CLOUD
 from azure.common.credentials import ServicePrincipalCredentials
+from msrestazure.azure_cloud import AZURE_CHINA_CLOUD, AZURE_PUBLIC_CLOUD
 
-from cloudify_azure import (constants, utils)
+from cloudify_azure import constants, utils
 from cloudify_azure._compat import SafeConfigParser
 
 

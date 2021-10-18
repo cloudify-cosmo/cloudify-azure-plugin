@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import mock
 import unittest
 
@@ -26,8 +27,9 @@ from cloudify_azure.resources.network import virtualnetwork
             'NetworkManagementClient')
 class VirtualNetworkTest(unittest.TestCase):
 
-    def _get_mock_context_for_run(self):
-        operation = {'name': 'cloudify.interfaces.lifecycle.mock'}
+    def _get_mock_context_for_run(self, operation=None):
+        operation = operation or {
+            'name': 'cloudify.interfaces.lifecycle.create'}
         fake_ctx = cfy_mocks.MockCloudifyContext(operation=operation)
         instance = mock.Mock()
         instance.runtime_properties = {}
@@ -113,14 +115,17 @@ class VirtualNetworkTest(unittest.TestCase):
             # client().virtual_networks.create_or_update.assert_not_called()
 
     def test_delete(self, client, credentials):
-        self.node.properties['azure_config'] = self.dummy_azure_credentials
         resource_group = 'sample_resource_group'
         vnet_name = 'sample_vnet'
-        self.instance.runtime_properties['resource_group'] = resource_group
-        self.instance.runtime_properties['name'] = vnet_name
+        fake_ctx, _, __ = self._get_mock_context_for_run(
+            operation={'name': 'cloudify.interfaces.lifecycle.delete'})
+        fake_ctx.instance.runtime_properties['resource_group'] = resource_group
+        fake_ctx.instance.runtime_properties['name'] = vnet_name
+        fake_ctx.node.properties['azure_config'] = self.dummy_azure_credentials
+        current_ctx.set(fake_ctx)
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            virtualnetwork.delete(ctx=self.fake_ctx)
+            virtualnetwork.delete(ctx=fake_ctx)
             client().virtual_networks.delete.assert_called_with(
                 resource_group_name=resource_group,
                 virtual_network_name=vnet_name

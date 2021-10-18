@@ -59,6 +59,17 @@ def get_resource_name(_ctx=ctx):
         _ctx.node.properties.get('name')
 
 
+def get_resource_id(_ctx=ctx):
+    """
+        Finds a resource's id
+
+    :returns: The resource's id or None
+    :rtype: string
+    """
+    return _ctx.instance.runtime_properties.get('resource_id') or \
+        _ctx.node.properties.get('name') or get_resource_name(_ctx)
+
+
 def get_resource_config(_ctx=ctx, args=None):
     """
         Loads the resource config parameters and converts
@@ -149,8 +160,8 @@ def get_load_balancer(_ctx=ctx,
 
 
 def get_storage_account(_ctx=ctx, rel_type=constants.REL_CONTAINED_IN_SA):
-    return ctx.node.properties.get('storage_account_name') or \
-           get_ancestor_name(_ctx.instance, rel_type)
+    return ctx.node.properties.get(
+        'storage_account_name') or get_ancestor_name(_ctx.instance, rel_type)
 
 
 def get_retry_after(_ctx=ctx):
@@ -330,8 +341,8 @@ def secure_logging_content(content, secure_keywords=constants.SECURE_KW):
                 log_message += "  {0}".format("  ".join(v.splitlines(True)))
             else:
                 # if hide true hide the value with "*"
-                log_message += "{0} : {1}\n".format(key, '*'*len(value)
-                                                         if hide else value)
+                log_message += "{0} : {1}\n".format(
+                    key, '*' * len(value) if hide else value)
         return log_message
 
     log_message = _log(content, secure_keywords)
@@ -492,6 +503,11 @@ def handle_create(resource,
                   name=None,
                   parent_name=None,
                   additional_params=None):
+
+    ctx.logger.debug(
+        'Calling create_or_update on resource {} with params {}'.format(
+            name, additional_params))
+
     try:
         if not name:
             return resource.create_or_update(
@@ -507,3 +523,20 @@ def handle_create(resource,
         raise cfy_exc.NonRecoverableError(
             "create {0} '{1}' failed with this error : {2}".format(
                 type(resource), name, cr.message))
+
+
+def check_types_in_hierarchy(types, hierarchy):
+    """ When we deprecated old node types, like
+    cloudify.azure.nodes.VirtualMachine in favor of
+    cloudify.nodes.azure.VirtualMachine, we needed to support both.
+    So we have this logic scattered around. The point is to centralize it.
+    :param types: tuple of node types.
+    :param hierarchy: ctx.node.type_hierarchy
+    :return: bool
+    """
+    if isinstance(types, tuple):
+        if any(x in hierarchy for x in types):
+            return True
+    elif types in hierarchy:
+        return True
+    return False

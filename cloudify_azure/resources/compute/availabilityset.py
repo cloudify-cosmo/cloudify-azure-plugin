@@ -56,13 +56,12 @@ def create(ctx, **_):
 
 
 @operation(resumable=True)
+@decorators.with_azure_resource(AvailabilitySet)
 def delete(ctx, **_):
     """Deletes a Availability Set"""
-    if ctx.node.properties.get('use_external_resource', False):
-        return
     azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
-    name = ctx.instance.runtime_properties.get('name')
+    name = utils.get_resource_name(ctx)
     api_version = \
         ctx.node.properties.get('api_version', constants.API_VER_COMPUTE)
     availability_set = AvailabilitySet(azure_config, ctx.logger, api_version)

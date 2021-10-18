@@ -21,8 +21,10 @@ from functools import wraps
 from msrestazure.azure_exceptions import CloudError
 
 from cloudify import exceptions as cfy_exc
-from cloudify_common_sdk.utils import skip_creative_or_destructive
-from cloudify_azure import utils
+from cloudify_common_sdk.utils import \
+    skip_creative_or_destructive_operation as skip
+
+from . import utils, constants
 from azure_sdk.resources.network.route import Route
 from azure_sdk.resources.network.subnet import Subnet
 from azure_sdk.resources.deployment import Deployment
@@ -198,6 +200,41 @@ def with_generate_name(resource_class_name):
     return wrapper_outer
 
 
+def get_create_op(op_name, node_type):
+    """ Determine if we are dealing with a creation operation.
+    Normally we just do the logic in the last return. However, we may want
+    special behavior for some types.
+
+    :param op_name: ctx.operation.name.
+    :param node_type: ctx.node.type_hierarchy
+    :return: bool
+    """
+    op = op_name.split('.')[-1]
+    if utils.check_types_in_hierarchy(constants.NIC_NODE_TYPE, node_type):
+        if 'configure' in op:  # We do want to fall back on 'create' as well.
+            return True
+    elif utils.check_types_in_hierarchy(constants.VM_NODE_TYPE, node_type):
+        if 'configure' in op:
+            return True
+    elif utils.check_types_in_hierarchy(constants.LB_NODE_TYPE, node_type):
+        if 'configure' in op:
+            return True
+    return 'create' in op
+
+
+def get_delete_op(op_name, node_type=None):
+    """ Determine if we are dealing with a deletion operation.
+    Normally we just do the logic in the last return. However, we may want
+    special behavior for some types.
+
+    :param op_name: ctx.operation.name.
+    :param node_type: ctx.node.type_hierarchy
+    :return: bool
+    """
+    op = op_name.split('.')[-1]
+    return 'delete' in op
+
+
 def with_azure_resource(resource_class_name):
     def wrapper_outer(func):
         @wraps(func)
@@ -209,14 +246,21 @@ def with_azure_resource(resource_class_name):
             azure_config = utils.get_client_config(ctx.node.properties)
             resource_factory = ResourceGetter(ctx, azure_config, name)
             exists = resource_factory.get_resource(resource_class_name)
-            create_op = 'create' in ctx.operation.name.split('.')[-1]
+            arm_dep = 'cloudify.azure.Deployment' in ctx.node.type_hierarchy
+            create_op = get_create_op(ctx.operation.name,
+                                      ctx.node.type_hierarchy)
+            delete_op = get_delete_op(ctx.operation.name,
+                                      ctx.node.type_hierarchy)
             # There is now a good idea whether the desired resource exists.
             # Now find out if it is expected and if it does or doesn't.
-            if not skip_creative_or_destructive(
+            if not skip(
                     resource_class_name,
                     name,
+                    _ctx_node=ctx.node,
                     exists=exists,
-                    create_operation=create_op):
+                    special_condition=arm_dep,
+                    create_operation=create_op,
+                    delete_operation=delete_op):
                 return func(*args, **kwargs)
         return wrapper_inner
     return wrapper_outer
@@ -233,6 +277,7 @@ class ResourceGetter(object):
     def get_resource(self, resource_class_name):
         try:
             resource = resource_class_name(self.azure_config, self.ctx.logger)
+            name = self.name
             if not isinstance(resource, ResourceGroup):
                 resource_group_name = utils.get_resource_group(self.ctx)
                 self.resource_group_name = resource_group_name
@@ -240,43 +285,51 @@ class ResourceGetter(object):
                 # resource_group
             if isinstance(resource, ResourceGroup):
                 exists = resource.get(self.name)
-                self.resource_group_name = self.name
+                name = resource_group_name = \
+                    self.resource_group_name = self.name
             elif isinstance(resource, Deployment):
                 exists = resource.get(resource_group_name, self.name)
                 # virtual_machine_extension
             elif isinstance(resource, VirtualMachineExtension):
-                vm_name = \
+                name = vm_name = \
                     self.ctx.node.properties.get('virtual_machine_name')
                 exists = resource.get(resource_group_name, vm_name, self.name)
                 # subnet
             elif isinstance(resource, Subnet):
-                vnet_name = utils.get_virtual_network(self.ctx)
+                name = vnet_name = utils.get_virtual_network(self.ctx)
                 exists = resource.get(resource_group_name, vnet_name,
                                       self.name)
                 # route
             elif isinstance(resource, Route):
-                rtbl_name = utils.get_route_table(self.ctx)
+                name = rtbl_name = utils.get_route_table(self.ctx)
                 exists = resource.get(resource_group_name, rtbl_name,
                                       self.name)
                 # network_security_rule
             elif isinstance(resource, NetworkSecurityRule):
-                nsg_name = utils.get_network_security_group(self.ctx)
+                name = nsg_name = utils.get_network_security_group(self.ctx)
                 exists = resource.get(resource_group_name, nsg_name, self.name)
                 # load_balancer_backend_address_pool
             elif isinstance(resource, (LoadBalancerBackendAddressPool,
                                        LoadBalancerLoadBalancingRule,
                                        LoadBalancerInboundNatRule,
                                        LoadBalancerProbe)):
-                lb_name = utils.get_load_balancer(self.ctx)
+                name = lb_name = utils.get_load_balancer(self.ctx)
                 exists = resource.get(resource_group_name,
                                       lb_name,
                                       self.name)
             # file share
             elif isinstance(resource, FileShare):
-                sa_name = utils.get_storage_account(self.ctx)
+                name = sa_name = utils.get_storage_account(self.ctx)
                 exists = resource.get(resource_group_name, sa_name, self.name)
             else:
                 exists = resource.get(resource_group_name, self.name)
+            if 'resource' not in self.ctx.instance.runtime_properties:
+
+                utils.save_common_info_in_runtime_properties(
+                    resource_group_name,
+                    name,
+                    exists
+                )
         except CloudError:
             exists = None
         return exists

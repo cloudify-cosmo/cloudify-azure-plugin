@@ -37,10 +37,6 @@ def create(ctx, **_):
     res_cfg = ctx.node.properties.get("resource_config", {})
     metadata = res_cfg.get('metadata')
     share_quota = res_cfg.get('quota')
-    if ctx.node.properties.get('use_external_resource', False) and \
-            not share_name:
-        raise NonRecoverableError(
-            '"use_external_resource" specified without a resource "name"')
     storage_account = utils.get_storage_account(ctx)
     resource_group_name = utils.get_resource_group(ctx)
     azure_config = utils.get_client_config(ctx.node.properties)
@@ -87,11 +83,10 @@ def create(ctx, **_):
 
 
 @operation(resumable=True)
+@decorators.with_azure_resource(FileShare)
 def delete(ctx, **_):
     """Deletes a File Share"""
     # Delete the resource
-    if ctx.node.properties.get('use_external_resource', False):
-        return
     azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
     share_name = utils.get_resource_name(ctx)

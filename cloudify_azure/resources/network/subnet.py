@@ -57,11 +57,10 @@ def create(ctx, **_):
 
 
 @operation(resumable=True)
+@decorators.with_azure_resource(Subnet)
 def delete(ctx, **_):
     """Deletes a Subnet"""
     # Delete the resource
-    if ctx.node.properties.get('use_external_resource', False):
-        return
     azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
     vnet_name = ctx.instance.runtime_properties.get('virtual_network')
@@ -117,9 +116,7 @@ def detach_network_security_group(ctx, **_):
     except CloudError as cr:
         raise cfy_exc.NonRecoverableError(
             "detach_network_security_group from subnet '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
+            "failed with this error : {1}".format(name, cr.message))
 
 
 @operation(resumable=True)
@@ -149,9 +146,7 @@ def attach_route_table(ctx, **_):
     except CloudError as cr:
         raise cfy_exc.NonRecoverableError(
             "attach_route_table to subnet '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
+            "failed with this error : {1}".format(name, cr.message))
 
 
 @operation(resumable=True)
@@ -178,6 +173,4 @@ def detach_route_table(ctx, **_):
     except CloudError as cr:
         raise cfy_exc.NonRecoverableError(
             "detach_route_table from subnet '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
+            "failed with this error : {1}".format(name, cr.message))

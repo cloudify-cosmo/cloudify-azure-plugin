@@ -38,6 +38,4 @@ def set_user(ctx, user_details, **kwargs):
     except CloudError as cr:
         raise cfy_exc.NonRecoverableError(
             "set publishing_user '{0}' "
-            "failed with this error : {1}".format(user_details,
-                                                  cr.message)
-            )
+            "failed with this error : {1}".format(user_details, cr.message))

@@ -72,13 +72,9 @@ def create(ctx, **_):
     ctx.instance.runtime_properties['resource_group'] = resource_group_name
 
 
-@operation(resumable=True)
-@decorators.with_azure_resource(LoadBalancer)
-def configure(ctx, **_):
-    """Uses an existing, or creates a new, Load Balancer"""
-    # Get the Frontend IP Configuration
-    fe_ip_cfg = get_ip_configurations(rel=constants.REL_LB_CONNECTED_TO_IPC)
-    ctx.logger.debug('fe_ip_cfg: {0}'.format(fe_ip_cfg))
+def get_frontend_ip_configuration(relationship_name=None):
+    relationship_name = relationship_name or constants.REL_LB_CONNECTED_TO_IPC
+    fe_ip_cfg = get_ip_configurations(rel=relationship_name)
     if not len(fe_ip_cfg):
         raise cfy_exc.NonRecoverableError(
             'At least 1 Frontend IP Configuration must be '
@@ -88,7 +84,17 @@ def configure(ctx, **_):
         if ip_cfg.get('public_ip_address'):
             if ip_cfg.get('subnet'):
                 del ip_cfg['subnet']
+
+    return fe_ip_cfg
+
+
+@operation(resumable=True)
+@decorators.with_azure_resource(LoadBalancer)
+def configure(ctx, **_):
+    """Uses an existing, or creates a new, Load Balancer"""
+    # Get the Frontend IP Configuration
     # Create a resource (if necessary)
+    fe_ip_cfg = get_frontend_ip_configuration()
     azure_config = utils.get_client_config(ctx.node.properties)
     name = ctx.instance.runtime_properties.get('name')
     resource_group_name = utils.get_resource_group(ctx)
@@ -99,10 +105,10 @@ def configure(ctx, **_):
         'location': ctx.node.properties.get('location'),
         'tags': ctx.node.properties.get('tags'),
     }
-    lb_params = \
-        utils.handle_resource_config_params(lb_params,
-                                            ctx.node.properties.get(
-                                                'resource_config', {}))
+    lb_params = utils.handle_resource_config_params(
+        lb_params, ctx.node.properties.get('resource_config', {}))
+    lb_params = utils.dict_update(
+        lb_params, {'frontend_ip_configurations': fe_ip_cfg})
     lb_params = utils.dict_update(
         lb_params, {
             'frontend_ip_configurations': fe_ip_cfg
@@ -116,9 +122,8 @@ def configure(ctx, **_):
         resource_group_name,
         name,
         additional_params=lb_params)
-    utils.save_common_info_in_runtime_properties(resource_group_name,
-                                                 name,
-                                                 result)
+    utils.save_common_info_in_runtime_properties(
+        resource_group_name, name, result)
 
     for fe_ipc_data in result.get('frontend_ip_configurations', list()):
         ctx.instance.runtime_properties['ip'] = \
@@ -127,18 +132,18 @@ def configure(ctx, **_):
             fe_ipc_data.get('public_ip_address', {}).get('ip_address', None)
         if not public_ip:
             pip = PublicIPAddress(azure_config, ctx.logger)
-            pip_name = \
-                ip_cfg.get('public_ip_address').get('id').rsplit('/', 1)[1]
-            public_ip_data = pip.get(resource_group_name, pip_name)
-            public_ip = public_ip_data.get("ip_address")
-        ctx.instance.runtime_properties['public_ip'] = public_ip
+            for ip_cfg in fe_ip_cfg:
+                pip_name = \
+                    ip_cfg.get('public_ip_address').get('id').rsplit('/', 1)[1]
+                public_ip_data = pip.get(resource_group_name, pip_name)
+                public_ip = public_ip_data.get("ip_address")
+                ctx.instance.runtime_properties['public_ip'] = public_ip
 
 
 @operation(resumable=True)
+@decorators.with_azure_resource(LoadBalancer)
 def delete(ctx, **_):
     """Deletes a Load Balancer"""
-    if ctx.node.properties.get('use_external_resource', False):
-        return
     # Delete the resource
     azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
@@ -172,11 +177,6 @@ def attach_ip_configuration(ctx, **_):
 @decorators.with_azure_resource(LoadBalancerBackendAddressPool)
 def create_backend_pool(ctx, **_):
     """Uses an existing, or creates a new, Load Balancer Backend Pool"""
-    # Check if invalid external resource
-    if ctx.node.properties.get('use_external_resource', False) and \
-       not ctx.node.properties.get('name'):
-        raise cfy_exc.NonRecoverableError(
-            '"use_external_resource" specified without a resource "name"')
     # Generate a name if it doesn't exist
     azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
@@ -203,16 +203,11 @@ def create_backend_pool(ctx, **_):
     # clean empty values from params
     load_balancer_params = \
         utils.cleanup_empty_params(load_balancer_params)
-    try:
-        result = load_balancer.create_or_update(resource_group_name,
-                                                load_balancer_name,
-                                                load_balancer_params)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "create backend_pool '{0}' "
-            "failed with this error : {1}".format(backend_pool_name,
-                                                  cr.message)
-            )
+    result = utils.handle_create(
+        load_balancer,
+        resource_group_name,
+        load_balancer_name,
+        additional_params=load_balancer_params)
     for item in result.get("backend_address_pools"):
         if item.get("name") == backend_pool_name:
             ctx.instance.runtime_properties['resource_id'] = item.get("id")
@@ -221,10 +216,9 @@ def create_backend_pool(ctx, **_):
 
 
 @operation(resumable=True)
+@decorators.with_azure_resource(LoadBalancer)
 def delete_backend_pool(ctx, **_):
     """Deletes a Load Balancer Backend Pool"""
-    if ctx.node.properties.get('use_external_resource', False):
-        return
     # Get an interface to the Load Balancer
     azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
@@ -245,14 +239,11 @@ def delete_backend_pool(ctx, **_):
         'backend_address_pools': lb_pools,
         'location': lb_rel.target.node.properties.get('location')
     }
-    try:
-        load_balancer.create_or_update(resource_group_name, lb_name, lb_params)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "delete backend_pool '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
+    utils.handle_create(
+        load_balancer,
+        resource_group_name,
+        lb_name,
+        additional_params=lb_params)
 
 
 @operation(resumable=True)
@@ -260,11 +251,6 @@ def delete_backend_pool(ctx, **_):
 @decorators.with_azure_resource(LoadBalancerProbe)
 def create_probe(ctx, **_):
     """Uses an existing, or creates a new, Load Balancer Probe"""
-    # Check if invalid external resource
-    if ctx.node.properties.get('use_external_resource', False) and \
-       not ctx.node.properties.get('name'):
-        raise cfy_exc.NonRecoverableError(
-            '"use_external_resource" specified without a resource "name"')
     # Generate a name if it doesn't exist
     azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
@@ -294,15 +280,11 @@ def create_probe(ctx, **_):
     # clean empty values from params
     lb_params = \
         utils.cleanup_empty_params(lb_params)
-    try:
-        result = load_balancer.create_or_update(resource_group_name, lb_name,
-                                                lb_params)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "create probe '{0}' "
-            "failed with this error : {1}".format(probe_name,
-                                                  cr.message)
-            )
+    result = utils.handle_create(
+        load_balancer,
+        resource_group_name,
+        lb_name,
+        additional_params=lb_params)
     for item in result.get("probes"):
         if item.get("name") == probe_name:
             ctx.instance.runtime_properties['resource_id'] = item.get("id")
@@ -311,10 +293,9 @@ def create_probe(ctx, **_):
 
 
 @operation(resumable=True)
+@decorators.with_azure_resource(LoadBalancer)
 def delete_probe(ctx, **_):
     """Deletes a Load Balancer Probe"""
-    if ctx.node.properties.get('use_external_resource', False):
-        return
     # Get an interface to the Load Balancer
     azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
@@ -335,14 +316,11 @@ def delete_probe(ctx, **_):
         'probes': lb_probes,
         'location': lb_rel.target.node.properties.get('location')
     }
-    try:
-        load_balancer.create_or_update(resource_group_name, lb_name, lb_params)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "delete probe '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
+    utils.handle_create(
+        load_balancer,
+        resource_group_name,
+        lb_name,
+        additional_params=lb_params)
 
 
 @operation(resumable=True)
@@ -350,11 +328,6 @@ def delete_probe(ctx, **_):
 @decorators.with_azure_resource(LoadBalancerInboundNatRule)
 def create_incoming_nat_rule(ctx, **_):
     """Uses an existing, or creates a new, Load Balancer Incoming NAT Rule"""
-    # Check if invalid external resource
-    if ctx.node.properties.get('use_external_resource', False) and \
-       not ctx.node.properties.get('name'):
-        raise cfy_exc.NonRecoverableError(
-            '"use_external_resource" specified without a resource "name"')
     # Generate a name if it doesn't exist
     azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
@@ -398,26 +371,21 @@ def create_incoming_nat_rule(ctx, **_):
     # clean empty values from params
     lb_params = \
         utils.cleanup_empty_params(lb_params)
-    try:
-        result = load_balancer.create_or_update(resource_group_name, lb_name,
-                                                lb_params)
-        for item in result.get("inbound_nat_rules"):
-            if item.get("name") == incoming_nat_rule_name:
-                ctx.instance.runtime_properties['resource_id'] = item.get("id")
-                ctx.instance.runtime_properties['resource'] = item
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "create incoming_nat_rule '{0}' "
-            "failed with this error : {1}".format(incoming_nat_rule_name,
-                                                  cr.message)
-            )
+    result = utils.handle_create(
+        load_balancer,
+        resource_group_name,
+        lb_name,
+        additional_params=lb_params)
+    for item in result.get("inbound_nat_rules"):
+        if item.get("name") == incoming_nat_rule_name:
+            ctx.instance.runtime_properties['resource_id'] = item.get("id")
+            ctx.instance.runtime_properties['resource'] = item
 
 
 @operation(resumable=True)
+@decorators.with_azure_resource(LoadBalancerInboundNatRule)
 def delete_incoming_nat_rule(ctx, **_):
     """Deletes a Load Balancer Incoming NAT Rule"""
-    if ctx.node.properties.get('use_external_resource', False):
-        return
     # Get an interface to the Load Balancer
     azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
@@ -437,14 +405,11 @@ def delete_incoming_nat_rule(ctx, **_):
     lb_params = {
         'inbound_nat_rules': lb_rules
     }
-    try:
-        load_balancer.create_or_update(resource_group_name, lb_name, lb_params)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "delete incoming_nat_rule '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
+    utils.handle_create(
+        load_balancer,
+        resource_group_name,
+        lb_name,
+        additional_params=lb_params)
 
 
 @operation(resumable=True)
@@ -452,11 +417,6 @@ def delete_incoming_nat_rule(ctx, **_):
 @decorators.with_azure_resource(LoadBalancerLoadBalancingRule)
 def create_rule(ctx, **_):
     """Uses an existing, or creates a new, Load Balancer Rule"""
-    # Check if invalid external resource
-    if ctx.node.properties.get('use_external_resource', False) and \
-       not ctx.node.properties.get('name'):
-        raise cfy_exc.NonRecoverableError(
-            '"use_external_resource" specified without a resource "name"')
     # Generate a name if it doesn't exist
     azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
@@ -479,29 +439,24 @@ def create_rule(ctx, **_):
     for rel in ctx.instance.relationships:
         if isinstance(rel_pool_type, tuple):
             if any(x in rel.type_hierarchy for x in rel_pool_type):
-                lb_be_pool_id = \
-                    rel.target.instance.runtime_properties.get('resource_id')
+                lb_be_pool_id = utils.get_resource_id(rel.target)
         else:
             if rel_pool_type in rel.type_hierarchy:
-                lb_be_pool_id = \
-                    rel.target.instance.runtime_properties.get('resource_id')
+                lb_be_pool_id = utils.get_resource_id(rel.target)
         if isinstance(rel_probe_type, tuple):
             if any(x in rel.type_hierarchy for x in rel_probe_type):
-                lb_probe_id = \
-                    rel.target.instance.runtime_properties.get('resource_id')
+                lb_probe_id = utils.get_resource_id(rel.target)
         else:
             if constants.REL_CONNECTED_TO_LB_PROBE in rel.type_hierarchy:
-                lb_probe_id = \
-                    rel.target.instance.runtime_properties.get('resource_id')
+                lb_probe_id = utils.get_resource_id(rel.target)
         if isinstance(rel_fe_type, tuple):
             if any(x in rel.type_hierarchy for x in rel_fe_type):
-                lb_fe_ipc_id = \
-                    rel.target.instance.runtime_properties.get('resource_id')
+                lb_fe_ipc_id = utils.get_resource_id(rel.target)
         else:
             if constants.REL_CONNECTED_TO_IPC in rel.type_hierarchy:
-                lb_fe_ipc_id = \
-                    rel.target.instance.runtime_properties.get('resource_id')
+                lb_fe_ipc_id = utils.get_resource_name(rel.target)
     # Get the existing Load Balancer Rules
+    # fe_ip_cfg = get_frontend_ip_configuration(constants.REL_CONNECTED_TO_IPC)
     lb_rules = lb_data.get('load_balancing_rules', list())
     lb_rule = \
         utils.handle_resource_config_params({
@@ -512,6 +467,7 @@ def create_rule(ctx, **_):
         },
             ctx.node.properties.get(
                 'resource_config', {}))
+    raise Exception(lb_rule)
     lb_rules.append(lb_rule)
     # Update the Load Balancer with the new rule
     lb_params = {
@@ -519,18 +475,12 @@ def create_rule(ctx, **_):
         'location': lb_rel.target.node.properties.get('location')
     }
     # clean empty values from params
-    lb_params = \
-        utils.cleanup_empty_params(lb_params)
-    try:
-        result = load_balancer.create_or_update(resource_group_name, lb_name,
-                                                lb_params)
-
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "create load_balancing_rules '{0}' "
-            "failed with this error : {1}".format(lb_rule_name,
-                                                  cr.message)
-            )
+    lb_params = utils.cleanup_empty_params(lb_params)
+    result = utils.handle_create(
+        load_balancer,
+        resource_group_name,
+        lb_name,
+        additional_params=lb_params)
     for item in result.get("load_balancing_rules"):
         if item.get("name") == lb_rule_name:
             ctx.instance.runtime_properties['resource_id'] = item.get("id")
@@ -539,13 +489,12 @@ def create_rule(ctx, **_):
 
 
 @operation(resumable=True)
+@decorators.with_azure_resource(LoadBalancerLoadBalancingRule)
 def delete_rule(ctx, **_):
     """
         Deletes a Load Balancer Rule
         TODO: Rewrite this to occur inside of a Relationship Operation
     """
-    if ctx.node.properties.get('use_external_resource', False):
-        return
     # Get an interface to the Load Balancer
     azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
@@ -565,14 +514,11 @@ def delete_rule(ctx, **_):
     lb_params = {
         'load_balancing_rules': lb_rules
     }
-    try:
-        load_balancer.create_or_update(resource_group_name, lb_name, lb_params)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "delete load_balancing_rules '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
+    utils.handle_create(
+        load_balancer,
+        resource_group_name,
+        lb_name,
+        additional_params=lb_params)
 
 
 @operation(resumable=True)
@@ -601,15 +547,11 @@ def attach_nic_to_backend_pool(ctx, **_):
         'ip_configurations': nic_ip_cfgs,
         'location': ctx.source.node.properties.get('location')
     }
-    try:
-        network_interface_card.create_or_update(resource_group_name, name,
-                                                nic_params)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "attach nic_to_backend_pool '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
+    utils.handle_create(
+        network_interface_card,
+        resource_group_name,
+        name,
+        additional_params=nic_params)
 
 
 @operation(resumable=True)
@@ -641,12 +583,8 @@ def detach_nic_from_backend_pool(ctx, **_):
         'ip_configurations': nic_ip_cfgs,
         'location': ctx.source.node.properties.get('location')
     }
-    try:
-        network_interface_card.create_or_update(resource_group_name, name,
-                                                nic_params)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "detach nic_to_backend_pool '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
+    utils.handle_create(
+        network_interface_card,
+        resource_group_name,
+        name,
+        additional_params=nic_params)

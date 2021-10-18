@@ -17,6 +17,7 @@
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Microsoft Azure Public IP Address interface
 """
+
 from msrestazure.azure_exceptions import CloudError
 
 from cloudify import exceptions as cfy_exc
@@ -58,20 +59,11 @@ def create(ctx, **_):
     # clean empty values from params
     public_ip_address_params = \
         utils.cleanup_empty_params(public_ip_address_params)
-
-    try:
-        result = \
-            public_ip_address.create_or_update(
-                resource_group_name,
-                name,
-                public_ip_address_params)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "create public_ip_address '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
-
+    result = utils.handle_create(
+        public_ip_address,
+        resource_group_name,
+        name,
+        additional_params=public_ip_address_params)
     utils.save_common_info_in_runtime_properties(
         resource_group_name=resource_group_name,
         resource_name=name,
@@ -97,11 +89,10 @@ def start(ctx, **_):
 
 
 @operation(resumable=True)
+@decorators.with_azure_resource(PublicIPAddress)
 def delete(ctx, **_):
     """Deletes a Public IP Address"""
     # Delete the resource
-    if ctx.node.properties.get('use_external_resource', False):
-        return
     azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
     name = ctx.instance.runtime_properties.get('name')

@@ -28,8 +28,9 @@ from cloudify_azure.utils import handle_resource_config_params
             'managed_cluster.ContainerServiceClient')
 class ManagedClusterTest(unittest.TestCase):
 
-    def _get_mock_context_for_run(self):
-        operation = {'name': 'cloudify.interfaces.lifecycle.mock'}
+    def _get_mock_context_for_run(self, operation=None):
+        operation = operation or {
+            'name': 'cloudify.interfaces.lifecycle.create'}
         fake_ctx = cfy_mocks.MockCloudifyContext(operation=operation)
         instance = mock.Mock()
         instance.runtime_properties = {}
@@ -187,8 +188,7 @@ class ManagedClusterTest(unittest.TestCase):
                         mock.Mock()):
             with self.assertRaisesRegexp(
                     NonRecoverableError,
-                    'resource already exist but configuration is '
-                    'not to use it'):
+                    'Cannot create/update'):
                 managed_cluster.create(ctx=self.fake_ctx,
                                        resource_group=resource_group,
                                        cluster_name=cluster_name,
@@ -236,28 +236,34 @@ class ManagedClusterTest(unittest.TestCase):
             client().managed_clusters.create_or_update.assert_not_called()
 
     def test_delete(self, client, credentials):
-        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        fake_ctx, _, __ = self._get_mock_context_for_run(
+            operation={'name': 'cloudify.interfaces.lifecycle.delete'})
+        fake_ctx.node.properties['azure_config'] = self.dummy_azure_credentials
         resource_group = 'sample_resource_group'
         cluster_name = 'mc_name'
-        self.instance.runtime_properties['resource_group'] = resource_group
-        self.instance.runtime_properties['name'] = cluster_name
+        fake_ctx.instance.runtime_properties['resource_group'] = resource_group
+        fake_ctx.instance.runtime_properties['name'] = cluster_name
+        fake_ctx.node.properties['azure_config'] = self.dummy_azure_credentials
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            managed_cluster.delete(self.fake_ctx)
+            managed_cluster.delete(ctx=fake_ctx)
             client().managed_clusters.delete.assert_called_with(
                 resource_group_name=resource_group,
                 resource_name=cluster_name
             )
 
     def test_delete_do_not_exist(self, client, credentials):
-        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        fake_ctx, _, __ = self._get_mock_context_for_run(
+            operation={'name': 'cloudify.interfaces.lifecycle.delete'})
+        fake_ctx.node.properties['azure_config'] = self.dummy_azure_credentials
         resource_group = 'sample_resource_group'
         cluster_name = 'mc_name'
-        self.instance.runtime_properties['resource_group'] = resource_group
-        self.instance.runtime_properties['name'] = cluster_name
+        fake_ctx.instance.runtime_properties['resource_group'] = resource_group
+        fake_ctx.instance.runtime_properties['name'] = cluster_name
+        fake_ctx.node.properties['azure_config'] = self.dummy_azure_credentials
         err = compose_not_found_cloud_error()
         client().managed_clusters.get.side_effect = err
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            managed_cluster.delete(self.fake_ctx)
+            managed_cluster.delete(ctx=fake_ctx)
             client().managed_clusters.delete.assert_not_called()

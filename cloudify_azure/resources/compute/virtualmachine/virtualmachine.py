@@ -166,7 +166,7 @@ def extract_powershell_content(string_with_powershell):
         script_end = split_string.index(PS_CLOSE)
 
     # Return everything between Powershell back as a string.
-    return '\r\n'.join(split_string[script_start+1:script_end])
+    return '\r\n'.join(split_string[script_start + 1:script_end])
 
 
 def _handle_userdata(ctx, existing_userdata):
@@ -287,9 +287,7 @@ def _get_vm_create_or_update_payload(ctx, args, name):
         }
     # Set the computerName if it's not set already
     os_profile['computer_name'] = \
-        res_cfg.get(
-            'osProfile', dict()
-        ).get('computerName', name)
+        res_cfg.get('osProfile', dict()).get('computerName', name)
 
     availability_set = None
     rel_type = constants.REL_CONNECTED_TO_AS
@@ -414,9 +412,8 @@ def start(ctx, command_to_execute, file_uris, type_handler_version='1.8', **_):
         except CloudError as cr:
             raise cfy_exc.NonRecoverableError(
                 "configure virtual_machine '{0}' "
-                "failed with this error : {1}".format(vm_name,
-                                                      cr.message)
-                )
+                "failed with this error : {1}".format(vm_name, cr.message))
+
         ctx.instance.runtime_properties['resource_extension'] = result
         ctx.instance.runtime_properties['resource_extension_id'] = \
             result.get("id", "")
@@ -517,13 +514,10 @@ def start(ctx, command_to_execute, file_uris, type_handler_version='1.8', **_):
 
 
 @operation(resumable=True)
+@decorators.with_azure_resource(VirtualMachine)
 def delete(ctx, **_):
     """Deletes a Virtual Machine"""
     # Delete the resource
-    if ctx.node.properties.get('use_external_resource', False):
-        return
-    api_version = \
-        ctx.node.properties.get('api_version', constants.API_VER_COMPUTE)
     azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
     name = ctx.instance.runtime_properties.get('name')
@@ -574,9 +568,7 @@ def attach_data_disk(ctx, lun, **_):
     except CloudError as cr:
         raise cfy_exc.NonRecoverableError(
             "attach disk to virtual_machine '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
+            "failed with this error : {1}".format(name, cr.message))
 
 
 @operation(resumable=True)
@@ -593,9 +585,10 @@ def detach_data_disk(ctx, **_):
     data_disks = [
         x for x in vm_state.get('storage_profile', dict()).get(
             'data_disks', list())
-        if x.get('vhd', dict()).get('uri') !=
-        ctx.target.instance.runtime_properties['uri']
-    ]
+        if x.get('vhd',
+                 dict()
+                 ).get('uri') != ctx.target.instance.runtime_properties['uri']]
+
     # Update the VM
     vm_params = {
         'location': ctx.source.node.properties.get('location'),
@@ -608,6 +601,4 @@ def detach_data_disk(ctx, **_):
     except CloudError as cr:
         raise cfy_exc.NonRecoverableError(
             "detach disk from virtual_machine '{0}' "
-            "failed with this error : {1}".format(name,
-                                                  cr.message)
-            )
+            "failed with this error : {1}".format(name, cr.message))
