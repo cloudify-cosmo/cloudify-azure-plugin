@@ -299,11 +299,6 @@ node_templates:
       - type: cloudify.azure.relationships.contained_in_load_balancer
         target: lb
 
-labels:
-  csys-obj-type:
-    values:
-      - service
-
 capabilities:
 
 #  public_ip:
