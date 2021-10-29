@@ -62,11 +62,10 @@ def create(ctx, **_):
 
 
 @operation(resumable=True)
+@decorators.with_azure_resource(NetworkSecurityRule)
 def delete(ctx, **_):
     """Deletes a Network Security Rule"""
     # Delete the resource
-    if ctx.node.properties.get('use_external_resource', False):
-        return
     azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
     nsg_name = ctx.instance.runtime_properties.get('network_security_group')

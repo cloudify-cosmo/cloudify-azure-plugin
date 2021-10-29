@@ -27,7 +27,7 @@ from cloudify_azure.resources.compute.virtualmachine.virtualmachine_utils \
 class VirtualMachineTest(unittest.TestCase):
 
     def _get_mock_context_for_run(self):
-        operation = {'name': 'cloudify.interfaces.lifecycle.mock'}
+        operation = {'name': 'cloudify.interfaces.lifecycle.create'}
         fake_ctx = cfy_mocks.MockCloudifyContext(operation=operation)
         instance = mock.Mock()
         instance.runtime_properties = {}

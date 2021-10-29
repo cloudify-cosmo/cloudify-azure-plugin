@@ -1,0 +1,315 @@
+tosca_definitions_version: cloudify_dsl_1_3
+description: >
+  This blueprint starts a Linux VM on Azure. It autogenerates an ssh keypair
+  which it stores in the secret store.  It associates a public ip with
+  the instance
+
+imports:
+  - https://cloudify.co/spec/cloudify/6.2.0/types.yaml
+  - plugin:cloudify-azure-plugin
+  - plugin:cloudify-utilities-plugin
+
+inputs:
+  resource_prefix:
+    type: string
+    display_label: Enter prefix to be applied to resource names
+    description: >
+      Resource names created in Azure by the blueprint can be
+      customized by supplying a prefix string (e.g. 'test_')
+    default: ''
+  subscription_id:
+    type: string
+    display_label: Enter Microsoft Azure subscription ID
+    description: >
+      A Microsoft Azure subscription ID. This is a unique
+      user account in Azure. This can be found in the
+      Subscriptions tab on your dashboard.
+    default: {get_secret: azure_subscription_id }
+  tenant_id:
+    type: string
+    display_label: Enter Microsoft Azure tenant ID
+    description: >
+       A Microsoft Azure tenant ID. This can be found in
+       the Azure Active Directory dashboard by accessing
+       your directory.
+    default: {get_secret: azure_tenant_id }
+  client_id:
+    type: string
+    display_label: Enter Microsoft Azure client ID
+    description: >
+      A Microsoft Azure client ID. This can be found in
+      the Azure Active Directory dashboard by accessing
+      your directory.
+    default: {get_secret: azure_client_id}
+  client_secret:
+    type: string
+    display_label: Microsoft Azure client secret key
+    description: >
+      A Microsoft Azure client secret key. This can be found
+      or generated in the same location as your client ID.
+    default: {get_secret: azure_secret_key}
+  vm_size:
+    type: string
+    display_label: Enter location specific VM size
+    description: Location/region VM size name, e.g. 'Standard_M8ms'
+    default: Standard_B1s
+  location:
+    type: string
+    display_label: Azure location
+    description: Select Azure location name
+    default: EastUS
+    constraints:
+      - valid_values:
+        - EastUS
+        - CentralUS
+        - WestUS
+        - WestEurope
+        - CanadaCentral
+  image_publisher:
+    type: string
+    display_label: Enter image publisher
+    description: Image publisher name, e.g. 'Canonical'
+    default: Canonical
+  image_offer:
+    type: string
+    display_label: Enter OS offer
+    description: Enter OS offer, e.g. 'UbuntuServer'
+    default: UbuntuServer
+  image_sku:
+    type: string
+    display_label: Enter image SKU
+    description: Enter image SKU, e.g. '18.04-LTS'
+    default: '18.04-LTS'
+  image_version:
+    type: string
+    display_label: Enter image version
+    description: Enter image version, e.g. 'latest'
+    default: latest
+  admin_username:
+    type: string
+    display_label: Enter desired admin username
+    description: Enter desired admin username
+    default: {get_secret: azure_admin_username}
+  admin_password:
+    type: string
+    display_label: Enter admin password
+    description: Enter the desired admin password
+    default: {get_secret: azure_admin_password}
+
+dsl_definitions:
+  azure_credentials: &azure_credentials
+    subscription_id: {get_input: subscription_id}
+    tenant_id: {get_input: tenant_id}
+    client_id: {get_input: client_id}
+    client_secret: {get_input: client_secret}
+
+node_templates:
+
+  vm_ssh_key:
+    type: cloudify.keys.nodes.RSAKey
+    properties:
+      resource_config:
+        key_name: {concat: [{get_input: resource_prefix}, key]}
+        openssh_format: true
+      use_secret_store: true
+      use_secrets_if_exist: true
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: keys.cloudify_ssh_key.operations.create
+          inputs:
+            store_private_key_material: true
+
+  resource_group:
+    type: cloudify.nodes.azure.ResourceGroup
+    properties:
+      client_config: *azure_credentials
+      name: {concat: [ {get_input: resource_prefix}, group ]}
+      location: {get_input: location}
+
+  public_ip:
+    type: cloudify.azure.nodes.network.PublicIPAddress
+    properties:
+      client_config: *azure_credentials
+      location: {get_input: location}
+      resource_config:
+        publicIPAllocationMethod:
+          dynamic
+    relationships:
+      - type: cloudify.azure.relationships.contained_in_resource_group
+        target: resource_group
+
+  network:
+    type: cloudify.azure.nodes.network.VirtualNetwork
+    properties:
+      client_config: *azure_credentials
+      name: {concat: [{get_input: resource_prefix}, network]}
+      location: {get_input: location}
+    relationships:
+      - type: cloudify.azure.relationships.contained_in_resource_group
+        target: resource_group
+
+  subnet:
+    type: cloudify.azure.nodes.network.Subnet
+    properties:
+      client_config: *azure_credentials
+      name: {concat: [{get_input: resource_prefix}, subnet]}
+      location: {get_input: location}
+      resource_config:
+        addressPrefix: '10.10.10.0/24'
+    relationships:
+      - type: cloudify.azure.relationships.contained_in_virtual_network
+        target: network
+
+  ip_config:
+    type: cloudify.azure.nodes.network.IPConfiguration
+    properties:
+      client_config: *azure_credentials
+      location: { get_input: location }
+      resource_config:
+        privateIPAllocationMethod: Dynamic
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_resource_group
+      target: resource_group
+    - type: cloudify.azure.relationships.ip_configuration_connected_to_subnet
+      target: subnet
+
+  security_group:
+    type: cloudify.azure.nodes.network.NetworkSecurityGroup
+    properties:
+      client_config: *azure_credentials
+      name: {concat: [{get_input: resource_prefix}, sg]}
+      location: { get_input: location }
+      resource_config:
+        securityRules:
+        - name: ssh
+          properties:
+            description: SSH access
+            protocol: Tcp
+            sourcePortRange: '*'
+            destinationPortRange: 22
+            sourceAddressPrefix: '*'
+            destinationAddressPrefix: '*'
+            priority: 100
+            access: Allow
+            direction: Inbound
+        - name: http
+          properties:
+            description: HTTP access
+            protocol: Tcp
+            sourcePortRange: '*'
+            destinationPortRange: 80
+            sourceAddressPrefix: '*'
+            destinationAddressPrefix: '*'
+            priority: 101
+            access: Allow
+            direction: Inbound
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_resource_group
+      target: resource_group
+
+  nic:
+    type: cloudify.azure.nodes.network.NetworkInterfaceCard
+    properties:
+      client_config: *azure_credentials
+      location: { get_input: location }
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_resource_group
+      target: resource_group
+    - type: cloudify.azure.relationships.nic_connected_to_network_security_group
+      target: security_group
+    - type: cloudify.azure.relationships.nic_connected_to_ip_configuration
+      target: ip_config
+
+  storage_account:
+    type: cloudify.azure.nodes.storage.StorageAccount
+    properties:
+      client_config: *azure_credentials
+      location: { get_input: location }
+      resource_config:
+        accountType: Standard_LRS
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_resource_group
+      target: resource_group
+
+  lb_ip_config:
+    type: cloudify.azure.nodes.network.IPConfiguration
+    properties:
+      client_config: *azure_credentials
+      location: { get_input: location }
+      resource_config:
+        privateIPAllocationMethod: Dynamic
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_resource_group
+      target: resource_group
+    - type: cloudify.azure.relationships.ip_configuration_connected_to_subnet
+      target: subnet
+    - type: cloudify.azure.relationships.ip_configuration_connected_to_public_ip
+      target: public_ip
+
+  lb:
+    type: cloudify.azure.nodes.network.LoadBalancer
+    properties:
+      client_config: *azure_credentials
+      location: { get_input: location }
+      retry_after: 30
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_resource_group
+      target: resource_group
+    - type: cloudify.azure.relationships.lb_connected_to_ip_configuration
+      target: lb_ip_config
+
+  vm:
+    type: cloudify.azure.nodes.compute.VirtualMachine
+    properties:
+      client_config: *azure_credentials
+      agent_config:
+        install_method: none
+      resource_group_name: {get_attribute: [resource_group, name]}
+      name: {concat: [{get_input: resource_prefix}, host]}
+      location: { get_input: location }
+      os_family: linux
+      use_public_ip: false
+      resource_config:
+        hardwareProfile:
+          vmSize: { get_input: vm_size }
+        storageProfile:
+          imageReference:
+            publisher: { get_input: image_publisher}
+            offer: { get_input: image_offer}
+            sku: { get_input: image_sku}
+            version: { get_input: image_version}
+        osProfile:
+          computerName: { get_property: [SELF, name] }
+          adminUsername: { get_input: admin_username}
+          adminPassword: { get_input: admin_password }
+          linuxConfiguration:
+            ssh:
+              publicKeys:
+                - keyData: {get_attribute: [vm_ssh_key, public_key_export]}
+                  path: {concat: ['/home/', {get_input: admin_username}, '/.ssh/authorized_keys']}
+            disablePasswordAuthentication: false
+    relationships:
+      - type: cloudify.azure.relationships.connected_to_nic
+        target: nic
+      - type: cloudify.azure.relationships.connected_to_storage_account
+        target: storage_account
+      - type: cloudify.relationships.depends_on
+        target: vm_ssh_key
+      - type: cloudify.azure.relationships.contained_in_load_balancer
+        target: lb
+
+labels:
+  csys-obj-type:
+    values:
+      - service
+
+capabilities:
+
+#  public_ip:
+#    description: The public ip of the instance
+#    value: { get_attribute: [ vm, public_ip] }
+
+  private_key:
+    description: The private key for the instance
+    value: { get_attribute: [vm_ssh_key, private_key_export] }

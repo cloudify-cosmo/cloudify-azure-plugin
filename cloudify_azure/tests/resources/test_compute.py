@@ -35,8 +35,9 @@ def return_none(foo):
             'availability_set.ComputeManagementClient')
 class AvailabilitySetTest(unittest.TestCase):
 
-    def _get_mock_context_for_run(self):
-        operation = {'name': 'cloudify.interfaces.lifecycle.mock'}
+    def _get_mock_context_for_run(self, operation=None):
+        operation = operation or {
+            'name': 'cloudify.interfaces.lifecycle.create'}
         fake_ctx = cfy_mocks.MockCloudifyContext(operation=operation)
         instance = mock.Mock()
         instance.runtime_properties = {}
@@ -123,25 +124,29 @@ class AvailabilitySetTest(unittest.TestCase):
             client().availability_sets.create_or_update.assert_not_called()
 
     def test_delete(self, client, credentials):
-        self.node.properties['azure_config'] = self.dummy_azure_credentials
         resource_group = 'sample_resource_group'
         name = 'mockavailset'
-        self.instance.runtime_properties['resource_group'] = resource_group
-        self.instance.runtime_properties['name'] = name
+        fake_ctx, _, __ = self._get_mock_context_for_run(
+            operation={'name': 'cloudify.interfaces.lifecycle.delete'})
+        fake_ctx.instance.runtime_properties['resource_group'] = resource_group
+        fake_ctx.instance.runtime_properties['name'] = name
+        fake_ctx.node.properties['azure_config'] = self.dummy_azure_credentials
+        current_ctx.set(ctx=fake_ctx)
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            availabilityset.delete(ctx=self.fake_ctx)
-            client().availability_sets.delete.assert_called_with(
-                resource_group_name=resource_group,
-                availability_set_name=name
-            )
+            availabilityset.delete(ctx=fake_ctx)
+        client().availability_sets.delete.assert_called_with(
+            resource_group_name=resource_group,
+            availability_set_name=name)
 
     def test_delete_do_not_exist(self, client, credentials):
-        self.node.properties['azure_config'] = self.dummy_azure_credentials
         resource_group = 'sample_resource_group'
         name = 'mockavailset'
-        self.instance.runtime_properties['resource_group'] = resource_group
-        self.instance.runtime_properties['name'] = name
+        fake_ctx, _, __ = self._get_mock_context_for_run(
+            operation={'name': 'cloudify.interfaces.lifecycle.delete'})
+        fake_ctx.instance.runtime_properties['resource_group'] = resource_group
+        fake_ctx.instance.runtime_properties['name'] = name
+        fake_ctx.node.properties['azure_config'] = self.dummy_azure_credentials
         response = requests.Response()
         response.status_code = 404
         message = 'resource not found'
@@ -149,7 +154,7 @@ class AvailabilitySetTest(unittest.TestCase):
             CloudError(response, message)
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            availabilityset.delete(ctx=self.fake_ctx)
+            availabilityset.delete(ctx=fake_ctx)
             client().availability_sets.delete.assert_not_called()
 
 
@@ -158,8 +163,9 @@ class AvailabilitySetTest(unittest.TestCase):
             'virtual_machine.ComputeManagementClient')
 class VirtualMachineTest(unittest.TestCase):
 
-    def _get_mock_context_for_run(self):
-        operation = {'name': 'cloudify.interfaces.lifecycle.mock'}
+    def _get_mock_context_for_run(self, operation=None):
+        operation = operation or {
+            'name': 'cloudify.interfaces.lifecycle.create'}
         fake_ctx = cfy_mocks.MockCloudifyContext(operation=operation)
         instance = mock.Mock()
         instance.runtime_properties = {}
@@ -215,24 +221,24 @@ class VirtualMachineTest(unittest.TestCase):
                 'adminUsername': 'cloudify',
                 'adminPassword': 'Cl0ud1fy!',
                 'linuxConfiguration': {
-                  'ssh': {
-                    'publicKeys': {
-                        'path': '/home/cloudify/.ssh/authorized_keys',
-                        'keyData': 'ssh-rsa AAAAA3----MOCK----aabbzz'
-                    }
-                  },
-                  'disablePasswordAuthentication': True
-                 }
+                    'ssh': {
+                        'publicKeys': {
+                            'path': '/home/cloudify/.ssh/authorized_keys',
+                            'keyData': 'ssh-rsa AAAAA3----MOCK----aabbzz'
+                        }
+                    },
+                    'disablePasswordAuthentication': True
+                }
             }
         }
         storage_profile = {
             'os_disk': {
-              'caching': 'ReadWrite',
-              'vhd': {
-                'uri': 'http://None.blob./vhds/mockvm.vhd'
-              },
-              'name': 'mockvm',
-              'create_option': 'FromImage'
+                'caching': 'ReadWrite',
+                'vhd': {
+                    'uri': 'http://None.blob./vhds/mockvm.vhd'
+                },
+                'name': 'mockvm',
+                'create_option': 'FromImage'
             }
         }
         vm_params = {
@@ -296,14 +302,14 @@ class VirtualMachineTest(unittest.TestCase):
                 'adminUsername': 'cloudify',
                 'adminPassword': 'Cl0ud1fy!',
                 'linuxConfiguration': {
-                  'ssh': {
-                    'publicKeys': {
-                        'path': '/home/cloudify/.ssh/authorized_keys',
-                        'keyData': 'ssh-rsa AAAAA3----MOCK----aabbzz'
-                    }
-                  },
-                  'disablePasswordAuthentication': True
-                 }
+                    'ssh': {
+                        'publicKeys': {
+                            'path': '/home/cloudify/.ssh/authorized_keys',
+                            'keyData': 'ssh-rsa AAAAA3----MOCK----aabbzz'
+                        }
+                    },
+                    'disablePasswordAuthentication': True
+                }
             }
         }
         client().virtual_machines.get.return_value = mock.Mock()
@@ -326,7 +332,7 @@ class VirtualMachineTest(unittest.TestCase):
         self.node.properties['os_family'] = 'linux'
         self.node.properties['resource_config'] = {
             'hardwareProfile': {
-                'vmSize': 'Standard_A2',
+                'vmSize': 'Standard_A2'
             },
             'storageProfile': {
                 'imageReference': {
@@ -341,14 +347,14 @@ class VirtualMachineTest(unittest.TestCase):
                 'adminUsername': 'cloudify',
                 'adminPassword': 'Cl0ud1fy!',
                 'linuxConfiguration': {
-                  'ssh': {
-                    'publicKeys': {
-                        'path': '/home/cloudify/.ssh/authorized_keys',
-                        'keyData': 'ssh-rsa AAAAA3----MOCK----aabbzz'
-                    }
-                  },
-                  'disablePasswordAuthentication': True
-                 }
+                    'ssh': {
+                        'publicKeys': {
+                            'path': '/home/cloudify/.ssh/authorized_keys',
+                            'keyData': 'ssh-rsa AAAAA3----MOCK----aabbzz'
+                        }
+                    },
+                    'disablePasswordAuthentication': True
+                }
             }
         }
         self.node.properties['use_external_resource'] = True
@@ -363,14 +369,17 @@ class VirtualMachineTest(unittest.TestCase):
             client().virtual_machines.create_or_update.assert_not_called()
 
     def test_delete(self, client, credentials):
-        self.node.properties['azure_config'] = self.dummy_azure_credentials
+
+        fake_ctx, _, __ = self._get_mock_context_for_run(
+            operation={'name': 'cloudify.interfaces.lifecycle.delete'})
+        fake_ctx.node.properties['azure_config'] = self.dummy_azure_credentials
         resource_group = 'sample_resource_group'
         name = 'mockvm'
-        self.instance.runtime_properties['resource_group'] = resource_group
-        self.instance.runtime_properties['name'] = name
+        fake_ctx.instance.runtime_properties['resource_group'] = resource_group
+        fake_ctx.instance.runtime_properties['name'] = name
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            virtualmachine.delete(ctx=self.fake_ctx)
+            virtualmachine.delete(ctx=fake_ctx)
             client().virtual_machines.delete.assert_called_with(
                 resource_group_name=resource_group,
                 vm_name=name

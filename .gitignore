@@ -58,9 +58,11 @@ target/
 
 .idea/
 
+cover/
 myTestsFolder/
 azurecloudify/tests/test_conf.py
 *.iml
 .DS_Store
 *.wgn
 
+cover

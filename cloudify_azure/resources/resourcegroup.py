@@ -28,12 +28,7 @@ from azure_sdk.resources.resource_group import ResourceGroup
 @decorators.with_azure_resource(ResourceGroup)
 def create(ctx, **_):
     """Uses an existing, or creates a new, Resource Group"""
-    azure_config = ctx.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.node.properties)
     name = utils.get_resource_name(ctx)
     resource_group_params = {
         'location': ctx.node.properties.get('location'),
@@ -49,16 +44,10 @@ def create(ctx, **_):
 
 
 @operation(resumable=True)
+@decorators.with_azure_resource(ResourceGroup)
 def delete(ctx, **_):
     """Deletes a Resource Group"""
-    if ctx.node.properties.get('use_external_resource', False):
-        return
-    azure_config = ctx.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.node.properties)
     name = utils.get_resource_name(ctx)
     api_version = \
         ctx.node.properties.get('api_version', constants.API_VER_RESOURCES)

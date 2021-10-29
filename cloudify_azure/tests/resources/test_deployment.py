@@ -33,27 +33,21 @@ from cloudify_azure.resources import deployment
 from cloudify_azure.resources.deployment import STATE, IS_DRIFTED
 
 TEST_TEMPLATE = {
-            '$schema': 'http://schema.management.azure.com/Template.json',
-            'contentVersion': '1.0.0.0',
-            'parameters': {
-                'storageEndpoint': {
-                  'type': 'string',
-                  'defaultValue': 'core.windows.net',
-                  'metadata': {
-                    'description': 'Storage Endpoint.'
-                  }
-                },
+    '$schema': 'http://schema.management.azure.com/Template.json',
+    'contentVersion': '1.0.0.0',
+    'parameters': {
+        'storageEndpoint': {
+            'type': 'string',
+            'defaultValue': 'core.windows.net',
+            'metadata': {
+                'description': 'Storage Endpoint.'
             }
         }
+    }
+}
 
-RESOURCES_LIST = [
-                    {
-                        "id": "/fake/resource/id/1"
-                    },
-                    {
-                        "id": "/fake/resource/id/2"
-                    },
-                ]
+RESOURCES_LIST = [{"id": "/fake/resource/id/1"},
+                  {"id": "/fake/resource/id/2"}]
 RUNTIME_PROPERTIES_AFTER_CREATE = {
     'resource': {
         'properties':
@@ -244,8 +238,7 @@ class DeploymentTest(unittest.TestCase):
                     resource_group_name=resource_group,
                     deployment_name=resource_group,
                     parameters=AzDeployment(properties=deployment_properties),
-                    verify=True
-                )
+                    verify=True)
             async_call = \
                 deployment_client().deployments.create_or_update.return_value
             async_call.wait.assert_called_with(timeout=10)
@@ -318,7 +311,8 @@ class DeploymentTest(unittest.TestCase):
                         mock.Mock()):
             deployment.delete(ctx=self.fake_ctx)
             rg_client().resource_groups.delete.assert_not_called()
-            deployment_client().deployments.get.assert_not_called()
+            # New external handling does call get.
+            # deployment_client().deployments.get.assert_not_called()
             deployment_client().deployments.delete.assert_not_called()
 
     def test_delete_with_external_resource(self, rg_client, deployment_client,
@@ -327,9 +321,13 @@ class DeploymentTest(unittest.TestCase):
         resource_group = TEST_RESOURCE_GROUP_NAME
         self.instance.runtime_properties['name'] = resource_group
         self.node.properties['use_external_resource'] = True
-        deployment.delete(ctx=self.fake_ctx)
+        with mock.patch('cloudify_common_sdk.utils.'
+                        'skip_creative_or_destructive_operation',
+                        return_value=False):
+            deployment.delete(ctx=self.fake_ctx)
         rg_client().resource_groups.delete.assert_not_called()
-        deployment_client().deployments.get.assert_not_called()
+        # New handling for external does call get.
+        # deployment_client().deployments.get.assert_not_called()
         deployment_client().deployments.delete.assert_not_called()
 
     def test_pull_no_resource_group(self, rg_client, deployment_client,

@@ -77,9 +77,8 @@ def _store_kubeconf_if_needed(_ctx):
 
 
 @operation(resumable=True)
+@decorators.with_azure_resource(ManagedCluster)
 def delete(ctx, **_):
-    if ctx.node.properties.get('use_external_resource', False):
-        return
     resource_group = ctx.instance.runtime_properties.get('resource_group')
     name = ctx.instance.runtime_properties.get('name')
     managed_cluster = get_manged_cluster_interface(ctx)

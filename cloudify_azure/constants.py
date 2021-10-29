@@ -53,6 +53,16 @@ API_VER_CONTAINER = '2017-07-01'
 API_VER_MANAGED_CLUSTER = '2018-03-31'
 API_VER_APP_SERVICE = '2019-08-01'
 
+# Node type constants
+VM_NODE_TYPE = \
+    ('cloudify.azure.nodes.compute.VirtualMachine',
+     'cloudify.nodes.azure.compute.VirtualMachine')
+LB_NODE_TYPE = \
+    ('cloudify.azure.nodes.network.LoadBalancer',
+     'cloudify.nodes.azure.network.LoadBalancer')
+NIC_NODE_TYPE = \
+    ('cloudify.azure.nodes.network.NetworkInterfaceCard',
+     'cloudify.nodes.azure..network.NetworkInterfaceCard')
 # Relationship constants
 REL_CONTAINED_IN_RG = \
     ('cloudify.azure.relationships.contained_in_resource_group',

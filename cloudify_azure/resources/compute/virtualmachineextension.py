@@ -34,12 +34,7 @@ def create(ctx, resource_config, **_):
     ctx.logger.warn(
         'Azure customData implementation is dependent on '
         'Virtual Machine image support.')
-    azure_config = ctx.node.properties.get('azure_config')
-    if not azure_config.get("subscription_id"):
-        azure_config = ctx.node.properties.get('client_config')
-    else:
-        ctx.logger.warn("azure_config is deprecated please use client_config, "
-                        "in later version it will be removed")
+    azure_config = utils.get_client_config(ctx.node.properties)
     name = utils.get_resource_name(ctx)
     resource_group_name = utils.get_resource_group(ctx)
     vm_name = ctx.node.properties['virtual_machine_name']

@@ -2,17 +2,26 @@ from unittest import TestCase
 from mock import patch, call, MagicMock
 
 from .. import resources, discover
-from ...common._compat import PY2
+from ..._compat import PY2
 
 
+@patch('azure_sdk.common.ServicePrincipalCredentials')
+@patch('azure.mgmt.containerservice.ContainerServiceClient')
 class AzureWorkflowTests(TestCase):
 
     def get_mock_rest_client(self):
+        self.dummy_azure_credentials = {
+            'client_id': 'dummy',
+            'client_secret': 'dummy',
+            'subscription_id': 'dummy',
+            'tenant_id': 'dummy',
+            'endpoint_verify': False
+        }
         mock_node = MagicMock(node_id='foo',
                               type_hierarchy=discover.AZURE_TYPE)
         mock_node.id = mock_node.node_id
         mock_node.properties = {
-            'client_config': {},
+            'client_config': self.dummy_azure_credentials,
             'resource_config': {},
             'locations': []
         }
@@ -39,7 +48,7 @@ class AzureWorkflowTests(TestCase):
         return mock_rest_client
 
     @patch('cloudify_azure.workflows.discover.get_resources')
-    def test_discover_resources(self, mock_get_resources):
+    def test_discover_resources(self, mock_get_resources, *_, **__):
         mock_ctx = MagicMock()
         node = MagicMock()
         node_instance = MagicMock()
@@ -59,7 +68,7 @@ class AzureWorkflowTests(TestCase):
         self.assertEqual(discover.discover_resources(**params), result)
 
     @patch('cloudify_common_sdk.utils.get_rest_client')
-    def test_deploy_resources(self, get_rest_client):
+    def test_deploy_resources(self, get_rest_client, *_, **__):
         mock_rest_client = self.get_mock_rest_client()
         get_rest_client.return_value = mock_rest_client
         mock_ctx = MagicMock()
@@ -80,7 +89,7 @@ class AzureWorkflowTests(TestCase):
     @patch('cloudify_common_sdk.utils.get_rest_client')
     @patch('cloudify_azure.workflows.discover.deploy_resources')
     @patch('cloudify_azure.workflows.discover.discover_resources')
-    def test_discover_and_deploy(self, mock_discover, mock_deploy, *_):
+    def test_discover_and_deploy(self, mock_discover, mock_deploy, *_, **__):
         mock_ctx = MagicMock()
         mock_ctx.deployment = MagicMock(id='foo')
         mock_ctx.blueprint = MagicMock(id='bar')
@@ -94,16 +103,16 @@ class AzureWorkflowTests(TestCase):
         mock_discover.return_value = {
             'region1': {
                 'resource_type1': {
-                    'resource1': MagicMock(),
-                    'resource2': MagicMock(),
+                    'foo/bar/baz/taco/cheez/resource1': MagicMock(),
+                    'foo/bar/baz/taco/cheez/resource2': MagicMock(),
                 },
                 'resource_type2': {
-                    'resource3': MagicMock()
+                    'foo/bar/baz/taco/cheez/resource3': MagicMock()
                 },
             },
             'region2': {
                 'resource_type1': {
-                    'resource4': MagicMock()
+                    'foo/bar/baz/taco/cheez/resource4': MagicMock()
                 }
             }
         }
@@ -111,48 +120,32 @@ class AzureWorkflowTests(TestCase):
         self.assertEqual(mock_deploy.call_count, 3)
         expected_calls = [
             call('foo', 'foo', ['foo-resource1', 'foo-resource2'],
-                 [{'resource_name': 'resource1',
-                   'location': 'region1'},
-                  {'resource_name': 'resource2',
-                   'location': 'region1'}],
+                 [
+                     {'resource_group_name': 'bar',
+                      'managed_cluster_name': 'resource1'},
+                     {'resource_group_name': 'bar',
+                      'managed_cluster_name': 'resource2'}],
+                 [
+                     {'csys-env-type': 'environment'},
+                     {'csys-obj-parent': 'foo'}], mock_ctx),
+            call('foo', 'foo', ['foo-resource3'],
+                 [
+                     {'resource_group_name': 'bar',
+                      'managed_cluster_name': 'resource3'}],
                  [{'csys-env-type': 'environment'},
-                  {'csys-obj-parent': 'foo'}],
-                 mock_ctx),
-            call('foo', 'foo', ['foo-resource3'], [
-                {'resource_name': 'resource3', 'location': 'region1'}],
-                 [{'csys-env-type': 'environment'},
-                  {'csys-obj-parent': 'foo'}],
-                 mock_ctx),
+                  {'csys-obj-parent': 'foo'}], mock_ctx),
             call('foo', 'foo', ['foo-resource4'],
-                 [{'resource_name': 'resource4',
-                   'location': 'region2'}],
+                 [{
+                     'resource_group_name': 'bar',
+                     'managed_cluster_name': 'resource4'}],
                  [{'csys-env-type': 'environment'},
-                  {'csys-obj-parent': 'foo'}],
-                 mock_ctx)]
+                  {'csys-obj-parent': 'foo'}], mock_ctx)]
         if PY2:
             return
         mock_deploy.assert_has_calls(expected_calls)
 
-    def test_class_declaration_attributes(self):
-        node = MagicMock()
-        logger = MagicMock()
-        params = {
-            'node': node,
-            'service': 'foo',
-            'region': None,
-            'logger': logger
-        }
-        attributes = {
-            'ctx_node': node,
-            'resource_id': '',
-            'client': None,
-            'logger': logger
-        }
-        self.assertEqual(resources.class_declaration_attributes(**params),
-                         attributes)
-
-    @patch('azure_sdk.resources.compute.managed_cluster')
-    def test_get_resources(self, *_):
+    @patch('azure_sdk.resources.compute.managed_cluster.ManagedCluster.list')
+    def test_get_resources(self, cluster_list, *_, **__):
         mock_ctx = MagicMock()
         node = MagicMock()
         node_instance = MagicMock()
@@ -170,13 +163,18 @@ class AzureWorkflowTests(TestCase):
             'logger': mock_ctx.logger
         }
         expected = {'region1': {'Microsoft.ContainerService/'
-                                'ManagedClusters': {}},
+                                'ManagedClusters': {'foo': {'foo': 'bar'}}},
                     'region2': {'Microsoft.ContainerService/'
-                                'ManagedClusters': {}}}
+                                'ManagedClusters': {'foo': {'foo': 'bar'}}}}
+        resource_1 = MagicMock(id='foo', location='region1')
+        resource_1.as_dict.return_value = {'foo': 'bar'}
+        resource_2 = MagicMock(id='foo', location='region2')
+        resource_2.as_dict.return_value = {'foo': 'bar'}
+        cluster_list.return_value = [resource_1, resource_2]
         self.assertEqual(resources.get_resources(**params), expected)
 
-    @patch('azure_sdk.resources.compute.managed_cluster')
-    def test_initialize(self, *_):
+    @patch('azure_sdk.resources.compute.managed_cluster.ManagedCluster.list')
+    def test_initialize(self, *_, **__):
         mock_ctx = MagicMock()
         mock_ctx.instance = MagicMock(runtime_properties={'resources': {}})
         params = {

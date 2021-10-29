@@ -93,9 +93,8 @@ def create(ctx, **kwargs):
     except CloudError as cr:
         raise cfy_exc.NonRecoverableError(
             "create deployment resource_group '{0}' "
-            "failed with this error : {1}".format(resource_group_name,
-                                                  cr.message)
-            )
+            "failed with this error : {1}".format(
+                resource_group_name, cr.message))
 
     # load template
     properties, params = get_properties_and_formated_params(ctx, **kwargs)
@@ -117,9 +116,8 @@ def create(ctx, **kwargs):
     except CloudError as cr:
         raise cfy_exc.NonRecoverableError(
             "create deployment '{0}' "
-            "failed with this error : {1}".format(deployment_name,
-                                                  cr.message)
-            )
+            "failed with this error : {1}".format(deployment_name, cr.message))
+
     ctx.instance.runtime_properties['template'] = template
     ctx.instance.runtime_properties['resource'] = result
     ctx.instance.runtime_properties['resource_id'] = result.get('id', '')
@@ -128,6 +126,7 @@ def create(ctx, **kwargs):
 
 
 @operation(resumable=True)
+@decorators.with_azure_resource(Deployment)
 def delete(ctx, **_):
     if ctx.node.properties.get('use_external_resource', False):
         return

@@ -15,6 +15,7 @@ import mock
 import unittest
 import requests
 
+from cloudify.state import current_ctx
 from msrestazure.azure_exceptions import CloudError
 
 from cloudify import mocks as cfy_mocks
@@ -26,15 +27,27 @@ from cloudify_azure.resources import resourcegroup
 @mock.patch('azure_sdk.resources.resource_group.ResourceManagementClient')
 class ResourceGroupTest(unittest.TestCase):
 
-    def _get_mock_context_for_run(self):
-        operation = {'name': 'cloudify.interfaces.lifecycle.mock'}
-        fake_ctx = cfy_mocks.MockCloudifyContext(operation=operation)
+    def _get_mock_context_for_run(self, operation=None):
+        operation = operation or {
+            'name': 'cloudify.interfaces.lifecycle.create'
+        }
+        node_props = {
+            'resource_id': '',
+            'use_external_resource': False,
+            'create_if_missing': False,
+            'use_if_exists': False,
+            'modify_external_resource': False,
+        }
+        fake_ctx = cfy_mocks.MockCloudifyContext(
+            properties=node_props,
+            operation=operation,
+        )
         instance = mock.Mock()
         instance.runtime_properties = {}
         fake_ctx._instance = instance
-        node = mock.Mock()
+        node = mock.Mock(properties=node_props)
+        node.properties = node_props
         fake_ctx._node = node
-        node.properties = {}
         node.runtime_properties = {}
         node.type_hierarchy = ['ctx.nodes.Root',
                                'cloudify.azure.nodes.ResourceGroup']
@@ -89,14 +102,21 @@ class ResourceGroupTest(unittest.TestCase):
         self.node.properties['azure_config'] = self.dummy_azure_credentials
         resource_group = 'sample_resource_group'
         self.node.properties['use_external_resource'] = True
+        self.fake_ctx.node.properties['use_external_resource'] = True
         self.node.properties['name'] = 'sample_resource_group'
+        self.fake_ctx.node.properties['name'] = 'sample_resource_group'
         self.node.properties['location'] = 'westus'
+        self.fake_ctx.node.properties['location'] = 'westus'
         self.node.properties['tags'] = {
             'mode': 'testing'
         }
+        self.fake_ctx.node.properties['tags'] = {
+            'mode': 'testing'
+        }
         client().resource_groups.get.return_value = mock.Mock()
-        with mock.patch('cloudify_azure.utils.secure_logging_content',
-                        mock.Mock()):
+        with mock.patch(
+                'cloudify_azure.utils.secure_logging_content',
+                mock.Mock()):
             resourcegroup.create(ctx=self.fake_ctx)
             client().resource_groups.get.assert_called_with(
                 resource_group_name=resource_group
@@ -104,15 +124,17 @@ class ResourceGroupTest(unittest.TestCase):
             # client().resource_groups.create_or_update.assert_not_called()
 
     def test_delete(self, client, credentials):
-        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        fake_ctx, _, __ = self._get_mock_context_for_run(
+            operation={'name': 'cloudify.interfaces.lifecycle.delete'})
         resource_group = 'sample_resource_group'
-        self.instance.runtime_properties['name'] = resource_group
+        fake_ctx.node.properties['azure_config'] = self.dummy_azure_credentials
+        fake_ctx.instance.runtime_properties['name'] = resource_group
+        current_ctx.set(ctx=fake_ctx)
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
-            resourcegroup.delete(ctx=self.fake_ctx)
+            resourcegroup.delete(ctx=fake_ctx)
             client().resource_groups.delete.assert_called_with(
-                resource_group_name=resource_group
-            )
+                resource_group_name=resource_group)
 
     def test_delete_do_not_exist(self, client, credentials):
         self.node.properties['azure_config'] = self.dummy_azure_credentials

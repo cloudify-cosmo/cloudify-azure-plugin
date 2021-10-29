@@ -77,29 +77,16 @@ def build_ip_configuration(ipc):
     subnet = None
     pubip = None
     for rel in ipc.instance.relationships:
-        if isinstance(rel_sub_type, tuple):
-            if any(x in rel.type_hierarchy for x in rel_sub_type):
-                subnet = {
-                    'id': rel.target.instance.runtime_properties['resource_id']
-                }
-        else:
-            if rel_sub_type in rel.type_hierarchy:
-                subnet = {
-                    'id': rel.target.instance.runtime_properties['resource_id']
-                }
-        if isinstance(rel_pip_type, tuple):
-            if any(x in rel.type_hierarchy for x in rel_pip_type):
-                pubip = {
-                    'id': rel.target.instance.runtime_properties['resource_id']
-                }
-        else:
-            if rel_pip_type in rel.type_hierarchy:
-                pubip = {
-                    'id': rel.target.instance.runtime_properties['resource_id']
-                }
-
+        if utils.check_types_in_hierarchy(rel_sub_type, rel.type_hierarchy):
+            subnet = {
+                'id': rel.target.instance.runtime_properties['resource_id']
+            }
+        if utils.check_types_in_hierarchy(rel_pip_type, rel.type_hierarchy):
+            pubip = {
+                'id': rel.target.instance.runtime_properties['resource_id']
+            }
     ip_configuration = {
-        'name': utils.get_resource_name(ipc),
+        'name': utils.get_resource_name(ipc) or ctx.instance.id,
         'subnet': subnet,
         'public_ip_address': pubip
     }
