@@ -558,8 +558,8 @@ workflows:
           requires:
             # - unittests_py27
             - unittests_py36
-            - wagon
             - arch64_wagon
+            - wagon
             - rhel_wagon
             - build_bundle
             - hw_integration_tests_py3
@@ -602,13 +602,13 @@ workflows:
             branches:
               only: /([0-9\.]*\-build|master|dev)/
           requires:
-             - arch64_wagon
+            - arch64_wagon
             - wagon
             - rhel_wagon
       - hw_integration_tests_py3:
           requires:
+            - arch64_wagon
             - wagon
-             - arch64_wagon
             - rhel_wagon
             - build_bundle
           filters:
@@ -616,8 +616,8 @@ workflows:
               only: /([0-9\.]*\-build|master|dev)/
       - azure_arm_integration_tests_py3:
           requires:
-            - wagon
             - arch64_wagon
+            - wagon
             - rhel_wagon
             - build_bundle
           filters:
@@ -625,8 +625,8 @@ workflows:
               only: /([0-9\.]*\-build|master|dev)/
       - aks_integration_tests_py3:
           requires:
-            - wagon
             - arch64_wagon
+            - wagon
             - rhel_wagon
             - build_bundle
           filters:
