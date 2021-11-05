@@ -650,10 +650,10 @@ workflows:
           filters:
             branches:
               only: /([0-9\.]*\-build|master|dev)/
-     - arch64_wagon:
-         filters:
-           branches:
-             only: /([0-9\.]*\-build|master|dev)/
+      - arch64_wagon:
+          filters:
+            branches:
+              only: /([0-9\.]*\-build|master|dev)/
       - rhel_wagon:
           filters:
             branches:
