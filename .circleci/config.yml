@@ -309,7 +309,7 @@ commands:
 
   run_lb_test:
     steps:
-      - run: ecosystem-test local-blueprint-test  -b examples/load-balancer-blueprint.yaml --test-id=azure-aks -i resource_suffix=lb-test-$CIRCLE_BUILD_NUM --on-failure=uninstall-force --timeout=3000
+      - run: ecosystem-test local-blueprint-test  -b examples/load-balancer-blueprint.yaml --test-id=azure-aks -i resource_prefix=lb-test-$CIRCLE_BUILD_NUM --on-failure=uninstall-force --timeout=3000
 
   release_plugin:
     steps:
