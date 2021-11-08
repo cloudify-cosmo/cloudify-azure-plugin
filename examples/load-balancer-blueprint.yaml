@@ -47,7 +47,7 @@ inputs:
     description: >
       A Microsoft Azure client secret key. This can be found
       or generated in the same location as your client ID.
-    default: {get_secret: azure_secret_key}
+    default: {get_secret: azure_client_secret}
   vm_size:
     type: string
     # display_label: Enter location specific VM size
@@ -89,12 +89,12 @@ inputs:
     type: string
     # display_label: Enter desired admin username
     description: Enter desired admin username
-    default: {get_secret: azure_admin_username}
+    default: badguy123
   admin_password:
     type: string
     # display_label: Enter admin password
     description: Enter the desired admin password
-    default: {get_secret: azure_admin_password}
+    default: 3up3rs3kr3T
 
 dsl_definitions:
   azure_credentials: &azure_credentials
