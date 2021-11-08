@@ -12,14 +12,14 @@ imports:
 inputs:
   resource_prefix:
     type: string
-    display_label: Enter prefix to be applied to resource names
+    # display_label: Enter prefix to be applied to resource names
     description: >
       Resource names created in Azure by the blueprint can be
       customized by supplying a prefix string (e.g. 'test_')
     default: ''
   subscription_id:
     type: string
-    display_label: Enter Microsoft Azure subscription ID
+    # display_label: Enter Microsoft Azure subscription ID
     description: >
       A Microsoft Azure subscription ID. This is a unique
       user account in Azure. This can be found in the
@@ -27,7 +27,7 @@ inputs:
     default: {get_secret: azure_subscription_id }
   tenant_id:
     type: string
-    display_label: Enter Microsoft Azure tenant ID
+    # display_label: Enter Microsoft Azure tenant ID
     description: >
        A Microsoft Azure tenant ID. This can be found in
        the Azure Active Directory dashboard by accessing
@@ -35,7 +35,7 @@ inputs:
     default: {get_secret: azure_tenant_id }
   client_id:
     type: string
-    display_label: Enter Microsoft Azure client ID
+    # display_label: Enter Microsoft Azure client ID
     description: >
       A Microsoft Azure client ID. This can be found in
       the Azure Active Directory dashboard by accessing
@@ -43,19 +43,19 @@ inputs:
     default: {get_secret: azure_client_id}
   client_secret:
     type: string
-    display_label: Microsoft Azure client secret key
+    # display_label: Microsoft Azure client secret key
     description: >
       A Microsoft Azure client secret key. This can be found
       or generated in the same location as your client ID.
     default: {get_secret: azure_secret_key}
   vm_size:
     type: string
-    display_label: Enter location specific VM size
+    # display_label: Enter location specific VM size
     description: Location/region VM size name, e.g. 'Standard_M8ms'
     default: Standard_B1s
   location:
     type: string
-    display_label: Azure location
+    # display_label: Azure location
     description: Select Azure location name
     default: EastUS
     constraints:
@@ -67,32 +67,32 @@ inputs:
         - CanadaCentral
   image_publisher:
     type: string
-    display_label: Enter image publisher
+    # display_label: Enter image publisher
     description: Image publisher name, e.g. 'Canonical'
     default: Canonical
   image_offer:
     type: string
-    display_label: Enter OS offer
+    # display_label: Enter OS offer
     description: Enter OS offer, e.g. 'UbuntuServer'
     default: UbuntuServer
   image_sku:
     type: string
-    display_label: Enter image SKU
+    # display_label: Enter image SKU
     description: Enter image SKU, e.g. '18.04-LTS'
     default: '18.04-LTS'
   image_version:
     type: string
-    display_label: Enter image version
+    # display_label: Enter image version
     description: Enter image version, e.g. 'latest'
     default: latest
   admin_username:
     type: string
-    display_label: Enter desired admin username
+    # display_label: Enter desired admin username
     description: Enter desired admin username
     default: {get_secret: azure_admin_username}
   admin_password:
     type: string
-    display_label: Enter admin password
+    # display_label: Enter admin password
     description: Enter the desired admin password
     default: {get_secret: azure_admin_password}
 
