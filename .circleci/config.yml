@@ -22,10 +22,10 @@ executors:
     machine:
       image: ubuntu-1604:201903-01
 
-#  arm_wagon_generator:
-#    machine:
-#      image: ubuntu-2004:202101-01
-#      resource_class: arm.medium
+  arm_wagon_generator:
+    machine:
+      image: ubuntu-2004:202101-01
+      resource_class: arm.medium
 
   cloudify-machine-py3:
     machine:
@@ -309,7 +309,7 @@ commands:
 
   run_lb_test:
     steps:
-      - run: ecosystem-test local-blueprint-test  -b examples/load-balancer-blueprint.yaml --test-id=azure-aks -i resource_suffix=lb-test-$CIRCLE_BUILD_NUM --on-failure=uninstall-force --timeout=3000
+      - run: ecosystem-test local-blueprint-test  -b examples/load-balancer-blueprint.yaml --test-id=azure-aks -i resource_prefix=lb-test-$CIRCLE_BUILD_NUM --on-failure=uninstall-force --timeout=3000
 
   release_plugin:
     steps:
@@ -422,11 +422,11 @@ jobs:
       - checkout
       - generate_rhel_py36_wagon
 
-#  arch64_wagon:
-#    executor: arm_wagon_generator
-#    steps:
-#      - checkout
-#      - generate_arch64_wagon
+  arch64_wagon:
+    executor: arm_wagon_generator
+    steps:
+      - checkout
+      - generate_arch64_wagon
 
   build_bundle:
     executor: py36
@@ -503,22 +503,22 @@ workflows:
           filters:
             branches:
               only: /([0-9\.]*\-build|master|dev)/
-#      - arch64_wagon:
-#          filters:
-#            branches:
-#              only: /([0-9\.]*\-build|master|dev)/
+      - arch64_wagon:
+          filters:
+            branches:
+              only: /([0-9\.]*\-build|master|dev)/
       - build_bundle:
           filters:
             branches:
-              only: /master/
+              only: /([0-9\.]*\-build|master|dev)/
           requires:
             - wagon
-            # - arch64_wagon
+            - arch64_wagon
             - rhel_wagon
       - hw_integration_tests_py3:
           requires:
             - wagon
-            # - arch64_wagon
+            - arch64_wagon
             - rhel_wagon
             - build_bundle
           filters:
@@ -527,7 +527,7 @@ workflows:
       - azure_arm_integration_tests_py3:
           requires:
             - wagon
-            # - arch64_wagon
+            - arch64_wagon
             - rhel_wagon
             - build_bundle
           filters:
@@ -536,7 +536,7 @@ workflows:
       - aks_integration_tests_py3:
           requires:
             - wagon
-            # - arch64_wagon
+            - arch64_wagon
             - rhel_wagon
             - build_bundle
           filters:
@@ -545,7 +545,7 @@ workflows:
       - lb_integration_test:
           requires:
             - wagon
-            # - arch64_wagon
+            - arch64_wagon
             - rhel_wagon
             - build_bundle
           filters:
@@ -558,8 +558,8 @@ workflows:
           requires:
             # - unittests_py27
             - unittests_py36
+            - arch64_wagon
             - wagon
-            # - arch64_wagon
             - rhel_wagon
             - build_bundle
             - hw_integration_tests_py3
@@ -589,10 +589,10 @@ workflows:
           filters:
             branches:
               only: /([0-9\.]*\-build|master|dev)/
-#      - arch64_wagon:
-#          filters:
-#            branches:
-#              only: /([0-9\.]*\-build|master|dev)/
+      - arch64_wagon:
+          filters:
+            branches:
+              only: /([0-9\.]*\-build|master|dev)/
       - rhel_wagon:
           filters:
             branches:
@@ -600,15 +600,15 @@ workflows:
       - build_bundle:
           filters:
             branches:
-              only: /master/
+              only: /([0-9\.]*\-build|master|dev)/
           requires:
-            # - arch64_wagon
+            - arch64_wagon
             - wagon
             - rhel_wagon
       - hw_integration_tests_py3:
           requires:
+            - arch64_wagon
             - wagon
-            # - arch64_wagon
             - rhel_wagon
             - build_bundle
           filters:
@@ -616,8 +616,8 @@ workflows:
               only: /([0-9\.]*\-build|master|dev)/
       - azure_arm_integration_tests_py3:
           requires:
+            - arch64_wagon
             - wagon
-            # - arch64_wagon
             - rhel_wagon
             - build_bundle
           filters:
@@ -625,8 +625,8 @@ workflows:
               only: /([0-9\.]*\-build|master|dev)/
       - aks_integration_tests_py3:
           requires:
+            - arch64_wagon
             - wagon
-            # - arch64_wagon
             - rhel_wagon
             - build_bundle
           filters:
@@ -650,10 +650,10 @@ workflows:
           filters:
             branches:
               only: /([0-9\.]*\-build|master|dev)/
-#      - arch64_wagon:
-#          filters:
-#            branches:
-#              only: /([0-9\.]*\-build|master|dev)/
+      - arch64_wagon:
+          filters:
+            branches:
+              only: /([0-9\.]*\-build|master|dev)/
       - rhel_wagon:
           filters:
             branches:
@@ -663,13 +663,13 @@ workflows:
             branches:
               only: /master/
           requires:
-            # - arch64_wagon
+            - arch64_wagon
             - wagon
             - rhel_wagon
       - lb_integration_test:
           requires:
             - wagon
-            # - arch64_wagon
+            - arch64_wagon
             - rhel_wagon
             - build_bundle
           filters:
