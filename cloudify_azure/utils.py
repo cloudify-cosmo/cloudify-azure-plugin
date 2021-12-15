@@ -467,35 +467,59 @@ def save_common_info_in_runtime_properties(resource_group_name,
     ctx.instance.runtime_properties['name'] = resource_name
 
 
+def handle_task(resource,
+                resource_group_name,
+                name,
+                parent_name=None,
+                resource_task=None,
+                additional_params=None):
+    """
+
+    :param resource: A AzureResource object from azure_sdk package.
+    :param resource_group_name: An Azure resource group name.
+    :param name: The name of the resource.
+    :param parent_name: The name of the resource's parent resource,
+        if applicable.
+    :param resource_task: The name of the task, e.g. delete, get, that we wish
+        to call and to handle.
+    :param additional_params: Task parameters that may or may not be used.
+    :return:
+    """
+    if not resource_task:
+        raise RuntimeError('No resource task name provided.')
+    task = getattr(resource, resource_task)
+    args = [resource_group_name]
+    if parent_name:
+        args.append(parent_name)
+    if name:
+        args.append(name)
+    if additional_params:
+        args.append(additional_params)
+    try:
+        return task(*args)
+    except CloudError as e:
+        return e
+
+
 def handle_delete(_ctx,
                   resource,
                   resource_group_name,
                   name=None,
                   parent_name=None):
-    try:
-        if not name:
-            resource.get(resource_group_name)
-        elif parent_name:
-            resource.get(resource_group_name, parent_name, name)
-        else:
-            resource.get(resource_group_name, name)
-    except CloudError:
-        ctx.logger.info("Resource with name {0} doesn't exist".format(name))
+    get_result = handle_task(
+        resource, resource_group_name, name, parent_name, 'get')
+    if isinstance(get_result, CloudError):
+        ctx.logger.info("Resource with name {0} doesn't exist.".format(name))
         return
-    try:
-        if not name:
-            resource.delete(resource_group_name)
-        elif parent_name:
-            resource.delete(resource_group_name, parent_name, name)
-        else:
-            resource.delete(resource_group_name, name)
-        runtime_properties_cleanup(_ctx)
-    except CloudError as cr:
-        if 'AnotherOperationInProgress' in cr.message:
-            raise cfy_exc.OperationRetry(cr.message)
+    delete_result = handle_task(
+        resource, resource_group_name, name, parent_name, 'delete')
+    if isinstance(delete_result, CloudError):
+        if 'AnotherOperationInProgress' in delete_result.message:
+            raise cfy_exc.OperationRetry(delete_result.message)
         raise cfy_exc.NonRecoverableError(
             "delete resource '{0}' failed with this error : {1}".format(
-                name, cr.message))
+                name, delete_result.message))
+    return delete_result
 
 
 def handle_create(resource,
@@ -508,21 +532,21 @@ def handle_create(resource,
         'Calling create_or_update on resource {} with params {}'.format(
             name, additional_params))
 
-    try:
-        if not name:
-            return resource.create_or_update(
-                resource_group_name, additional_params)
-        if parent_name:
-            return resource.create_or_update(
-                resource_group_name, parent_name, name, additional_params)
-        return resource.create_or_update(
-            resource_group_name, name, additional_params)
-    except CloudError as cr:
+    cr = handle_task(
+        resource,
+        resource_group_name,
+        name,
+        parent_name,
+        'create_or_update',
+        additional_params)
+    # cr is short for create_result
+    if isinstance(cr, CloudError):
         if 'Another operation on this or dependent resource' in cr.message:
             raise cfy_exc.OperationRetry(cr.message)
         raise cfy_exc.NonRecoverableError(
             "create {0} '{1}' failed with this error : {2}".format(
                 type(resource), name, cr.message))
+    return cr
 
 
 def check_types_in_hierarchy(types, hierarchy):

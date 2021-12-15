@@ -24,6 +24,7 @@ from uuid import uuid4
 from copy import deepcopy
 from msrestazure.azure_exceptions import CloudError
 
+from cloudify import ctx as ctx_from_imports
 from cloudify import compute
 from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
@@ -428,69 +429,72 @@ def start(ctx, command_to_execute, file_uris, type_handler_version='1.8', **_):
         [net_rel.target.node.id for net_rel in rel_nics]))
 
     # No NIC? Exit and hope the user doesn't plan to install an agent
-    if not rel_nics:
-        return
+    if rel_nics:
+        vm_id = ctx.instance.runtime_properties.get("resource_id")
 
-    vm_id = ctx.instance.runtime_properties.get("resource_id")
+        public_ip_addresses = []
+        for rel_nic in rel_nics:
+            # Get the NIC data from the API directly
+            # (because of IPConfiguration)
+            nic_azure_config = utils.get_client_config(
+                rel_nic.target.node.properties)
+            nic_resource_group = utils.get_resource_group(rel_nic.target)
+            nic_name = utils.get_resource_name(rel_nic.target)
+            nic_iface = NetworkInterfaceCard(nic_azure_config, ctx.logger)
+            nic_data = nic_iface.get(nic_resource_group, nic_name)
+            nic_vm_id = nic_data.get('virtual_machine', {}).get('id')
 
-    public_ip_addresses = []
-    for rel_nic in rel_nics:
-        # Get the NIC data from the API directly (because of IPConfiguration)
-        nic_azure_config = utils.get_client_config(
-            rel_nic.target.node.properties)
-        nic_resource_group = utils.get_resource_group(rel_nic.target)
-        nic_name = utils.get_resource_name(rel_nic.target)
-        nic_iface = NetworkInterfaceCard(nic_azure_config, ctx.logger)
-        nic_data = nic_iface.get(nic_resource_group, nic_name)
-        nic_vm_id = nic_data.get('virtual_machine', {}).get('id')
+            if not nic_vm_id:
+                if not vm_id:
+                    nic_data['virtual_machine'] = {
+                        'id': utils.get_resource_id_from_name(
+                            azure_config.get('subscription_id'),
+                            resource_group_name,
+                            'Microsoft.Compute',
+                            'virtualMachines',
+                            vm_name
+                        )
+                    }
+                elif vm_id not in nic_vm_id:
+                    nic_data['virtual_machine'] = {
+                        'id': vm_id
+                    }
+                ctx.logger.info('nic_data {nic_data}'.format(
+                    nic_data=nic_data))
+                nic_data = nic_iface.create_or_update(nic_resource_group,
+                                                      nic_name,
+                                                      nic_data)
+            # Iterate over each IPConfiguration entry
+            for ip_cfg in nic_data.get('ip_configurations', list()):
 
-        if not nic_vm_id:
-            if not vm_id:
-                nic_data['virtual_machine'] = {
-                    'id': utils.get_resource_id_from_name(
-                        azure_config.get('subscription_id'),
-                        resource_group_name,
-                        'Microsoft.Compute',
-                        'virtualMachines',
-                        vm_name
-                    )
-                }
-            elif vm_id not in nic_vm_id:
-                nic_data['virtual_machine'] = {
-                    'id': vm_id
-                }
-            ctx.logger.info('nic_data {nic_data}'.format(nic_data=nic_data))
-            nic_data = nic_iface.create_or_update(nic_resource_group, nic_name,
-                                                  nic_data)
-        # Iterate over each IPConfiguration entry
-        for ip_cfg in nic_data.get('ip_configurations', list()):
+                # Get the Private IP Address endpoint
+                private_ip = ip_cfg.get('private_ip_address')
+                ctx.instance.runtime_properties['ip'] = private_ip
+                public_ip = ip_cfg.get('public_ip_address', {}).get(
+                    'ip_address')
+                if not public_ip:
+                    azure_config = utils.get_client_config(ctx.node.properties)
+                    resource_group_name = utils.get_resource_group(ctx)
+                    pip = PublicIPAddress(azure_config, ctx.logger)
+                    pip_cfg = ip_cfg.get('public_ip_address')
+                    if pip_cfg:
+                        pip_name = pip_cfg.get('id').rsplit('/', 1)[1]
+                        public_ip_data = pip.get(resource_group_name, pip_name)
+                        public_ip = public_ip_data.get("ip_address")
+                if not public_ip:
+                    # skip the public ip from this ip configuration
+                    # as it is None
+                    continue
 
-            # Get the Private IP Address endpoint
-            private_ip = ip_cfg.get('private_ip_address')
-            ctx.instance.runtime_properties['ip'] = private_ip
-            public_ip = ip_cfg.get('public_ip_address', {}).get('ip_address')
-            if not public_ip:
-                azure_config = utils.get_client_config(ctx.node.properties)
-                resource_group_name = utils.get_resource_group(ctx)
-                pip = PublicIPAddress(azure_config, ctx.logger)
-                pip_cfg = ip_cfg.get('public_ip_address')
-                if pip_cfg:
-                    pip_name = pip_cfg.get('id').rsplit('/', 1)[1]
-                    public_ip_data = pip.get(resource_group_name, pip_name)
-                    public_ip = public_ip_data.get("ip_address")
-            if not public_ip:
-                # skip the public ip from this ip configuration as it is None
-                continue
-
-            ctx.instance.runtime_properties['public_ip'] = public_ip
-            # For consistency with other plugins.
-            ctx.instance.runtime_properties[PUBLIC_IP_PROPERTY] = public_ip
-            # We should also consider that maybe there will be many
-            # public ip addresses.
-            if public_ip not in public_ip_addresses:
-                public_ip_addresses.append(public_ip)
-            ctx.instance.runtime_properties['public_ip_addresses'] = \
-                public_ip_addresses
+                ctx.instance.runtime_properties['public_ip'] = public_ip
+                # For consistency with other plugins.
+                ctx.instance.runtime_properties[PUBLIC_IP_PROPERTY] = public_ip
+                # We should also consider that maybe there will be many
+                # public ip addresses.
+                if public_ip not in public_ip_addresses:
+                    public_ip_addresses.append(public_ip)
+                ctx.instance.runtime_properties['public_ip_addresses'] = \
+                    public_ip_addresses
 
     # if no public_ip default to private_ip
     public_ip = ctx.instance.runtime_properties.get('public_ip')
@@ -512,6 +516,58 @@ def start(ctx, command_to_execute, file_uris, type_handler_version='1.8', **_):
         'public_ip',
         ctx.instance.runtime_properties.get('public_ip')))
 
+    # Start the VM
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_COMPUTE)
+    virtual_machine = VirtualMachine(azure_config, ctx.logger, api_version)
+    if not get_instance_status(virtual_machine,
+                               resource_group_name,
+                               vm_name) == 'PowerState/running':
+        virtual_machine.start(resource_group_name, vm_name)
+        raise cfy_exc.OperationRetry('Waiting for PowerState/running status.')
+
+
+def get_instance_status(virtual_machine, resource_group_name, vm_name):
+    try:
+        response = virtual_machine.get_instance_view(resource_group_name,
+                                                     vm_name)
+        return response['instance_view']['statuses'][-1]['code']
+    except (KeyError, AttributeError) as e:
+        ctx_from_imports.logger.info(str(e))
+        raise cfy_exc.OperationRetry(
+            'Improper status returned for Virtual Machine. {}'.format(str(e)))
+    except CloudError:
+        return
+
+
+@operation(resumable=True)
+def stop(ctx, **_):
+    """Stops a Virtual Machine"""
+    azure_config = utils.get_client_config(ctx.node.properties)
+    resource_group_name = utils.get_resource_group(ctx)
+    name = ctx.instance.runtime_properties.get('name')
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_COMPUTE)
+    virtual_machine = VirtualMachine(azure_config, ctx.logger, api_version)
+    get_instance_status(
+        virtual_machine, resource_group_name, name)
+    # TODO: Stop the VM if it is already running.
+    virtual_machine = VirtualMachine(azure_config, ctx.logger, api_version)
+    status = get_instance_status(
+        virtual_machine, resource_group_name, name)
+    ctx.logger.info('VM {} status {}'.format(name, status))
+    if status == 'PowerState/deallocated' or status == 'PowerState/stopped':
+        ctx.logger.info('VM {} is in state {} (stopped)'.format(name, status))
+        return
+    elif status == 'PowerState/running':
+        utils.handle_task(
+            virtual_machine,
+            resource_group_name,
+            name,
+            resource_task='power_off')
+    raise cfy_exc.OperationRetry(
+        'Waiting for {} PowerState/deallocated status.'.format(name))
+
 
 @operation(resumable=True)
 @decorators.with_azure_resource(VirtualMachine)
@@ -526,6 +582,8 @@ def delete(ctx, **_):
     virtual_machine = VirtualMachine(azure_config, ctx.logger, api_version)
     utils.handle_delete(
         ctx, virtual_machine, resource_group_name, name)
+    get_instance_status(
+        virtual_machine, resource_group_name, name)
 
 
 @operation(resumable=True)

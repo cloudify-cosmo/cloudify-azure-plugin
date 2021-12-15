@@ -19,6 +19,7 @@ import requests
 from cloudify import constants
 from cloudify.state import current_ctx
 from cloudify import mocks as cfy_mocks
+from cloudify.exceptions import OperationRetry
 from msrestazure.azure_exceptions import CloudError
 
 from cloudify_azure import utils
@@ -400,3 +401,101 @@ class VirtualMachineTest(unittest.TestCase):
                         mock.Mock()):
             virtualmachine.delete(ctx=self.fake_ctx)
             client().virtual_machines.delete.assert_not_called()
+
+    def test_start(self, client, credentials):
+
+        fake_ctx, _, __ = self._get_mock_context_for_run(
+            operation={'name': 'cloudify.interfaces.lifecycle.start'})
+        fake_ctx.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_resource_group'
+        name = 'mockvm'
+        fake_ctx.instance.runtime_properties['resource_group'] = resource_group
+        fake_ctx.instance.runtime_properties['name'] = name
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            response = mock.MagicMock()
+            response.status_code = 200
+            message = {
+                'instance_view': {'statuses': [{'code': 'PowerState/stopped'}]}
+            }
+            response.as_dict.return_value = message
+            client().virtual_machines.get.return_value = response
+            with self.assertRaisesRegexp(
+                    OperationRetry, 'Waiting for PowerState/running status'):
+                virtualmachine.start(
+                    command_to_execute='', file_uris=[], ctx=fake_ctx)
+            client().virtual_machines.start.assert_called_with(
+                resource_group_name=resource_group,
+                vm_name=name
+            )
+
+    def test_start_started(self, client, credentials):
+
+        fake_ctx, _, __ = self._get_mock_context_for_run(
+            operation={'name': 'cloudify.interfaces.lifecycle.start'})
+        fake_ctx.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_resource_group'
+        name = 'mockvm'
+        fake_ctx.instance.runtime_properties['resource_group'] = resource_group
+        fake_ctx.instance.runtime_properties['name'] = name
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            response = mock.MagicMock()
+            response.status_code = 200
+            message = {
+                'instance_view': {'statuses': [{'code': 'PowerState/running'}]}
+            }
+            response.as_dict.return_value = message
+            client().virtual_machines.get.return_value = response
+            virtualmachine.start(
+                command_to_execute='', file_uris=[], ctx=fake_ctx)
+            client().virtual_machines.start.assert_not_called()
+
+    def test_stopped(self, client, credentials):
+
+        fake_ctx, _, __ = self._get_mock_context_for_run(
+            operation={'name': 'cloudify.interfaces.lifecycle.stop'})
+        fake_ctx.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_resource_group'
+        name = 'mockvm'
+        fake_ctx.instance.runtime_properties['resource_group'] = resource_group
+        fake_ctx.instance.runtime_properties['name'] = name
+        response = mock.MagicMock()
+        response.status_code = 200
+        message = {
+            'instance_view': {'statuses': [{'code': 'PowerState/deallocated'}]}
+        }
+        response.as_dict.return_value = message
+        client().virtual_machines.get.return_value = response
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            virtualmachine.stop(ctx=fake_ctx)
+            client().virtual_machines.power_off.assert_not_called()
+
+    def test_stop(self, client, credentials):
+
+        fake_ctx, _, __ = self._get_mock_context_for_run(
+            operation={'name': 'cloudify.interfaces.lifecycle.stop'})
+        fake_ctx.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_resource_group'
+        name = 'mockvm'
+        fake_ctx.instance.runtime_properties['resource_group'] = resource_group
+        fake_ctx.instance.runtime_properties['name'] = name
+        response = mock.MagicMock()
+        response.status_code = 200
+        message = {
+            'instance_view': {'statuses': [{'code': 'PowerState/running'}]}}
+        response.as_dict.return_value = message
+        client().virtual_machines.get.return_value = response
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            with self.assertRaisesRegexp(
+                    OperationRetry,
+                    'Waiting for {} PowerState/deallocated status'.format(name)
+            ):
+                virtualmachine.stop(
+                    command_to_execute='', file_uris=[], ctx=fake_ctx)
+            client().virtual_machines.power_off.assert_called_with(
+                resource_group_name=resource_group,
+                vm_name=name
+            )

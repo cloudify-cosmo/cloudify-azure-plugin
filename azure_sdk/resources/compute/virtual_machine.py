@@ -41,6 +41,20 @@ class VirtualMachine(AzureResource):
             )
         return virtual_machine
 
+    def get_instance_view(self, group_name, vm_name):
+        self.logger.info("Get virtual_machine instance_view...{0}".format(
+            vm_name))
+        virtual_machine = self.client.virtual_machines.get(
+            resource_group_name=group_name,
+            vm_name=vm_name,
+            expand='instanceView'
+        ).as_dict()
+        self.logger.info(
+            'Get virtual_machine instance_view result: {0}'.format(
+                utils.secure_logging_content(virtual_machine))
+            )
+        return virtual_machine
+
     def create_or_update(self, group_name, vm_name, params):
         self.logger.info(
             "Create/Updating virtual_machine...{0}".format(vm_name))
@@ -67,3 +81,25 @@ class VirtualMachine(AzureResource):
         delete_async_operation.wait()
         self.logger.debug(
             'Deleted virtual_machine {0}'.format(vm_name))
+
+    def start(self, group_name, vm_name):
+        self.logger.info(
+            "Starting virtual_machine...{0}".format(vm_name))
+        start_async_operation = self.client.virtual_machines.start(
+            resource_group_name=group_name,
+            vm_name=vm_name
+        )
+        start_async_operation.wait()
+        self.logger.debug(
+            'Started virtual_machine {0}'.format(vm_name))
+
+    def power_off(self, group_name, vm_name):
+        self.logger.info(
+            "Stopping virtual_machine...{0}".format(vm_name))
+        stop_async_operation = self.client.virtual_machines.power_off(
+            resource_group_name=group_name,
+            vm_name=vm_name
+        )
+        stop_async_operation.wait()
+        self.logger.debug(
+            'Stopped virtual_machine {0}'.format(vm_name))

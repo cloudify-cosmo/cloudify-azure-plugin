@@ -235,6 +235,15 @@ def get_delete_op(op_name, node_type=None):
     return 'delete' in op
 
 
+def get_special_condition(type_list, op_name):
+    op = op_name.split('.')[-1]
+    if 'cloudify.azure.Deployment' in type_list:
+        return True
+    elif op not in ['create', 'delete']:
+        return True
+    return False
+
+
 def with_azure_resource(resource_class_name):
     def wrapper_outer(func):
         @wraps(func)
@@ -246,7 +255,8 @@ def with_azure_resource(resource_class_name):
             azure_config = utils.get_client_config(ctx.node.properties)
             resource_factory = ResourceGetter(ctx, azure_config, name)
             exists = resource_factory.get_resource(resource_class_name)
-            arm_dep = 'cloudify.azure.Deployment' in ctx.node.type_hierarchy
+            special_condition = get_special_condition(ctx.node.type_hierarchy,
+                                                      ctx.operation.name)
             create_op = get_create_op(ctx.operation.name,
                                       ctx.node.type_hierarchy)
             delete_op = get_delete_op(ctx.operation.name,
@@ -258,7 +268,7 @@ def with_azure_resource(resource_class_name):
                     name,
                     _ctx_node=ctx.node,
                     exists=exists,
-                    special_condition=arm_dep,
+                    special_condition=special_condition,
                     create_operation=create_op,
                     delete_operation=delete_op):
                 return func(*args, **kwargs)
