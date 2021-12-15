@@ -472,7 +472,7 @@ class VirtualMachineTest(unittest.TestCase):
             virtualmachine.stop(ctx=fake_ctx)
             client().virtual_machines.power_off.assert_not_called()
 
-    def stop(self, client, credentials):
+    def test_stop(self, client, credentials):
 
         fake_ctx, _, __ = self._get_mock_context_for_run(
             operation={'name': 'cloudify.interfaces.lifecycle.stop'})
@@ -490,10 +490,12 @@ class VirtualMachineTest(unittest.TestCase):
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
             with self.assertRaisesRegexp(
-                    OperationRetry, 'Waiting for PowerState/running status'):
-                virtualmachine.start(
+                    OperationRetry,
+                    'Waiting for {} PowerState/deallocated status'.format(name)
+            ):
+                virtualmachine.stop(
                     command_to_execute='', file_uris=[], ctx=fake_ctx)
-            client().virtual_machines.start.assert_called_with(
+            client().virtual_machines.power_off.assert_called_with(
                 resource_group_name=resource_group,
                 vm_name=name
             )
