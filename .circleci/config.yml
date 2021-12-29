@@ -431,7 +431,7 @@ workflows:
               only: /master/
           requires:
             - release
-            - validate_documentation
+            - node/validate_documentation_job
   nightly:
     triggers:
     - schedule:
