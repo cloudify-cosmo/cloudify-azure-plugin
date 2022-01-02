@@ -343,3 +343,47 @@ class ResourceGetter(object):
         except CloudError:
             exists = None
         return exists
+
+
+def get_operation_config(op, runtime_properties, properties):
+    op_config = runtime_properties.get('operation_config', {})
+    if 'create' in op:
+        if 'create' in op_config:
+            return op_config['create']
+        return properties['operation_config']['create']
+    elif 'update' in op:
+        if 'update' in op_config:
+            return op_config['update']
+        return properties['operation_config']['update']
+    elif 'delete' in op:
+        if 'delete' in op_config:
+            return op_config['delete']
+        return properties['operation_config']['delete']
+    raise cfy_exc.NonRecoverableError(
+        'The operation config provided is invalid.')
+
+
+def get_custom_resource_config(runtime_properties, properties):
+    resource_config = runtime_properties.get('resource_config', {})
+    if not resource_config:
+        return properties['resource_config']
+
+
+def configure_custom_resource(func):
+    @wraps(func)
+    def wrapper(**kwargs):
+        ctx = kwargs['ctx']
+        op_name = ctx.operation.name.split('.')[-1]
+        runprops = ctx.instance.runtime_properties
+        props = ctx.node.properties
+        resource = kwargs.pop(
+            'resource_config',
+            get_custom_resource_config(runprops, props))
+        operation = kwargs.pop(
+            'operation_config',
+            get_operation_config(op_name, runprops, props)
+        )
+        client = utils.get_client_config(ctx.node.properties)
+        api = ctx.node.properties.get('api_version')
+        return func(ctx, resource, operation, client, api)
+    return wrapper

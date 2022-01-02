@@ -1864,6 +1864,54 @@ node_types:
             locations:
               default: { get_property: [ SELF, locations ] }
 
+  cloudify.nodes.azure.CustomTypes:
+    derived_from: cloudify.nodes.Root
+    properties:
+      client_config:
+        description: A dictionary of values to pass to authenticate with the Azure API
+        type: cloudify.datatypes.azure.Config
+        required: false
+      locations:
+        type: list
+        default: []
+      resource_config:
+        type: cloudify.datatypes.azure.CustomResource
+        description: A dict describing the custom resource.
+        required: true
+      operation_config:
+        type: cloudify.datatypes.azure.CustomResourceOperationConfig
+        description: A dict describing the function parameters for create, update, and delete.
+        required: true
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: azure.cloudify_azure.custom.create
+          inputs:
+            resource_config:
+              default: { get_attribute: [ SELF, resource_config ] }
+            operation_config:
+              default: { get_attribute: [ SELF, operation_config, create ] }
+            locations:
+              default: { get_property: [ SELF, locations ] }
+        start:
+          implementation: azure.cloudify_azure.custom.update
+          inputs:
+            resource_config:
+              default: { get_attribute: [ SELF, resource_config ] }
+            operation_config:
+              default: { get_attribute: [ SELF, operation_config, update ] }
+            locations:
+              default: { get_property: [ SELF, locations ] }
+        delete:
+          implementation: azure.cloudify_azure.custom.delete
+          inputs:
+            resource_config:
+              default: { get_attribute: [ SELF, resource_config ] }
+            operation_config:
+              default: { get_attribute: [ SELF, operation_config, delete ] }
+            locations:
+              default: { get_property: [ SELF, locations ] }
+
 relationships:
 
   cloudify.azure.relationships.contained_in_resource_group:
