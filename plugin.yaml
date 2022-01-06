@@ -6,7 +6,7 @@ plugins:
   azure:
     executor: central_deployment_agent
     package_name: cloudify-azure-plugin
-    package_version: '3.5.6'
+    package_version: '3.6.0'
 
 data_types:
   cloudify.datatypes.azure.Config:
@@ -1871,9 +1871,9 @@ node_types:
         description: A dictionary of values to pass to authenticate with the Azure API
         type: cloudify.datatypes.azure.Config
         required: false
-      locations:
-        type: list
-        default: []
+      location:
+        type: string
+        default: ''
       resource_config:
         type: cloudify.datatypes.azure.CustomResource
         description: A dict describing the custom resource.

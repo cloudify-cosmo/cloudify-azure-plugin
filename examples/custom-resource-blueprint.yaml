@@ -1,0 +1,24 @@
+tosca_definitions_version: cloudify_dsl_1_3
+
+imports:
+  - http://cloudify.co/spec/cloudify/5.0.0/types.yaml
+  - plugin:cloudify-azure-plugin
+
+dsl_definitions:
+
+  azure_config: &azure_config
+    subscription_id: { get_secret: azure_subscription_id }
+    tenant_id: { get_secret: azure_tenant_id }
+    client_id: { get_secret: azure_client_id }
+    client_secret: { get_secret: azure_client_secret }
+
+node_templates:
+
+  vm:
+    type: cloudify.azure.nodes.compute.VirtualMachine
+    properties:
+      location: { get_input: location }
+      client_config: *azure_config
+      resource_config: {}
+      operation_config: {}
+    relationships: []
