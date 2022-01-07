@@ -532,6 +532,60 @@ data_types:
         type: boolean
         default: true
 
+  cloudify.datatypes.azure.CustomResource:
+    description: General use type that can be used with any Azure API in the wheels of the Azure Plugin wagon.
+    properties:
+      custom_resource_module:
+        type: string
+        required: true
+        description: The import path, for example, azure.mgmt.resource.
+      custom_resource_class_name:
+        type: string
+        required: true
+        description: The class to import from the resource module, for example ResourceManagementClient.
+      custom_resource_object_name:
+        type: string
+        required: true
+        description: The object where we find the functions for create, update, and delete, for example resource_groups.
+      create_fn_name:
+        type: string
+        required: true
+        description: The function that is called for create, for example, create_or_update.
+      update_fn_name:
+        type: string
+        required: true
+        description: The function that is called for update, for example, create_or_update.
+      delete_fn_name:
+        type: string
+        required: true
+        description: The function that is called for create, for example, begin delete.
+      get_fn_name:
+        type: string
+        required: true
+        description: The get function name.
+        default: 'get'
+      get_params:
+        type: dict
+        required: true
+        description: The params for calling the get function.
+
+  cloudify.datatypes.azure.CustomResourceOperationConfig:
+    description: Mappings for custom operation configs.
+    properties:
+      create:
+        type: dict
+        required: true
+        description: A dict of keys and values, which will be sent to create_fn_name.
+      update:
+        type: dict
+        required: false
+        description: A dict of keys and values, which will be sent to update_fn_name.
+        default: {}
+      delete:
+        type: dict
+        required: true
+        description: A dict of keys and values, which will be sent to delete_fn_name.
+
 node_types:
   cloudify.azure.nodes.ResourceGroup:
     derived_from: cloudify.nodes.Root
@@ -1864,6 +1918,7 @@ node_types:
             locations:
               default: { get_property: [ SELF, locations ] }
 
+  # For Azure SDK Reference: https://docs.microsoft.com/en-us/python/api/?view=azure-python
   cloudify.nodes.azure.CustomTypes:
     derived_from: cloudify.nodes.Root
     properties:
@@ -1874,6 +1929,9 @@ node_types:
       location:
         type: string
         default: ''
+      api_version:
+        type: string
+        required: false
       resource_config:
         type: cloudify.datatypes.azure.CustomResource
         description: A dict describing the custom resource.
@@ -1891,8 +1949,8 @@ node_types:
               default: { get_attribute: [ SELF, resource_config ] }
             operation_config:
               default: { get_attribute: [ SELF, operation_config, create ] }
-            locations:
-              default: { get_property: [ SELF, locations ] }
+            location:
+              default: { get_property: [ SELF, location ] }
         start:
           implementation: azure.cloudify_azure.custom.update
           inputs:
@@ -1901,7 +1959,7 @@ node_types:
             operation_config:
               default: { get_attribute: [ SELF, operation_config, update ] }
             locations:
-              default: { get_property: [ SELF, locations ] }
+              default: { get_property: [ SELF, location ] }
         delete:
           implementation: azure.cloudify_azure.custom.delete
           inputs:
@@ -1910,7 +1968,7 @@ node_types:
             operation_config:
               default: { get_attribute: [ SELF, operation_config, delete ] }
             locations:
-              default: { get_property: [ SELF, locations ] }
+              default: { get_property: [ SELF, location ] }
 
 relationships:
 

@@ -10,13 +10,13 @@ inputs:
     type: string
     default: test-custom-resource-group
 
-  virtual_network_name:
+  storage_account_name:
     type: string
-    default: test-virtual-network
+    default: customteststorageaccount
 
-  subnet_name:
+  batch_account_name:
     type: string
-    default: test-subnet
+    default: customtestbatchaccount
 
   location:
     type: string
@@ -54,57 +54,56 @@ node_templates:
             location: { get_property: [ SELF, location ] }
         delete: *resource_group_params
 
-  virtual_network:
+  storage_account:
     type: cloudify.nodes.azure.CustomTypes
     relationships:
       - type: cloudify.relationships.depends_on
         target: resource_group
     properties:
-      api_version: '2016-09-01'
+      api_version: '2015-06-15'
       location: { get_input: location }
       client_config: *azure_config
       resource_config:
-        custom_resource_module: azure.mgmt.network
-        custom_resource_class_name: NetworkManagementClient
-        custom_resource_object_name: virtual_networks
-        create_fn_name: create_or_update
+        custom_resource_module: azure.mgmt.storage
+        custom_resource_class_name: StorageManagementClient
+        custom_resource_object_name: storage_accounts
+        create_fn_name: create
         update_fn_name: create_or_update
         delete_fn_name: delete
-        get_params: &virtual_network_params
+        get_fn_name: get_properties
+        get_params: &storage_account_params
           <<: *resource_group_params
-          virtual_network_name: { get_input: virtual_network_name }
+          account_name: { get_input: storage_account_name }
       operation_config:
         create:
-          <<: *virtual_network_params
+          <<: *storage_account_params
           parameters:
-            address_space:
-              address_prefixes: ['10.0.0.0/16']
+            accountType: Standard_LRS
             location: { get_property: [ SELF, location ] }
-        delete: *virtual_network_params
+        delete: *storage_account_params
 
-  subnet:
+  batch:
     type: cloudify.nodes.azure.CustomTypes
     relationships:
       - type: cloudify.relationships.depends_on
-        target: virtual_network
+        target: storage_account
     properties:
-      api_version: '2016-09-01'
       location: { get_input: location }
       client_config: *azure_config
       resource_config:
-        custom_resource_module: azure.mgmt.network
-        custom_resource_class_name: NetworkManagementClient
-        custom_resource_object_name: virtual_networks
-        create_fn_name: create_or_update
-        update_fn_name: create_or_update
+        custom_resource_module: azure.mgmt.batch
+        custom_resource_class_name: BatchManagementClient
+        custom_resource_object_name: batch_account
+        create_fn_name: create
+        update_fn_name: update
         delete_fn_name: delete
-        get_params: &subnet_params
-          <<: *virtual_network_params
-          subnet_name: { get_input: subnet_name }
+        get_params: &batch_account_params
+          <<: *resource_group_params
+          account_name: { get_input: batch_account_name }
       operation_config:
         create:
-          <<: *subnet_params
+          <<: *batch_account_params
           parameters:
-            address_prefix: '10.0.0.0/24'
+            auto_storage: { get_attribute: [storage_account, create_result, id] }
             location: { get_property: [ SELF, location ] }
-        delete: *subnet_params
+        delete: *batch_account_params
