@@ -26,9 +26,13 @@ class CustomAzureResource(AzureResource):
                  get_params=None):
         super(CustomAzureResource, self).__init__(azure_config)
         self.logger = logger
+        if not custom_resource_module.startswith('azure'):
+            raise AzureCustomResourceError(
+                'Only modules from Azure namespace may be imported.'
+        )
         try:
             self.client_module = import_module(custom_resource_module)
-        except ModuleNotFoundError:
+        except ModuleNotFoundError as e:
             raise AzureCustomResourceError(
                 'Custom Azure Resource requires you to provide parameters '
                 'client_module_path and client_class_name. The parameters '
@@ -38,9 +42,11 @@ class CustomAzureResource(AzureResource):
                 'from {client_module_path} import {client_class_name}. '
                 'Check that this is the correct import path and if so raise '
                 'an issue with the Cloudify team in order to look into '
-                'client versions'.format(
+                'client versions. Err: {err}'.format(
                     client_module_path=custom_resource_class_name,
-                    client_class_name=custom_resource_object_name)
+                    client_class_name=custom_resource_object_name,
+                    err=str(e)
+                )
             )
         self.client_class_name = custom_resource_class_name
         if api_version:
@@ -77,7 +83,7 @@ class CustomAzureResource(AzureResource):
             kwargs.update(**self.get_params)
         self.logger.info(
             "Get custom resource with these parameters {0}".format(
-                args, kwargs))
+                [args, kwargs]))
         call = getattr(self.custom_resource, self.get_fn_name)
         try:
             result = call(*args, **kwargs).as_dict()
@@ -89,9 +95,6 @@ class CustomAzureResource(AzureResource):
         return result
 
     def _create_or_update(self, fn_name, *args, **kwargs):
-        self.logger.info(
-            "Create/Update custom resource with these parameters {0}".format(
-                args, kwargs))
         try:
             call = getattr(self.custom_resource, fn_name)
         except AttributeError:
@@ -99,6 +102,9 @@ class CustomAzureResource(AzureResource):
                 'Available attributes: {}'.format(
                     dir(self.custom_resource)))
             raise
+        self.logger.info(
+            "Create/Update custom resource with these parameters {0}".format(
+                [args, kwargs]))
         response = call(*args, **kwargs)
         if hasattr(response, 'wait'):
             response.wait()
@@ -118,7 +124,7 @@ class CustomAzureResource(AzureResource):
     def delete(self, *args, **kwargs):
         self.logger.info(
             "Delete custom resource with these parameters {0}".format(
-                args, kwargs))
+                [args, kwargs]))
         call = getattr(self.custom_resource, self.delete_fn_name)
         response = call(*args, **kwargs)
         if hasattr(response, 'wait'):

@@ -370,6 +370,7 @@ def get_custom_resource_config(runtime_properties, properties):
     resource_config = runtime_properties.get('resource_config', {})
     if not resource_config:
         return properties['resource_config']
+    return resource_config
 
 
 def configure_custom_resource(func):
