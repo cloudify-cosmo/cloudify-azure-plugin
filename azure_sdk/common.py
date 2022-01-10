@@ -40,7 +40,15 @@ class AzureResource(object):
             verify=self.creds.get("endpoint_verify", True),
         )
         self.subscription_id = azure_config.get("subscription_id")
-        self.client = None
+        self._client = None
+
+    @property
+    def client(self):
+        return self._client
+
+    @client.setter
+    def client(self, value):
+        self._client = value
 
     def handle_credentials(self, azure_config):
         """

@@ -54,6 +54,7 @@ setup(
         # azure/resources/compute/virtualmachine/virtualmachine_utils.py
         # ::check_if_configuration_changed props list, a
         # according to available api versions.
+        'azure-mgmt-batch==8.0.0',
         'azure-mgmt-compute==12.0.0',
         'azure-mgmt-containerservice==9.0.1',
         'azure-mgmt-network==10.1.0',
@@ -63,6 +64,6 @@ setup(
         'azure-mgmt-resource==9.0.0',
         'azure-common==1.1.25',
         'msrestazure==0.6.3',
-        'cryptography==3.2.1'
+        'cryptography==3.3.2'
     ]
 )
