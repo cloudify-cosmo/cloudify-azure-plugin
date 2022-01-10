@@ -1,0 +1,109 @@
+tosca_definitions_version: cloudify_dsl_1_3
+
+imports:
+  - http://cloudify.co/spec/cloudify/5.0.0/types.yaml
+  - plugin:cloudify-azure-plugin
+
+inputs:
+
+  resource_group_name:
+    type: string
+    default: test-custom-resource-group
+
+  storage_account_name:
+    type: string
+    default: customteststorageaccount
+
+  batch_account_name:
+    type: string
+    default: customtestbatchaccount
+
+  location:
+    type: string
+    default: eastus2
+
+dsl_definitions:
+
+  azure_config: &azure_config
+    subscription_id: { get_secret: azure_subscription_id }
+    tenant_id: { get_secret: azure_tenant_id }
+    client_id: { get_secret: azure_client_id }
+    client_secret: { get_secret: azure_client_secret }
+
+node_templates:
+
+  resource_group:
+    type: cloudify.nodes.azure.CustomTypes
+    properties:
+      api_version: '2017-05-10'
+      location: { get_input: location }
+      client_config: *azure_config
+      resource_config:
+        custom_resource_module: azure.mgmt.resource
+        custom_resource_class_name: ResourceManagementClient
+        custom_resource_object_name: resource_groups
+        create_fn_name: create_or_update
+        update_fn_name: create_or_update
+        delete_fn_name: delete
+        get_params: &resource_group_params
+          resource_group_name:  { get_input: resource_group_name }
+      operation_config:
+        create:
+          <<: *resource_group_params
+          parameters:
+            location: { get_property: [ SELF, location ] }
+        delete: *resource_group_params
+
+  storage_account:
+    type: cloudify.nodes.azure.CustomTypes
+    relationships:
+      - type: cloudify.relationships.depends_on
+        target: resource_group
+    properties:
+      api_version: '2015-06-15'
+      location: { get_input: location }
+      client_config: *azure_config
+      resource_config:
+        custom_resource_module: azure.mgmt.storage
+        custom_resource_class_name: StorageManagementClient
+        custom_resource_object_name: storage_accounts
+        create_fn_name: create
+        update_fn_name: create_or_update
+        delete_fn_name: delete
+        get_fn_name: get_properties
+        get_params: &storage_account_params
+          <<: *resource_group_params
+          account_name: { get_input: storage_account_name }
+      operation_config:
+        create:
+          <<: *storage_account_params
+          parameters:
+            accountType: Standard_LRS
+            location: { get_property: [ SELF, location ] }
+        delete: *storage_account_params
+
+  batch:
+    type: cloudify.nodes.azure.CustomTypes
+    relationships:
+      - type: cloudify.relationships.depends_on
+        target: storage_account
+    properties:
+      location: { get_input: location }
+      client_config: *azure_config
+      resource_config:
+        custom_resource_module: azure.mgmt.batch
+        custom_resource_class_name: BatchManagementClient
+        custom_resource_object_name: batch_account
+        create_fn_name: create
+        update_fn_name: update
+        delete_fn_name: delete
+        get_params: &batch_account_params
+          <<: *resource_group_params
+          account_name: { get_input: batch_account_name }
+      operation_config:
+        create:
+          <<: *batch_account_params
+          parameters:
+            auto_storage: { get_attribute: [storage_account, create_result, id] }
+            location: { get_property: [ SELF, location ] }
+        delete: *batch_account_params
