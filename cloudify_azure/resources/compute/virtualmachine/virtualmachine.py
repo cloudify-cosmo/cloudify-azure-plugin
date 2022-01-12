@@ -556,7 +556,8 @@ def stop(ctx, **_):
     status = get_instance_status(
         virtual_machine, resource_group_name, name)
     ctx.logger.info('VM {} status {}'.format(name, status))
-    if status == 'PowerState/deallocated' or status == 'PowerState/stopped':
+    if status in ['PowerState/deallocated',
+                  'PowerState/stopped'] or not status:
         ctx.logger.info('VM {} is in state {} (stopped)'.format(name, status))
         return
     elif status == 'PowerState/running':
