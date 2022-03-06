@@ -11,6 +11,21 @@ plugins:
 data_types:
   cloudify.datatypes.azure.Config:
     properties:
+      environment_variables:
+        type: dict
+        description: |
+          You can provide any set of environment variables for use by managed identity.
+          For more information, please see: https://docs.microsoft.com/en-us/python/api/overview/azure/identity-readme?view=azure-python.
+          If you use this approach other parameters will be ignored.
+        default: {}
+      username:
+        type: string
+        required: false
+        description: Your azure username.
+      password:
+        type: string
+        required: false
+        description: Your azure password.
       endpoints_active_directory:
         description: >
           A Microsoft Azure Active Directory endpoint.

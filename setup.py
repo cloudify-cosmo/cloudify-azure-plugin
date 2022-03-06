@@ -36,34 +36,40 @@ def get_version(rel_file='plugin.yaml'):
     raise RuntimeError('Unable to find version string.')
 
 
+general_requirements = [
+    'cloudify-common>=4.5',
+    'cloudify-utilities-plugins-sdk>=0.0.43',
+    'requests>=2.23.0',
+    'urllib3>=1.25.3',
+    'pyyaml>=4.2b1',
+    'cryptography==3.3.2'
+]
+
+azure_requirements = [
+    # stating from azure v5.0.0 we need to add azure modules like this
+    'azure-mgmt-web==0.46.0',
+    # When upgrading compute package version, update cloudify_
+    # azure/resources/compute/virtualmachine/virtualmachine_utils.py
+    # ::check_if_configuration_changed props list, a
+    # according to available api versions.
+    'azure-mgmt-batch==8.0.0',
+    'azure-mgmt-compute==12.0.0',
+    'azure-mgmt-containerservice==9.0.1',
+    'azure-mgmt-network==10.1.0',
+    'azure-mgmt-storage==9.0.0',
+    'azure-storage-blob',
+    'azure-storage-common==2.1.0',
+    'azure-mgmt-resource==9.0.0',
+    'azure-common==1.1.25',
+    'msrestazure==0.6.3',
+    'azure-identity==1.8.0',
+]
+
 setup(
     name='cloudify-azure-plugin',
     version=get_version(),
     license='LICENSE',
     packages=find_packages(exclude=['tests*']),
     description='Cloudify plugin for Microsoft Azure',
-    install_requires=[
-        'cloudify-common>=4.5',
-        'cloudify-utilities-plugins-sdk>=0.0.43',
-        'requests>=2.23.0',
-        'urllib3>=1.25.3',
-        'pyyaml>=4.2b1',
-        # stating from azure v5.0.0 we need to add azure modules like this
-        'azure-mgmt-web==0.46.0',
-        # When upgrading compute package version, update cloudify_
-        # azure/resources/compute/virtualmachine/virtualmachine_utils.py
-        # ::check_if_configuration_changed props list, a
-        # according to available api versions.
-        'azure-mgmt-batch==8.0.0',
-        'azure-mgmt-compute==12.0.0',
-        'azure-mgmt-containerservice==9.0.1',
-        'azure-mgmt-network==10.1.0',
-        'azure-mgmt-storage==9.0.0',
-        'azure-storage-blob',
-        'azure-storage-common==2.1.0',
-        'azure-mgmt-resource==9.0.0',
-        'azure-common==1.1.25',
-        'msrestazure==0.6.3',
-        'cryptography==3.3.2'
-    ]
+    install_requires=general_requirements + azure_requirements
 )

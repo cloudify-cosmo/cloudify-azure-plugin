@@ -424,10 +424,17 @@ def handle_resource_config_params(data, resource_config):
 
 def get_client_config(properties):
     client_config = properties.get('client_config', {})
-    if not client_config.get('subscription_id'):
+    azure_config = properties.get('azure_config', {})
+    skip = ['endpoints_active_directory',
+            'endpoints_resource_manager',
+            'endpoint_resource',
+            'endpoint_verify',
+            'scale_name_separator',
+            'scale_name_suffix_chars']
+    if dict(filter(lambda x: x[0] not in skip and x[1], azure_config.items())):
         ctx.logger.warn("azure_config is deprecated please use client_config, "
                         "in later version it will be removed")
-        return properties.get('azure_config', {})
+        return azure_config
     return client_config
 
 
