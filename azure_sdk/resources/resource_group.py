@@ -23,8 +23,9 @@ class ResourceGroup(AzureResource):
 
     def __init__(self, azure_config, logger,
                  api_version=constants.API_VER_RESOURCES):
-        super(ResourceGroup, self).__init__(azure_config)
         self.logger = logger
+        self.logger.info('Sending these credentials: {}'.format(azure_config))
+        super(ResourceGroup, self).__init__(azure_config)
         self.client = \
             ResourceManagementClient(self.credentials, self.subscription_id,
                                      api_version=api_version)

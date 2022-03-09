@@ -25,12 +25,15 @@ from cloudify_azure._compat import SafeConfigParser
 from cloudify.exceptions import NonRecoverableError
 
 
+from cloudify import ctx
+
+
 class AzureResource(object):
 
     def __init__(self, azure_config):
         self.creds = self.handle_credentials(azure_config)
         azure_config_env_vars = azure_config.get('environment_variables')
-
+        ctx.logger.info('Env {}'.format(azure_config_env_vars))
         if self.creds.get("china"):
             self.creds['cloud_environment'] = AZURE_CHINA_CLOUD
         else:
@@ -41,6 +44,7 @@ class AzureResource(object):
                               'AZURE_SUBSCRIPTION_ID')
 
         if azure_config_env_vars:
+            ctx.logger.info('Entered env')
             for k, v in azure_config_env_vars.items():
                 environ[k] = v
             self.credentials = DefaultAzureCredential()
@@ -48,31 +52,27 @@ class AzureResource(object):
             resource_default = 'https://management.core.windows.net/'
 
             # Traditional method
-            client_id = self.creds.get('client_id')
-            secret = self.creds.get('secret')
-            tenant_id = self.creds.get('tenant_id')
-            verify = self.creds.get("endpoint_verify", True)
-            cloud_environment = self.creds.get("cloud_environment")
-            endpoint_resource = self.creds.get(
-                "endpoint_resource", resource_default)
-
+            client_id = self.creds.get("client_id")
+            secret = self.creds.get("client_secret")
             # AAD Method
             username = self.creds.get('username')
             password = self.creds.get('password')
 
             if username and password:
+                ctx.logger.info('Entered UP')
                 self.credentials = UserPassCredentials(
                     username, password, client_id=client_id, secret=secret)
             else:
+                ctx.logger.info('Entered SP')
                 self.credentials = ServicePrincipalCredentials(
                     client_id=client_id,
                     secret=secret,
-                    tenant=tenant_id,
-                    resource=endpoint_resource,
-                    cloud_environment=cloud_environment,
-                    verify=verify,
+                    tenant=self.creds.get("tenant_id"),
+                    resource=self.creds.get("endpoint_resource",
+                                            resource_default),
+                    cloud_environment=self.creds.get("cloud_environment"),
+                    verify=self.creds.get("endpoint_verify", True),
                 )
-
         if not subscription_id:
             raise NonRecoverableError(
                 'The subscription ID should either be provided in the '
