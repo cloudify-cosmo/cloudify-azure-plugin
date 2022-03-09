@@ -34,7 +34,6 @@ class AzureResource(object):
     def __init__(self, azure_config):
         self.creds = self.handle_credentials(azure_config)
         azure_config_env_vars = azure_config.get('environment_variables')
-        ctx.logger.info('Env {}'.format(azure_config_env_vars))
         if self.creds.get("china"):
             self.creds['cloud_environment'] = AZURE_CHINA_CLOUD
         else:
@@ -43,44 +42,42 @@ class AzureResource(object):
         subscription_id = azure_config.get("subscription_id") or \
                           azure_config_env_vars.get(
                               'AZURE_SUBSCRIPTION_ID')
+        self._credentials = None
 
-        if azure_config_env_vars:
-            ctx.logger.info('Entered env')
+        # Traditional method
+        client_id = self.creds.get("client_id")
+        secret = self.creds.get("client_secret")
+        # AAD Method
+        username = self.creds.get('username')
+        password = self.creds.get('password')
+        resource_default = 'https://management.core.windows.net/'
+
+        if username and password:
+            self._credentials = UserPassCredentials(
+                username, password, client_id=client_id, secret=secret)
+        elif client_id and secret:
+            self._credentials = ServicePrincipalCredentials(
+                client_id=client_id,
+                secret=secret,
+                tenant=self.creds.get("tenant_id"),
+                resource=self.creds.get("endpoint_resource",
+                                        resource_default),
+                cloud_environment=self.creds.get("cloud_environment"),
+                verify=self.creds.get("endpoint_verify", True),
+            )
+        elif azure_config:
             for k, v in azure_config_env_vars.items():
                 environ[k] = v
-            self.credentials = AzureIdentityCredentialAdapter(
-                DefaultAzureCredential())
-        else:
-            resource_default = 'https://management.core.windows.net/'
 
-            # Traditional method
-            client_id = self.creds.get("client_id")
-            secret = self.creds.get("client_secret")
-            # AAD Method
-            username = self.creds.get('username')
-            password = self.creds.get('password')
-
-            if username and password:
-                ctx.logger.info('Entered UP')
-                self.credentials = UserPassCredentials(
-                    username, password, client_id=client_id, secret=secret)
-            else:
-                ctx.logger.info('Entered SP')
-                self.credentials = ServicePrincipalCredentials(
-                    client_id=client_id,
-                    secret=secret,
-                    tenant=self.creds.get("tenant_id"),
-                    resource=self.creds.get("endpoint_resource",
-                                            resource_default),
-                    cloud_environment=self.creds.get("cloud_environment"),
-                    verify=self.creds.get("endpoint_verify", True),
-                )
         if not subscription_id:
             raise NonRecoverableError(
                 'The subscription ID should either be provided in the '
                 'client_config as subscription_id or '
                 'in the environment_variables dict as AZURE_SUBSCRIPTION_ID.'
             )
+
+        if not self._credentials:
+            self.credentials = DefaultAzureCredential()
 
         self.subscription_id = subscription_id
         self._client = None
@@ -92,6 +89,14 @@ class AzureResource(object):
     @client.setter
     def client(self, value):
         self._client = value
+
+    @property
+    def credentials(self):
+        return self._credentials
+
+    @credentials.setter
+    def credentials(self, value):
+        self._credentials = value
 
     def handle_credentials(self, azure_config):
         """

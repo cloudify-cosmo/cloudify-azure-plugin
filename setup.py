@@ -52,16 +52,16 @@ azure_requirements = [
     # azure/resources/compute/virtualmachine/virtualmachine_utils.py
     # ::check_if_configuration_changed props list, a
     # according to available api versions.
-    'azure-mgmt-batch==8.0.0',
-    'azure-mgmt-compute==12.0.0',
-    'azure-mgmt-containerservice==9.0.1',
-    'azure-mgmt-network==10.1.0',
-    'azure-mgmt-storage==9.0.0',
+    'azure-mgmt-batch==16.0.0',
+    'azure-mgmt-compute==25.0.0',
+    'azure-mgmt-containerservice==17.0.0',
+    'azure-mgmt-network==19.3.0',
+    'azure-mgmt-storage==19.1.0',
     'azure-storage-blob',
     'azure-storage-common==2.1.0',
-    'azure-mgmt-resource==9.0.0',
-    'azure-common==1.1.25',
-    'msrestazure==0.6.3',
+    'azure-mgmt-resource==20.0.0',
+    'azure-common==1.1.28',
+    'msrestazure==0.6.4',
     'azure-identity==1.8.0',
 ]
 
