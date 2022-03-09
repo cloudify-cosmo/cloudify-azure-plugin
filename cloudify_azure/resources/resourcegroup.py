@@ -28,7 +28,9 @@ from azure_sdk.resources.resource_group import ResourceGroup
 @decorators.with_azure_resource(ResourceGroup)
 def create(ctx, **_):
     """Uses an existing, or creates a new, Resource Group"""
+    ctx.logger.info('Not Props: {}'.format(ctx.node.properties))
     azure_config = utils.get_client_config(ctx.node.properties)
+    ctx.logger.info('Azure Config: {}'.format(azure_config))
     name = utils.get_resource_name(ctx)
     resource_group_params = {
         'location': ctx.node.properties.get('location'),

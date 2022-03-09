@@ -22,6 +22,7 @@ from msrestazure.azure_cloud import AZURE_CHINA_CLOUD, AZURE_PUBLIC_CLOUD
 
 from cloudify_azure import constants, utils
 from cloudify_azure._compat import SafeConfigParser
+from .azure_credential_adapter import AzureIdentityCredentialAdapter
 from cloudify.exceptions import NonRecoverableError
 
 
@@ -47,7 +48,8 @@ class AzureResource(object):
             ctx.logger.info('Entered env')
             for k, v in azure_config_env_vars.items():
                 environ[k] = v
-            self.credentials = DefaultAzureCredential()
+            self.credentials = AzureIdentityCredentialAdapter(
+                DefaultAzureCredential())
         else:
             resource_default = 'https://management.core.windows.net/'
 

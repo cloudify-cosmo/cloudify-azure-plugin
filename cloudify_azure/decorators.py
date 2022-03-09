@@ -116,13 +116,9 @@ def with_generate_name(resource_class_name):
             ctx = kwargs['ctx']
             try:
                 # check if name is set or not and generate one if it wasn't set
-                azure_config = ctx.node.properties.get('azure_config')
-                if not azure_config.get("subscription_id"):
-                    azure_config = ctx.node.properties.get('client_config')
-                else:
-                    ctx.logger.warn("azure_config is deprecated "
-                                    "please use client_config, "
-                                    "in later version it will be removed")
+                ctx.logger.info('Props {}'.format(ctx.node.properties))
+                azure_config = utils.get_client_config(ctx.node.properties)
+                ctx.logger.info('azure_config {}'.format(azure_config))
                 resource = resource_class_name(azure_config, ctx.logger)
                 name = utils.get_resource_name(ctx)
                 resource_group_name = name
@@ -255,7 +251,9 @@ def with_azure_resource(resource_class_name):
             name = utils.get_resource_name(ctx)
             # check if azure_config is given and if the resource
             # is external or not
+            ctx.logger.info('Props {}'.format(ctx.node.properties))
             azure_config = utils.get_client_config(ctx.node.properties)
+            ctx.logger.info('azure_config {}'.format(azure_config))
             resource_factory = ResourceGetter(ctx, azure_config, name)
             exists = resource_factory.get_resource(resource_class_name)
             special_condition = get_special_condition(ctx.node.type_hierarchy,

@@ -431,10 +431,13 @@ def get_client_config(properties):
             'endpoint_verify',
             'scale_name_separator',
             'scale_name_suffix_chars']
+    ctx.logger.info('Client config: {}'.format(client_config))
+    ctx.logger.info('Azure config: {}'.format(azure_config))
     if dict(filter(lambda x: x[0] not in skip and x[1], azure_config.items())):
         ctx.logger.warn("azure_config is deprecated please use client_config, "
                         "in later version it will be removed")
         return azure_config
+    ctx.logger.info('Using Client Config')
     return client_config
 
 
