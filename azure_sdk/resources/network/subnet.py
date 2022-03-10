@@ -43,7 +43,7 @@ class Subnet(AzureResource):
 
     def create_or_update(self, group_name, vnet_name, subnet_name, params):
         self.logger.info("Create/Updating subnet...{0}".format(subnet_name))
-        async_subnet_creation = self.client.subnets.create_or_update(
+        async_subnet_creation = self.client.subnets.begin_create_or_update(
             resource_group_name=group_name,
             virtual_network_name=vnet_name,
             subnet_name=subnet_name,
