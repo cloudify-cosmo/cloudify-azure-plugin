@@ -509,7 +509,7 @@ def handle_task(resource,
         args.append(additional_params)
     try:
         return task(*args)
-    except CloudError as e:
+    except (CloudError, ResourceNotFoundError) as e:
         return e
 
 
