@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from azure.mgmt.compute import ComputeManagementClient
+from azure.core.exceptions import ResourceNotFoundError
 
 from cloudify_azure import (constants, utils)
 from azure_sdk.common import AzureResource
@@ -75,11 +76,15 @@ class VirtualMachine(AzureResource):
     def delete(self, group_name, vm_name):
         self.logger.info(
             "Deleting virtual_machine...{0}".format(vm_name))
-        delete_async_operation = self.client.virtual_machines.begin_delete(
-            resource_group_name=group_name,
-            vm_name=vm_name
-        )
-        delete_async_operation.wait()
+        try:
+            delete_async_operation = self.client.virtual_machines.begin_delete(
+                resource_group_name=group_name,
+                vm_name=vm_name
+            )
+        except ResourceNotFoundError:
+            self.logger.debug('Deleted machine not found.')
+        else:
+            delete_async_operation.wait()
         self.logger.debug(
             'Deleted virtual_machine {0}'.format(vm_name))
 
