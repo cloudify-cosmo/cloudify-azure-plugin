@@ -22,6 +22,7 @@ from functools import wraps
 
 from msrest.exceptions import ValidationError
 from msrestazure.azure_exceptions import CloudError
+from azure.core.exceptions import ResourceNotFoundError
 
 from cloudify import exceptions as cfy_exc
 from cloudify_common_sdk.utils import \
@@ -255,7 +256,10 @@ def with_azure_resource(resource_class_name):
             azure_config = utils.get_client_config(ctx.node.properties)
             ctx.logger.info('azure_config {}'.format(azure_config))
             resource_factory = ResourceGetter(ctx, azure_config, name)
-            exists = resource_factory.get_resource(resource_class_name)
+            try:
+                exists = resource_factory.get_resource(resource_class_name)
+            except ResourceNotFoundError:
+                exists = False
             special_condition = get_special_condition(ctx.node.type_hierarchy,
                                                       ctx.operation.name)
             create_op = get_create_op(ctx.operation.name,
