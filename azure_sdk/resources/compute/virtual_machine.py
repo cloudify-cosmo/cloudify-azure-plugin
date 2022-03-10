@@ -86,7 +86,7 @@ class VirtualMachine(AzureResource):
     def start(self, group_name, vm_name):
         self.logger.info(
             "Starting virtual_machine...{0}".format(vm_name))
-        start_async_operation = self.client.virtual_machines.start(
+        start_async_operation = self.client.virtual_machines.begin_start(
             resource_group_name=group_name,
             vm_name=vm_name
         )
@@ -97,7 +97,7 @@ class VirtualMachine(AzureResource):
     def power_off(self, group_name, vm_name):
         self.logger.info(
             "Stopping virtual_machine...{0}".format(vm_name))
-        stop_async_operation = self.client.virtual_machines.power_off(
+        stop_async_operation = self.client.virtual_machines.begin_power_off(
             resource_group_name=group_name,
             vm_name=vm_name
         )
