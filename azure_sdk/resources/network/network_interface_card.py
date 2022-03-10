@@ -47,7 +47,7 @@ class NetworkInterfaceCard(AzureResource):
             "Create/Updating network_interface...{0}".format(
                 network_interface_name))
         async_network_interface_creation = \
-            self.client.network_interfaces.create_or_update(
+            self.client.network_interfaces.begin_create_or_update(
                 resource_group_name=group_name,
                 network_interface_name=network_interface_name,
                 parameters=params,
