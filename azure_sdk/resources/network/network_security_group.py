@@ -66,10 +66,11 @@ class NetworkSecurityGroup(AzureResource):
         self.logger.info(
             "Deleting network_security_group...{0}".format(
                 network_security_group_name))
-        delete_async_operation = self.client.network_security_groups.delete(
-            resource_group_name=group_name,
-            network_security_group_name=network_security_group_name
-        )
+        delete_async_operation = \
+            self.client.network_security_groups.begin_delete(
+                resource_group_name=group_name,
+                network_security_group_name=network_security_group_name
+            )
         delete_async_operation.wait()
         self.logger.debug(
             'Deleted network_security_group {0}'.format(

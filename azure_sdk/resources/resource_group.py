@@ -53,7 +53,7 @@ class ResourceGroup(AzureResource):
 
     def delete(self, group_name):
         self.logger.info("Deleting resource_group...{0}".format(group_name))
-        delete_async_operation = self.client.resource_groups.delete(
+        delete_async_operation = self.client.resource_groups.begin_delete(
             resource_group_name=group_name
         )
         delete_async_operation.wait()

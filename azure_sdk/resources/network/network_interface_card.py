@@ -63,7 +63,7 @@ class NetworkInterfaceCard(AzureResource):
     def delete(self, group_name, network_interface_name):
         self.logger.info(
             "Deleting network_interface...{0}".format(network_interface_name))
-        delete_async_operation = self.client.network_interfaces.delete(
+        delete_async_operation = self.client.network_interfaces.begin_delete(
             resource_group_name=group_name,
             network_interface_name=network_interface_name
         )

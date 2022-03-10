@@ -61,7 +61,7 @@ class VirtualNetwork(AzureResource):
     def delete(self, group_name, virtual_network_name):
         self.logger.info(
             "Deleting virtual_network...{0}".format(virtual_network_name))
-        delete_async_operation = self.client.virtual_networks.delete(
+        delete_async_operation = self.client.virtual_networks.begin_delete(
             resource_group_name=group_name,
             virtual_network_name=virtual_network_name
         )

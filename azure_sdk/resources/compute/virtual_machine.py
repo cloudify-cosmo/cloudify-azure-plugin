@@ -75,7 +75,7 @@ class VirtualMachine(AzureResource):
     def delete(self, group_name, vm_name):
         self.logger.info(
             "Deleting virtual_machine...{0}".format(vm_name))
-        delete_async_operation = self.client.virtual_machines.delete(
+        delete_async_operation = self.client.virtual_machines.begin_delete(
             resource_group_name=group_name,
             vm_name=vm_name
         )
