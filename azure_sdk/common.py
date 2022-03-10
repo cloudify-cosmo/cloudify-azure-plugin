@@ -58,21 +58,22 @@ class AzureResource(object):
         if username and password:
             self._credentials = UserPassCredentials(
                 username, password, client_id=client_id, secret=secret)
-        elif client_id and secret and resource and environment:
-            self._credentials = ServicePrincipalCredentials(
-                client_id=client_id,
-                secret=secret,
-                tenant=self.creds.get("tenant_id"),
-                resource=resource,
-                cloud_environment=environment,
-                verify=self.creds.get("endpoint_verify", True),
-            )
         elif client_id and secret:
             self._credentials = ClientSecretCredential(
                 client_id=client_id,
                 secret=secret,
                 tenant=self.creds.get("tenant_id"),
             )
+        # Disabling Azure Stack
+        # elif client_id and secret:
+        #     self._credentials = ServicePrincipalCredentials(
+        #         client_id=client_id,
+        #         secret=secret,
+        #         tenant=self.creds.get("tenant_id"),
+        #         resource=resource,
+        #         cloud_environment=environment,
+        #         verify=self.creds.get("endpoint_verify", True),
+        #     )
         elif azure_config:
             for k, v in azure_config_env_vars.items():
                 environ[k] = v
