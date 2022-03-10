@@ -49,7 +49,7 @@ class NetworkSecurityGroup(AzureResource):
             "Create/Updating network_security_group...{0}".format(
                 network_security_group_name))
         async_nsg_creation = \
-            self.client.network_security_groups.create_or_update(
+            self.client.network_security_groups.begin_create_or_update(
                 resource_group_name=group_name,
                 network_security_group_name=network_security_group_name,
                 parameters=params,

@@ -45,11 +45,12 @@ class VirtualNetwork(AzureResource):
         self.logger.info(
             "Create/Updating virtual_network...{0}".format(
                 virtual_network_name))
-        async_vnet_creation = self.client.virtual_networks.create_or_update(
-            resource_group_name=group_name,
-            virtual_network_name=virtual_network_name,
-            parameters=params,
-        )
+        async_vnet_creation = \
+            self.client.virtual_networks.begin_create_or_update(
+                resource_group_name=group_name,
+                virtual_network_name=virtual_network_name,
+                parameters=params,
+            )
         async_vnet_creation.wait()
         virtual_network = async_vnet_creation.result().as_dict()
         self.logger.info(
