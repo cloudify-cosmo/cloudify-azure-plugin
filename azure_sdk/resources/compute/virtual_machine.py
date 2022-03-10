@@ -58,11 +58,12 @@ class VirtualMachine(AzureResource):
     def create_or_update(self, group_name, vm_name, params):
         self.logger.info(
             "Create/Updating virtual_machine...{0}".format(vm_name))
-        create_async_operation = self.client.virtual_machines.create_or_update(
-            resource_group_name=group_name,
-            vm_name=vm_name,
-            parameters=params,
-        )
+        create_async_operation = \
+            self.client.virtual_machines.begin_create_or_update(
+                resource_group_name=group_name,
+                vm_name=vm_name,
+                parameters=params,
+            )
         create_async_operation.wait()
         virtual_machine = create_async_operation.result().as_dict()
         self.logger.info(
