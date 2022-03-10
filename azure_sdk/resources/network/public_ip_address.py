@@ -46,7 +46,7 @@ class PublicIPAddress(AzureResource):
             "Create/Updating public_ip_address...{0}".format(
                 public_ip_address_name))
         async_public_ip_address_creation = \
-            self.client.public_ip_addresses.create_or_update(
+            self.client.public_ip_addresses.begin_create_or_update(
                 resource_group_name=group_name,
                 public_ip_address_name=public_ip_address_name,
                 parameters=params,
@@ -61,7 +61,7 @@ class PublicIPAddress(AzureResource):
     def delete(self, group_name, public_ip_address_name):
         self.logger.info(
             "Deleting public_ip_address...{0}".format(public_ip_address_name))
-        delete_async_operation = self.client.public_ip_addresses.delete(
+        delete_async_operation = self.client.public_ip_addresses.begin_delete(
             resource_group_name=group_name,
             public_ip_address_name=public_ip_address_name
         )
