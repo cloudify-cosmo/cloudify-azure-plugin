@@ -15,7 +15,7 @@
 
 from os import path, environ
 
-from azure.identity import DefaultAzureCredential
+from azure.identity import DefaultAzureCredential, ClientSecretCredential
 from azure.common.credentials import ServicePrincipalCredentials
 from msrestazure.azure_active_directory import UserPassCredentials
 from msrestazure.azure_cloud import AZURE_CHINA_CLOUD, AZURE_PUBLIC_CLOUD
@@ -34,6 +34,7 @@ class AzureResource(object):
     def __init__(self, azure_config):
         self.creds = self.handle_credentials(azure_config)
         azure_config_env_vars = azure_config.get('environment_variables')
+
         if self.creds.get("china"):
             self.creds['cloud_environment'] = AZURE_CHINA_CLOUD
         else:
@@ -51,19 +52,26 @@ class AzureResource(object):
         username = self.creds.get('username')
         password = self.creds.get('password')
         resource_default = 'https://management.core.windows.net/'
+        resource = self.creds.get("endpoint_resource", resource_default)
+        environment = self.creds.get("cloud_environment")
 
         if username and password:
             self._credentials = UserPassCredentials(
                 username, password, client_id=client_id, secret=secret)
-        elif client_id and secret:
+        elif client_id and secret and resource and environment:
             self._credentials = ServicePrincipalCredentials(
                 client_id=client_id,
                 secret=secret,
                 tenant=self.creds.get("tenant_id"),
-                resource=self.creds.get("endpoint_resource",
-                                        resource_default),
-                cloud_environment=self.creds.get("cloud_environment"),
+                resource=resource,
+                cloud_environment=environment,
                 verify=self.creds.get("endpoint_verify", True),
+            )
+        elif client_id and secret:
+            self._credentials = ClientSecretCredential(
+                client_id=client_id,
+                secret=secret,
+                tenant=self.creds.get("tenant_id"),
             )
         elif azure_config:
             for k, v in azure_config_env_vars.items():
