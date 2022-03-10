@@ -27,6 +27,7 @@ from cloudify import exceptions as cfy_exc
 from cloudify_azure import constants
 
 from msrestazure.azure_exceptions import CloudError
+from azure.core.exceptions import ResourceNotFoundError
 
 
 def dict_update(orig, updates):
@@ -524,7 +525,7 @@ def handle_delete(_ctx,
         return
     delete_result = handle_task(
         resource, resource_group_name, name, parent_name, 'delete')
-    if isinstance(delete_result, CloudError):
+    if isinstance(delete_result, (CloudError, ResourceNotFoundError)):
         if 'AnotherOperationInProgress' in delete_result.message:
             raise cfy_exc.OperationRetry(delete_result.message)
         raise cfy_exc.NonRecoverableError(
