@@ -104,7 +104,7 @@ def get_unique_name(resource, resource_group_name, name, **kwargs):
                 if result:  # found a resource with same name
                     name = ""
                     continue
-            except CloudError:  # this means name is not used
+            except (CloudError, ResourceNotFoundError):  # name is not used
                 return name
     else:
         return name
