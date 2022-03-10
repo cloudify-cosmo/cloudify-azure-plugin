@@ -60,9 +60,9 @@ class AzureResource(object):
                 username, password, client_id=client_id, secret=secret)
         elif client_id and secret:
             self._credentials = ClientSecretCredential(
-                client_id=client_id,
-                secret=secret,
                 tenant=self.creds.get("tenant_id"),
+                client_id=client_id,
+                client_secret=secret,
             )
         # Disabling Azure Stack
         # elif client_id and secret:
