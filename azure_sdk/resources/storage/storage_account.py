@@ -61,7 +61,7 @@ class StorageAccount(AzureResource):
 
     def delete(self, group_name, account_name):
         self.logger.info("Deleting Storage Account...{0}".format(account_name))
-        self.client.storage_accounts.begin_delete(
+        self.client.storage_accounts.delete(
             resource_group_name=group_name,
             account_name=account_name
         )
