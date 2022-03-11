@@ -50,14 +50,14 @@ def create(ctx, resource_group, cluster_name, resource_config, **_):
             'The cluster_name is deprecated, but was provided. '
             'Update your blueprint to use the "name" property, '
             'which replaces "cluster_name".')
-    resource_config_payload = {}
-    if 'network_profile' in resource_config_payload:
-        if 'loadBalancerProfile' in resource_config_payload['network_profile']:
-        handle_deprecated_values(
-            resource_config_payload['network_profile']['loadBalancerProfile'],
-            ['managedOutboundIPs', 'outboundIPPrefixes', 'outboundIPs'])
+    config = {}
+    if 'network_profile' in config:
+        if 'loadBalancerProfile' in config['network_profile']:
+            handle_deprecated_values(
+                config['network_profile']['loadBalancerProfile'],
+                ['managedOutboundIPs', 'outboundIPPrefixes', 'outboundIPs'])
     resource_config_payload = \
-        utils.handle_resource_config_params(resource_config_payload,
+        utils.handle_resource_config_params(config,
                                             resource_config)
     result = utils.handle_create(
         managed_cluster,
