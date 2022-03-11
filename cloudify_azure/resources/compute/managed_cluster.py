@@ -59,6 +59,7 @@ def create(ctx, resource_group, cluster_name, resource_config, **_):
     resource_config_payload = \
         utils.handle_resource_config_params(config,
                                             resource_config)
+    ctx.logger.info(resource_config_payload)
     result = utils.handle_create(
         managed_cluster,
         resource_group,
