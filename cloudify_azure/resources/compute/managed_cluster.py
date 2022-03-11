@@ -51,20 +51,20 @@ def create(ctx, resource_group, cluster_name, resource_config, **_):
             'Update your blueprint to use the "name" property, '
             'which replaces "cluster_name".')
     config = {}
-    if 'network_profile' in config:
-        if 'loadBalancerProfile' in config['network_profile']:
-            handle_deprecated_values(
-                config['network_profile']['loadBalancerProfile'],
-                ['managedOutboundIPs', 'outboundIPPrefixes', 'outboundIPs'])
-    resource_config_payload = \
+    config = \
         utils.handle_resource_config_params(config,
                                             resource_config)
-    ctx.logger.info(resource_config_payload)
+    if 'network_profile' in config:
+        if 'load_balancer_profile' in config['network_profile']:
+            handle_deprecated_values(
+                config['network_profile']['load_balancer_profile'],
+                ['managedOutboundIPs', 'outboundIPPrefixes', 'outboundIPs'])
+    ctx.logger.info(config)
     result = utils.handle_create(
         managed_cluster,
         resource_group,
         cluster_name,
-        additional_params=resource_config_payload)
+        additional_params=config)
     utils.save_common_info_in_runtime_properties(resource_group,
                                                  cluster_name,
                                                  result)
