@@ -17,6 +17,7 @@ import yaml
 import base64
 
 from cloudify.decorators import operation
+from cloudify import ctx as ctx_from_import
 
 from cloudify_azure import (constants, utils, decorators)
 from azure_sdk.resources.compute.managed_cluster import ManagedCluster
@@ -30,6 +31,16 @@ def get_manged_cluster_interface(ctx):
     return ManagedCluster(azure_config, ctx.logger, api_version)
 
 
+def handle_deprecated_values(config, deprecated_values):
+    for value in deprecated_values:
+        if value in config:
+            new_value = value.capitalize()
+            config[new_value] = config.pop(value)
+            ctx_from_import.logger.error(
+                'The value {} has been deprecrated by Microsoft '
+                'and replaced by {}'.format(value, new_value))
+
+
 @operation(resumable=True)
 @decorators.with_azure_resource(ManagedCluster)
 def create(ctx, resource_group, cluster_name, resource_config, **_):
@@ -40,6 +51,10 @@ def create(ctx, resource_group, cluster_name, resource_config, **_):
             'Update your blueprint to use the "name" property, '
             'which replaces "cluster_name".')
     resource_config_payload = {}
+    if 'network_profile' in resource_config_payload:
+        handle_deprecated_values(
+            resource_config_payload['network_profile'],
+            ['managedOutboundIPs', 'outboundIPPrefixes', 'outboundIPs'])
     resource_config_payload = \
         utils.handle_resource_config_params(resource_config_payload,
                                             resource_config)
