@@ -533,11 +533,11 @@ def get_instance_status(virtual_machine, resource_group_name, vm_name):
         response = virtual_machine.get_instance_view(resource_group_name,
                                                      vm_name)
         return response['instance_view']['statuses'][-1]['code']
-    except (KeyError, AttributeError, ResourceNotFoundError) as e:
+    except (KeyError, AttributeError) as e:
         ctx_from_imports.logger.info(str(e))
         raise cfy_exc.OperationRetry(
             'Improper status returned for Virtual Machine. {}'.format(str(e)))
-    except CloudError:
+    except (CloudError, ResourceNotFoundError):
         return
 
 
