@@ -47,15 +47,15 @@ class ManagedCluster(AzureResource):
         ]
         return managed_clusters
 
-
     def create_or_update(self, group_name, resource_name, params):
         self.logger.info(
             "Create/Updating managed_cluster...{0}".format(resource_name))
-        create_async_operation = self.client.managed_clusters.create_or_update(
-            resource_group_name=group_name,
-            resource_name=resource_name,
-            parameters=params,
-        )
+        create_async_operation = \
+            self.client.managed_clusters.begin_create_or_update(
+                resource_group_name=group_name,
+                resource_name=resource_name,
+                parameters=params,
+            )
         create_async_operation.wait()
         managed_cluster = create_async_operation.result().as_dict()
         self.logger.info(
@@ -67,7 +67,7 @@ class ManagedCluster(AzureResource):
     def delete(self, group_name, resource_name):
         self.logger.info(
             "Deleting managed_cluster...{0}".format(resource_name))
-        delete_async_operation = self.client.managed_clusters.delete(
+        delete_async_operation = self.client.managed_clusters.begin_delete(
             resource_group_name=group_name,
             resource_name=resource_name
         )
