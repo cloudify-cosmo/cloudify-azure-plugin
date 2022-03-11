@@ -31,10 +31,19 @@ def get_manged_cluster_interface(ctx):
     return ManagedCluster(azure_config, ctx.logger, api_version)
 
 
+def to_camel_case(text):
+    text = text.replace('ip', 'IP')
+    s = text.replace("-", " ").replace("_", " ")
+    s = s.split()
+    if len(text) == 0:
+        return text
+    return s[0] + ''.join(i.capitalize() for i in s[1:])
+
+
 def handle_deprecated_values(config, deprecated_values):
     for value in deprecated_values:
         if value in config:
-            new_value = value.capitalize()
+            new_value = to_camel_case(value)
             config[new_value] = config.pop(value)
             ctx_from_import.logger.error(
                 'The value {} has been deprecrated by Microsoft '
