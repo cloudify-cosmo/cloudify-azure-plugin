@@ -52,8 +52,9 @@ def create(ctx, resource_group, cluster_name, resource_config, **_):
             'which replaces "cluster_name".')
     resource_config_payload = {}
     if 'network_profile' in resource_config_payload:
+        if 'loadBalancerProfile' in resource_config_payload['network_profile']:
         handle_deprecated_values(
-            resource_config_payload['network_profile'],
+            resource_config_payload['network_profile']['loadBalancerProfile'],
             ['managedOutboundIPs', 'outboundIPPrefixes', 'outboundIPs'])
     resource_config_payload = \
         utils.handle_resource_config_params(resource_config_payload,
