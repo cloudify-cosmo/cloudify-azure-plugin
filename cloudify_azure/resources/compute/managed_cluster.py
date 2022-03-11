@@ -58,7 +58,9 @@ def create(ctx, resource_group, cluster_name, resource_config, **_):
         if 'load_balancer_profile' in config['network_profile']:
             handle_deprecated_values(
                 config['network_profile']['load_balancer_profile'],
-                ['managedOutboundIPs', 'outboundIPPrefixes', 'outboundIPs'])
+                ['managed_outbound_ips',
+                 'outbound_ip_prefixes',
+                 'outbound_ips'])
     ctx.logger.info(config)
     result = utils.handle_create(
         managed_cluster,
