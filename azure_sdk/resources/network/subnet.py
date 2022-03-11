@@ -58,7 +58,7 @@ class Subnet(AzureResource):
 
     def delete(self, group_name, vnet_name, subnet_name):
         self.logger.info("Deleting subnet...{0}".format(subnet_name))
-        delete_async_operation = self.client.subnets.delete(
+        delete_async_operation = self.client.subnets.begin_delete(
             resource_group_name=group_name,
             virtual_network_name=vnet_name,
             subnet_name=subnet_name
