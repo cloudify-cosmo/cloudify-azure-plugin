@@ -16,17 +16,12 @@
 from os import path, environ
 
 from azure.identity import DefaultAzureCredential, ClientSecretCredential
-from azure.common.credentials import ServicePrincipalCredentials
 from msrestazure.azure_active_directory import UserPassCredentials
 from msrestazure.azure_cloud import AZURE_CHINA_CLOUD, AZURE_PUBLIC_CLOUD
 
 from cloudify_azure import constants, utils
 from cloudify_azure._compat import SafeConfigParser
-from .azure_credential_adapter import AzureIdentityCredentialAdapter
 from cloudify.exceptions import NonRecoverableError
-
-
-from cloudify import ctx
 
 
 class AzureResource(object):
@@ -52,8 +47,6 @@ class AzureResource(object):
         username = self.creds.get('username')
         password = self.creds.get('password')
         resource_default = 'https://management.core.windows.net/'
-        resource = self.creds.get("endpoint_resource", resource_default)
-        environment = self.creds.get("cloud_environment")
 
         if username and password:
             self._credentials = UserPassCredentials(
