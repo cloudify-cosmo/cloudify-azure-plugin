@@ -74,7 +74,7 @@ class AzureResource(object):
         #         cloud_environment=environment,
         #         verify=self.creds.get("endpoint_verify", True),
         #     )
-        elif azure_config:
+        elif azure_config_env_vars:
             for k, v in azure_config_env_vars.items():
                 environ[k] = v
 
