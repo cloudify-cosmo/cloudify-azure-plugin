@@ -46,7 +46,6 @@ class AzureResource(object):
         # AAD Method
         username = self.creds.get('username')
         password = self.creds.get('password')
-        resource_default = 'https://management.core.windows.net/'
 
         if username and password:
             self._credentials = UserPassCredentials(
