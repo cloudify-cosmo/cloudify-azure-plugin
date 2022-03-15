@@ -1,5 +1,5 @@
 # #######
-# Copyright (c) 2020 Cloudify Platform Ltd. All rights reserved
+# Copyright (c) 2020 - 2022 Cloudify Platform Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ class NetworkInterfaceCard(AzureResource):
             "Create/Updating network_interface...{0}".format(
                 network_interface_name))
         async_network_interface_creation = \
-            self.client.network_interfaces.create_or_update(
+            self.client.network_interfaces.begin_create_or_update(
                 resource_group_name=group_name,
                 network_interface_name=network_interface_name,
                 parameters=params,
@@ -63,7 +63,7 @@ class NetworkInterfaceCard(AzureResource):
     def delete(self, group_name, network_interface_name):
         self.logger.info(
             "Deleting network_interface...{0}".format(network_interface_name))
-        delete_async_operation = self.client.network_interfaces.delete(
+        delete_async_operation = self.client.network_interfaces.begin_delete(
             resource_group_name=group_name,
             network_interface_name=network_interface_name
         )

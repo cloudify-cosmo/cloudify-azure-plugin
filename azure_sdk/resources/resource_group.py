@@ -1,5 +1,5 @@
 # #######
-# Copyright (c) 2020 Cloudify Platform Ltd. All rights reserved
+# Copyright (c) 2020 - 2022 Cloudify Platform Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ class ResourceGroup(AzureResource):
 
     def __init__(self, azure_config, logger,
                  api_version=constants.API_VER_RESOURCES):
-        super(ResourceGroup, self).__init__(azure_config)
         self.logger = logger
+        super(ResourceGroup, self).__init__(azure_config)
         self.client = \
             ResourceManagementClient(self.credentials, self.subscription_id,
                                      api_version=api_version)
@@ -52,7 +52,7 @@ class ResourceGroup(AzureResource):
 
     def delete(self, group_name):
         self.logger.info("Deleting resource_group...{0}".format(group_name))
-        delete_async_operation = self.client.resource_groups.delete(
+        delete_async_operation = self.client.resource_groups.begin_delete(
             resource_group_name=group_name
         )
         delete_async_operation.wait()

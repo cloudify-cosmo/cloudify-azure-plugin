@@ -1,5 +1,5 @@
 # #######
-# Copyright (c) 2020 Cloudify Platform Ltd. All rights reserved
+# Copyright (c) 2020 - 2022 Cloudify Platform Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -43,11 +43,12 @@ class StorageAccount(AzureResource):
     def create(self, group_name, account_name, parameters):
         self.logger.info(
             "Create/Updating Storage Account...{0}".format(account_name))
-        async_storage_account_creation = self.client.storage_accounts.create(
-            resource_group_name=group_name,
-            account_name=account_name,
-            parameters=parameters
-        )
+        async_storage_account_creation = \
+            self.client.storage_accounts.begin_create(
+                resource_group_name=group_name,
+                account_name=account_name,
+                parameters=parameters
+            )
         async_storage_account_creation.wait()
         storage_account = async_storage_account_creation.result().as_dict()
         self.logger.info(

@@ -1,5 +1,5 @@
 # #######
-# Copyright (c) 2020 Cloudify Platform Ltd. All rights reserved
+# Copyright (c) 2020 - 2022 Cloudify Platform Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ class Subnet(AzureResource):
 
     def create_or_update(self, group_name, vnet_name, subnet_name, params):
         self.logger.info("Create/Updating subnet...{0}".format(subnet_name))
-        async_subnet_creation = self.client.subnets.create_or_update(
+        async_subnet_creation = self.client.subnets.begin_create_or_update(
             resource_group_name=group_name,
             virtual_network_name=vnet_name,
             subnet_name=subnet_name,
@@ -58,7 +58,7 @@ class Subnet(AzureResource):
 
     def delete(self, group_name, vnet_name, subnet_name):
         self.logger.info("Deleting subnet...{0}".format(subnet_name))
-        delete_async_operation = self.client.subnets.delete(
+        delete_async_operation = self.client.subnets.begin_delete(
             resource_group_name=group_name,
             virtual_network_name=vnet_name,
             subnet_name=subnet_name

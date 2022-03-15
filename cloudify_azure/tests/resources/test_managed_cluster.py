@@ -23,7 +23,7 @@ from cloudify_azure.resources.compute import managed_cluster
 from cloudify_azure.utils import handle_resource_config_params
 
 
-@mock.patch('azure_sdk.common.ServicePrincipalCredentials')
+@mock.patch('azure_sdk.common.ClientSecretCredential')
 @mock.patch('azure_sdk.resources.compute.'
             'managed_cluster.ContainerServiceClient')
 class ManagedClusterTest(unittest.TestCase):
@@ -92,7 +92,8 @@ class ManagedClusterTest(unittest.TestCase):
                 resource_group_name=resource_group,
                 resource_name=cluster_name,
             )
-            client().managed_clusters.create_or_update.assert_called_with(
+            client()\
+                .managed_clusters.begin_create_or_update.assert_called_with(
                 resource_group_name=resource_group,
                 resource_name=cluster_name,
                 parameters=cluster_payload
@@ -145,7 +146,8 @@ class ManagedClusterTest(unittest.TestCase):
                 resource_group_name=resource_group,
                 resource_name=cluster_name,
             )
-            client().managed_clusters.create_or_update.assert_called_with(
+            client()\
+                .managed_clusters.begin_create_or_update.assert_called_with(
                 resource_group_name=resource_group,
                 resource_name=cluster_name,
                 parameters=cluster_payload
@@ -197,7 +199,8 @@ class ManagedClusterTest(unittest.TestCase):
                     resource_group_name=resource_group,
                     resource_name=cluster_name,
                 )
-                client().managed_clusters.create_or_update.assert_not_called()
+                client().managed_clusters\
+                    .begin_create_or_update.assert_not_called()
 
     def test_create_already_exists_and_use_external_resource(self,
                                                              client,
@@ -233,7 +236,8 @@ class ManagedClusterTest(unittest.TestCase):
                 resource_group_name=resource_group,
                 resource_name=cluster_name,
             )
-            client().managed_clusters.create_or_update.assert_not_called()
+            client().managed_clusters\
+                .begin_create_or_update.assert_not_called()
 
     def test_delete(self, client, credentials):
         fake_ctx, _, __ = self._get_mock_context_for_run(
@@ -247,7 +251,7 @@ class ManagedClusterTest(unittest.TestCase):
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
             managed_cluster.delete(ctx=fake_ctx)
-            client().managed_clusters.delete.assert_called_with(
+            client().managed_clusters.begin_delete.assert_called_with(
                 resource_group_name=resource_group,
                 resource_name=cluster_name
             )
@@ -266,4 +270,4 @@ class ManagedClusterTest(unittest.TestCase):
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
             managed_cluster.delete(ctx=fake_ctx)
-            client().managed_clusters.delete.assert_not_called()
+            client().managed_clusters.begin_delete.assert_not_called()

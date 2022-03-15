@@ -1,5 +1,5 @@
 # #######
-# Copyright (c) 2020 Cloudify Platform Ltd. All rights reserved
+# Copyright (c) 2020 - 2022 Cloudify Platform Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ class NetworkSecurityGroup(AzureResource):
             "Create/Updating network_security_group...{0}".format(
                 network_security_group_name))
         async_nsg_creation = \
-            self.client.network_security_groups.create_or_update(
+            self.client.network_security_groups.begin_create_or_update(
                 resource_group_name=group_name,
                 network_security_group_name=network_security_group_name,
                 parameters=params,
@@ -66,10 +66,11 @@ class NetworkSecurityGroup(AzureResource):
         self.logger.info(
             "Deleting network_security_group...{0}".format(
                 network_security_group_name))
-        delete_async_operation = self.client.network_security_groups.delete(
-            resource_group_name=group_name,
-            network_security_group_name=network_security_group_name
-        )
+        delete_async_operation = \
+            self.client.network_security_groups.begin_delete(
+                resource_group_name=group_name,
+                network_security_group_name=network_security_group_name
+            )
         delete_async_operation.wait()
         self.logger.debug(
             'Deleted network_security_group {0}'.format(

@@ -1,5 +1,5 @@
 # #######
-# Copyright (c) 2020 Cloudify Platform Ltd. All rights reserved
+# Copyright (c) 2020 - 2022 Cloudify Platform Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ import yaml
 import base64
 
 from cloudify.decorators import operation
+from cloudify import ctx as ctx_from_import
 
 from cloudify_azure import (constants, utils, decorators)
 from azure_sdk.resources.compute.managed_cluster import ManagedCluster
@@ -30,6 +31,25 @@ def get_manged_cluster_interface(ctx):
     return ManagedCluster(azure_config, ctx.logger, api_version)
 
 
+def to_camel_case(text):
+    text = text.replace('ip', 'IP')
+    s = text.replace("-", " ").replace("_", " ")
+    s = s.split()
+    if len(text) == 0:
+        return text
+    return s[0] + ''.join(i.capitalize() for i in s[1:])
+
+
+def handle_deprecated_values(config, deprecated_values):
+    for value in deprecated_values:
+        if value in config:
+            new_value = to_camel_case(value)
+            config[new_value] = config.pop(value)
+            ctx_from_import.logger.error(
+                'The value {} has been deprecrated by Microsoft '
+                'and replaced by {}'.format(value, new_value))
+
+
 @operation(resumable=True)
 @decorators.with_azure_resource(ManagedCluster)
 def create(ctx, resource_group, cluster_name, resource_config, **_):
@@ -39,15 +59,23 @@ def create(ctx, resource_group, cluster_name, resource_config, **_):
             'The cluster_name is deprecated, but was provided. '
             'Update your blueprint to use the "name" property, '
             'which replaces "cluster_name".')
-    resource_config_payload = {}
-    resource_config_payload = \
-        utils.handle_resource_config_params(resource_config_payload,
+    config = {}
+    config = \
+        utils.handle_resource_config_params(config,
                                             resource_config)
+    if 'network_profile' in config:
+        if 'load_balancer_profile' in config['network_profile']:
+            handle_deprecated_values(
+                config['network_profile']['load_balancer_profile'],
+                ['managed_outbound_ips',
+                 'outbound_ip_prefixes',
+                 'outbound_ips'])
+    ctx.logger.info(config)
     result = utils.handle_create(
         managed_cluster,
         resource_group,
         cluster_name,
-        additional_params=resource_config_payload)
+        additional_params=config)
     utils.save_common_info_in_runtime_properties(resource_group,
                                                  cluster_name,
                                                  result)

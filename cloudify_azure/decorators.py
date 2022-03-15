@@ -1,5 +1,5 @@
 # #######
-# Copyright (c) 2020 Cloudify Platform Ltd. All rights reserved
+# Copyright (c) 2020 - 2022 Cloudify Platform Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ from functools import wraps
 
 from msrest.exceptions import ValidationError
 from msrestazure.azure_exceptions import CloudError
+from azure.core.exceptions import ResourceNotFoundError
 
 from cloudify import exceptions as cfy_exc
 from cloudify_common_sdk.utils import \
@@ -103,7 +104,7 @@ def get_unique_name(resource, resource_group_name, name, **kwargs):
                 if result:  # found a resource with same name
                     name = ""
                     continue
-            except CloudError:  # this means name is not used
+            except (CloudError, ResourceNotFoundError):  # name is not used
                 return name
     else:
         return name
@@ -116,13 +117,7 @@ def with_generate_name(resource_class_name):
             ctx = kwargs['ctx']
             try:
                 # check if name is set or not and generate one if it wasn't set
-                azure_config = ctx.node.properties.get('azure_config')
-                if not azure_config.get("subscription_id"):
-                    azure_config = ctx.node.properties.get('client_config')
-                else:
-                    ctx.logger.warn("azure_config is deprecated "
-                                    "please use client_config, "
-                                    "in later version it will be removed")
+                azure_config = utils.get_client_config(ctx.node.properties)
                 resource = resource_class_name(azure_config, ctx.logger)
                 name = utils.get_resource_name(ctx)
                 resource_group_name = name
@@ -257,7 +252,10 @@ def with_azure_resource(resource_class_name):
             # is external or not
             azure_config = utils.get_client_config(ctx.node.properties)
             resource_factory = ResourceGetter(ctx, azure_config, name)
-            exists = resource_factory.get_resource(resource_class_name)
+            try:
+                exists = resource_factory.get_resource(resource_class_name)
+            except ResourceNotFoundError:
+                exists = False
             special_condition = get_special_condition(ctx.node.type_hierarchy,
                                                       ctx.operation.name)
             create_op = get_create_op(ctx.operation.name,

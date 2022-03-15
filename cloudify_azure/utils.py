@@ -27,6 +27,7 @@ from cloudify import exceptions as cfy_exc
 from cloudify_azure import constants
 
 from msrestazure.azure_exceptions import CloudError
+from azure.core.exceptions import ResourceNotFoundError
 
 
 def dict_update(orig, updates):
@@ -424,10 +425,21 @@ def handle_resource_config_params(data, resource_config):
 
 def get_client_config(properties):
     client_config = properties.get('client_config', {})
-    if not client_config.get('subscription_id'):
+    azure_config = properties.get('azure_config', {})
+    skip = ['endpoints_active_directory',
+            'endpoints_resource_manager',
+            'endpoint_resource',
+            'endpoint_verify',
+            'scale_name_separator',
+            'scale_name_suffix_chars']
+    azure_config_keys = dict([
+        x for x in azure_config.items() if x[0] not in skip and x[1]])
+    client_config_keys = dict(
+        [x for x in client_config.items() if x[0] not in skip and x[1]])
+    if len(azure_config_keys) > len(client_config_keys):
         ctx.logger.warn("azure_config is deprecated please use client_config, "
                         "in later version it will be removed")
-        return properties.get('azure_config', {})
+        return azure_config
     return client_config
 
 
@@ -497,7 +509,7 @@ def handle_task(resource,
         args.append(additional_params)
     try:
         return task(*args)
-    except CloudError as e:
+    except (CloudError, ResourceNotFoundError) as e:
         return e
 
 
@@ -513,7 +525,7 @@ def handle_delete(_ctx,
         return
     delete_result = handle_task(
         resource, resource_group_name, name, parent_name, 'delete')
-    if isinstance(delete_result, CloudError):
+    if isinstance(delete_result, (CloudError, ResourceNotFoundError)):
         if 'AnotherOperationInProgress' in delete_result.message:
             raise cfy_exc.OperationRetry(delete_result.message)
         raise cfy_exc.NonRecoverableError(

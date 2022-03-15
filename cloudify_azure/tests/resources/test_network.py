@@ -22,7 +22,7 @@ from . import compose_not_found_cloud_error
 from cloudify_azure.resources.network import virtualnetwork
 
 
-@mock.patch('azure_sdk.common.ServicePrincipalCredentials')
+@mock.patch('azure_sdk.common.ClientSecretCredential')
 @mock.patch('azure_sdk.resources.network.virtual_network.'
             'NetworkManagementClient')
 class VirtualNetworkTest(unittest.TestCase):
@@ -78,7 +78,8 @@ class VirtualNetworkTest(unittest.TestCase):
                 resource_group_name=resource_group,
                 virtual_network_name=vnet_name
             )
-            client().virtual_networks.create_or_update.assert_called_with(
+            client()\
+                .virtual_networks.begin_create_or_update.assert_called_with(
                 resource_group_name=resource_group,
                 virtual_network_name=vnet_name,
                 parameters=vnet_params
@@ -126,7 +127,7 @@ class VirtualNetworkTest(unittest.TestCase):
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
             virtualnetwork.delete(ctx=fake_ctx)
-            client().virtual_networks.delete.assert_called_with(
+            client().virtual_networks.begin_delete.assert_called_with(
                 resource_group_name=resource_group,
                 virtual_network_name=vnet_name
             )
@@ -142,4 +143,4 @@ class VirtualNetworkTest(unittest.TestCase):
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
             virtualnetwork.delete(ctx=self.fake_ctx)
-            client().virtual_networks.delete.assert_not_called()
+            client().virtual_networks.begin_delete.assert_not_called()

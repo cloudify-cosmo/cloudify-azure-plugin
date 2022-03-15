@@ -23,6 +23,7 @@ import base64
 from uuid import uuid4
 from copy import deepcopy
 from msrestazure.azure_exceptions import CloudError
+from azure.core.exceptions import ResourceNotFoundError
 
 from cloudify import ctx as ctx_from_imports
 from cloudify import compute
@@ -536,7 +537,7 @@ def get_instance_status(virtual_machine, resource_group_name, vm_name):
         ctx_from_imports.logger.info(str(e))
         raise cfy_exc.OperationRetry(
             'Improper status returned for Virtual Machine. {}'.format(str(e)))
-    except CloudError:
+    except (CloudError, ResourceNotFoundError):
         return
 
 

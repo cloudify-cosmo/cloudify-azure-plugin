@@ -1,5 +1,5 @@
 # #######
-# Copyright (c) 2020 Cloudify Platform Ltd. All rights reserved
+# Copyright (c) 2020 - 2022 Cloudify Platform Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,31 +15,72 @@
 
 from os import path, environ
 
-from azure.common.credentials import ServicePrincipalCredentials
+from azure.identity import DefaultAzureCredential, ClientSecretCredential
+from msrestazure.azure_active_directory import UserPassCredentials
 from msrestazure.azure_cloud import AZURE_CHINA_CLOUD, AZURE_PUBLIC_CLOUD
 
 from cloudify_azure import constants, utils
 from cloudify_azure._compat import SafeConfigParser
+from cloudify.exceptions import NonRecoverableError
 
 
 class AzureResource(object):
 
     def __init__(self, azure_config):
         self.creds = self.handle_credentials(azure_config)
+        azure_config_env_vars = azure_config.get('environment_variables')
+
         if self.creds.get("china"):
             self.creds['cloud_environment'] = AZURE_CHINA_CLOUD
         else:
             self.creds['cloud_environment'] = AZURE_PUBLIC_CLOUD
-        resource_default = 'https://management.core.windows.net/'
-        self.credentials = ServicePrincipalCredentials(
-            client_id=self.creds.get("client_id"),
-            secret=self.creds.get("client_secret"),
-            tenant=self.creds.get("tenant_id"),
-            resource=self.creds.get("endpoint_resource", resource_default),
-            cloud_environment=self.creds.get("cloud_environment"),
-            verify=self.creds.get("endpoint_verify", True),
-        )
-        self.subscription_id = azure_config.get("subscription_id")
+
+        subscription_id = azure_config.get("subscription_id") or \
+                          azure_config_env_vars.get(
+                              'AZURE_SUBSCRIPTION_ID')
+        self._credentials = None
+
+        # Traditional method
+        client_id = self.creds.get("client_id")
+        secret = self.creds.get("client_secret")
+        # AAD Method
+        username = self.creds.get('username')
+        password = self.creds.get('password')
+
+        if username and password:
+            self._credentials = UserPassCredentials(
+                username, password, client_id=client_id, secret=secret)
+        elif client_id and secret:
+            self._credentials = ClientSecretCredential(
+                tenant_id=self.creds.get("tenant_id"),
+                client_id=client_id,
+                client_secret=secret,
+            )
+        # Disabling Azure Stack
+        # elif client_id and secret:
+        #     self._credentials = ServicePrincipalCredentials(
+        #         client_id=client_id,
+        #         secret=secret,
+        #         tenant=self.creds.get("tenant_id"),
+        #         resource=resource,
+        #         cloud_environment=environment,
+        #         verify=self.creds.get("endpoint_verify", True),
+        #     )
+        elif azure_config_env_vars:
+            for k, v in azure_config_env_vars.items():
+                environ[k] = v
+
+        if not subscription_id:
+            raise NonRecoverableError(
+                'The subscription ID should either be provided in the '
+                'client_config as subscription_id or '
+                'in the environment_variables dict as AZURE_SUBSCRIPTION_ID.'
+            )
+
+        if not self._credentials:
+            self.credentials = DefaultAzureCredential()
+
+        self.subscription_id = subscription_id
         self._client = None
 
     @property
@@ -49,6 +90,14 @@ class AzureResource(object):
     @client.setter
     def client(self, value):
         self._client = value
+
+    @property
+    def credentials(self):
+        return self._credentials
+
+    @credentials.setter
+    def credentials(self, value):
+        self._credentials = value
 
     def handle_credentials(self, azure_config):
         """

@@ -1,5 +1,5 @@
 # #######
-# Copyright (c) 2020 Cloudify Platform Ltd. All rights reserved
+# Copyright (c) 2020 - 2022 Cloudify Platform Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,11 +45,12 @@ class VirtualNetwork(AzureResource):
         self.logger.info(
             "Create/Updating virtual_network...{0}".format(
                 virtual_network_name))
-        async_vnet_creation = self.client.virtual_networks.create_or_update(
-            resource_group_name=group_name,
-            virtual_network_name=virtual_network_name,
-            parameters=params,
-        )
+        async_vnet_creation = \
+            self.client.virtual_networks.begin_create_or_update(
+                resource_group_name=group_name,
+                virtual_network_name=virtual_network_name,
+                parameters=params,
+            )
         async_vnet_creation.wait()
         virtual_network = async_vnet_creation.result().as_dict()
         self.logger.info(
@@ -60,7 +61,7 @@ class VirtualNetwork(AzureResource):
     def delete(self, group_name, virtual_network_name):
         self.logger.info(
             "Deleting virtual_network...{0}".format(virtual_network_name))
-        delete_async_operation = self.client.virtual_networks.delete(
+        delete_async_operation = self.client.virtual_networks.begin_delete(
             resource_group_name=group_name,
             virtual_network_name=virtual_network_name
         )

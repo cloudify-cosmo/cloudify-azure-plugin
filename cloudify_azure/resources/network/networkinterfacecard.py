@@ -19,6 +19,7 @@
 """
 from uuid import uuid4
 from msrestazure.azure_exceptions import CloudError
+from azure.core.exceptions import ResourceNotFoundError
 
 from cloudify import exceptions as cfy_exc
 from cloudify.decorators import operation
@@ -47,7 +48,7 @@ def get_unique_ip_conf_name(nic, resource_group_name,
                         break
                 if name:
                     return name
-            except CloudError:  # if exception that nic_name is not there yet
+            except (CloudError, ResourceNotFoundError):  # no name yet
                 return name
     else:
         return name

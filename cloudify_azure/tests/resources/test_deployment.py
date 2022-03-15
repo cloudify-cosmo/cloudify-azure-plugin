@@ -60,7 +60,7 @@ RUNTIME_PROPERTIES_AFTER_CREATE = {
 TEST_RESOURCE_GROUP_NAME = 'sample_deployment'
 
 
-@mock.patch('azure_sdk.common.ServicePrincipalCredentials')
+@mock.patch('azure_sdk.common.ClientSecretCredential')
 @mock.patch('azure_sdk.resources.deployment.ResourceManagementClient')
 @mock.patch('azure_sdk.resources.resource_group.ResourceManagementClient')
 class DeploymentTest(unittest.TestCase):
@@ -295,7 +295,7 @@ class DeploymentTest(unittest.TestCase):
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
             deployment.delete(ctx=self.fake_ctx)
-            rg_client().resource_groups.delete.assert_called_with(
+            rg_client().resource_groups.begin_delete.assert_called_with(
                 resource_group_name=resource_group
             )
 
@@ -310,7 +310,7 @@ class DeploymentTest(unittest.TestCase):
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
             deployment.delete(ctx=self.fake_ctx)
-            rg_client().resource_groups.delete.assert_not_called()
+            rg_client().resource_groups.begin_delete.assert_not_called()
             # New external handling does call get.
             # deployment_client().deployments.get.assert_not_called()
             deployment_client().deployments.delete.assert_not_called()
