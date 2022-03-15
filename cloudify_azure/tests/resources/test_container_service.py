@@ -23,7 +23,7 @@ from cloudify_azure.resources.compute import container_service
 from cloudify_azure.utils import handle_resource_config_params
 
 
-@mock.patch('azure_sdk.common.ServicePrincipalCredentials')
+@mock.patch('azure_sdk.common.ClientSecretCredential')
 @mock.patch('azure_sdk.resources.compute.'
             'container_service.ContainerServiceClient')
 class ContainerServiceTest(unittest.TestCase):

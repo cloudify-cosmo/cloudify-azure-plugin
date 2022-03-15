@@ -21,7 +21,7 @@ from ..resources import custom
 
 
 @patch('azure.mgmt.foo', create=True)
-@patch('azure_sdk.common.ServicePrincipalCredentials')
+@patch('azure_sdk.common.ClientSecretCredential')
 @patch('azure.mgmt.resource.ResourceManagementClient')
 class TestCustom(TestCase):
 

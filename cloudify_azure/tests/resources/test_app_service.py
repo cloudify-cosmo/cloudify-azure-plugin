@@ -60,7 +60,7 @@ class AppServiceTestBase(unittest.TestCase):
         self.node.properties['name'] = name
 
 
-@mock.patch('azure_sdk.common.ServicePrincipalCredentials')
+@mock.patch('azure_sdk.common.ClientSecretCredential')
 @mock.patch('azure_sdk.resources.app_service.'
             'plan.WebSiteManagementClient')
 class PlanTest(AppServiceTestBase):
@@ -174,7 +174,7 @@ class PlanTest(AppServiceTestBase):
             client().app_service_plans.delete.assert_not_called()
 
 
-@mock.patch('azure_sdk.common.ServicePrincipalCredentials')
+@mock.patch('azure_sdk.common.ClientSecretCredential')
 @mock.patch('azure_sdk.resources.app_service.'
             'web_app.WebSiteManagementClient')
 class WebAppTest(AppServiceTestBase):
@@ -308,7 +308,7 @@ class WebAppTest(AppServiceTestBase):
             client().web_apps.delete.assert_not_called()
 
 
-@mock.patch('azure_sdk.common.ServicePrincipalCredentials')
+@mock.patch('azure_sdk.common.ClientSecretCredential')
 @mock.patch('azure_sdk.resources.app_service.'
             'publishing_user.WebSiteManagementClient')
 class PublishingUserTest(AppServiceTestBase):

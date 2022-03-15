@@ -31,7 +31,7 @@ def return_none(foo):
     return
 
 
-@mock.patch('azure_sdk.common.ServicePrincipalCredentials')
+@mock.patch('azure_sdk.common.ClientSecretCredential')
 @mock.patch('azure_sdk.resources.compute.'
             'availability_set.ComputeManagementClient')
 class AvailabilitySetTest(unittest.TestCase):
@@ -159,7 +159,7 @@ class AvailabilitySetTest(unittest.TestCase):
             client().availability_sets.delete.assert_not_called()
 
 
-@mock.patch('azure_sdk.common.ServicePrincipalCredentials')
+@mock.patch('azure_sdk.common.ClientSecretCredential')
 @mock.patch('azure_sdk.resources.compute.'
             'virtual_machine.ComputeManagementClient')
 class VirtualMachineTest(unittest.TestCase):
@@ -262,7 +262,8 @@ class VirtualMachineTest(unittest.TestCase):
                 resource_group_name=resource_group,
                 vm_name=name
             )
-            client().virtual_machines.create_or_update.assert_called_with(
+            client()\
+                .virtual_machines.begin_create_or_update.assert_called_with(
                 resource_group_name=resource_group,
                 vm_name=name,
                 parameters=vm_params
@@ -367,7 +368,8 @@ class VirtualMachineTest(unittest.TestCase):
                 resource_group_name=resource_group,
                 vm_name=name
             )
-            client().virtual_machines.create_or_update.assert_not_called()
+            client()\
+                .virtual_machines.begin_create_or_update.assert_not_called()
 
     def test_delete(self, client, credentials):
 
@@ -381,7 +383,7 @@ class VirtualMachineTest(unittest.TestCase):
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
             virtualmachine.delete(ctx=fake_ctx)
-            client().virtual_machines.delete.assert_called_with(
+            client().virtual_machines.begin_delete.assert_called_with(
                 resource_group_name=resource_group,
                 vm_name=name
             )
@@ -400,7 +402,7 @@ class VirtualMachineTest(unittest.TestCase):
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
             virtualmachine.delete(ctx=self.fake_ctx)
-            client().virtual_machines.delete.assert_not_called()
+            client().virtual_machines.begin_delete.assert_not_called()
 
     def test_start(self, client, credentials):
 
@@ -424,7 +426,7 @@ class VirtualMachineTest(unittest.TestCase):
                     OperationRetry, 'Waiting for PowerState/running status'):
                 virtualmachine.start(
                     command_to_execute='', file_uris=[], ctx=fake_ctx)
-            client().virtual_machines.start.assert_called_with(
+            client().virtual_machines.begin_start.assert_called_with(
                 resource_group_name=resource_group,
                 vm_name=name
             )
@@ -449,7 +451,7 @@ class VirtualMachineTest(unittest.TestCase):
             client().virtual_machines.get.return_value = response
             virtualmachine.start(
                 command_to_execute='', file_uris=[], ctx=fake_ctx)
-            client().virtual_machines.start.assert_not_called()
+            client().virtual_machines.begin_start.assert_not_called()
 
     def test_stopped(self, client, credentials):
 
@@ -470,7 +472,7 @@ class VirtualMachineTest(unittest.TestCase):
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
             virtualmachine.stop(ctx=fake_ctx)
-            client().virtual_machines.power_off.assert_not_called()
+            client().virtual_machines.begin_power_off.assert_not_called()
 
     def test_stop(self, client, credentials):
 
@@ -495,7 +497,7 @@ class VirtualMachineTest(unittest.TestCase):
             ):
                 virtualmachine.stop(
                     command_to_execute='', file_uris=[], ctx=fake_ctx)
-            client().virtual_machines.power_off.assert_called_with(
+            client().virtual_machines.begin_power_off.assert_called_with(
                 resource_group_name=resource_group,
                 vm_name=name
             )

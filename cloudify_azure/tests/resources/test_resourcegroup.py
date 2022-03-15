@@ -23,7 +23,7 @@ from cloudify import mocks as cfy_mocks
 from cloudify_azure.resources import resourcegroup
 
 
-@mock.patch('azure_sdk.common.ServicePrincipalCredentials')
+@mock.patch('azure_sdk.common.ClientSecretCredential')
 @mock.patch('azure_sdk.resources.resource_group.ResourceManagementClient')
 class ResourceGroupTest(unittest.TestCase):
 
@@ -133,7 +133,7 @@ class ResourceGroupTest(unittest.TestCase):
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
             resourcegroup.delete(ctx=fake_ctx)
-            client().resource_groups.delete.assert_called_with(
+            client().resource_groups.begin_delete.assert_called_with(
                 resource_group_name=resource_group)
 
     def test_delete_do_not_exist(self, client, credentials):
@@ -148,4 +148,4 @@ class ResourceGroupTest(unittest.TestCase):
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
             resourcegroup.delete(ctx=self.fake_ctx)
-            client().resource_groups.delete.assert_not_called()
+            client().resource_groups.begin_delete.assert_not_called()

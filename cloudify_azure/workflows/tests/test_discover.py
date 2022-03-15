@@ -5,7 +5,7 @@ from .. import resources, discover
 from ..._compat import PY2
 
 
-@patch('azure_sdk.common.ServicePrincipalCredentials')
+@patch('azure_sdk.common.ClientSecretCredential')
 @patch('azure.mgmt.containerservice.ContainerServiceClient')
 class AzureWorkflowTests(TestCase):
 
