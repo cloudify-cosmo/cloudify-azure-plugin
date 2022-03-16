@@ -232,7 +232,6 @@ class DeploymentTest(unittest.TestCase):
                 timeout=10,
                 azure_config=self.node.properties.get('azure_config')
             )
-
             deployment_client()\
                 .deployments.begin_create_or_update.assert_called_with(
                     resource_group_name=resource_group,
