@@ -48,7 +48,7 @@ class Deployment(AzureResource):
                          timeout):
         self.logger.info(
             "Create/Updating deployment...{0}".format(deployment_name))
-        resource_verify = bool(self.creds.get('endpoint_verify', True))
+        # resource_verify = bool(self.creds.get('endpoint_verify', True))
         timeout = timeout or 900
         deployment_properties = DeploymentProperties(
             mode=properties['mode'],
@@ -59,7 +59,7 @@ class Deployment(AzureResource):
                 resource_group_name=group_name,
                 deployment_name=deployment_name,
                 parameters=AzDeployment(properties=deployment_properties),
-                verify=resource_verify
+                # verify=resource_verify
             )
         async_deployment_creation.wait(timeout=timeout)
         deployment = async_deployment_creation.result().as_dict()

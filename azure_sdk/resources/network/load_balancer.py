@@ -45,7 +45,7 @@ class LoadBalancer(AzureResource):
         self.logger.info(
             "Create/Updating load_balancer...{0}".format(load_balancer_name))
         async_load_balancer_creation = \
-            self.client.load_balancers.create_or_update(
+            self.client.load_balancers.begin_create_or_update(
                 resource_group_name=group_name,
                 load_balancer_name=load_balancer_name,
                 parameters=params,
@@ -61,7 +61,7 @@ class LoadBalancer(AzureResource):
     def delete(self, group_name, load_balancer_name):
         self.logger.info(
             "Deleting load_balancer...{0}".format(load_balancer_name))
-        delete_async_operation = self.client.load_balancers.delete(
+        delete_async_operation = self.client.load_balancers.begin_delete(
             resource_group_name=group_name,
             load_balancer_name=load_balancer_name
         )
