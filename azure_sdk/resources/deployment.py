@@ -54,12 +54,13 @@ class Deployment(AzureResource):
             mode=properties['mode'],
             template=properties['template'],
             parameters=properties['parameters'])
-        async_deployment_creation = self.client.deployments.create_or_update(
-            resource_group_name=group_name,
-            deployment_name=deployment_name,
-            parameters=AzDeployment(properties=deployment_properties),
-            verify=resource_verify
-        )
+        async_deployment_creation = \
+            self.client.deployments.begin_create_or_update(
+                resource_group_name=group_name,
+                deployment_name=deployment_name,
+                parameters=AzDeployment(properties=deployment_properties),
+                verify=resource_verify
+            )
         async_deployment_creation.wait(timeout=timeout)
         deployment = async_deployment_creation.result().as_dict()
         self.logger.info(
