@@ -131,7 +131,7 @@ class DeploymentTest(unittest.TestCase):
                 parameters=resource_group_params
             )
             deployment_client()\
-                .deployments.create_or_update.assert_called_with(
+                .deployments.begin_create_or_update.assert_called_with(
                 resource_group_name=resource_group,
                 deployment_name=resource_group,
                 parameters=AzDeployment(properties=deployment_properties),
@@ -173,7 +173,7 @@ class DeploymentTest(unittest.TestCase):
                 deployment_name=resource_group
             )
             deployment_client()\
-                .deployments.create_or_update.assert_called_with(
+                .deployments.begin_create_or_update.assert_called_with(
                 resource_group_name=resource_group,
                 deployment_name=resource_group,
                 parameters=AzDeployment(properties=deployment_properties),
@@ -234,13 +234,13 @@ class DeploymentTest(unittest.TestCase):
             )
 
             deployment_client()\
-                .deployments.create_or_update.assert_called_with(
+                .deployments.begin_create_or_update.assert_called_with(
                     resource_group_name=resource_group,
                     deployment_name=resource_group,
                     parameters=AzDeployment(properties=deployment_properties),
                     verify=True)
-            async_call = \
-                deployment_client().deployments.create_or_update.return_value
+            async_call = deployment_client(
+                ).deployments.begin_create_or_update.return_value
             async_call.wait.assert_called_with(timeout=10)
 
     def test_create_with_template_file(self, rg_client, deployment_client,
@@ -278,14 +278,14 @@ class DeploymentTest(unittest.TestCase):
             self.fake_ctx.get_resource.assert_called_with(fock.name)
 
             deployment_client() \
-                .deployments.create_or_update.assert_called_with(
+                .deployments.begin_create_or_update.assert_called_with(
                 resource_group_name=resource_group,
                 deployment_name=resource_group,
                 parameters=AzDeployment(properties=deployment_properties),
                 verify=True
             )
-            async_call = \
-                deployment_client().deployments.create_or_update.return_value
+            async_call = deployment_client(
+                ).deployments.begin_create_or_update.return_value
             async_call.wait.assert_called_with(timeout=900)
 
     def test_delete(self, rg_client, deployment_client, credentials):
