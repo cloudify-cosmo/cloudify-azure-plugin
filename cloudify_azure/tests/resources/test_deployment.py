@@ -135,7 +135,7 @@ class DeploymentTest(unittest.TestCase):
                 resource_group_name=resource_group,
                 deployment_name=resource_group,
                 parameters=AzDeployment(properties=deployment_properties),
-                verify=True
+                # verify=True
             )
             self.assertEquals(
                 self.fake_ctx.instance.runtime_properties.get("name"),
@@ -177,7 +177,7 @@ class DeploymentTest(unittest.TestCase):
                 resource_group_name=resource_group,
                 deployment_name=resource_group,
                 parameters=AzDeployment(properties=deployment_properties),
-                verify=True
+                # verify=True
             )
 
     def test_create_with_external_resource(self, rg_client, deployment_client,
@@ -232,13 +232,13 @@ class DeploymentTest(unittest.TestCase):
                 timeout=10,
                 azure_config=self.node.properties.get('azure_config')
             )
-
             deployment_client()\
                 .deployments.begin_create_or_update.assert_called_with(
                     resource_group_name=resource_group,
                     deployment_name=resource_group,
                     parameters=AzDeployment(properties=deployment_properties),
-                    verify=True)
+                    # verify=True
+                )
             async_call = deployment_client(
                 ).deployments.begin_create_or_update.return_value
             async_call.wait.assert_called_with(timeout=10)
@@ -282,7 +282,7 @@ class DeploymentTest(unittest.TestCase):
                 resource_group_name=resource_group,
                 deployment_name=resource_group,
                 parameters=AzDeployment(properties=deployment_properties),
-                verify=True
+                # verify=True
             )
             async_call = deployment_client(
                 ).deployments.begin_create_or_update.return_value
