@@ -18,7 +18,7 @@ import unittest
 
 from azure.mgmt.resource.resources.models import DeploymentMode
 from azure.mgmt.resource.resources.v2019_10_01.models import \
-    DeploymentProperties, DeploymentWhatIfProperties
+    DeploymentWhatIf, DeploymentProperties, DeploymentWhatIfProperties
 
 from azure.mgmt.resource.resources.v2019_10_01.models import \
     Deployment as AzDeployment
@@ -394,10 +394,12 @@ class DeploymentTest(unittest.TestCase):
         rg_client().resource_groups.get.return_value = mock.Mock()
         deployment_client(
             ).deployments.begin_what_if.return_value = mock.Mock()
-        begin_what_if_properties = DeploymentWhatIfProperties(
-            mode=DeploymentMode.incremental,
-            template=TEST_TEMPLATE,
-            parameters={})
+        begin_what_if_properties = DeploymentWhatIf(
+            properties=DeploymentWhatIfProperties(
+                mode=DeploymentMode.incremental,
+                template=TEST_TEMPLATE,
+                parameters={})
+        )
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
             deployment.pull(ctx=self.fake_ctx)
@@ -407,7 +409,7 @@ class DeploymentTest(unittest.TestCase):
             deployment_client().deployments.begin_what_if.assert_called_with(
                 resource_group_name=TEST_RESOURCE_GROUP_NAME,
                 deployment_name=TEST_RESOURCE_GROUP_NAME,
-                properties=begin_what_if_properties)
+                parameters=begin_what_if_properties)
             calculate_state_mock.assert_called_once()
 
     def test_calculate_state_no_drifts(self, *_):
