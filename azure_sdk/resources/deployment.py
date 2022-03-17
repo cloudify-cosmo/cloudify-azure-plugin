@@ -88,7 +88,7 @@ class Deployment(AzureResource):
             template=properties['template'],
             parameters=properties['parameters']
             )
-        async_what_if_operation = self.client.deployments.what_if(
+        async_what_if_operation = self.client.deployments.begin_what_if(
             resource_group_name=group_name,
             deployment_name=deployment_name,
             properties=what_if_properties)

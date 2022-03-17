@@ -392,8 +392,9 @@ class DeploymentTest(unittest.TestCase):
             self.node.properties['template'] = TEST_TEMPLATE
 
         rg_client().resource_groups.get.return_value = mock.Mock()
-        deployment_client().deployments.what_if.return_value = mock.Mock()
-        what_if_properties = DeploymentWhatIfProperties(
+        deployment_client(
+            ).deployments.begin_what_if.return_value = mock.Mock()
+        begin_what_if_properties = DeploymentWhatIfProperties(
             mode=DeploymentMode.incremental,
             template=TEST_TEMPLATE,
             parameters={})
@@ -403,10 +404,10 @@ class DeploymentTest(unittest.TestCase):
             rg_client().resource_groups.get.assert_called_with(
                 resource_group_name=TEST_RESOURCE_GROUP_NAME)
             list_resources_mock.assert_called_with(TEST_RESOURCE_GROUP_NAME)
-            deployment_client().deployments.what_if.assert_called_with(
+            deployment_client().deployments.begin_what_if.assert_called_with(
                 resource_group_name=TEST_RESOURCE_GROUP_NAME,
                 deployment_name=TEST_RESOURCE_GROUP_NAME,
-                properties=what_if_properties)
+                properties=begin_what_if_properties)
             calculate_state_mock.assert_called_once()
 
     def test_calculate_state_no_drifts(self, *_):
@@ -420,7 +421,8 @@ class DeploymentTest(unittest.TestCase):
         self.assertEquals(
             self.fake_ctx.instance.runtime_properties[IS_DRIFTED], False)
 
-    def test_calculate_state_no_drifts_with_what_if_result_check(self, *_):
+    def test_calculate_state_no_drifts_with_what_if_result_check(
+            self, *_):
         deployment.calculate_state(
             ctx=self.fake_ctx,
             initial_resources=RESOURCES_LIST,
