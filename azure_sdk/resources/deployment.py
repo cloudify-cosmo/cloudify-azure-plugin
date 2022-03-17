@@ -19,7 +19,7 @@ from azure.mgmt.resource.resources.v2019_10_01.models import \
 from azure.mgmt.resource.resources.v2019_10_01.models import \
     Deployment as AzDeployment
 from azure.mgmt.resource.resources.v2019_10_01.models import \
-    DeploymentWhatIfProperties
+    DeploymentWhatIfProperties, DeploymentWhatIf
 from cloudify_azure import (constants, utils)
 from azure_sdk.common import AzureResource
 
@@ -70,7 +70,7 @@ class Deployment(AzureResource):
 
     def delete(self, group_name, deployment_name):
         self.logger.info("Deleting deployment...{0}".format(deployment_name))
-        delete_async_operation = self.client.deployments.delete(
+        delete_async_operation = self.client.deployments.begin_delete(
             resource_group_name=group_name,
             deployment_name=deployment_name
         )
@@ -91,7 +91,9 @@ class Deployment(AzureResource):
         async_what_if_operation = self.client.deployments.begin_what_if(
             resource_group_name=group_name,
             deployment_name=deployment_name,
-            properties=what_if_properties)
+            parameters=DeploymentWhatIf(
+                properties=what_if_properties)
+        )
         async_what_if_operation.wait(timeout=timeout)
         what_if_result = async_what_if_operation.result().as_dict()
         self.logger.info(
