@@ -79,6 +79,42 @@ def get_template(ctx, properties):
 @operation(resumable=True)
 @decorators.with_generate_name(Deployment)
 @decorators.with_azure_resource(Deployment)
+def update(ctx, **kwargs):
+    deployment = ctx.instance.runtime_properties.get('resource', None)
+    if deployment:
+        resource_group_name, deployment_name, api_version = \
+            get_resource_group_name_deployment_name_and_api_version(ctx)
+
+        properties, params = get_properties_and_formated_params(ctx, **kwargs)
+        template = get_template(ctx, properties)
+        ctx.logger.debug("Parsed template: %s", json.dumps(template, indent=4))
+        deployment_params = {
+            'mode': DeploymentMode.incremental,
+            'template': template,
+            'parameters': params
+        }
+
+        try:
+            result = \
+                deployment.create_or_update(
+                    resource_group_name,
+                    deployment_name,
+                    deployment_params,
+                    properties.get('timeout'))
+        except CloudError as cr:
+            raise cfy_exc.NonRecoverableError(
+                "update deployment '{0}', failed with this error : {1}"
+                .format(deployment_name, cr.message))
+        ctx.instance.runtime_properties['resource'] = result
+
+    else:
+        raise cfy_exc.NonRecoverableError(
+            "can`t update the deployment it`s doesn't exist ")
+
+
+@operation(resumable=True)
+@decorators.with_generate_name(Deployment)
+@decorators.with_azure_resource(Deployment)
 def create(ctx, **kwargs):
     azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name, deployment_name, api_version = \
