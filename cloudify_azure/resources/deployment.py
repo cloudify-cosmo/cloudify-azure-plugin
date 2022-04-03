@@ -87,9 +87,11 @@ def create(ctx, **kwargs):
         'location': ctx.node.properties.get('location'),
     }
     resource_group = ResourceGroup(azure_config, ctx.logger, api_version)
-    if resource_group.get():
-        ctx.instance.runtime_properties['CREATED_RESOURCE_GROUP'] = False
-    else:
+    try:
+        if resource_group.get(resource_group_name):
+            ctx.instance.runtime_properties['CREATED_RESOURCE_GROUP'] = False
+    except:
+        # ResourceGroupNotFound
         try:
             resource_group.create_or_update(
                 resource_group_name, resource_group_params)
