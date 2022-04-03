@@ -91,7 +91,8 @@ def update(ctx, *params, **kwargs):
                           additional_params=params)
     else:
         raise cfy_exc.NonRecoverableError(
-            "can`t update the deployment it`s doesn't exist ")
+            "ARM Deployment {} not found. "
+            "Unable to update.".format(deployment_name))
 
 
 @operation(resumable=True)
