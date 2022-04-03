@@ -87,14 +87,18 @@ def create(ctx, **kwargs):
         'location': ctx.node.properties.get('location'),
     }
     resource_group = ResourceGroup(azure_config, ctx.logger, api_version)
-    try:
-        resource_group.create_or_update(
-            resource_group_name, resource_group_params)
-    except CloudError as cr:
-        raise cfy_exc.NonRecoverableError(
-            "create deployment resource_group '{0}' "
-            "failed with this error : {1}".format(
-                resource_group_name, cr.message))
+    if resource_group.get():
+        ctx.instance.runtime_properties['CREATED_RESOURCE_GROUP'] = False
+    else:
+        try:
+            resource_group.create_or_update(
+                resource_group_name, resource_group_params)
+            ctx.instance.runtime_properties['CREATED_RESOURCE_GROUP'] = True
+        except CloudError as cr:
+            raise cfy_exc.NonRecoverableError(
+                "create deployment resource_group '{0}' "
+                "failed with this error : {1}".format(
+                    resource_group_name, cr.message))
 
     # load template
     properties, params = get_properties_and_formated_params(ctx, **kwargs)
@@ -132,8 +136,14 @@ def delete(ctx, **_):
         return
     azure_config = utils.get_client_config(ctx.node.properties)
     name = utils.get_resource_name(ctx)
-    resource_group = ResourceGroup(azure_config, ctx.logger)
-    utils.handle_delete(ctx, resource_group, name)
+    if ctx.instance.runtime_properties['CREATED_RESOURCE_GROUP']:
+        resource_group = ResourceGroup(azure_config, ctx.logger)
+        utils.handle_delete(ctx, resource_group, name)
+    else:
+        deployment = Deployment(azure_config, ctx.logger)
+        resource_group_name, deployment_name, api_version = \
+            get_resource_group_name_deployment_name_and_api_version(ctx)
+        deployment.delete(resource_group_name, deployment_name)
 
 
 @operation(resumable=True)
