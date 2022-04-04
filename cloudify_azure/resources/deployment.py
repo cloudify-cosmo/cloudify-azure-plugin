@@ -88,19 +88,25 @@ def create(ctx, **kwargs):
     }
     resource_group = ResourceGroup(azure_config, ctx.logger, api_version)
     try:
+        ctx.logger.info('** 1')
+        ctx.logger.info('** resource_group_name: {}'
+                        .format(resource_group_name))
+
         if resource_group.get(resource_group_name):
             ctx.instance.runtime_properties['__CREATED_RESOURCE_GROUP'] = False
-    except:
+        ctx.logger.info('** 2: {}'
+                        .format(resource_group.get(resource_group_name)))
+    except Exception as e:
         # ResourceGroupNotFound
-        try:
-            resource_group.create_or_update(
-                resource_group_name, resource_group_params)
+        ctx.logger.info('** e: {}'.format(str(e)))
+        ctx.logger.info('** 3')
+        result = utils.handle_create(resource_group,
+                                     resource_group_name,
+                                     additional_params=resource_group_params)
+        ctx.logger.info('** 4')
+        if result:
             ctx.instance.runtime_properties['__CREATED_RESOURCE_GROUP'] = True
-        except CloudError as cr:
-            raise cfy_exc.NonRecoverableError(
-                "create deployment resource_group '{0}' "
-                "failed with this error : {1}".format(
-                    resource_group_name, cr.message))
+            ctx.logger.info('** 5: {}'.format(result))
 
     # load template
     properties, params = get_properties_and_formated_params(ctx, **kwargs)
@@ -142,9 +148,13 @@ def delete(ctx, **_):
         resource_group = ResourceGroup(azure_config, ctx.logger)
         utils.handle_delete(ctx, resource_group, name)
     else:
+        ctx.logger.info('** 6 delete')
         deployment = Deployment(azure_config, ctx.logger)
         resource_group_name, deployment_name, api_version = \
             get_resource_group_name_deployment_name_and_api_version(ctx)
+        ctx.logger.info('** resource_group_name: {}'
+                        .format(resource_group_name))
+        ctx.logger.info('** deployment_name: {}'.format(deployment_name))
         deployment.delete(resource_group_name, deployment_name)
 
 
