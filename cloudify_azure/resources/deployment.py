@@ -89,13 +89,13 @@ def create(ctx, **kwargs):
     resource_group = ResourceGroup(azure_config, ctx.logger, api_version)
     try:
         if resource_group.get(resource_group_name):
-            ctx.instance.runtime_properties['CREATED_RESOURCE_GROUP'] = False
+            ctx.instance.runtime_properties['__CREATED_RESOURCE_GROUP'] = False
     except:
         # ResourceGroupNotFound
         try:
             resource_group.create_or_update(
                 resource_group_name, resource_group_params)
-            ctx.instance.runtime_properties['CREATED_RESOURCE_GROUP'] = True
+            ctx.instance.runtime_properties['__CREATED_RESOURCE_GROUP'] = True
         except CloudError as cr:
             raise cfy_exc.NonRecoverableError(
                 "create deployment resource_group '{0}' "
@@ -138,7 +138,7 @@ def delete(ctx, **_):
         return
     azure_config = utils.get_client_config(ctx.node.properties)
     name = utils.get_resource_name(ctx)
-    if ctx.instance.runtime_properties['CREATED_RESOURCE_GROUP']:
+    if ctx.instance.runtime_properties['__CREATED_RESOURCE_GROUP']:
         resource_group = ResourceGroup(azure_config, ctx.logger)
         utils.handle_delete(ctx, resource_group, name)
     else:
