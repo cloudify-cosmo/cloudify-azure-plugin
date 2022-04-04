@@ -88,7 +88,8 @@ def update(ctx, *params, **kwargs):
                           resource_group_name=resource_group_name,
                           name=deployment_name,
                           resource_task='create_or_update',
-                          additional_params=params)
+                          additional_params=params,
+                          **kwargs)
     else:
         raise cfy_exc.NonRecoverableError(
             "ARM Deployment {} not found. "
