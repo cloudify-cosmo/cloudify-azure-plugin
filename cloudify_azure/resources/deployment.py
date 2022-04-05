@@ -15,6 +15,7 @@
 import json
 
 from msrestazure.azure_exceptions import CloudError
+from azure.core.exceptions import ResourceNotFoundError
 from azure.mgmt.resource.resources.models import DeploymentMode
 
 from cloudify import exceptions as cfy_exc
@@ -96,9 +97,7 @@ def create(ctx, **kwargs):
             ctx.instance.runtime_properties['__CREATED_RESOURCE_GROUP'] = False
         ctx.logger.info('** 2: {}'
                         .format(resource_group.get(resource_group_name)))
-    except Exception as e:
-        # ResourceGroupNotFound
-        ctx.logger.info('** e: {}'.format(str(e)))
+    except ResourceNotFoundError:
         ctx.logger.info('** 3')
         result = utils.handle_create(resource_group,
                                      resource_group_name,
@@ -118,6 +117,7 @@ def create(ctx, **kwargs):
         'template': template,
         'parameters': params
     }
+    ctx.instance.runtime_properties['name'] = deployment_name
     try:
         result = \
             deployment.create_or_update(
