@@ -92,6 +92,7 @@ def create(ctx, **kwargs):
         if resource_group.get(resource_group_name):
             ctx.instance.runtime_properties['__CREATED_RESOURCE_GROUP'] = False
     except ResourceNotFoundError:
+        ctx.logger.info('ERROR WAS RAISED!!!!!')
         result = utils.handle_create(resource_group,
                                      resource_group_name,
                                      additional_params=resource_group_params)
