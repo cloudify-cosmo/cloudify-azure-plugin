@@ -202,8 +202,10 @@ class DeploymentTest(unittest.TestCase):
         self.node.properties['name'] = resource_group
         self.node.properties['resource_group_name'] = resource_group
         err = compose_not_found_cloud_error()
-        rg_client().resource_groups.get.side_effect = err
+        other_err = compose_other_not_found_error()
+        rg_client().resource_groups.get.side_effect = other_err
         deployment_client().deployments.get.side_effect = err
+
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
             with self.assertRaises(cfy_exc.NonRecoverableError) as ex:
@@ -219,7 +221,8 @@ class DeploymentTest(unittest.TestCase):
         self.node.properties['name'] = resource_group
         self.node.properties['resource_group_name'] = resource_group
         err = compose_not_found_cloud_error()
-        rg_client().resource_groups.get.side_effect = err
+        other_err = compose_other_not_found_error()
+        rg_client().resource_groups.get.side_effect = other_err
         deployment_client().deployments.get.side_effect = err
         deployment_properties = DeploymentProperties(
             mode=DeploymentMode.incremental,
@@ -262,7 +265,8 @@ class DeploymentTest(unittest.TestCase):
         self.fake_ctx.get_resource.return_value = open(fock.name).read()
 
         err = compose_not_found_cloud_error()
-        rg_client().resource_groups.get.side_effect = err
+        other_err = compose_other_not_found_error()
+        rg_client().resource_groups.get.side_effect = other_err
         deployment_client().deployments.get.side_effect = err
         deployment_properties = DeploymentProperties(
             mode=DeploymentMode.incremental,
