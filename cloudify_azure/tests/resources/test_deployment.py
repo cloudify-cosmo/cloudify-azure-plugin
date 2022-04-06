@@ -292,6 +292,7 @@ class DeploymentTest(unittest.TestCase):
         self.node.properties['azure_config'] = self.dummy_azure_credentials
         resource_group = TEST_RESOURCE_GROUP_NAME
         self.instance.runtime_properties['name'] = resource_group
+        self.instance.runtime_properties['__CREATED_RESOURCE_GROUP'] = True
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
             deployment.delete(ctx=self.fake_ctx)
@@ -304,6 +305,7 @@ class DeploymentTest(unittest.TestCase):
         self.node.properties['azure_config'] = self.dummy_azure_credentials
         resource_group = TEST_RESOURCE_GROUP_NAME
         self.instance.runtime_properties['name'] = resource_group
+        self.instance.runtime_properties['__CREATED_RESOURCE_GROUP'] = True
         err = compose_not_found_cloud_error()
         rg_client().resource_groups.get.side_effect = err
         deployment_client().deployments.get.side_effect = err
