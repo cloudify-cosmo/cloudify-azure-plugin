@@ -28,7 +28,9 @@ from cloudify import exceptions as cfy_exc
 from cloudify.state import current_ctx
 
 
-from . import compose_not_found_cloud_error
+from . import (
+    compose_not_found_cloud_error,
+    compose_other_not_found_error)
 from cloudify_azure.resources import deployment
 from cloudify_azure.resources.deployment import STATE, IS_DRIFTED
 
@@ -95,9 +97,8 @@ class DeploymentTest(unittest.TestCase):
 
     def test_create(self, rg_client, deployment_client, credentials):
         self.node.properties['azure_config'] = self.dummy_azure_credentials
-        resource_group = 'sample_deployment'
-        self.node.properties['name'] = resource_group
-        self.node.properties['resource_group_name'] = resource_group
+        self.node.properties['name'] = TEST_RESOURCE_GROUP_NAME
+        self.node.properties['resource_group_name'] = TEST_RESOURCE_GROUP_NAME
         self.node.properties['template'] = TEST_TEMPLATE
         self.node.properties['location'] = 'westus'
         resource_group_params = {
@@ -117,30 +118,32 @@ class DeploymentTest(unittest.TestCase):
             parameters=deployment_params['parameters'])
 
         err = compose_not_found_cloud_error()
-        rg_client().resource_groups.get.side_effect = err
+        other_err = compose_other_not_found_error()
+        rg_client().resource_groups.get.side_effect = other_err
         deployment_client().deployments.get.side_effect = err
-        with mock.patch('cloudify_azure.utils.secure_logging_content',
-                        mock.Mock()):
-            deployment.create(ctx=self.fake_ctx)
-            deployment_client().deployments.get.assert_called_with(
-                resource_group_name=resource_group,
-                deployment_name=resource_group
-            )
-            rg_client().resource_groups.create_or_update.assert_called_with(
-                resource_group_name=resource_group,
-                parameters=resource_group_params
-            )
-            deployment_client()\
-                .deployments.begin_create_or_update.assert_called_with(
-                resource_group_name=resource_group,
-                deployment_name=resource_group,
-                parameters=AzDeployment(properties=deployment_properties),
-                # verify=True
-            )
-            self.assertEquals(
-                self.fake_ctx.instance.runtime_properties.get("name"),
-                resource_group
-            )
+        # with mock.patch('cloudify_azure.resources.deployment.ResourceGroup',
+        #                 mock.Mock()) as resource_group_obj:
+        # resource_group_obj.get.side_effect =
+        deployment.create(ctx=self.fake_ctx)
+        deployment_client().deployments.get.assert_called_with(
+            resource_group_name=TEST_RESOURCE_GROUP_NAME,
+            deployment_name=TEST_RESOURCE_GROUP_NAME
+        )
+        rg_client().resource_groups.create_or_update.assert_called_with(
+            resource_group_name=TEST_RESOURCE_GROUP_NAME,
+            parameters=resource_group_params
+        )
+        deployment_client()\
+            .deployments.begin_create_or_update.assert_called_with(
+            resource_group_name=TEST_RESOURCE_GROUP_NAME,
+            deployment_name=TEST_RESOURCE_GROUP_NAME,
+            parameters=AzDeployment(properties=deployment_properties),
+            # verify=True
+        )
+        self.assertEquals(
+            self.fake_ctx.instance.runtime_properties.get("name"),
+            TEST_RESOURCE_GROUP_NAME
+        )
 
     def test_create_already_exists(self, rg_client, deployment_client,
                                    credentials):
@@ -199,8 +202,10 @@ class DeploymentTest(unittest.TestCase):
         self.node.properties['name'] = resource_group
         self.node.properties['resource_group_name'] = resource_group
         err = compose_not_found_cloud_error()
-        rg_client().resource_groups.get.side_effect = err
+        other_err = compose_other_not_found_error()
+        rg_client().resource_groups.get.side_effect = other_err
         deployment_client().deployments.get.side_effect = err
+
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
             with self.assertRaises(cfy_exc.NonRecoverableError) as ex:
@@ -216,7 +221,8 @@ class DeploymentTest(unittest.TestCase):
         self.node.properties['name'] = resource_group
         self.node.properties['resource_group_name'] = resource_group
         err = compose_not_found_cloud_error()
-        rg_client().resource_groups.get.side_effect = err
+        other_err = compose_other_not_found_error()
+        rg_client().resource_groups.get.side_effect = other_err
         deployment_client().deployments.get.side_effect = err
         deployment_properties = DeploymentProperties(
             mode=DeploymentMode.incremental,
@@ -259,7 +265,8 @@ class DeploymentTest(unittest.TestCase):
         self.fake_ctx.get_resource.return_value = open(fock.name).read()
 
         err = compose_not_found_cloud_error()
-        rg_client().resource_groups.get.side_effect = err
+        other_err = compose_other_not_found_error()
+        rg_client().resource_groups.get.side_effect = other_err
         deployment_client().deployments.get.side_effect = err
         deployment_properties = DeploymentProperties(
             mode=DeploymentMode.incremental,
@@ -292,6 +299,7 @@ class DeploymentTest(unittest.TestCase):
         self.node.properties['azure_config'] = self.dummy_azure_credentials
         resource_group = TEST_RESOURCE_GROUP_NAME
         self.instance.runtime_properties['name'] = resource_group
+        self.instance.runtime_properties['__CREATED_RESOURCE_GROUP'] = True
         with mock.patch('cloudify_azure.utils.secure_logging_content',
                         mock.Mock()):
             deployment.delete(ctx=self.fake_ctx)
@@ -304,6 +312,7 @@ class DeploymentTest(unittest.TestCase):
         self.node.properties['azure_config'] = self.dummy_azure_credentials
         resource_group = TEST_RESOURCE_GROUP_NAME
         self.instance.runtime_properties['name'] = resource_group
+        self.instance.runtime_properties['__CREATED_RESOURCE_GROUP'] = True
         err = compose_not_found_cloud_error()
         rg_client().resource_groups.get.side_effect = err
         deployment_client().deployments.get.side_effect = err
