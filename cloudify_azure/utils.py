@@ -498,7 +498,8 @@ def handle_task(resource,
                 name,
                 parent_name=None,
                 resource_task=None,
-                additional_params=None):
+                additional_params=None,
+                **kwargs):
     """
 
     :param resource: A AzureResource object from azure_sdk package.
@@ -522,7 +523,7 @@ def handle_task(resource,
     if additional_params:
         args.append(additional_params)
     try:
-        return task(*args)
+        return task(*args, **kwargs)
     except (CloudError, ResourceNotFoundError) as e:
         return e
 

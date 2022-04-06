@@ -1639,6 +1639,8 @@ node_types:
         start: azure.cloudify_azure.resources.deployment.pull
         delete: azure.cloudify_azure.resources.deployment.delete
         pull: azure.cloudify_azure.resources.deployment.pull
+        update: azure.cloudify_azure.resources.deployment.update
+
 
   cloudify.azure.nodes.compute.ContainerService:
     derived_from: cloudify.nodes.Root

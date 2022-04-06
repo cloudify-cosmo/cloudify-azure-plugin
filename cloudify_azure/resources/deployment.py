@@ -78,6 +78,26 @@ def get_template(ctx, properties):
 
 
 @operation(resumable=True)
+def update(ctx, *params, **kwargs):
+    resource_group_name, deployment_name, api_version = \
+        get_resource_group_name_deployment_name_and_api_version(ctx)
+
+    deployment = Deployment.get(resource_group_name, deployment_name)
+
+    if deployment:
+        utils.handle_task(resource=deployment,
+                          resource_group_name=resource_group_name,
+                          name=deployment_name,
+                          resource_task='create_or_update',
+                          additional_params=params,
+                          **kwargs)
+    else:
+        raise cfy_exc.NonRecoverableError(
+            "ARM Deployment {} not found. "
+            "Unable to update.".format(deployment_name))
+
+
+@operation(resumable=True)
 @decorators.with_generate_name(Deployment)
 @decorators.with_azure_resource(Deployment)
 def create(ctx, **kwargs):
