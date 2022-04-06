@@ -82,30 +82,21 @@ def get_template(ctx, properties):
 @decorators.with_azure_resource(Deployment)
 def create(ctx, **kwargs):
     azure_config = utils.get_client_config(ctx.node.properties)
-    resource_group_name, deployment_name, api_version = \
+    deployment_name, resource_group_name, api_version = \
         get_resource_group_name_deployment_name_and_api_version(ctx)
     resource_group_params = {
         'location': ctx.node.properties.get('location'),
     }
     resource_group = ResourceGroup(azure_config, ctx.logger, api_version)
     try:
-        ctx.logger.info('** 1')
-        ctx.logger.info('** resource_group_name: {}'
-                        .format(resource_group_name))
-
         if resource_group.get(resource_group_name):
             ctx.instance.runtime_properties['__CREATED_RESOURCE_GROUP'] = False
-        ctx.logger.info('** 2: {}'
-                        .format(resource_group.get(resource_group_name)))
     except ResourceNotFoundError:
-        ctx.logger.info('** 3')
         result = utils.handle_create(resource_group,
                                      resource_group_name,
                                      additional_params=resource_group_params)
-        ctx.logger.info('** 4')
         if result:
             ctx.instance.runtime_properties['__CREATED_RESOURCE_GROUP'] = True
-            ctx.logger.info('** 5: {}'.format(result))
 
     # load template
     properties, params = get_properties_and_formated_params(ctx, **kwargs)
@@ -117,7 +108,7 @@ def create(ctx, **kwargs):
         'template': template,
         'parameters': params
     }
-    ctx.instance.runtime_properties['name'] = deployment_name
+
     try:
         result = \
             deployment.create_or_update(
@@ -142,26 +133,29 @@ def create(ctx, **kwargs):
 def delete(ctx, **_):
     if ctx.node.properties.get('use_external_resource', False):
         return
+    deployment_name, resource_group_name, api_version = \
+        get_resource_group_name_deployment_name_and_api_version(ctx)
     azure_config = utils.get_client_config(ctx.node.properties)
-    name = utils.get_resource_name(ctx)
     if ctx.instance.runtime_properties['__CREATED_RESOURCE_GROUP']:
         resource_group = ResourceGroup(azure_config, ctx.logger)
-        utils.handle_delete(ctx, resource_group, name)
+        utils.handle_delete(ctx, resource_group, resource_group_name)
     else:
-        ctx.logger.info('** 6 delete')
         deployment = Deployment(azure_config, ctx.logger)
-        resource_group_name, deployment_name, api_version = \
-            get_resource_group_name_deployment_name_and_api_version(ctx)
-        ctx.logger.info('** resource_group_name: {}'
-                        .format(resource_group_name))
-        ctx.logger.info('** deployment_name: {}'.format(deployment_name))
-        deployment.delete(resource_group_name, deployment_name)
+        try:
+            deployment.delete(resource_group_name, deployment_name)
+            ctx.logger.debug("if the resource group was not deleted. "
+                             "some resource might have not been deleted, "
+                             "they need to be deleted manually.")
+        except ResourceNotFoundError:
+            ctx.logger.debug("Resource group '{0}' or deployment '{1}' "
+                             "could not be found"
+                             .format(resource_group_name, deployment_name))
 
 
 @operation(resumable=True)
 def pull(ctx, **kwargs):
     azure_config = utils.get_client_config(ctx.node.properties)
-    resource_group_name, deployment_name, api_version = \
+    deployment_name, resource_group_name, api_version = \
         get_resource_group_name_deployment_name_and_api_version(ctx)
 
     resource_group = ResourceGroup(azure_config, ctx.logger, api_version)
@@ -204,9 +198,11 @@ def get_properties_and_formated_params(ctx, **kwargs):
 
 
 def get_resource_group_name_deployment_name_and_api_version(ctx):
+    # deployment_name = ctx.node.properties.get('name')
+    # resource_group_name = utils.get_resource_name(ctx)
     deployment_name = utils.get_resource_name(ctx)
     resource_group_name = ctx.node.properties.get(
-        'resource_group_name', deployment_name)
+         'resource_group_name', deployment_name)
     api_version = \
         ctx.node.properties.get('api_version', constants.API_VER_RESOURCES)
     return deployment_name, resource_group_name, api_version

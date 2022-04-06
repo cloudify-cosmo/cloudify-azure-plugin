@@ -56,6 +56,7 @@ def get_resource_name(_ctx=ctx):
     :returns: The resource's name or None
     :rtype: string
     """
+    # name of deployment!
     return _ctx.instance.runtime_properties.get('name') or \
         _ctx.node.properties.get('name')
 
@@ -426,6 +427,7 @@ def handle_resource_config_params(data, resource_config):
 def get_client_config(properties):
     client_config = properties.get('client_config', {})
     azure_config = properties.get('azure_config', {})
+
     skip = ['endpoints_active_directory',
             'endpoints_resource_manager',
             'endpoint_resource',
