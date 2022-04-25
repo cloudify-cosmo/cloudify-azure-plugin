@@ -15,6 +15,7 @@
 
 import requests
 from msrestazure.azure_exceptions import CloudError
+from azure.core.exceptions import ResourceNotFoundError
 
 
 def compose_not_found_cloud_error():
@@ -22,3 +23,7 @@ def compose_not_found_cloud_error():
     response.status_code = 404
     message = 'resource not found'
     return CloudError(response, message)
+
+
+def compose_other_not_found_error():
+    return ResourceNotFoundError

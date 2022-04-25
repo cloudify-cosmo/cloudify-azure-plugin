@@ -56,8 +56,21 @@ def get_resource_name(_ctx=ctx):
     :returns: The resource's name or None
     :rtype: string
     """
+    # name of deployment!
     return _ctx.instance.runtime_properties.get('name') or \
         _ctx.node.properties.get('name')
+
+
+def get_resource_group_name(_ctx=ctx):
+    """
+        Finds a resource's name
+
+    :returns: The resource's name or None
+    :rtype: string
+    """
+    # name of resource group!
+    return _ctx.instance.runtime_properties.get('resource_group_name') or \
+        _ctx.node.properties.get('resource_group_name')
 
 
 def get_resource_id(_ctx=ctx):
@@ -426,6 +439,7 @@ def handle_resource_config_params(data, resource_config):
 def get_client_config(properties):
     client_config = properties.get('client_config', {})
     azure_config = properties.get('azure_config', {})
+
     skip = ['endpoints_active_directory',
             'endpoints_resource_manager',
             'endpoint_resource',
@@ -484,7 +498,8 @@ def handle_task(resource,
                 name,
                 parent_name=None,
                 resource_task=None,
-                additional_params=None):
+                additional_params=None,
+                **kwargs):
     """
 
     :param resource: A AzureResource object from azure_sdk package.
@@ -508,7 +523,7 @@ def handle_task(resource,
     if additional_params:
         args.append(additional_params)
     try:
-        return task(*args)
+        return task(*args, **kwargs)
     except (CloudError, ResourceNotFoundError) as e:
         return e
 
