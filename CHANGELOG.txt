@@ -1,3 +1,4 @@
+3.7.1: Handle PyYaml load function deprecation.
 3.7.0: Azure Managed Identity
 3.6.1: RD-3867 VM None State is Valid in Stop
 3.6.0: RD-1047 Custom Types

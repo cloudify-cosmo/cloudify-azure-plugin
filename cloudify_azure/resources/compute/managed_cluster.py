@@ -100,7 +100,7 @@ def _store_kubeconf_if_needed(_ctx):
 
     if store_kube_config_in_runtime:
         _ctx.instance.runtime_properties['kubeconf'] = \
-            yaml.load(base64.b64decode(managed_cluster.get_admin_kubeconf(
+            yaml.safe_load(base64.b64decode(managed_cluster.get_admin_kubeconf(
                 resource_group, name)))
 
 
