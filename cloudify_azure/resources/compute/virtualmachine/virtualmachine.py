@@ -391,7 +391,7 @@ def start(ctx, command_to_execute, file_uris, type_handler_version='1.8', **_):
     resource_group_name = utils.get_resource_group(ctx)
     vm_name = utils.get_resource_name(ctx)
     os_family = ctx.node.properties.get('os_family', '').lower()
-    if os_family == 'windows':
+    if os_family == 'windows' and file_uris and command_to_execute:
         vm_extension = VirtualMachineExtension(azure_config, ctx.logger)
         vm_extension_name = "{0}".format(uuid4())
         vm_extension_params = {

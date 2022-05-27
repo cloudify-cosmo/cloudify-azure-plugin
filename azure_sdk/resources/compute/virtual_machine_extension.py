@@ -46,7 +46,7 @@ class VirtualMachineExtension(AzureResource):
         self.logger.info("Create/Updating vm_extension...{0}".format(
             vm_extension_name))
         create_async_operation = \
-            self.client.virtual_machine_extensions.create_or_update(
+            self.client.virtual_machine_extensions.begin_create_or_update(
                 resource_group_name=group_name,
                 vm_name=vm_name,
                 vm_extension_name=vm_extension_name,
@@ -63,11 +63,12 @@ class VirtualMachineExtension(AzureResource):
     def delete(self, group_name, vm_name, vm_extension_name):
         self.logger.info("Deleting vm_extension...{0}".format(
             vm_extension_name))
-        delete_async_operation = self.client.virtual_machine_extensions.delete(
-            resource_group_name=group_name,
-            vm_name=vm_name,
-            vm_extension_name=vm_extension_name
-        )
+        delete_async_operation = \
+            self.client.virtual_machine_extensions.begin_delete(
+                resource_group_name=group_name,
+                vm_name=vm_name,
+                vm_extension_name=vm_extension_name
+            )
         delete_async_operation.wait()
         self.logger.debug(
             'Deleted virtual_machine_extension {0}'.format(vm_extension_name))
