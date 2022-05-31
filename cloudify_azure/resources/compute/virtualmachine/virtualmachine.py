@@ -398,7 +398,7 @@ def start(ctx, command_to_execute, file_uris, type_handler_version='1.8', **_):
             'location': ctx.node.properties.get('location'),
             'tags': ctx.node.properties.get('tags'),
             'publisher': 'Microsoft.Compute',
-            'virtual_machine_extension_type': 'CustomScriptExtension',
+            'type_properties_type': 'CustomScriptExtension',
             'type_handler_version': type_handler_version,
             'settings': {
                 'fileUris': file_uris,
