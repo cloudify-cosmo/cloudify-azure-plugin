@@ -1,3 +1,4 @@
+3.7.3: Fix VirtualMachineExtension variables.
 3.7.2: Handle VirtualMachineExtension sdk api calls.
 3.7.1: Handle PyYaml load function deprecation.
 3.7.0: Azure Managed Identity
