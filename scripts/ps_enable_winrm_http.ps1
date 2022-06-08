@@ -2,6 +2,8 @@
 ## Enables unencrypted WinRM HTTP access ##
 ###########################################
 # http://docs.getcloudify.org/3.3.1/agents/overview/
+# switch network profile to private
+Set-NetConnectionProfile -Name "Network" -NetworkCategory Private
 winrm quickconfig -q
 winrm set winrm/config '@{MaxTimeoutms="1800000"}'
 winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="300";MaxShellsPerUser="2147483647"}'

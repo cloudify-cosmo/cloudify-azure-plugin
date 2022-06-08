@@ -42,7 +42,7 @@ def create(ctx, resource_config, **_):
         'location': ctx.node.properties.get('location'),
         'tags': ctx.node.properties.get('tags'),
         'publisher': resource_config.get('publisher'),
-        'virtual_machine_extension_type': resource_config.get('ext_type'),
+        'type_properties_type': resource_config.get('ext_type'),
         'type_handler_version': resource_config.get('typeHandlerVersion'),
         'settings': resource_config.get('settings'),
     }

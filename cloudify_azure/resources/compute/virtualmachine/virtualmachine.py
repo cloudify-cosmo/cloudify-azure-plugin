@@ -385,7 +385,7 @@ def configure(ctx, args=None, **_):
 
 
 @operation(resumable=True)
-def start(ctx, command_to_execute, file_uris, type_handler_version='1.8', **_):
+def start(ctx, command_to_execute, file_uris, type_handler_version='1.9', **_):
     """Configures the resource"""
     azure_config = utils.get_client_config(ctx.node.properties)
     resource_group_name = utils.get_resource_group(ctx)
