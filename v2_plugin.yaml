@@ -6,7 +6,7 @@ plugins:
   azure:
     executor: central_deployment_agent
     package_name: cloudify-azure-plugin
-    package_version: '3.7.5'
+    package_version: '3.7.6'
 
 data_types:
   cloudify.datatypes.azure.Config:
@@ -2205,6 +2205,6 @@ labels:
       - azure
 
 resource_tags:
-  tenant: get_sys [tenant, name]
-  deployment_id: get_sys [deplyment, id]
-  owner: get_sys [deplyment, owner]
+  tenant: { get_sys: [ tenant, name ] }
+  deployment_id: { get_sys: [ deployment, id ] }
+  owner: { get_sys: [ deployment, owner ] }
