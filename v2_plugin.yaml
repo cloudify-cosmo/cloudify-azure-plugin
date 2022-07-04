@@ -6,7 +6,7 @@ plugins:
   azure:
     executor: central_deployment_agent
     package_name: cloudify-azure-plugin
-    package_version: '3.7.4'
+    package_version: '3.7.5'
 
 data_types:
   cloudify.datatypes.azure.Config:
@@ -2178,7 +2178,7 @@ workflows:
     mapping: azure.cloudify_azure.workflows.discover.discover_and_deploy
     parameters:
       node_id:
-        type: node_id
+        type: string
         description: >
           The node_id. Not required.
         default: ''
@@ -2191,7 +2191,7 @@ workflows:
           - Microsoft.ContainerService/ManagedClusters
       blueprint_id:
         description: The ID of the blueprint that should be used to deploy the new resources. Default is current blueprint.
-        type: blueprint_id
+        type: string
         default: 'existing-aks-cluster'
 
 blueprint_labels:

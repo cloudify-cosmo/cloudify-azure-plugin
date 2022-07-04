@@ -1,3 +1,4 @@
+3.7.5: Release plugin with v2 resource tags.
 3.7.4:
   - Fix VirtualMachineExtension type input variables and adjust extension script to switch network profile to private.
 3.7.3:
