@@ -29,7 +29,7 @@ class CustomAzureResource(AzureResource):
         if not custom_resource_module.startswith('azure'):
             raise AzureCustomResourceError(
                 'Only modules from Azure namespace may be imported.'
-        )
+            )
         try:
             self.client_module = import_module(custom_resource_module)
         except ModuleNotFoundError as e:
