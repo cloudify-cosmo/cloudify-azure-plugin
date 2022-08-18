@@ -36,8 +36,7 @@ class AzureResource(object):
             self.creds['cloud_environment'] = AZURE_PUBLIC_CLOUD
 
         subscription_id = azure_config.get("subscription_id") or \
-                          azure_config_env_vars.get(
-                              'AZURE_SUBSCRIPTION_ID')
+            azure_config_env_vars.get('AZURE_SUBSCRIPTION_ID')
         self._credentials = None
 
         # Traditional method

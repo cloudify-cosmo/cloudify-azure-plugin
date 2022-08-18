@@ -48,7 +48,7 @@ class NetworkSecurityRule(AzureResource):
         self.logger.info(
             "Create/Updating network_security_rule...{0}".format(
                 security_rule_name))
-        async_nsr_creation = self.client.security_rules.create_or_update(
+        async_nsr_creation = self.client.security_rules.begin_create_or_update(
             resource_group_name=group_name,
             network_security_group_name=network_security_group_name,
             security_rule_name=security_rule_name,
@@ -66,7 +66,7 @@ class NetworkSecurityRule(AzureResource):
                security_rule_name):
         self.logger.info(
             "Deleting network_security_rule...{0}".format(security_rule_name))
-        delete_async_operation = self.client.security_rules.delete(
+        delete_async_operation = self.client.security_rules.begin_delete(
             resource_group_name=group_name,
             network_security_group_name=network_security_group_name,
             security_rule_name=security_rule_name
