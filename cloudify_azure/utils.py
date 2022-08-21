@@ -485,12 +485,16 @@ def check_if_resource_exists(resource, resource_group_name, name=None):
 
 def save_common_info_in_runtime_properties(resource_group_name,
                                            resource_name,
-                                           resource_get_create_result):
+                                           resource_get_create_result,
+                                           parent=None):
     ctx.instance.runtime_properties['resource_group'] = resource_group_name
     ctx.instance.runtime_properties['resource'] = resource_get_create_result
     ctx.instance.runtime_properties['resource_id'] = \
         resource_get_create_result.get("id", "")
     ctx.instance.runtime_properties['name'] = resource_name
+    if parent:
+        for k, v in parent.items():
+            ctx.instance.runtime_properties[k] = v
 
 
 def handle_task(resource,
