@@ -289,6 +289,7 @@ class ResourceGetter(object):
         try:
             resource = resource_class_name(self.azure_config, self.ctx.logger)
             name = self.name
+            parent = {}
             if not isinstance(resource, ResourceGroup):
                 resource_group_name = utils.get_resource_group(self.ctx)
                 self.resource_group_name = resource_group_name
@@ -296,41 +297,46 @@ class ResourceGetter(object):
                 # resource_group
             if isinstance(resource, ResourceGroup):
                 exists = resource.get(self.name)
-                name = resource_group_name = \
+                resource_group_name = \
                     self.resource_group_name = self.name
             elif isinstance(resource, Deployment):
                 exists = resource.get(resource_group_name, self.name)
                 # virtual_machine_extension
             elif isinstance(resource, VirtualMachineExtension):
-                name = vm_name = \
-                    self.ctx.node.properties.get('virtual_machine_name')
+                vm_name = self.ctx.node.properties.get('virtual_machine_name')
+                parent = {'virtual_machine': vm_name}
                 exists = resource.get(resource_group_name, vm_name, self.name)
                 # subnet
             elif isinstance(resource, Subnet):
-                name = vnet_name = utils.get_virtual_network(self.ctx)
+                vnet_name = utils.get_virtual_network(self.ctx)
+                parent = {'virtual_network': vnet_name}
                 exists = resource.get(resource_group_name, vnet_name,
                                       self.name)
                 # route
             elif isinstance(resource, Route):
-                name = rtbl_name = utils.get_route_table(self.ctx)
+                rtbl_name = utils.get_route_table(self.ctx)
+                parent = {'route_table': rtbl_name}
                 exists = resource.get(resource_group_name, rtbl_name,
                                       self.name)
                 # network_security_rule
             elif isinstance(resource, NetworkSecurityRule):
-                name = nsg_name = utils.get_network_security_group(self.ctx)
+                nsg_name = utils.get_network_security_group(self.ctx)
+                parent = {'network_security_group': nsg_name}
                 exists = resource.get(resource_group_name, nsg_name, self.name)
                 # load_balancer_backend_address_pool
             elif isinstance(resource, (LoadBalancerBackendAddressPool,
                                        LoadBalancerLoadBalancingRule,
                                        LoadBalancerInboundNatRule,
                                        LoadBalancerProbe)):
-                name = lb_name = utils.get_load_balancer(self.ctx)
+                lb_name = utils.get_load_balancer(self.ctx)
+                parent = {'load_balancer': lb_name}
                 exists = resource.get(resource_group_name,
                                       lb_name,
                                       self.name)
             # file share
             elif isinstance(resource, FileShare):
-                name = sa_name = utils.get_storage_account(self.ctx)
+                sa_name = utils.get_storage_account(self.ctx)
+                parent = {'storage_account': sa_name}
                 exists = resource.get(resource_group_name, sa_name, self.name)
             else:
                 exists = resource.get(resource_group_name, self.name)
@@ -339,7 +345,8 @@ class ResourceGetter(object):
                 utils.save_common_info_in_runtime_properties(
                     resource_group_name,
                     name,
-                    exists
+                    exists,
+                    parent
                 )
         except CloudError:
             exists = None
