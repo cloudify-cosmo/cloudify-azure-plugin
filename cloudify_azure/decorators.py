@@ -304,24 +304,24 @@ class ResourceGetter(object):
                 # virtual_machine_extension
             elif isinstance(resource, VirtualMachineExtension):
                 vm_name = self.ctx.node.properties.get('virtual_machine_name')
-                parent = {'virtual_machine': vm_name}
+                parent.update({'virtual_machine': vm_name})
                 exists = resource.get(resource_group_name, vm_name, self.name)
                 # subnet
             elif isinstance(resource, Subnet):
                 vnet_name = utils.get_virtual_network(self.ctx)
-                parent = {'virtual_network': vnet_name}
+                parent.update({'virtual_network': vnet_name})
                 exists = resource.get(resource_group_name, vnet_name,
                                       self.name)
                 # route
             elif isinstance(resource, Route):
                 rtbl_name = utils.get_route_table(self.ctx)
-                parent = {'route_table': rtbl_name}
+                parent.update({'route_table': rtbl_name})
                 exists = resource.get(resource_group_name, rtbl_name,
                                       self.name)
                 # network_security_rule
             elif isinstance(resource, NetworkSecurityRule):
                 nsg_name = utils.get_network_security_group(self.ctx)
-                parent = {'network_security_group': nsg_name}
+                parent.update({'network_security_group': nsg_name})
                 exists = resource.get(resource_group_name, nsg_name, self.name)
                 # load_balancer_backend_address_pool
             elif isinstance(resource, (LoadBalancerBackendAddressPool,
@@ -329,14 +329,14 @@ class ResourceGetter(object):
                                        LoadBalancerInboundNatRule,
                                        LoadBalancerProbe)):
                 lb_name = utils.get_load_balancer(self.ctx)
-                parent = {'load_balancer': lb_name}
+                parent.update({'load_balancer': lb_name})
                 exists = resource.get(resource_group_name,
                                       lb_name,
                                       self.name)
             # file share
             elif isinstance(resource, FileShare):
                 sa_name = utils.get_storage_account(self.ctx)
-                parent = {'storage_account': sa_name}
+                parent.update({'storage_account': sa_name})
                 exists = resource.get(resource_group_name, sa_name, self.name)
             else:
                 exists = resource.get(resource_group_name, self.name)
