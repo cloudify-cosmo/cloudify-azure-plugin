@@ -1,3 +1,4 @@
+3.7.10: Handle nested secrets in node props from workflow ctx for discovery.
 3.7.9: Add parent resource ids logic when use_external_resource.
 3.7.8: Fix SecurityRule method deprecation.
 3.7.7: Rerelease with redhat wagon and dsl 1_4 yaml.
