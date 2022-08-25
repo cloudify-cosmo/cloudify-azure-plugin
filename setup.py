@@ -38,7 +38,7 @@ def get_version(rel_file='plugin.yaml'):
 
 general_requirements = [
     'cloudify-common>=4.5',
-    'cloudify-utilities-plugins-sdk>=0.0.61',  # includes YAML
+    'cloudify-utilities-plugins-sdk>=0.0.84',  # includes YAML
     'requests>=2.23.0',
     'urllib3>=1.25.3',
     'cryptography==3.3.2'
