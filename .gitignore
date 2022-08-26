@@ -66,3 +66,4 @@ azurecloudify/tests/test_conf.py
 *.wgn
 
 cover
+azure/*

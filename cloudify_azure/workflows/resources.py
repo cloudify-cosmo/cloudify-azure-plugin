@@ -1,7 +1,7 @@
 from cloudify import ctx as _ctx
 from cloudify.decorators import operation
 from cloudify.exceptions import NonRecoverableError
-from cloudify_common_sdk.utils import desecretize_client_config
+from cloudify_common_sdk.secure_property_management import resolve_props
 
 from .. import utils
 from .. import constants
@@ -35,7 +35,7 @@ def initialize(resource_config=None, locations=None, ctx=None, **_):
         t=resource_types))
 
     ctx.instance.runtime_properties['resources'] = get_resources(
-        ctx.node, locations, resource_types, ctx.logger)
+        ctx.node, locations, resource_types, ctx.logger, ctx.deployment.id)
 
 
 @operation
@@ -45,7 +45,7 @@ def deinitialize(ctx, **_):
     del ctx.instance.runtime_properties['resources']
 
 
-def get_resources(node, locations, resource_types, logger):
+def get_resources(node, locations, resource_types, logger, deployment_id=None):
     """Get a dict of resources in the following structure:
 
     :param node: ctx.node
@@ -82,7 +82,7 @@ def get_resources(node, locations, resource_types, logger):
             # It means that we don't support whatever they provided.
             raise NonRecoverableError(
                 'Unsupported resource type: {t}.'.format(t=resource_type))
-        iface = get_resource_interface(node, class_decl, logger)
+        iface = get_resource_interface(node, class_decl, logger, deployment_id)
         # Get the resource response from the API.
         # Clean it up for context serialization.
         result = iface.list()
@@ -100,9 +100,10 @@ def get_resources(node, locations, resource_types, logger):
     return resources
 
 
-def get_resource_interface(node, class_decl, logger):
-    azure_config = desecretize_client_config(
-        utils.get_client_config(node.properties))
+def get_resource_interface(node, class_decl, logger, deployment_id=None):
+    azure_config = resolve_props(
+        utils.get_client_config(node.properties),
+        deployment_id)
     api_version = node.properties.get(
         'api_version', constants.API_VER_MANAGED_CLUSTER)
     return class_decl(azure_config, logger, api_version)
