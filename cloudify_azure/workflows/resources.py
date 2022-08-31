@@ -1,6 +1,7 @@
 from cloudify import ctx as _ctx
 from cloudify.decorators import operation
 from cloudify.exceptions import NonRecoverableError
+from cloudify_common_sdk.utils import CommonSDKSecret
 from cloudify_common_sdk.secure_property_management import resolve_props
 
 from .. import utils
@@ -104,6 +105,9 @@ def get_resource_interface(node, class_decl, logger, deployment_id=None):
     azure_config = resolve_props(
         utils.get_client_config(node.properties),
         deployment_id)
+    for k, v in azure_config.items():
+        if isinstance(v, CommonSDKSecret):
+            azure_config[k] = v.secret
     api_version = node.properties.get(
         'api_version', constants.API_VER_MANAGED_CLUSTER)
     return class_decl(azure_config, logger, api_version)
