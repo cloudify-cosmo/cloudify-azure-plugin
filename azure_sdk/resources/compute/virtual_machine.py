@@ -109,3 +109,14 @@ class VirtualMachine(AzureResource):
         stop_async_operation.wait()
         self.logger.debug(
             'Stopped virtual_machine {0}'.format(vm_name))
+
+    def restart(self, group_name, vm_name):
+        self.logger.info(
+            "Restarting virtual_machine...{0}".format(vm_name))
+        restart_async_operation = self.client.virtual_machines.begin_restart(
+            resource_group_name=group_name,
+            vm_name=vm_name
+        )
+        restart_async_operation.wait()
+        self.logger.debug(
+            'Restarted virtual_machine {0}'.format(vm_name))
