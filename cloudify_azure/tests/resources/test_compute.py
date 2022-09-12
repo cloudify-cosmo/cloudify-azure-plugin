@@ -516,9 +516,7 @@ class VirtualMachineTest(unittest.TestCase):
             response = mock.MagicMock()
             response.status_code = 200
             client().virtual_machines.get.return_value = response
-            with self.assertRaisesRegexp(
-                    OperationRetry, 'Waiting for PowerState/running status'):
-                virtualmachine.restart(ctx=fake_ctx)
+            virtualmachine.restart(ctx=fake_ctx)
             client().virtual_machines.begin_restart.assert_called_with(
                 resource_group_name=resource_group,
                 vm_name=name
@@ -545,11 +543,10 @@ class VirtualMachineTest(unittest.TestCase):
             response = mock.MagicMock()
             response.status_code = 200
             client().virtual_machines.get.return_value = response
-            with self.assertRaisesRegexp(
-                    OperationRetry, 'Waiting for PowerState/running status'):
-                virtualmachine.resize(vm_size=vm_size, ctx=fake_ctx)
-            client().virtual_machines.begin_create_or_update.assert_called_with(
-                resource_group_name=resource_group,
-                vm_name=name,
-                parameters=params
-            )
+            virtualmachine.resize(vm_size=vm_size, ctx=fake_ctx)
+            client().virtual_machines.begin_create_or_update \
+                .assert_called_with(
+                    resource_group_name=resource_group,
+                    vm_name=name,
+                    parameters=params
+                )
