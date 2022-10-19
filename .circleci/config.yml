@@ -29,6 +29,8 @@ commands:
 
   prepare_test_manager:
     steps:
+      - run: docker exec cfy_manager mkdir -p /etc/cloudify/.cloudify/profiles/manager-local/
+      - run: docker exec cfy_manager cp /root/.cloudify/profiles/manager-local/context.json /etc/cloudify/.cloudify/profiles/manager-local/context.json
       - run: ecosystem-test prepare-test-manager -l $TEST_LICENSE -es azure_client_id=$azure_client_id -es azure_client_secret=$azure_client_secret -es azure_location=$azure_location -es azure_subscription_id=$azure_subscription_id -es azure_tenant_id=$azure_tenant_id --bundle-path workspace/build/cloudify-plugins-bundle.tgz --yum-package python-netaddr --yum-package git
 
   run_hello_world_test:

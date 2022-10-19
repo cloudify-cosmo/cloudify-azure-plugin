@@ -380,6 +380,10 @@ def cleanup_empty_params(data):
     if type(data) is dict:
         new_data = {}
         for key in data:
+            # skip tags from the snake_case convention
+            if key == 'tags' and data[key]:
+                new_data[key] = data[key]
+                continue
             if data[key]:
                 val = cleanup_empty_params(data[key])
                 if val:

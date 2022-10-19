@@ -94,6 +94,48 @@ class VirtualNetworkTest(unittest.TestCase):
                 resource_group
             )
 
+    def test_create_with_CamelCaseTags(self, client, credentials):
+        self.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_resource_group'
+        vnet_name = 'sample_vnet'
+        self.node.properties['resource_group_name'] = resource_group
+        self.node.properties['name'] = vnet_name
+        self.node.properties['location'] = 'westus'
+        tags = {
+            'Environemnt': 'some_env',
+            'Owner': 'Cloudify',
+            'DownTime': 'EveryNight',
+        }
+        self.node.properties['tags'] = tags.copy()
+        vnet_params = {
+            'location': self.node.properties.get('location'),
+            'tags': tags.copy()
+        }
+        err = compose_not_found_cloud_error()
+        client().virtual_networks.get.side_effect = err
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            virtualnetwork.create(ctx=self.fake_ctx)
+            client().virtual_networks.get.assert_called_with(
+                resource_group_name=resource_group,
+                virtual_network_name=vnet_name
+            )
+            client()\
+                .virtual_networks.begin_create_or_update.assert_called_with(
+                resource_group_name=resource_group,
+                virtual_network_name=vnet_name,
+                parameters=vnet_params
+            )
+            self.assertEquals(
+                self.fake_ctx.instance.runtime_properties.get("name"),
+                vnet_name
+            )
+            self.assertEquals(
+                self.fake_ctx.instance.runtime_properties.get(
+                    "resource_group"),
+                resource_group
+            )
+
     def test_create_already_exists(self, client, credentials):
         self.node.properties['azure_config'] = self.dummy_azure_credentials
         resource_group = 'sample_resource_group'

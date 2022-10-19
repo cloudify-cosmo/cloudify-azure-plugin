@@ -1,6 +1,7 @@
 3.8.0:
   - Added restart VM operation
   - Added resize VM operation
+  - Skip tags snake_case handling as it will modify tagging keys.
 3.7.11: Fix issue with nested secrets.
 3.7.10: Handle nested secrets in node props from workflow ctx for discovery.
 3.7.9: Add parent resource ids logic when use_external_resource.
