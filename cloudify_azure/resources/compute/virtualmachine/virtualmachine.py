@@ -589,6 +589,52 @@ def delete(ctx, **_):
 
 
 @operation(resumable=True)
+def restart(ctx, **_):
+    """Restarts a Virtual Machine"""
+    azure_config = utils.get_client_config(ctx.node.properties)
+    resource_group_name = utils.get_resource_group(ctx)
+    name = ctx.instance.runtime_properties.get('name')
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_COMPUTE)
+    virtual_machine = VirtualMachine(azure_config, ctx.logger, api_version)
+    status = get_instance_status(
+        virtual_machine, resource_group_name, name)
+    ctx.logger.info('VM {} status {}'.format(name, status))
+    utils.handle_task(
+        virtual_machine,
+        resource_group_name,
+        name,
+        resource_task='restart')
+
+
+@operation(resumable=True)
+def resize(ctx, vm_size, **_):
+    """Resizes the Virtual Machine"""
+    azure_config = utils.get_client_config(ctx.node.properties)
+    resource_group_name = utils.get_resource_group(ctx)
+    name = ctx.instance.runtime_properties.get('name')
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_COMPUTE)
+    vm_iface = VirtualMachine(azure_config, ctx.logger, api_version)
+    # Update the VM
+    vm_params = {
+        'location': ctx.node.properties.get('location'),
+        'hardware_profile': {
+            'vm_size': vm_size
+        }
+    }
+    try:
+        _create_update_resource(resource_group_name,
+                                name,
+                                vm_iface,
+                                vm_params)
+    except CloudError as cr:
+        raise cfy_exc.NonRecoverableError(
+            "resizing virtual_machine '{0}' "
+            "failed with this error : {1}".format(name, cr.message))
+
+
+@operation(resumable=True)
 def attach_data_disk(ctx, lun, **_):
     """Attaches a data disk"""
     azure_config = utils.get_client_config(ctx.source.node.properties)

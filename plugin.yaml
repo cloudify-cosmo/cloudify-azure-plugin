@@ -6,7 +6,7 @@ plugins:
   azure:
     executor: central_deployment_agent
     package_name: cloudify-azure-plugin
-    package_version: '3.7.11'
+    package_version: '3.8.0'
 
 data_types:
   cloudify.datatypes.azure.Config:
@@ -1283,6 +1283,15 @@ node_types:
         stop:
           implementation: azure.cloudify_azure.resources.compute.virtualmachine.virtualmachine.stop
         delete: azure.cloudify_azure.resources.compute.virtualmachine.virtualmachine.delete
+      cloudify.interfaces.operations:
+        restart: azure.cloudify_azure.resources.compute.virtualmachine.virtualmachine.restart
+        resize:
+          implementation: azure.cloudify_azure.resources.compute.virtualmachine.virtualmachine.resize
+          inputs:
+            vm_size:
+              type: string
+              description: The name of the VM size, according to https://docs.microsoft.com/en-us/azure/virtual-machines/sizes
+              default: ""
 
   cloudify.azure.nodes.compute.WindowsVirtualMachine:
     derived_from: cloudify.azure.nodes.compute.VirtualMachine
