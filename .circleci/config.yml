@@ -32,9 +32,9 @@ commands:
       - run: docker exec cfy_manager mkdir -p /etc/cloudify/.cloudify/profiles/manager-local/
       - run: docker exec cfy_manager cp /root/.cloudify/profiles/manager-local/context.json /etc/cloudify/.cloudify/profiles/manager-local/context.json
       - run: ecosystem-test prepare-test-manager -l $TEST_LICENSE -es azure_client_id=$azure_client_id -es azure_client_secret=$azure_client_secret -es azure_location=$azure_location -es azure_subscription_id=$azure_subscription_id -es azure_tenant_id=$azure_tenant_id --yum-package python-netaddr --yum-package git -p $(find ~/project/workspace/build/ -name *centos-Core*x86_64.wgn)  ~/project/plugin.yaml
-      - run: ecosystem-test upload-plugin utilities
-      - run: ecosystem-test upload-plugin ansible
-      - run: ecosystem-test upload-plugin kubernetes
+      - run: ecosystem-test upload-plugin -PN utilities
+      - run: ecosystem-test upload-plugin -PN ansible
+      - run: ecosystem-test upload-plugin -PN kubernetes
 
   run_hello_world_test:
     steps:
