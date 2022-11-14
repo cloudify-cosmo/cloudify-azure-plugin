@@ -440,7 +440,9 @@ def handle_resource_config_params(data, resource_config):
     return cleanup_empty_params(data)
 
 
-def get_client_config(properties):
+def get_client_config(properties, other_properties=None):
+    other_properties = other_properties or {}
+    properties.update(other_properties)
     client_config = properties.get('client_config', {})
     azure_config = properties.get('azure_config', {})
 
