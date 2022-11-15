@@ -117,10 +117,9 @@ def with_generate_name(resource_class_name):
             ctx = kwargs['ctx']
             try:
                 # check if name is set or not and generate one if it wasn't set
-                config_from_plugin_props = getattr(ctx.plugin, 'properties',
-                                                   {})
-                azure_config = utils.get_client_config(
-                    ctx.node.properties, config_from_plugin_props)
+                plugin_props = getattr(ctx.plugin, 'properties', {})
+                azure_config = utils.get_client_config(plugin_props,
+                                                       ctx.node.properties)
                 resource = resource_class_name(azure_config, ctx.logger)
                 name = utils.get_resource_name(ctx)
                 resource_group_name = name
