@@ -397,6 +397,7 @@ def configure_custom_resource(func):
             get_operation_config(op_name, runprops, props)
         )
         plugin_props = getattr(ctx.plugin, 'properties', {})
+
         plugin_props.update(ctx.node.properties)
         client = utils.get_client_config(plugin_props)
         api = ctx.node.properties.get('api_version')
