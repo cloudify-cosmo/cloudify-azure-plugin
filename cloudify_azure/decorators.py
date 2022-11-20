@@ -118,8 +118,8 @@ def with_generate_name(resource_class_name):
             try:
                 # check if name is set or not and generate one if it wasn't set
                 plugin_props = getattr(ctx.plugin, 'properties', {})
-                azure_config = utils.get_client_config(plugin_props,
-                                                       ctx.node.properties)
+                plugin_props.update(ctx.node.properties)
+                azure_config = utils.get_client_config(plugin_props)
                 resource = resource_class_name(azure_config, ctx.logger)
                 name = utils.get_resource_name(ctx)
                 resource_group_name = name
@@ -252,7 +252,9 @@ def with_azure_resource(resource_class_name):
             name = utils.get_resource_name(ctx)
             # check if azure_config is given and if the resource
             # is external or not
-            azure_config = utils.get_client_config(ctx.node.properties)
+            plugin_props = getattr(ctx.plugin, 'properties', {})
+            plugin_props.update(ctx.node.properties)
+            azure_config = utils.get_client_config(plugin_props)
             resource_factory = ResourceGetter(ctx, azure_config, name)
             try:
                 exists = resource_factory.get_resource(resource_class_name)
@@ -394,7 +396,9 @@ def configure_custom_resource(func):
             'operation_config',
             get_operation_config(op_name, runprops, props)
         )
-        client = utils.get_client_config(ctx.node.properties)
+        plugin_props = getattr(ctx.plugin, 'properties', {})
+        plugin_props.update(ctx.node.properties)
+        client = utils.get_client_config(plugin_props)
         api = ctx.node.properties.get('api_version')
         try:
             return func(ctx, resource, operation, client, api)

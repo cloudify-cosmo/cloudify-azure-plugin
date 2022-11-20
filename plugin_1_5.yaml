@@ -17,7 +17,6 @@ plugins:
           You can provide any set of environment variables for use by managed identity.
           For more information, please see: https://docs.microsoft.com/en-us/python/api/overview/azure/identity-readme?view=azure-python.
           If you use this approach other parameters will be ignored.
-        default: { }
         display_label: Environment Variables
       username:
         type: string
@@ -31,25 +30,21 @@ plugins:
         description: >
           A Microsoft Azure Active Directory endpoint.
         type: string
-        default: https://login.microsoftonline.com
         display_label: Endpoints Active Directory
       endpoints_resource_manager:
         description: >
           A Microsoft Azure Active Directory Resource Manager.
         type: string
-        default: https://management.azure.com
         display_label: Endpoints Resource Manager
       endpoint_resource:
         description: >
           A Microsoft Azure Active Directory Resource Id.
         type: string
-        default: https://management.core.windows.net/
         display_label: Endpoint Resource
       endpoint_verify:
         description: >
           Connection certificate verify.
         type: boolean
-        default: true
         display_label: Endpoint Verify
       subscription_id:
         description: >
@@ -98,7 +93,6 @@ plugins:
           another resource, the resulting name could be
           something like "myvm_1". This field can be left blank.
         type: string
-        default: "_"
         display_label: Scale Name Separator
       scale_name_suffix_chars:
         description: >
@@ -106,25 +100,21 @@ plugins:
           generating unique suffix data when scaling resources.
           See "scale_name_separator" for more information.
         type: string
-        default: "1234567890"
         display_label: Scale Name Suffix Chars
       certificate:
         description: >
           Certificate private key.
         type: string
-        default: ""
         display_label: Certificate
       thumbprint:
         description: >
           Certificate thumbprint.
         type: string
-        default: ""
         display_label: Thumbprint
       cloud_environment:
         description: >
           An alternative cloud environment.
         type: string
-        default: ""
         display_label: Cloud Environment
 
 
