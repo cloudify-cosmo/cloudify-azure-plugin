@@ -116,10 +116,7 @@ def with_generate_name(resource_class_name):
         def wrapper_inner(*args, **kwargs):
             ctx = kwargs['ctx']
             try:
-                # check if name is set or not and generate one if it wasn't set
-                plugin_props = getattr(ctx.plugin, 'properties', {})
-                plugin_props.update(ctx.node.properties)
-                azure_config = utils.get_client_config(plugin_props)
+                azure_config = utils.get_client_config(ctx.node.properties)
                 resource = resource_class_name(azure_config, ctx.logger)
                 name = utils.get_resource_name(ctx)
                 resource_group_name = name
@@ -250,11 +247,7 @@ def with_azure_resource(resource_class_name):
         def wrapper_inner(*args, **kwargs):
             ctx = kwargs['ctx']
             name = utils.get_resource_name(ctx)
-            # check if azure_config is given and if the resource
-            # is external or not
-            plugin_props = getattr(ctx.plugin, 'properties', {})
-            plugin_props.update(ctx.node.properties)
-            azure_config = utils.get_client_config(plugin_props)
+            azure_config = utils.get_client_config(ctx.node.properties)
             resource_factory = ResourceGetter(ctx, azure_config, name)
             try:
                 exists = resource_factory.get_resource(resource_class_name)

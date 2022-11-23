@@ -441,8 +441,22 @@ def handle_resource_config_params(data, resource_config):
 
 
 def get_client_config(properties):
+    # ctx.plugin
+    plugin_props = getattr(ctx.plugin, 'properties', {})
+
+    # ctx.node.properties
     client_config = properties.get('client_config', {})
     azure_config = properties.get('azure_config', {})
+
+    final_client_config = {}
+    if plugin_props:
+        for k, v in plugin_props.items():
+            if isinstance(v, dict):
+                final_client_config[k] = v.get('value')
+            else:
+                final_client_config[k] = v
+        client_config.update(final_client_config)
+        azure_config.update(final_client_config)
 
     skip = ['endpoints_active_directory',
             'endpoints_resource_manager',
