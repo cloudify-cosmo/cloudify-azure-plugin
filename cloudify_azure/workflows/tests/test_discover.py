@@ -171,6 +171,7 @@ class AzureWorkflowTests(TestCase):
         resource_2 = MagicMock(id='foo', location='region2')
         resource_2.as_dict.return_value = {'foo': 'bar'}
         cluster_list.return_value = [resource_1, resource_2]
+        print
         self.assertEqual(resources.get_resources(**params), expected)
 
     @patch('azure_sdk.resources.compute.managed_cluster.ManagedCluster.list')

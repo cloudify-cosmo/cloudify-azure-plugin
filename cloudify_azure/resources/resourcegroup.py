@@ -28,10 +28,6 @@ from azure_sdk.resources.resource_group import ResourceGroup
 @decorators.with_azure_resource(ResourceGroup)
 def create(ctx, **_):
     """Uses an existing, or creates a new, Resource Group"""
-    # plugin_props = getattr(ctx.plugin, 'properties', {})
-    # plugin_props.update(ctx.node.properties)
-    # ctx.logger.info('*** create plugin_props: {}'.format(plugin_props))
-
     azure_config = utils.get_client_config(ctx.node.properties)
     name = utils.get_resource_name(ctx)
     resource_group_params = {

@@ -48,7 +48,6 @@ class DecoratorTests(TestCase):
                 }
             }
         }
-
         node = mock.Mock(properties=props)
         instance = mock.Mock(runtime_properties={})
         operation = mock.Mock()
