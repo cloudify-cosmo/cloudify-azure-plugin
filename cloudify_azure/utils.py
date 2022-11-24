@@ -455,8 +455,6 @@ def get_client_config(properties):
                 final_client_config[k] = v.get('value')
             else:
                 final_client_config[k] = v
-        client_config.update(final_client_config)
-        azure_config.update(final_client_config)
 
     skip = ['endpoints_active_directory',
             'endpoints_resource_manager',
@@ -471,8 +469,12 @@ def get_client_config(properties):
     if len(azure_config_keys) > len(client_config_keys):
         ctx.logger.warn("azure_config is deprecated please use client_config, "
                         "in later version it will be removed")
-        return azure_config
-    return client_config
+
+        final_client_config.update(azure_config)
+        return final_client_config
+
+    final_client_config.update(client_config )
+    return final_client_config
 
 
 def get_resource_id_from_name(subscription_id,
