@@ -473,7 +473,7 @@ def get_client_config(properties):
         final_client_config.update(azure_config)
         return final_client_config
 
-    final_client_config.update(client_config )
+    final_client_config.update(client_config)
     return final_client_config
 
 
