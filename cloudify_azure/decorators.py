@@ -115,6 +115,7 @@ def with_generate_name(resource_class_name):
         @wraps(func)
         def wrapper_inner(*args, **kwargs):
             ctx = kwargs['ctx']
+            ctx.logger.info('****with_generate_name****')
             try:
                 # check if name is set or not and generate one if it wasn't set
                 azure_config = utils.get_client_config(ctx.node.properties)
@@ -392,10 +393,8 @@ def configure_custom_resource(func):
             'operation_config',
             get_operation_config(op_name, runprops, props)
         )
-        plugin_props = getattr(ctx.plugin, 'properties', {})
 
-        plugin_props.update(ctx.node.properties)
-        client = utils.get_client_config(plugin_props)
+        client = utils.get_client_config(ctx.node.properties)
         api = ctx.node.properties.get('api_version')
         try:
             return func(ctx, resource, operation, client, api)
