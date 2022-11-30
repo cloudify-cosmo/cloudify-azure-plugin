@@ -23,7 +23,6 @@ from collections import Mapping
 
 from cloudify import ctx
 from cloudify import exceptions as cfy_exc
-
 from cloudify_azure import constants
 
 from msrestazure.azure_exceptions import CloudError
@@ -470,11 +469,19 @@ def get_client_config(properties):
         ctx.logger.warn("azure_config is deprecated please use client_config, "
                         "in later version it will be removed")
 
-        final_client_config.update(azure_config)
+        update_dict_values(final_client_config, azure_config)
         return final_client_config
 
-    final_client_config.update(client_config)
+    update_dict_values(final_client_config, client_config)
     return final_client_config
+
+
+def update_dict_values(original_dict, new_dict):
+    if new_dict:
+        for key, value in new_dict.items():
+            if value:
+                original_dict[key] = value
+    return original_dict
 
 
 def get_resource_id_from_name(subscription_id,
