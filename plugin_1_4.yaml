@@ -7,6 +7,120 @@ plugins:
     executor: central_deployment_agent
     package_name: cloudify-azure-plugin
     package_version: '3.8.0'
+    properties_description: blah blah 
+    properties:
+      environment_variables:
+        type: dict
+        description: |
+          You can provide any set of environment variables for use by managed identity.
+          For more information, please see: https://docs.microsoft.com/en-us/python/api/overview/azure/identity-readme?view=azure-python.
+          If you use this approach other parameters will be ignored.
+        default: {}
+        display_label: Environment Variables
+      username:
+        type: string
+        required: false
+        description: Your azure username.
+      password:
+        type: string
+        required: false
+        description: Your azure password.
+      endpoints_active_directory:
+        description: >
+          A Microsoft Azure Active Directory endpoint.
+        type: string
+        default: https://login.microsoftonline.com
+      endpoints_resource_manager:
+        description: >
+          A Microsoft Azure Active Directory Resource Manager.
+        type: string
+        default: https://management.azure.com
+      endpoint_resource:
+        description: >
+          A Microsoft Azure Active Directory Resource Id.
+        type: string
+        default: https://management.core.windows.net/
+      endpoint_verify:
+        description: >
+          Connection certificate verify.
+        type: boolean
+        default: true
+      subscription_id:
+        description: >
+          A Microsoft Azure subscription ID. This is a unique
+          user account in Azure. This can be found in the
+          Subscriptions tab on your dashboard.
+        type: string
+        required: false
+      tenant_id:
+        description: >
+          A Microsoft Azure tenant ID. This can be found in
+          the Azure Active Directory dashboard by accessing
+          your directory. Open the Application Endpoints
+          dialog and your tenant ID will be in the URL for
+          the OAUTH2.0 TOKEN ENDPOINT.
+        type: string
+        required: false
+      client_id:
+        description: >
+          A Microsoft Azure client ID. This can be found in
+          the Azure Active Directory dashboard by accessing
+          your directory. View the Applications tab and select
+          the application used to access Azure APIs.  Your
+          client ID can be found by expanding the ACCESS WEB
+          APIS IN OTHER APPLICATIONS tab.
+        type: string
+        required: false
+      client_secret:
+        description: >
+          A Microsoft Azure client secret key. This can be found
+          or generated in the same location as your client ID.
+        type: string
+        required: false
+      scale_name_separator:
+        description: >
+          When scaling resources, a unique name must be sent to
+          the Azure API. Since names are left to the user to
+          manage (the service does not generate unique IDs),
+          this plugin will attempt to append characters or
+          numbers to the end of the resource name when resources
+          are scaled out. This value should be a character, or
+          characters, that will separate the base name from the
+          generated unique characters.  For instance, if the
+          base name of a resource is "myvm", the separator is
+          set to "_", and a scale workflow attempts to create
+          another resource, the resulting name could be
+          something like "myvm_1". This field can be left blank.
+        type: string
+        required: false
+        default: "_"
+      scale_name_suffix_chars:
+        description: >
+          A string of characters (ASCII) to be used when
+          generating unique suffix data when scaling resources.
+          See "scale_name_separator" for more information.
+        type: string
+        required: true
+        default: "1234567890"
+      certificate:
+        description: >
+          Certificate private key.
+        type: string
+        required: false
+        default: ""
+      thumbprint:
+        description: >
+          Certificate thumbprint.
+        type: string
+        required: false
+        default: ""
+      cloud_environment:
+        description: >
+          An alternative cloud environment.
+        type: string
+        required: false
+        default: ""
+ 
 
 data_types:
   cloudify.datatypes.azure.Config:
