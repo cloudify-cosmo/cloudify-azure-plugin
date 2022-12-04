@@ -7,6 +7,7 @@ from ..._compat import PY2
 
 @patch('azure_sdk.common.ClientSecretCredential')
 @patch('azure.mgmt.containerservice.ContainerServiceClient')
+@patch('cloudify_azure.utils.get_client_config')
 class AzureWorkflowTests(TestCase):
 
     def get_mock_rest_client(self):

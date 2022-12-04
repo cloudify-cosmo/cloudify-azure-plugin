@@ -23,7 +23,6 @@ from collections import Mapping
 
 from cloudify import ctx
 from cloudify import exceptions as cfy_exc
-
 from cloudify_azure import constants
 
 from msrestazure.azure_exceptions import CloudError
@@ -440,11 +439,21 @@ def handle_resource_config_params(data, resource_config):
     return cleanup_empty_params(data)
 
 
-def get_client_config(properties, other_properties=None):
-    other_properties = other_properties or {}
-    # TODO merge properties and other properties
+def get_client_config(properties):
+    # ctx.plugin
+    plugin_props = getattr(ctx.plugin, 'properties', {})
+
+    # ctx.node.properties
     client_config = properties.get('client_config', {})
     azure_config = properties.get('azure_config', {})
+
+    final_client_config = {}
+    if plugin_props:
+        for k, v in plugin_props.items():
+            if isinstance(v, dict):
+                final_client_config[k] = v.get('value')
+            else:
+                final_client_config[k] = v
 
     skip = ['endpoints_active_directory',
             'endpoints_resource_manager',
@@ -459,8 +468,20 @@ def get_client_config(properties, other_properties=None):
     if len(azure_config_keys) > len(client_config_keys):
         ctx.logger.warn("azure_config is deprecated please use client_config, "
                         "in later version it will be removed")
-        return azure_config
-    return client_config
+
+        update_dict_values(final_client_config, azure_config)
+        return final_client_config
+
+    update_dict_values(final_client_config, client_config)
+    return final_client_config
+
+
+def update_dict_values(original_dict, new_dict):
+    if new_dict:
+        for key, value in new_dict.items():
+            if value:
+                original_dict[key] = value
+    return original_dict
 
 
 def get_resource_id_from_name(subscription_id,
