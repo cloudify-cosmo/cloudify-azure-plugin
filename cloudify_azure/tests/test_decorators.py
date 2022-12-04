@@ -55,7 +55,8 @@ class DecoratorTests(TestCase):
         ctx = mock.Mock(node=node,
                         instance=instance,
                         operation=operation,
-                        logger=self.get_logger())
+                        logger=self.get_logger(),
+                        plugin={})
 
         args = []
         kwargs = {

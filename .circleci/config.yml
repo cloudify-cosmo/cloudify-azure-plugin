@@ -38,15 +38,15 @@ commands:
 
   run_hello_world_test:
     steps:
-      - run: ecosystem-test local-blueprint-test  -b examples/blueprint-examples/hello-world-example/azure.yaml --test-id=hello-world-example -i resource_prefix=azpl -i resource_suffix=test$CIRCLE_BUILD_NUM --on-failure=uninstall-force --timeout=1800
+      - run: ecosystem-test local-blueprint-test  -b examples/blueprint-examples/hello-world-example/azure.yaml --test-id=hello-world-example -i env_name=azpl -i resource_suffix=test$CIRCLE_BUILD_NUM --on-failure=uninstall-force --timeout=1800
 
   run_azure_arm_test:
     steps:
-      - run: ecosystem-test local-blueprint-test  -b examples/blueprint-examples/virtual-machine/azure-arm.yaml --test-id=virtual-machine -i resource_prefix=azpl -i resource_suffix=test$CIRCLE_BUILD_NUM --on-failure=uninstall-force --timeout=1800
+      - run: ecosystem-test local-blueprint-test  -b examples/blueprint-examples/virtual-machine/azure-arm.yaml --test-id=virtual-machine -i env_name=azpl -i resource_suffix=test$CIRCLE_BUILD_NUM --on-failure=uninstall-force --timeout=1800
 
   run_aks_test:
     steps:
-      - run: ecosystem-test local-blueprint-test  -b examples/blueprint-examples/kubernetes/azure-aks/blueprint.yaml --test-id=azure-aks -i resource_suffix=it --on-failure=uninstall-force --timeout=3000
+      - run: ecosystem-test local-blueprint-test  -b examples/blueprint-examples/kubernetes/azure-aks/blueprint.yaml --test-id=azure-aks -i env_name=it --on-failure=uninstall-force --timeout=3000
 
   run_lb_test:
     steps:
