@@ -47,7 +47,7 @@ API_VER_NETWORK_LB_BACKEND_PROBES = '2020-03-01'
 # cloudify_azure/resources/compute/virtualmachine/virtualmachine_utils.py
 # ::check_if_configuration_changed props list,
 # according to api version.
-API_VER_COMPUTE = '2016-03-30'
+API_VER_COMPUTE = '2017-03-30'
 API_VER_STORAGE_BLOB = '2015-12-11'
 API_VER_CONTAINER = '2017-07-01'
 API_VER_MANAGED_CLUSTER = '2018-03-31'

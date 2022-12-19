@@ -6,7 +6,7 @@ plugins:
   azure:
     executor: central_deployment_agent
     package_name: cloudify-azure-plugin
-    package_version: '3.8.1'
+    package_version: '3.8.2'
     properties_description: |
        Manage AZURE resources.
        Credentials documentation: https://docs.cloudify.co/latest/working_with/official_plugins/infrastructure/azure/#providing-credentials-as-secrets
@@ -1315,7 +1315,7 @@ node_types:
         type: string
         description: >
           Compute API Version
-        default: "2016-03-30"
+        default: "2017-03-30"
       resource_group_name:
         type: string
         description: >
@@ -1402,6 +1402,21 @@ node_types:
               type: string
               description: The name of the VM size, according to https://docs.microsoft.com/en-us/azure/virtual-machines/sizes
               default: ""
+        run_command:
+          implementation: azure.cloudify_azure.resources.compute.virtualmachine.virtualmachine.run_command
+          inputs: 
+            command_id: 
+              type: string
+              description: https://learn.microsoft.com/en-us/azure/virtual-machines/windows/run-command#available-commands
+              default: RunShellScript
+            script:
+              type: list
+              description: https://learn.microsoft.com/en-us/python/api/azure-mgmt-compute/azure.mgmt.compute.v2022_08_01.models.runcommandinput?view=azure-python
+              default: []
+            parameters:
+              type: list
+              description: https://learn.microsoft.com/en-us/python/api/azure-mgmt-compute/azure.mgmt.compute.v2022_08_01.models.runcommandinputparameter?view=azure-python
+              default: []
 
   cloudify.azure.nodes.compute.WindowsVirtualMachine:
     derived_from: cloudify.azure.nodes.compute.VirtualMachine
@@ -1422,7 +1437,23 @@ node_types:
             file_uris:
               default:
                 - https://raw.githubusercontent.com/cloudify-cosmo/cloudify-azure-plugin/master/scripts/ps_enable_winrm_http.ps1
-
+      cloudify.interfaces.operations:
+        run_command:
+          implementation: azure.cloudify_azure.resources.compute.virtualmachine.virtualmachine.run_command
+          inputs: 
+            command_id: 
+              type: string
+              description: https://learn.microsoft.com/en-us/azure/virtual-machines/windows/run-command#available-commands
+              default: RunPowerShellScript
+            script:
+              type: list
+              description: https://learn.microsoft.com/en-us/python/api/azure-mgmt-compute/azure.mgmt.compute.v2022_08_01.models.runcommandinput?view=azure-python
+              default: []
+            parameters:
+              type: list
+              description: https://learn.microsoft.com/en-us/python/api/azure-mgmt-compute/azure.mgmt.compute.v2022_08_01.models.runcommandinputparameter?view=azure-python
+              default: []
+              
   cloudify.azure.nodes.compute.VirtualMachineExtension:
     derived_from: cloudify.nodes.Root
     properties:

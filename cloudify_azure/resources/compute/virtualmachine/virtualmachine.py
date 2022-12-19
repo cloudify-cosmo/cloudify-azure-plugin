@@ -708,3 +708,28 @@ def detach_data_disk(ctx, **_):
         raise cfy_exc.NonRecoverableError(
             "detach disk from virtual_machine '{0}' "
             "failed with this error : {1}".format(name, cr.message))
+
+
+@operation(resumable=True)
+def run_command(ctx, command_id, script, params, **_):
+    """Runs command on the Virtual Machine"""
+    azure_config = utils.get_client_config(ctx.node.properties)
+    resource_group_name = utils.get_resource_group(ctx)
+    name = ctx.instance.runtime_properties.get('name')
+    api_version = \
+        ctx.node.properties.get('api_version', constants.API_VER_COMPUTE)
+    vm_iface = VirtualMachine(azure_config, ctx.logger, api_version)
+    # Run command on the VM
+    run_cmd_params = {
+        'command_id': command_id,
+        'script': script,
+        'parameters': params
+    }
+    try:
+        vm_iface.run_command(resource_group_name,
+                             name,
+                             run_cmd_params)
+    except CloudError as cr:
+        raise cfy_exc.NonRecoverableError(
+            "Run command on virtual_machine '{0}' "
+            "failed with this error : {1}".format(name, cr.message))
