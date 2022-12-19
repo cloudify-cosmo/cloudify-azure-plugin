@@ -98,7 +98,7 @@ class AvailabilitySetTest(unittest.TestCase):
             )
             client().availability_sets.create_or_update.assert_called_with(
                 resource_group_name=resource_group,
-                name=name,
+                availability_set_name=name,
                 parameters=availability_set_conf
             )
 
@@ -570,8 +570,8 @@ class VirtualMachineTest(unittest.TestCase):
             response = mock.MagicMock()
             response.status_code = 200
             client().virtual_machines.get.return_value = response
-            virtualmachine.run_command(ctx=fake_ctx, 
-                                       command_id=params.get('command_id'), 
+            virtualmachine.run_command(ctx=fake_ctx,
+                                       command_id=params.get('command_id'),
                                        script=params.get('script'),
                                        params=params.get('parameters'))
             client().virtual_machines.begin_run_command \
