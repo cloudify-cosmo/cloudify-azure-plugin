@@ -21,12 +21,6 @@ from setuptools import setup
 from setuptools import find_packages
 
 
-def read(rel_path):
-    here = os.path.abspath(os.path.dirname(__file__))
-    with open(os.path.join(here, rel_path), 'r') as fp:
-        return fp.read()
-
-
 def get_version():
     current_dir = pathlib.Path(__file__).parent.resolve()
     with open(os.path.join(current_dir, 'cloudify_azure/__version__.py'),
