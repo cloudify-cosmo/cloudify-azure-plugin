@@ -140,6 +140,9 @@ workflows:
             branches:
               only: /([0-9\.]*\-build|master|dev)/
       - hw_integration_tests_py3:
+          context: 
+            - slack-secrets
+          <<: *unittest-post-steps
           requires:
             - wagonorb/wagon
             - wagonorb/arch64_wagon
@@ -148,6 +151,9 @@ workflows:
             branches:
               only: /([0-9\.]*\-build|master|dev)/
       - azure_arm_integration_tests_py3:
+          context: 
+            - slack-secrets
+          <<: *unittest-post-steps
           requires:
             - wagonorb/wagon
             - wagonorb/arch64_wagon
@@ -156,6 +162,9 @@ workflows:
             branches:
               only: /([0-9\.]*\-build|master|dev)/
       - aks_integration_tests_py3:
+          context: 
+            - slack-secrets
+          <<: *unittest-post-steps
           requires:
             - wagonorb/wagon
             - wagonorb/arch64_wagon
@@ -164,6 +173,9 @@ workflows:
             branches:
               only: /([0-9\.]*\-build|master|dev)/
       - lb_integration_test:
+          context: 
+            - slack-secrets
+          <<: *unittest-post-steps
           requires:
             - wagonorb/wagon
             - wagonorb/arch64_wagon
@@ -218,6 +230,9 @@ workflows:
             branches:
               only: /([0-9\.]*\-build|master|dev)/
       - hw_integration_tests_py3:
+          context: 
+            - slack-secrets
+          <<: *unittest-post-steps
           requires:
             - wagonorb/arch64_wagon
             - wagonorb/wagon
@@ -226,6 +241,9 @@ workflows:
             branches:
               only: /([0-9\.]*\-build|master|dev)/
       - azure_arm_integration_tests_py3:
+          context: 
+            - slack-secrets
+          <<: *unittest-post-steps
           requires:
             - wagonorb/arch64_wagon
             - wagonorb/wagon
@@ -234,6 +252,9 @@ workflows:
             branches:
               only: /([0-9\.]*\-build|master|dev)/
       - aks_integration_tests_py3:
+          context: 
+            - slack-secrets
+          <<: *unittest-post-steps
           requires:
             - wagonorb/arch64_wagon
             - wagonorb/wagon
@@ -270,6 +291,9 @@ workflows:
             branches:
               only: /([0-9\.]*\-build|master|dev)/
       - lb_integration_test:
+          context: 
+            - slack-secrets
+          <<: *unittest-post-steps
           requires:
             - wagonorb/wagon
             - wagonorb/arch64_wagon
