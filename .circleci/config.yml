@@ -63,7 +63,7 @@ commands:
   run_aks_test:
     steps:
       - run: |
-          export ENV_NAME=${CIRCLE_BUILD_NUM: -2}
+          export ENV_NAME=t${CIRCLE_BUILD_NUM: -2}
           ecosystem-test local-blueprint-test  -b examples/blueprint-examples/kubernetes/azure-aks/blueprint.yaml --test-id=azure-aks -i env_name=$ENV_NAME --on-failure=uninstall-force --timeout=3000 | tee -a run_aks_test.log
       - store_artifacts:
           path: run_aks_test.log
