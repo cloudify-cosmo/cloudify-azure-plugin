@@ -1,5 +1,9 @@
 version: 2.1
 
+job-post-steps: &job-post-steps
+  post-steps:
+   - slack/notify_failed
+
 unittest-post-steps: &unittest-post-steps
   post-steps:
     - store_test_results:
@@ -48,31 +52,19 @@ commands:
 
   run_hello_world_test:
     steps:
-      - run: ecosystem-test local-blueprint-test  -b examples/blueprint-examples/hello-world-example/azure.yaml --test-id=hello-world-example -i env_name=azpl -i resource_suffix=test$CIRCLE_BUILD_NUM --on-failure=uninstall-force --timeout=1800 | tee -a run_hello_world_test.log 
-      - store_artifacts:
-          path: run_hello_world_test.log
-      - slack/notify_failed
+      - run: ecosystem-test local-blueprint-test  -b examples/blueprint-examples/hello-world-example/azure.yaml --test-id=hello-world-example -i env_name=azpl -i resource_suffix=test$CIRCLE_BUILD_NUM --on-failure=uninstall-force --timeout=1800
 
   run_azure_arm_test:
     steps:
-      - run: ecosystem-test local-blueprint-test  -b examples/blueprint-examples/virtual-machine/azure-arm.yaml --test-id=virtual-machine -i env_name=azpl -i resource_suffix=test$CIRCLE_BUILD_NUM --on-failure=uninstall-force --timeout=1800 | tee -a run_azure_arm_test.log  
-      - store_artifacts:
-          path: run_azure_arm_test.log
-      - slack/notify_failed
+      - run: ecosystem-test local-blueprint-test  -b examples/blueprint-examples/virtual-machine/azure-arm.yaml --test-id=virtual-machine -i env_name=azpl -i resource_suffix=test$CIRCLE_BUILD_NUM --on-failure=uninstall-force --timeout=1800
 
   run_aks_test:
     steps:
-      - run: ecosystem-test local-blueprint-test  -b examples/blueprint-examples/kubernetes/azure-aks/blueprint.yaml --test-id=azure-aks -i env_name=it --on-failure=uninstall-force --timeout=3000 | tee -a run_aks_test.log 
-      - store_artifacts:
-          path: run_aks_test.log
-      - slack/notify_failed
+      - run: ecosystem-test local-blueprint-test  -b examples/blueprint-examples/kubernetes/azure-aks/blueprint.yaml --test-id=azure-aks -i env_name=it --on-failure=uninstall-force --timeout=3000
 
   run_lb_test:
     steps:
-      - run: ecosystem-test local-blueprint-test  -b examples/load-balancer-blueprint.yaml --test-id=azure-aks -i resource_prefix=lb-test-$CIRCLE_BUILD_NUM --on-failure=uninstall-force --timeout=3000 | tee -a run_lb_test.log 
-      - store_artifacts:
-          path: run_lb_test.log
-      - slack/notify_failed
+      - run: ecosystem-test local-blueprint-test  -b examples/load-balancer-blueprint.yaml --test-id=azure-aks -i resource_prefix=lb-test-$CIRCLE_BUILD_NUM --on-failure=uninstall-force --timeout=3000
 
 jobs:
 
@@ -140,9 +132,6 @@ workflows:
             branches:
               only: /([0-9\.]*\-build|master|dev)/
       - hw_integration_tests_py3:
-          context: 
-            - slack-secrets
-          <<: *unittest-post-steps
           requires:
             - wagonorb/wagon
             - wagonorb/arch64_wagon
@@ -151,9 +140,6 @@ workflows:
             branches:
               only: /([0-9\.]*\-build|master|dev)/
       - azure_arm_integration_tests_py3:
-          context: 
-            - slack-secrets
-          <<: *unittest-post-steps
           requires:
             - wagonorb/wagon
             - wagonorb/arch64_wagon
@@ -161,10 +147,7 @@ workflows:
           filters:
             branches:
               only: /([0-9\.]*\-build|master|dev)/
-      - aks_integration_tests_py3:
-          context: 
-            - slack-secrets
-          <<: *unittest-post-steps
+      - aks_integration_tests_py3:          
           requires:
             - wagonorb/wagon
             - wagonorb/arch64_wagon
@@ -173,9 +156,6 @@ workflows:
             branches:
               only: /([0-9\.]*\-build|master|dev)/
       - lb_integration_test:
-          context: 
-            - slack-secrets
-          <<: *unittest-post-steps
           requires:
             - wagonorb/wagon
             - wagonorb/arch64_wagon
@@ -232,7 +212,7 @@ workflows:
       - hw_integration_tests_py3:
           context: 
             - slack-secrets
-          <<: *unittest-post-steps
+          <<: *job-post-steps
           requires:
             - wagonorb/arch64_wagon
             - wagonorb/wagon
@@ -243,7 +223,7 @@ workflows:
       - azure_arm_integration_tests_py3:
           context: 
             - slack-secrets
-          <<: *unittest-post-steps
+          <<: *job-post-steps
           requires:
             - wagonorb/arch64_wagon
             - wagonorb/wagon
@@ -254,7 +234,7 @@ workflows:
       - aks_integration_tests_py3:
           context: 
             - slack-secrets
-          <<: *unittest-post-steps
+          <<: *job-post-steps
           requires:
             - wagonorb/arch64_wagon
             - wagonorb/wagon
@@ -293,7 +273,7 @@ workflows:
       - lb_integration_test:
           context: 
             - slack-secrets
-          <<: *unittest-post-steps
+          <<: *job-post-steps
           requires:
             - wagonorb/wagon
             - wagonorb/arch64_wagon
