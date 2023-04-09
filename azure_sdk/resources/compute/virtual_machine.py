@@ -120,3 +120,20 @@ class VirtualMachine(AzureResource):
         restart_async_operation.wait()
         self.logger.debug(
             'Restarted virtual_machine {0}'.format(vm_name))
+
+    def run_command(self, group_name, vm_name, cmd_params):
+        self.logger.info(
+            "Running command on virtual_machine...{0}".format(vm_name))
+        run_cmd_async_operation = \
+            self.client.virtual_machines.begin_run_command(
+                resource_group_name=group_name,
+                vm_name=vm_name,
+                parameters=cmd_params)
+        run_cmd_async_operation.wait()
+        run_cmd = run_cmd_async_operation.result().as_dict()
+        self.logger.info(
+            'Run command result: {0}'.format(
+                utils.secure_logging_content(run_cmd))
+            )
+        self.logger.debug(
+            'Finished running command on virtual_machine {0}'.format(vm_name))
