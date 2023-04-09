@@ -98,7 +98,7 @@ class AvailabilitySetTest(unittest.TestCase):
             )
             client().availability_sets.create_or_update.assert_called_with(
                 resource_group_name=resource_group,
-                name=name,
+                availability_set_name=name,
                 parameters=availability_set_conf
             )
 
@@ -545,6 +545,36 @@ class VirtualMachineTest(unittest.TestCase):
             client().virtual_machines.get.return_value = response
             virtualmachine.resize(vm_size=vm_size, ctx=fake_ctx)
             client().virtual_machines.begin_create_or_update \
+                .assert_called_with(
+                    resource_group_name=resource_group,
+                    vm_name=name,
+                    parameters=params
+                )
+
+    def test_run_command(self, client, credentials):
+
+        fake_ctx, _, __ = self._get_mock_context_for_run(
+            operation={'name': 'cloudify.interfaces.operations.run_command'})
+        fake_ctx.node.properties['azure_config'] = self.dummy_azure_credentials
+        resource_group = 'sample_resource_group'
+        name = 'mockvm'
+        params = {
+            'command_id': 'RunShellScript',
+            'script': ['echo "test"'],
+            'parameters': []
+        }
+        fake_ctx.instance.runtime_properties['resource_group'] = resource_group
+        fake_ctx.instance.runtime_properties['name'] = name
+        with mock.patch('cloudify_azure.utils.secure_logging_content',
+                        mock.Mock()):
+            response = mock.MagicMock()
+            response.status_code = 200
+            client().virtual_machines.get.return_value = response
+            virtualmachine.run_command(ctx=fake_ctx,
+                                       command_id=params.get('command_id'),
+                                       script=params.get('script'),
+                                       params=params.get('parameters'))
+            client().virtual_machines.begin_run_command \
                 .assert_called_with(
                     resource_group_name=resource_group,
                     vm_name=name,
