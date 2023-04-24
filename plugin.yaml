@@ -2,6 +2,7 @@
 # Cloudify Azure built in types and plugins definitions.
 ##################################################################################
 
+# test
 plugins:
   azure:
     executor: central_deployment_agent
