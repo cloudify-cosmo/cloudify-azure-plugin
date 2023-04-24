@@ -6,7 +6,7 @@ plugins:
   azure:
     executor: central_deployment_agent
     package_name: cloudify-azure-plugin
-    package_version: '3.8.3'
+    package_version: '3.8.4'
 
 data_types:
   cloudify.datatypes.azure.Config:
