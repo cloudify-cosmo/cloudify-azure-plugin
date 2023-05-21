@@ -1685,11 +1685,6 @@ workflows:
   discover_and_deploy:
     mapping: azure.cloudify_azure.workflows.discover.discover_and_deploy
     availability_rules:
-      node_instances_active:
-        - all
-        - partial
-      node_types_required:
-        - cloudify.nodes.azure.resources.Azure
     parameters:
       node_id:
         type: string
