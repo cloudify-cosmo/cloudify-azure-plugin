@@ -2,7 +2,7 @@ plugins:
   azure:
     executor: central_deployment_agent
     package_name: cloudify-azure-plugin
-    package_version: '3.8.4'
+    package_version: 3.8.5
     properties_description: Manage Azure resources.
     properties:
       environment_variables:
