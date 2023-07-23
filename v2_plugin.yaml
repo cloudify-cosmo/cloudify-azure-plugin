@@ -3,6 +3,7 @@ plugins:
     executor: central_deployment_agent
     package_name: cloudify-azure-plugin
     package_version: 3.8.5
+
 data_types:
   cloudify.datatypes.azure.Config:
     properties:
@@ -780,7 +781,6 @@ node_types:
       retry_after:
         type: integer
         required: false
-    interfaces: {}
   cloudify.azure.nodes.network.PublicIPAddress:
     derived_from: cloudify.nodes.Root
     properties:
@@ -1362,116 +1362,60 @@ node_types:
           implementation: azure.cloudify_azure.resources.compute.managed_cluster.delete
   cloudify.nodes.azure.ResourceGroup:
     derived_from: cloudify.azure.nodes.ResourceGroup
-    properties: {}
-    interfaces: {}
   cloudify.nodes.azure.storage.StorageAccount:
     derived_from: cloudify.azure.nodes.storage.StorageAccount
-    properties: {}
-    interfaces: {}
   cloudify.nodes.azure.storage.DataDisk:
     derived_from: cloudify.azure.nodes.storage.DataDisk
-    properties: {}
-    interfaces: {}
   cloudify.nodes.azure.storage.FileShare:
     derived_from: cloudify.azure.nodes.storage.FileShare
-    properties: {}
-    interfaces: {}
   cloudify.nodes.azure.network.VirtualNetwork:
     derived_from: cloudify.azure.nodes.network.VirtualNetwork
-    properties: {}
-    interfaces: {}
   cloudify.nodes.azure.network.NetworkSecurityGroup:
     derived_from: cloudify.azure.nodes.network.NetworkSecurityGroup
-    properties: {}
-    interfaces: {}
   cloudify.nodes.azure.network.NetworkSecurityRule:
     derived_from: cloudify.azure.nodes.network.NetworkSecurityRule
-    properties: {}
-    interfaces: {}
   cloudify.nodes.azure.network.Subnet:
     derived_from: cloudify.azure.nodes.network.Subnet
-    properties: {}
-    interfaces: {}
   cloudify.nodes.azure.network.RouteTable:
     derived_from: cloudify.azure.nodes.network.RouteTable
-    properties: {}
-    interfaces: {}
   cloudify.nodes.azure.network.Route:
     derived_from: cloudify.azure.nodes.network.Route
-    properties: {}
-    interfaces: {}
   cloudify.nodes.azure.network.NetworkInterfaceCard:
     derived_from: cloudify.azure.nodes.network.NetworkInterfaceCard
-    properties: {}
-    interfaces: {}
   cloudify.nodes.azure.network.IPConfiguration:
     derived_from: cloudify.azure.nodes.network.IPConfiguration
-    properties: {}
-    interfaces: {}
   cloudify.nodes.azure.network.PublicIPAddress:
     derived_from: cloudify.azure.nodes.network.PublicIPAddress
-    properties: {}
-    interfaces: {}
   cloudify.nodes.azure.compute.AvailabilitySet:
     derived_from: cloudify.azure.nodes.compute.AvailabilitySet
-    properties: {}
-    interfaces: {}
   cloudify.nodes.azure.compute.VirtualMachine:
     derived_from: cloudify.azure.nodes.compute.VirtualMachine
-    properties: {}
-    interfaces: {}
   cloudify.nodes.azure.compute.WindowsVirtualMachine:
     derived_from: cloudify.azure.nodes.compute.WindowsVirtualMachine
-    properties: {}
-    interfaces: {}
   cloudify.nodes.azure.compute.VirtualMachineExtension:
     derived_from: cloudify.azure.nodes.compute.VirtualMachineExtension
-    properties: {}
-    interfaces: {}
   cloudify.nodes.azure.network.LoadBalancer:
     derived_from: cloudify.azure.nodes.network.LoadBalancer
-    properties: {}
-    interfaces: {}
   cloudify.nodes.azure.network.LoadBalancer.BackendAddressPool:
     derived_from: cloudify.azure.nodes.network.LoadBalancer.BackendAddressPool
-    properties: {}
-    interfaces: {}
   cloudify.nodes.azure.network.LoadBalancer.Probe:
     derived_from: cloudify.azure.nodes.network.LoadBalancer.Probe
-    properties: {}
-    interfaces: {}
   cloudify.nodes.azure.network.LoadBalancer.IncomingNATRule:
     derived_from: cloudify.azure.nodes.network.LoadBalancer.IncomingNATRule
-    properties: {}
-    interfaces: {}
   cloudify.nodes.azure.network.LoadBalancer.Rule:
     derived_from: cloudify.azure.nodes.network.LoadBalancer.Rule
-    properties: {}
-    interfaces: {}
   cloudify.nodes.azure.compute.ContainerService:
     derived_from: cloudify.azure.nodes.compute.ContainerService
-    properties: {}
-    interfaces: {}
   cloudify.nodes.azure.Plan:
     derived_from: cloudify.azure.nodes.Plan
-    properties: {}
-    interfaces: {}
   cloudify.nodes.azure.WebApp:
     derived_from: cloudify.azure.nodes.WebApp
-    properties: {}
-    interfaces: {}
   cloudify.nodes.azure.PublishingUser:
     derived_from: cloudify.azure.nodes.PublishingUser
-    properties: {}
-    interfaces: {}
   cloudify.nodes.azure.compute.ManagedCluster:
     derived_from: cloudify.azure.nodes.compute.ManagedCluster
-    properties: {}
-    interfaces: {}
   cloudify.nodes.azure.resources.Azure:
     derived_from: cloudify.azure.nodes.resources.Azure
-    properties: {}
-    interfaces: {}
   cloudify.azure.nodes.resources.Azure:
     derived_from: cloudify.nodes.Root
     properties:
@@ -1684,6 +1628,12 @@ relationships:
 workflows:
   discover_and_deploy:
     mapping: azure.cloudify_azure.workflows.discover.discover_and_deploy
+    availability_rules:
+      node_instances_active:
+        - all
+        - partial
+      node_types_required:
+        - cloudify.nodes.azure.resources.Azure
     parameters:
       node_id:
         type: string
