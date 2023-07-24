@@ -1,0 +1,14 @@
+diff --git a/cloudify_azure/utils.py b/cloudify_azure/utils.py
+index 74da515..7b4d904 100644
+--- a/cloudify_azure/utils.py
++++ b/cloudify_azure/utils.py
+@@ -19,7 +19,7 @@
+ """
+ import re
+ 
+-from collections import Mapping
++from collections.abc import Mapping
+ 
+ from cloudify import ctx
+ from cloudify import exceptions as cfy_exc
+ 
