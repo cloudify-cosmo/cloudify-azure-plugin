@@ -1,6 +1,6 @@
 cloudify-common>=5.1.0
 rsa==4.5
 decorator==4.4.2
-cryptography==3.3.2
+cryptography==40.0.2
 pynacl==1.4.0
 psutil==5.8.0
