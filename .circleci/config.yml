@@ -37,25 +37,46 @@ executors:
 
 commands:
 
+  setup_manager:
+    steps:
+      - run: |
+          if [[ -z "${CLOUDIFY_HOST}" ]]; then
+              exit 1
+          fi
+      - run: |
+          if [[ -z "${CLOUDIFY_TENANT}" ]]; then
+              exit 1
+          fi
+      - run: |
+          if [[ -z "${CLOUDIFY_TOKEN}" ]]; then
+              exit 1
+          fi
+      - run: |
+          response=$(curl --write-out '%{http_code}' --silent --insecure --header "Tenant: ${CLOUDIFY_TENANT}" --header "Authentication-Token: ${CLOUDIFY_TOKEN}" https://$CLOUDIFY_HOST/api/v3.1/status --output /dev/null)
+          if [[ $response != 200 ]]; then
+              echo "Failed to get manager status";
+              exit 1
+          fi
+      - run: pip3 install https://github.com/cloudify-incubator/cloudify-ecosystem-test/archive/refs/heads/master.zip
+      - run: git submodule update --init --recursive --remote
+
   prepare_test_manager:
     steps:
-      - run: docker exec cfy_manager mkdir -p /etc/cloudify/.cloudify/profiles/manager-local/
-      - run: docker exec cfy_manager cp /root/.cloudify/profiles/manager-local/context.json /etc/cloudify/.cloudify/profiles/manager-local/context.json
-      - run: ecosystem-test prepare-test-manager -l $TEST_LICENSE -es azure_client_id=$azure_client_id -es azure_client_secret=$azure_client_secret -es azure_location=$azure_location -es azure_subscription_id=$azure_subscription_id -es azure_tenant_id=$azure_tenant_id --yum-package python-netaddr --yum-package git --yum-package epel -p $(find ~/project/workspace/build/ -name *manylinux-py311-none-linux_x86_64.wgn*)  ~/project/plugin.yaml
+      - run: ecosystem-test prepare-remote-test-manager -es azure_client_id=$azure_client_id -es azure_client_secret=$azure_client_secret -es azure_location=$azure_location -es azure_subscription_id=$azure_subscription_id -es azure_tenant_id=$azure_tenant_id -p $(find ~/project/workspace/build/ -name *manylinux-py311-none-linux_x86_64.wgn*)  ~/project/plugin.yaml
       - run: ecosystem-test upload-plugin -PN utilities
       - run: ecosystem-test upload-plugin -PN ansible
       - run: ecosystem-test upload-plugin -PN kubernetes
 
   run_hello_world_test:
     steps:
-      - run: ecosystem-test local-blueprint-test  -b examples/blueprint-examples/hello-world-example/azure.yaml --test-id=hello-world-example -i env_name=azpl -i resource_suffix=test$CIRCLE_BUILD_NUM --on-failure=uninstall-force --timeout=1800 | tee -a run_hello_world_test.log
+      - run: ecosystem-test remote-blueprint-test -b examples/blueprint-examples/hello-world-example/azure.yaml --test-id=hello-world-example-$CIRCLE_BUILD_NUM -i env_name=azpl -i resource_suffix=test$CIRCLE_BUILD_NUM --on-failure=uninstall-force --timeout=1800 | tee -a run_hello_world_test.log
       - store_artifacts:
           path: run_hello_world_test.log
       - slack/notify_failed
 
   run_azure_arm_test:
     steps:
-      - run: ecosystem-test local-blueprint-test  -b examples/blueprint-examples/virtual-machine/azure-arm.yaml --test-id=virtual-machine -i env_name=azpl -i resource_suffix=test$CIRCLE_BUILD_NUM --on-failure=uninstall-force --timeout=1800 | tee -a run_azure_arm_test.log
+      - run: ecosystem-test remote-blueprint-test -b examples/blueprint-examples/virtual-machine/azure-arm.yaml --test-id=virtual-machine-$CIRCLE_BUILD_NUM -i env_name=azpl -i resource_suffix=test$CIRCLE_BUILD_NUM --on-failure=uninstall-force --timeout=1800 | tee -a run_azure_arm_test.log
       - store_artifacts:
           path: run_azure_arm_test.log
       - slack/notify_failed
@@ -64,14 +85,14 @@ commands:
     steps:
       - run: |
           export ENV_NAME=t${CIRCLE_BUILD_NUM: -2}
-          ecosystem-test local-blueprint-test  -b examples/blueprint-examples/kubernetes/azure-aks/blueprint.yaml --test-id=azure-aks -i env_name=$ENV_NAME --on-failure=uninstall-force --timeout=3000 | tee -a run_aks_test.log
+          ecosystem-test remote-blueprint-test -b examples/blueprint-examples/kubernetes/azure-aks/blueprint.yaml --test-id=azure-aks-$CIRCLE_BUILD_NUM -i env_name=$ENV_NAME --on-failure=uninstall-force --timeout=3000 | tee -a run_aks_test.log
       - store_artifacts:
           path: run_aks_test.log
       - slack/notify_failed
 
   run_lb_test:
     steps:
-      - run: ecosystem-test local-blueprint-test  -b examples/load-balancer-blueprint.yaml --test-id=azure-aks -i resource_prefix=lb-test-$CIRCLE_BUILD_NUM --on-failure=uninstall-force --timeout=3000 | tee -a run_lb_test.log
+      - run: ecosystem-test remote-blueprint-test -b examples/load-balancer-blueprint.yaml --test-id=azure-lb-$CIRCLE_BUILD_NUM -i resource_prefix=lb-test-$CIRCLE_BUILD_NUM --on-failure=uninstall-force --timeout=3000 | tee -a run_lb_test.log
       - store_artifacts:
           path: run_lb_test.log
       - slack/notify_failed
