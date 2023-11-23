@@ -34,7 +34,7 @@ general_requirements = [
     'cloudify-utilities-plugins-sdk>=0.0.91',  # includes YAML
     'requests>=2.23.0',
     'urllib3>=1.25.3',
-    'cryptography==40.0.2'
+    'cryptography'
 ]
 
 azure_requirements = [
