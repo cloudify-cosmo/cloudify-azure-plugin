@@ -11,5 +11,4 @@ EOF
     cat <<EOF > ./webbrowser/__init__.py
 pass
 EOF
-    git apply python311.patch
 fi

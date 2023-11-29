@@ -16,9 +16,9 @@
 
 import os
 import re
+import sys
 import pathlib
-from setuptools import setup
-from setuptools import find_packages
+from setuptools import setup, find_packages
 
 
 def get_version():
@@ -28,16 +28,10 @@ def get_version():
         var = outfile.read()
         return re.search(r'\d+.\d+.\d+', var).group()
 
-
-general_requirements = [
-    'cloudify-common>=4.5',
-    'cloudify-utilities-plugins-sdk>=0.0.91',  # includes YAML
+install_requires = [
+    'cryptography',
     'requests>=2.23.0',
     'urllib3>=1.25.3',
-    'cryptography'
-]
-
-azure_requirements = [
     # stating from azure v5.0.0 we need to add azure modules like this
     'azure-mgmt-web==0.46.0',
     # When upgrading compute package version, update cloudify_
@@ -57,11 +51,43 @@ azure_requirements = [
     'azure-identity==1.8.0',
 ]
 
+if sys.version_info.major == 3 and sys.version_info.minor == 6:
+    install_requires += [
+        'cloudify-common>=4.5,<7.0',
+        'cloudify-utilities-plugins-sdk>=0.0.91',  # includes YAML
+    ]
+    packages = [
+        'azure_sdk',
+        'cloudify_azure',
+        'azure_sdk.resources',
+        'azure_sdk.resources.app_service',
+        'azure_sdk.resources.compute',
+        'azure_sdk.resources.network',
+        'azure_sdk.resources.storage',
+        'cloudify_azure.resources',
+        'cloudify_azure.workflows',
+        'cloudify_azure.resources.app_service',
+        'cloudify_azure.resources.compute',
+        'cloudify_azure.resources.network',
+        'cloudify_azure.resources.storage',
+        'cloudify_azure.resources.compute.virtualmachine',
+        'cloudify_azure.tests.resources',
+    ]
+else:
+    install_requires += [
+        'fusion-common',
+        'fusion-mgmtworker',
+        'deepdiff==5.7.0',
+        'cloudify-utilities-plugins-sdk',
+    ]
+    packages = find_packages(exclude=['tests*'])
+
+
 setup(
     name='cloudify-azure-plugin',
     version=get_version(),
     license='LICENSE',
-    packages=find_packages(exclude=['tests*']),
+    packages=packages,
     description='Cloudify plugin for Microsoft Azure',
-    install_requires=general_requirements + azure_requirements
+    install_requires=install_requires
 )

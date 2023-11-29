@@ -18,8 +18,7 @@
     Microsoft Azure plugin for Cloudify helper utilities
 """
 import re
-
-from collections import Mapping
+import sys
 
 from cloudify import ctx
 from cloudify import exceptions as cfy_exc
@@ -27,6 +26,11 @@ from cloudify_azure import constants
 
 from msrestazure.azure_exceptions import CloudError
 from azure.core.exceptions import ResourceNotFoundError
+
+if sys.version_info.major == 3 and sys.version_info.minor > 7:
+    from collections.abc import Mapping
+else:
+    from collections import Mapping
 
 
 def dict_update(orig, updates):
