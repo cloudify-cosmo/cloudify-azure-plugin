@@ -67,3 +67,7 @@ azurecloudify/tests/test_conf.py
 
 cover
 azure/*
+fusion-agent
+fusion-common
+fusion-manager
+cloudify-utilities-plugins-sdk
