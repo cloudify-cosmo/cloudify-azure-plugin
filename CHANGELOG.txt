@@ -1,3 +1,4 @@
+3.8.8: added .drp folder for trufflehog.
 3.8.7: Update requirements.txt.
 3.8.6: wagon_311 & new circleci context.
 3.8.5: Add DSL 1.5 YAML.
